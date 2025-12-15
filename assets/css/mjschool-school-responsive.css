@@ -1,0 +1,1183 @@
+/* --------------------------------------------------------------------------
+ *  Project  : MjSchool Plugin Styles
+ *  File     : mjschool-school-responsive.css
+ *  Purpose  : stylesheet for layout, forms, dashboard, tables, and UI.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *  
+ *  1. General Layout
+ *  2. Form Styling
+ *  3. Dropdown Menu Styling
+ *  4. DataTables Styling
+ *  5. Inputs & File Upload Fields
+ *  6. Responsive Breakpoints
+ *
+ *  -------------------------------------------------------------------------- */
+@media only screen and (max-width : 550px)
+{
+	.loader {
+		top: 30%;
+		left: 30%;
+		position: absolute;
+	}
+	.page_title_dashboard
+	{
+		float: left;
+		margin-bottom: 10px;
+	}
+	.page_title_dashboard h3
+	{
+		width: 100%;
+	}
+	.mjschool-dashboard-with-lms-div
+	{
+		margin-top: 5px;
+	}
+	.input_field_padding
+	{
+		padding-top: 10px;
+	}
+	.time_dive_padding_10
+	{
+		padding-bottom: 10px;
+	}
+	.mjschool-grand-total-amount
+	{
+		margin: 0px;
+	}
+	.mjschool-Supportstaff-menu-label
+	{
+		font-size: 9px!important;
+	}
+}
+@media only screen and (max-width : 380px)
+{
+	.col-md-1.mjschool-update-dp
+	{
+		margin: 10px 0 0 58px;
+	}
+}
+@media only screen and (min-width: 320px) and (max-width : 480px) {
+	#mjschool-admission-form{
+		margin: 0px !important;
+	}
+	.mjschool-student-registration-form #mjschool-registration-form .mjschool-formError
+	{
+		opacity: 0.87;
+		position: absolute !important;
+		top: 25px !important;
+		left: 65px !important;
+		margin-top: 0px !important;
+	}
+}
+@media only screen and (max-width : 480px) {
+	.col-md-1.mjschool-update-dp
+	{
+		margin: 10px 0 0 54px;
+	}
+	.mjschool-view-notice-overflow
+	{
+		overflow-y: scroll;
+		height: 250px;
+		overflow-x: hidden;
+	}
+}
+@media only screen and (max-width : 920px) {
+	.fc-toolbar .fc-state-active, .fc-toolbar .ui-state-active {
+		z-index: 3;
+	}
+	.nav-side-menu .toggle-btn, .nav-side-menu .brand {
+		background: #2e353d none repeat scroll 0 0;
+		color: #ffffff;
+		display: block;
+		position: relative;
+		width: 100%;
+		z-index: 4;
+	}
+	.mjschool-content .mjschool-page-inner {
+		margin-left: 0px;
+		margin-top: 120px;
+	}
+	.nav.nav-pills.nav-stacked.collapse.in {
+		background: #2e353d none repeat scroll 0 0;
+		margin-top: 0px;
+		position: absolute;
+		width: 100%;
+		z-index: 4;
+	}
+}
+.mjschool-content .col-sm-2.mjschool-nopadding.mjschool-school-left{
+	width: 100%;
+	position: absolute;
+}
+.mjschool-school-left ul li a {float: left;width:100%;}
+.nav-side-menu
+{
+	width: 100%;
+	margin-top: 65px;
+	margin-bottom: 10px;
+}
+.nav-side-menu .toggle-btn {
+	background-color: #ffffff;
+	color: #000000;
+	cursor: pointer;
+	display: block;
+	font-size: 27px;
+	height: 32px;
+	padding: 3px;
+	position: absolute;
+	right: 12px;
+	text-align: center;
+	top: 10px;
+	width: 48px;
+}
+.brand {
+	text-align: left !important;
+	font-size: 22px;
+	padding-left: 20px;
+	line-height: 50px !important;
+}
+@media only screen and (max-width : 768px) {
+	.mjschool-overlay-content {
+	left: 21%;
+	width: 96%;
+	}
+}
+@media only screen and (max-width : 600px) {
+	.mainpage .navbar h3 span {
+		display: none;
+	}
+	/*------------ Data Table Icon Manage ---------------- */
+	table.dataTable1.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.dataTable1.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:8px !important;
+		left:0px !important;
+	}
+	table.mjschool-student-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-student-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:23px !important;
+		left:0px !important;
+	}
+	table.mjschool-transport-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-transport-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:22px !important;
+		left:0px !important;
+	}
+	table.mjschool-member-list-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-member-list-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:22px !important;
+		left:1px !important;
+	}
+	table.mjschool-booklist-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-booklist-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:8px !important;
+		left:3px !important;
+	}
+	table.mjschool-issuelist-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-issuelist-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:10px !important;
+		left:3px !important;
+	}
+	table.mjschool-feespayment-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-feespayment-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:23px !important;
+		left:0px !important;
+	}
+	table.mjschool-expense-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-expense-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:8px !important;
+		left:5px !important;
+	}
+	table.mjschool-notice-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-notice-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:15px !important;
+		left:0px !important;
+	}
+	table.mjschool-teacher-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-teacher-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:22px !important;
+		left:2px !important;
+	}
+	table.mjschool-child-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-child-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:22px !important;
+		left:2px !important;
+	}
+	table.mjschool-admin-taecher-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-admin-taecher-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:22px !important;
+		left:2px !important;
+	}
+	table.mjschool-admin-supportstaff-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-admin-supportstaff-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:22px !important;
+		left:2px !important;
+	}
+	table.mjschool-admin-parent-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-admin-parent-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:22px !important;
+		left:2px !important;
+	}
+	table.mjschool-admin-transport-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-admin-transport-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:22px !important;
+		left:2px !important;
+	}
+	table.mjschool-admin-notification-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-admin-notification-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:10px !important;
+		left:0px !important;
+	}
+	table.mjschool-admin-feestype-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-admin-feestype-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:14px !important;
+		left:2px !important;
+	}
+	table.mjschool-admin-memebrlist-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-admin-memebrlist-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:22px !important;
+		left:0px !important;
+	}
+	table.mjschool-exam-datatable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.mjschool-exam-datatable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		top:15px !important;
+		left:0px !important;
+	}
+}
+@media only screen and (max-width : 480px) {
+	.col-md-8.col-sm-8.col-xs-6 {
+		width: 20%;
+	}
+	.nav.navbar-right.col-md-4.col-sm-4.col-xs-6 {
+		width: 79%;
+	}
+	#calendar .fc-toolbar .fc-left,
+	#calendar .fc-toolbar .fc-right,
+	#calendar .fc-toolbar .fc-center
+	{
+		float:left;
+		width: 100%;
+		padding-bottom:10px;
+	}
+	.table .btn-primary{
+		width: 100%;
+		margin-bottom:5px;
+	}
+	.mjschool-period-box {
+		position: relative;
+		white-space: normal;
+	}
+	.team .team-member{width:100%;}
+}
+@media only screen and (max-width : 650px) {
+	.tooltiptopicevent {
+		width:auto !important;
+		height:auto !important;
+		left:75px !important;
+		right:25px !important;
+	}
+}
+/*----------------- New CSS updated (25-05-2019) ------------------ */
+@media screen and (max-width : 767px) and (min-width : 320px) {
+	input[type=checkbox]
+	{
+		height: 20px !important;
+		width: 20px !important;
+		margin-left:0px;
+		margin-top: 0px;
+	}
+	table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child
+	{
+		padding-left: 21px !important;
+	}
+	.mjschool-page-inner
+	{
+		margin-left: -20px;
+		min-height:500px;
+	}
+	.mjschool-btn-top
+	{
+		margin-top:5px !important;
+	}
+	.ui-datepicker{
+		z-index:999 !important;
+	}
+	.mjschool-add-btn1 {
+        margin-top: 0px !important;
+    }
+	#main-wrapper_fronend{
+		margin: 20px 20px 20px 20px !important;
+	}
+	.country_code{
+		width:55px !important;
+	}
+	.panel-group .mjschool-panel-heading .mjschool-panel-title>a{
+		font-size:13px;
+	}
+	.col-xs-2 {
+		width: 17.666667% !important;
+	}
+	.panel .mjschool-panel-body_acccess {
+		position: relative;
+		padding:0px !important;
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+	.mjschool-content .mjschool-page-inner {
+		margin-left: 0px;
+		margin-top: 0px;
+	}
+	.mjschool-content .ui-draggable
+	{
+		width: 320px !important;
+	}
+	.tab-content {
+		padding: 0px;
+		background: #fff;
+	}
+	.dataTables_wrapper .dataTables_paginate {
+		margin-top: 0.5em;
+		margin-bottom: 0.5em;
+	}
+	.mjschool-overlay-content {
+		width: 90%;
+		left: 25%;
+	}
+	.mjschool-view-details-body {
+		max-height: 300px!important;
+	}
+	.nav-tab{
+		margin: 10px 10px 0 0;
+		border-bottom: 1px solid #ccc !important;
+		border: 1px solid #ccc !important;
+	}
+	.mjschool-table-left
+	{
+		margin-left:0px!important;
+	}
+	.nav-tab2
+	{
+		margin: 10px 10px 0 0;
+		border-bottom: 1px solid #ccc !important;
+		top:0px;
+		border: 1px solid #ccc !important;
+	}
+	.margin-left
+	{
+		margin-left:5px;
+	}
+	.user-profile {
+		margin-top: 85px;
+	}
+	.mjschool-right-side {
+		margin-top:140px;
+		padding: 0px;
+	}
+	.col-md-1.mjschool-update-dp
+	{
+		margin: 10px 0 0 0px !important;
+	}
+	a.fc-more {
+		margin: 0px 0px;
+		font-size: .55em;
+		cursor: pointer;
+		text-decoration: none;
+	}
+	.fc-popover {
+		top: 50px !important;
+	}
+	.mjschool-formError .mjschool-formErrorContent {
+		min-width: 84px !important;
+	}/* Extra Small Devices, Phones */
+	@media only screen and (max-width : 380px)
+	{
+		.col-md-1.mjschool-update-dp
+		{
+			margin: 10px 0 0 58px;
+		}
+		.mjschool-content .ui-dialog
+		{
+			margin-left: 0% !important;
+		}
+	}
+	@media screen and (max-width : 566px) and (min-width : 381px)
+	{
+		.mjschool-content .ui-dialog
+		{
+			margin-left: 10% !important;
+			width: 320px !important;
+		}
+	}
+	@media only screen and (max-width : 480px) {
+		.col-md-1.mjschool-update-dp
+		{
+			margin: 10px 0 0 54px;
+		}
+		.mjschool-view-notice-overflow
+		{
+			overflow-y: scroll;
+			height: 250px;
+			overflow-x: hidden;
+		}
+	}
+	@media only screen and (max-width : 920px) {
+		.fc-toolbar .fc-state-active, .fc-toolbar .ui-state-active {
+			z-index: 3;
+		}
+		.nav-side-menu .toggle-btn, .nav-side-menu .brand {
+			background: #2e353d none repeat scroll 0 0;
+			color: #ffffff;
+			display: block;
+			position: relative;
+			width: 100%;
+			z-index: 4;
+		}
+		.mjschool-content .mjschool-page-inner {
+			margin-left: 0px;
+			margin-top: 120px;
+		}
+		.nav.nav-pills.nav-stacked.collapse.in {
+			background: #2e353d none repeat scroll 0 0;
+			margin-top: 0px;
+			position: absolute;
+			width: 100%;
+			z-index: 4;
+		}
+	}
+	.mjschool-content .col-sm-2.mjschool-nopadding.mjschool-school-left{position:absolute;}
+	.mjschool-school-left ul li a {float: left;width:100%;}
+	.nav-side-menu {
+		width: 100%;
+		margin-top: 65px;
+		margin-bottom: 10px;
+	}
+	.nav-side-menu .toggle-btn {
+		background-color: #ffffff;
+		color: #000000;
+		cursor: pointer;
+		display: block;
+		font-size: 27px;
+		height: 32px;
+		padding: 3px;
+		position: absolute;
+		right: 12px;
+		text-align: center;
+		top: 10px;
+		width: 48px;
+	}
+	.brand {
+		text-align: left !important;
+		font-size: 22px;
+		padding-left: 20px;
+		line-height: 50px !important;
+	}
+}
+@media only screen and (max-width : 768px) {
+	.mjschool-overlay-content {
+		left: 21%;
+		width: 96%;
+	}
+}
+@media only screen and (max-width : 480px) {
+	.col-md-8.col-sm-8.col-xs-6 {
+		width: 20%;
+	}
+	.nav.navbar-right.col-md-4.col-sm-4.col-xs-6 {
+		width: 79%;
+	}
+	#calendar .fc-toolbar .fc-left,
+	#calendar .fc-toolbar .fc-right,
+	#calendar .fc-toolbar .fc-center
+	{
+		float:left;
+		width: 100%;
+		padding-bottom:10px;
+	}
+	.table .btn-primary{
+		width: 100%;
+		margin-bottom:5px;
+	}
+	.mjschool-period-box {
+		position: relative;
+		white-space: normal;
+	}
+	.team .team-member{
+		width:100%;
+	}
+}
+@media only screen and (max-width : 650px) {
+	.tooltiptopicevent {
+		width:auto !important;
+		height:auto !important;
+		left:75px !important;
+		right:25px !important;
+	}
+}
+/*----------------- New CSS updated (25-05-2019) ------------------ */
+@media screen and (max-width : 767px) and (min-width : 320px)
+{
+	.mjschool-view-class-routine{
+		margin-left:auto;
+	}
+	.mjschool-student-registration-form .form-group .col-sm-8, .mjschool-student-registration-form .form-group .col-sm-2, .mjschool-student-registration-form .form-group .col-sm-7 {
+		position: unset;
+		min-height: 1px;
+	}
+	#fee_form
+	{
+		margin-left: 15px!important;
+		margin-right: 13px!important;
+	}
+	.mjschool-custom-radio input[type=radio]
+	{
+		margin-top: 0px;
+	}
+	table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child
+	{
+		padding-left: 27px !important;
+	}
+	.mjschool-page-inner
+	{
+		margin-left: -20px;
+		min-height:500px;
+	}
+	.mjschool-btn-top
+	{
+		margin-top:5px !important;
+	}
+	.ui-datepicker{
+		z-index:9999 !important;
+	}
+	#main-wrapper_fronend{
+		margin: 20px 20px 20px 20px !important;
+	}
+	.country_code{
+		width:55px !important;
+	}
+	.panel-group .mjschool-panel-heading .mjschool-panel-title>a{
+		font-size:12px;
+	}
+	.col-xs-2 {
+		width: 18.666667% !important;
+	}
+	.panel .mjschool-panel-body_acccess {
+		position: relative;
+		padding:0px !important;
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+	.mjschool-content .col-sm-2.mjschool-nopadding.mjschool-school-left {
+		width:100%;
+		height:100%;
+		margin-top: 70px;
+	}
+	.nav-side-menu {
+		margin-bottom: 0px;
+	}
+	.mjschool-content .mjschool-page-inner {
+		margin-left: 0px;
+		margin-top: 0px;
+	}
+	.tab-content {
+		padding: 0px;
+		background: #fff;
+	}
+	.dataTables_wrapper .dataTables_paginate {
+		margin-top: 0.5em;
+		margin-bottom: 0.5em;
+	}
+	.mjschool-overlay-content {
+		width: 90% !important;
+		height: auto;
+		overflow: auto;
+	}
+	.mjschool-marks-block{
+		display: inline-block;
+	}
+	label.teacher_doc {
+		padding-top: 10px;
+	}
+	.mjschool-res-width-30px{
+		width: 30%;
+	}
+	.mjschool-exam-hall-receipt-div{
+		margin-top:15px;
+	}
+	.nav-tab{
+		margin: 10px 10px 0 0;
+		border-bottom: 1px solid #ccc !important;
+		border: 1px solid #ccc !important;
+	}
+	.mjschool-table-left{
+		margin-left:-13px;
+	}
+	.nav-tab2{
+		margin: 10px 10px 0 0;
+		border-bottom: 1px solid #ccc !important;
+		top:0px;
+		border: 1px solid #ccc !important;
+	}
+	.margin-left
+	{
+		margin-left:5px;
+	}
+	.user-profile {
+		margin-top: 85px;
+	}
+	.mjschool-right-side {
+		padding: 0px;
+	}
+	.col-md-1.mjschool-update-dp
+	{
+		margin: 10px 0 0 30px;
+	}
+	a.fc-more {
+		margin: 0px 0px;
+		font-size: .55em;
+		cursor: pointer;
+		text-decoration: none;
+	}
+	.fc-popover {
+		top: 50px !important;
+		left:30px !important;
+	}
+	.mjschool-formError .mjschool-formErrorContent {
+		min-width: 84px !important;
+	}
+	.radio-inline input[type=radio] {
+		position: absolute;
+	}
+	.csvfile_width{
+		width:176px;
+	}
+	.mjschool-edit-delete-drop{
+		min-width: 90px !important;
+	}
+	.overflow-hidden{
+		overflow:visible;
+	}
+	.csvfile_width{
+		width:176px;
+	}
+	.mjschool-edit-delete-drop{
+		min-width: 90px !important;
+	}
+	.overflow-hidden{
+		overflow:visible;
+	}
+	.label_set{
+		position:unset !important;
+	}
+	.mjschool-teacher-label{
+		margin-left:-15px;
+	}
+	.table-responsive {
+		padding-top:0px;
+	}
+	.dataTables_wrapper .dataTables_length{
+		margin-top:10px;
+	}
+	.panel .mjschool-panel-heading
+	{
+		height: auto;
+	}
+	.mjschool-padding-payment{
+		padding-left:0px;
+		padding-right:0px;
+	}
+	.margin_bottom{
+		margin-bottom:10px !important;
+	}
+	.mjschool-margin-bottom-5{
+		margin-bottom:5px !important;
+	}
+	.mjschool-margin-top-10px
+	{
+		margin-top:10px !important;
+	}
+	.mjschool-margin-top-10px_res
+	{
+		margin-top:10px !important;
+	}
+	.mjschool-margin-left-10-res
+	{
+		margin-left:10px !important;
+	}
+	.mjschool-margin-left-20-res
+	{
+		margin-left:20px !important;
+	}
+	.mjschool-admission-div-responsive
+	{
+		overflow: auto;
+		max-height: 350px;
+		display: contents;
+	}
+	.mjschool-admission-approval-popup-rs{
+		height: 350px;
+		overflow: scroll;
+		overflow-x: hidden;
+	}
+	.mjschool-admission-popup{
+		width: 96%;
+		left: 15%;
+		max-height: 540px;
+	}
+	.exam_table{
+		width:240px !important;
+	}
+	.mjschool-width-200{
+		width:200px !important;
+	}
+	.mjschool-width-60-responsive {
+		width:60px !important;
+	}
+	.multiselect-container>li>a>label>input[type=checkbox]
+	{
+		margin-left: -25px;
+	}
+	.max_width_mjschool-mjschool-margin-top-10px
+	{
+		max-width: 100% !important;
+		margin-top: 10px;
+	}
+	.mjschool-occupied
+	{
+		background-color: red;
+		width: 100% !important;
+		height: 35px;
+		line-height: 30px;
+		text-align: !important;
+		color: white;
+	}
+	.mjschool-available
+	{
+		background-color: green;
+		width: 100% !important;
+		height: 35px;
+		line-height: 20px;
+		text-align: !important;
+		color: white;
+		margin-top: 10px;
+		margin-bottom: 10px;
+	}
+	.auto-fold #adminmenu .wp-menu-name
+	{
+		font-size: 15px;
+		margin-top: -5px;
+		margin-left: 30px;
+	}
+	.auto-fold #adminmenu li a
+	{
+		font-size: 16px;
+		padding: 5px;
+	}
+	.mjschool-user-height-width{
+		height:auto;
+	}
+	.mjschool-custom-font-size
+	{
+		font-size: 10px;
+	}
+	.mjschool-menu-left-15
+	{
+		margin-left: -15px!important;
+	}
+	.mjschool-menu-left-6
+	{
+		margin-left: -6px!important;
+	}
+	.mjschool-menu-left-25
+	{
+		margin-left: -25px!important;
+	}
+	.mjschool-menu-left-10
+	{
+		margin-left: -10px!important;
+	}
+	.tooltiptopicevent
+	{
+		display: none;
+	}
+	.mjschool-mt-10-res
+	{
+		margin-top:10px;
+	}
+	.multiselect_validation_book .btn-group.open .multiselect-container
+	{
+		height: auto;
+		min-height: 140px;
+	}
+	#exam_time_table .mjschool-formErrorContent, #exam_form .mjschool-formErrorContent{
+		right: 480px !important;
+	}
+	#exam_time_table .mjschool-formErrorArrow.mjschool-formErrorArrowBottom, #exam_form .mjschool-formErrorArrow.mjschool-formErrorArrowBottom{
+		right: 480px !important;
+	}
+}
+/* ---------- FOR TABLATE ------------- */
+@media screen and (max-width : 1366px) and (min-width : 767px) {
+	.mjschool-width-60-responsive {
+		width:60px !important;
+	}
+}
+/* rinkal add media query */
+@media only screen and (max-width : 1200px) {
+	.list_en {
+		height: auto !important;
+	}
+}
+@media only screen and (max-width : 480px)
+{
+	.mjschool-full-with-50-per
+	{
+		width: 50%!important;
+	}
+	.invoice .mjschool-panel-body{
+		overflow: auto;
+	}
+	table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child:before, table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child:before
+	{
+		left: 0px!important;
+		height: 15px !important;
+		width: 15px !important;
+		top: 29px !important;
+	}
+}
+@media only screen and (max-width : 380px)
+{
+	.profile-image
+	{
+		margin: 200px 0px 20px!important;
+	}
+	.panel .mjschool-panel-heading .mjschool-panel-title {
+		font-size: 18px !important;
+	}
+	.calendar-event .mjschool-remainder-title {
+		float: left;
+	}
+	.calendar-event .mjschool-remainder-date {
+		float: left;
+	}
+	.calendar-event .mjschool-remainder-title {
+		float: left;
+		width: calc(100% - 0%);
+	}
+	.calendar-event .mjschool-remainder-date-pr {
+		float: left;
+	}
+	.calendar-event .mjschool-remainder-title-pr_new {
+		float: left!important;
+		width: calc(100% - 0px)!important;
+	}
+}
+@media screen and (max-width : 400px) and (min-width : 320px)
+{
+	.responsive_font {
+		font-size:12px;
+	}
+	.birth_datemjschool-formError.parentFormmjschool-registration-form.mjschool-formError
+	{
+		left: 65px !important;
+	}
+}
+@media only screen and (max-width : 750px) {
+	.list_en1 {
+		min-height: auto;
+		max-height: 100%;
+	}
+	.list_en2{
+		height: auto;
+	}
+	.col-md-6.col-sm-6.col-xs-12.mjschool-attandance-padding{
+		padding:0px;
+	}
+	.col-md-6.col-sm-6.col-xs-12.data_right{
+		padding:0px;
+	}
+	.mjschool-report-height
+	{
+		height: auto;
+	}
+}
+@media screen and (max-width : 767px) and (min-width : 280px)
+{
+	.manage_marks .tab-content
+	{
+		padding: 15px!important;
+	}
+	.mjschool-margin-top-10px_res
+	{
+		margin-top: 10px !important;
+	}
+	.mjschool-custom-class
+	{
+		margin-top: 10px;
+	}
+	.fc .fc-toolbar
+	{
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		justify-content: center;
+		flex-direction: column;
+	}
+	.radio-inline input[type=radio]
+	{
+		position: unset;
+	}
+	.mjschool-margin-left-20-res
+	{
+		margin-left: 0px !important;
+	}
+	.notice-dismiss
+	{
+		padding: 10px!important;
+	}
+	.notice-dismiss
+	{
+		top: 1px!important;
+	}
+	#save_exam_time_table
+	{
+		margin-top: 10px!important;
+	}
+	.info-box .mjschool-info-box-stats span.mjschool-info-box-title
+	{
+		font-size: 10px!important;
+	}
+	.mjschool-overlay-content
+	{
+		left: 18%;
+		width: 90%;
+	}
+	.mjschool-margin-right-checkbox
+	{
+		margin-right: 6px!important;
+	}
+	.mjschool-exam-table-res
+	{
+		overflow: scroll;
+	}
+	.mjschool-exam-table-res input {
+        width: 80px;
+    }
+	#attendance_list_wrapper .dt-buttons
+	{
+		margin-left: -3px !important;
+	}
+	.mjschool-view-attendance-button
+	{
+		margin-bottom: 10px!important;
+	}
+}
+@media screen and (max-width : 768px) and (min-width : 768px)
+{
+	.mjschool-content-width
+	{
+		width: 90%!important;
+	}
+}
+@media screen and (max-width : 767px) and (min-width : 576px)
+{
+	.phonecode
+	{
+		width: 45px!important;
+	}
+}
+@media screen and (max-width : 960px) and (min-width : 768px)
+{
+	.mjschool-overlay-content
+	{
+		left: 18%;
+		width: 90%;
+	}
+}
+@media screen and (max-width : 1200px) and (min-width : 768px)
+{
+	.phonecode
+	{
+		width: 52px!important;
+	}
+	.passing_mark
+	{
+		font-size: 12px!important;
+	}
+	.mjschool-button-possition-padding
+	{
+		margin-top: -20px!important;
+	}
+}
+@media screen and (max-width : 1024px) and (min-width : 768px)
+{
+	.fc-popover {
+		top: 50px !important;
+		left:20px !important;
+	}
+	.notice-dismiss
+	{
+		padding: 8px!important;
+	}
+	.notice-dismiss
+	{
+		top: 1px!important;
+	}
+	.info-box .mjschool-info-box-stats span.mjschool-info-box-title
+	{
+		font-size: 10px!important;
+	}
+	.mjschool-margin-right-checkbox
+	{
+		margin-right: 8px!important;
+	}
+}
+@media (min-width: 320px) and (max-width: 425px)
+{
+	.mjschool-dis-flex-res
+	{
+		display:flex;
+	}
+	.mjschool-custom-padding-0_responsive
+	{
+		padding:0px;
+	}
+	.mjschool-phone-number-res
+	{
+		float:left;
+		width: 100%;
+		display: block;
+	}
+	.mjschool-assign-exam-hall
+	{
+		margin-bottom: 10px;
+	}
+}
+@media screen and (max-width : 319px) and (min-width : 280px)
+{
+	.modal-content
+	{
+		width: 283px!important;
+	}
+	.phonecode
+	{
+		margin-bottom: 10px!important;
+	}
+	.mjschool-formError .mjschool-formErrorArrowBottom
+	{
+		margin: 0px 0 0 -13px!important;
+	}
+	.mjschool-formError .mjschool-formErrorContent
+	{
+		right: 30px!important;
+	}
+	.mjschool-user-more-details .card-body
+	{
+		width: 100%;
+		padding: 0;
+	}
+	.view_student_mjschool-custom-padding-0
+	{
+		padding: 0px!important;
+	}
+	.mjschool-time-table-res
+	{
+		padding: 5px!important;
+	}
+	.mjschool-marks-list .nav-tab
+	{
+		font-size: 12px!important;
+	}
+	.mjschool-support-staff-user-div .col-sm-8 .btn-group .dropdown-toggle
+	{
+		min-width: 210px;
+	}
+	.mjschool-transport-list .nav-tab
+	{
+		font-size: 12px!important;
+	}
+	.mjschool-class-schedule-tab-content
+	{
+		padding: 0px!important;
+	}
+	.mjschool-class-schedule-tab-content-card
+	{
+		padding: 0px !important;
+	}
+	.mjschool-view-transport-details-popup
+	{
+		overflow-y: scroll;
+		height: 500px;
+	}
+	.mjschool-overlay-content
+	{
+		left: 18%!important;
+		width: 89%!important;
+	}
+	.modal-content
+	{
+		width: 240px!important;
+	}
+	.mjschool-category-list .mjschool-panel-white
+	{
+		padding-right: 5px!important;
+	}
+	#exam_timelist_wrapper
+	{
+		width: 100%!important;
+		overflow: scroll!important;
+	}
+}
+@media screen and (max-width : 767px) and (min-width : 390px)
+{
+	.mjschool-margin-top-10px_res
+	{
+		margin-top: 0px !important;
+		margin-left: 5px!important;
+	}
+}
+@media screen and (max-width : 2200px) and (min-width : 921px)
+{
+	.responsive_menu
+	{
+		display: block!important;
+	}
+}
+@media screen and (max-width : 920px) and (min-width : 280px)
+{
+	.mjschool-full-with-100-per
+	{
+		width: 100%!important;
+	}
+	.responsive_menu
+	{
+		display: grid;
+	}
+}
+@media screen and (max-width : 575px) and (min-width : 481px)
+{
+	.mjschool-full-with-50-per
+	{
+		width: 50%!important;
+	}
+	.mjschool-navbar-row-with-50
+	{
+		width: 50%!important;
+	}
+}
+@media screen and (max-width : 768px) and (min-width : 700px)
+{
+	.mjschool-update-dp
+	{
+		margin: 10px 0 0 -8px!important;
+	}
+	.w
+	{
+		width: 130px!important;
+	}
+	.mjschool-profile-image-container
+	{
+		margin: 0px 0px 0px -30px!important;
+	}
+}

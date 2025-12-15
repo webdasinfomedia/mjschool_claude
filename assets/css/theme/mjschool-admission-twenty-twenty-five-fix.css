@@ -1,0 +1,27 @@
+/* -----------------------------------------------------------------------------
+ *  Project       : MjSchool Plugin Styles
+ *  File          : mjschool-admission-twenty-twenty-five-fix.css
+ *  Description   : stylesheet for tewnty twenty five.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *
+ *  1. General Layout
+ *  2. Form Styling
+ *
+ * ----------------------------------------------------------------------------- */
+.input input[type=email]+label.active, .input input[type=number]+label.active, .input input[type=password]+label.active, .input input[type=text]+label.active {
+    transform: translate(-12.5%, -0.9em) scale(.9, .9) !important;
+    background-color: #fff;
+    padding: 0 10px;
+    font-family: unset;
+}
+.mjschool-user-form .input label {
+    font-size: 16px;
+}
+.mjschool-custom-top-label {
+    transform: translate(-12.5%, -0.9em) scale(.9, .9) !important;
+    background-color: #fff;
+    padding: 0 10px;
+}

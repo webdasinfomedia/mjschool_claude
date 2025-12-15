@@ -1,0 +1,1843 @@
+/* --------------------------------------------------------------------------
+ *  Project  : MjSchool Plugin Styles
+ *  File     : mjschool-responsive-newdesign.css
+ *  Purpose  : new responsive stylesheet for layout, forms, dashboard, tables, and UI.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *  
+ *  1. General Layout
+ *  2. Form Styling
+ *  3. Panels & Accordions
+ *  4. Dropdown Menu Styling
+ *  5. DataTables Styling
+ *  6. Inputs & File Upload Fields
+ *  7. Responsive Breakpoints
+ *
+ *  -------------------------------------------------------------------------- */
+@media (min-width: 920px)
+{
+	#wpcontent {
+		padding-left: 0px !important;
+	}
+	#sidebar li{
+		position: relative;
+	}
+	#sidebar .submenu, #sidebar .dropdown-menu{
+		position: relative;
+		width: 100%;
+		top: -10px;
+	}
+	.mjschool-assign-bed-date {
+		width: 65% !important;
+		background-color: white !important;
+		color: #333333 !important;
+		box-shadow: none !important;
+		font-size: 15px !important;
+		font-weight: 400;
+	}
+	#sidebar li:hover > .submenu {
+		display: block;
+	}
+	#sidebar li .submenu
+	{
+		display: none;
+		position: absolute;
+		left: 100%;
+		top: 0;
+		min-width: 240px;
+		padding: 0;
+	}
+	#sidebar li.report:hover .submenu {
+		top: -285px;
+	}
+	.mjschool-content-frontend #sidebar li .submenu
+	{
+		top: -10px;
+	}
+	#sidebarCollapse{
+		display: none;
+	}
+	.outer {
+		position: absolute;
+		width: 300px;
+		height: auto;
+	}
+	.mjschool-profile-image-class .mjschool-class-tag {
+		width: 54px !important;
+		border-radius: 16px;
+		height: 54px;
+	}
+	.mjschool-profile-image-class .mjschool-class-width{
+		width: 60% !important;
+		margin-left: 10px !important;
+		font-size: 16px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.mjschool-profile-image-class .mjschool-holiday-width{
+		width: 80% !important;
+		margin-left: 10px !important;
+		font-size: 16px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.mjschool-padding-top-card-content{
+		padding-top: 4px;
+	}
+	.mjschool-profile-image-class .mjschool-date-background{
+		background-color: #5840bb26;
+		color: #5840bb;
+		font-size: 16px !important;
+		box-shadow: none;
+		height: 30px;
+		width: 24% !important;
+		text-align: center;
+		font-family: poppins;
+		float: right;
+	}
+	#main-wrapper .row .event{
+		height: 424px;
+	}
+	#main-wrapper .row .fess_report{
+		height: 350px;
+	}
+	.wp-admin .input_height_30px_dor_dashboard
+	{
+		height: 30px !important;
+	}
+	#main-wrapper .row .massage{
+		height: 424px;
+	}
+	.mjschool-class-width .mjschool-label-for-date {
+		padding-top: 3px;
+		font-size: 16px !important;
+		font-weight: 600;
+		font-family: poppins !important;
+	}
+	.mjschool-class-image {
+		height: 24px;
+		width: 24px;
+		margin-top: 10px !important;
+	}
+	.mjschool-notice-div {
+		border: 1px #E1E3E5 solid;
+		margin-bottom: 18px;
+	}
+	.mjschool-notice-div .mjschool-notice-div-contant {
+		padding-left: 10px;
+		padding-top: 6px;
+	}
+	.mjschool-notice-div .notice_description_div {
+		padding-left: 0;
+	}
+	.mjschool-notice-heading {
+		font-size: 16px;
+		font-weight: 400;
+		color: #818386;
+	}
+}
+/* minimum width 920px css  */
+/* maximum width 920px css  */
+@media(max-width: 920px)
+{
+	#sidebarCollapse {
+		position: absolute;
+		right: 20px;
+		top: 20px;
+	}
+	.has-submenu .active {
+		display: block !important;
+	}
+	#sidebarCollapse {
+		display: block;
+	}
+	#sidebarCollapse.active span:first-of-type {
+		transform: rotate(45deg) translate(9px, 9px);
+	}
+	#sidebarCollapse.active span:nth-of-type(2 ) {
+		opacity: 0;
+	}
+	#sidebarCollapse.active span:last-of-type {
+		transform: rotate(-45deg) translate(1px, -1px);
+	}
+	#sidebarCollapse span:first-of-type, #sidebarCollapse span:nth-of-type(2 ), #sidebarCollapse span:last-of-type {
+		transform: none;
+		opacity: 1;
+		margin: 5px auto;
+	}
+	#sidebarCollapse {
+		width: 40px;
+		height: 40px;
+		border: none;
+		background: none;
+		padding-left: 0 !important;
+	}
+	#sidebar.active {
+		transform: none;
+		overflow: scroll;
+		height: 450px;
+		display: block;
+		width: 100%;
+		position: relative;
+		max-height: 580px;
+		overflow-x: hidden;
+	}
+	#sidebar {
+		width: 240px;
+		position: fixed;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		z-index: 1001;
+		padding-top: 18px;
+		transition: all 0.4s ease-in-out;
+		display: none;
+	}
+	.mjschool-navigation{
+		margin-top: 0px;
+	}
+	.mjschool-admin-dashboard-menu-rs{
+		margin-top: 7% !important;
+	}
+	.dropdown-menu:after{
+		display: none !important;
+	}
+	.dropdown-menu:before{
+		display: none !important;
+	}
+}
+/* maximum width 991px css  */
+@media(max-width: 991px){
+		#sidebarCollapse {
+		position: absolute;
+		right: 20px;
+		top: 20px;
+	}
+	.has-submenu .active {
+		display: block !important;
+	}
+	#sidebarCollapse {
+		display: block;
+	}
+	#sidebarCollapse.active span:first-of-type {
+		transform: rotate(45deg) translate(9px, 9px);
+	}
+	#sidebarCollapse.active span:nth-of-type(2 ) {
+		opacity: 0;
+	}
+	#sidebarCollapse.active span:last-of-type {
+		transform: rotate(-45deg) translate(1px, -1px);
+	}
+	#sidebarCollapse span:first-of-type, #sidebarCollapse span:nth-of-type(2 ), #sidebarCollapse span:last-of-type {
+		transform: none;
+		opacity: 1;
+		margin: 5px auto;
+	}
+	#sidebarCollapse {
+		width: 40px;
+		height: 40px;
+		border: none;
+		background: none;
+		padding-left: 0 !important;
+	}
+	#sidebar.active {
+		transform: none;
+		overflow: scroll;
+		height: 450px;
+		display: block;
+		width: 100%;
+		position: relative;
+		max-height: 580px;
+		overflow-x: hidden;
+	}
+	#sidebar {
+		width: 240px;
+		position: fixed;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		z-index: 1001;
+		padding-top: 18px;
+		transition: all 0.4s ease-in-out;
+		display: none;
+	}
+	.mjschool-navigation{
+		margin-top: 0px;
+	}
+	.mjschool-admin-dashboard-menu-rs{
+		margin-top: 7% !important;
+	}
+	.dropdown-menu:after{
+		display: none !important;
+	}
+	.dropdown-menu:before{
+		display: none !important;
+	}
+}
+/* maximum width 767px css  */
+@media (max-width: 767px)
+{
+	@supports (-webkit-touch-callout: none) {
+		.icon.img-top.dashboard_side_responsive {
+			margin-left: 10px;
+		}
+	}
+	form.mjschool_responsive_margin_left_25px
+	{
+		margin-left : 25px !important;
+		margin-top: 40%;
+	}
+	.modal-title {
+	    font-size: 20px !important;
+	    display: inline;
+	}
+	label.res_doc_lasbel
+	{
+		font-size: 15px !important;
+	}
+	.mjschool-notification-hovor:hover .mjschool-notification-hovor-dropdown {
+		top: -3px !important;
+	}
+	.mjschool-view-result .mjschool-width-50px{
+		width: 40%;
+		display:inline;
+		margin: 0px !important;
+	}
+	#mjschool-add-more-sibling
+	{
+		margin-bottom: 15px!important;
+	}
+	.mjschool-margin-bottom-15px-res
+	{
+	margin-bottom:15px !important;
+	}
+	.mjschool-responsive-label-position
+	{
+		position: relative !important;
+	}
+	.mjschool-responsive-label-position .mjschool-custom-top-label
+	{
+		top: 0px !important;
+	}
+	#sidebar .dropdown-menu li a{
+		line-height: 25px !important;
+	}
+	.mjschool-setting-dropdown-responsive
+	{
+		float: none;
+		display: inline-block;
+	}
+	.panel .mjschool-panel-heading .mjschool-panel-title {
+		line-height: 25px !important;
+	}
+	#sidebar li .submenu
+	{
+		width: 100%;
+	}
+	.mother_info{
+		margin-bottom:15px;
+	}
+	input[type=date], input[type=datetime-local], input[type=datetime], input[type=email], input[type=month], input[type=number], input[type=password], input[type=search], input[type=tel], input[type=text], input[type=time], input[type=url], input[type=week]
+	{
+		min-height: 38px !important;
+	}
+	.mjschool-adminssion-gender-input-margin{
+		margin: 15px 0 15px 0;
+	}
+	.mjschool-radio-button-bottom-margin-rs{
+		margin-bottom: 15px;
+	}
+	.mjschool-right-heder .search{
+		position: relative;
+		padding-left: 20px;
+	}
+	.mjschool-float-left-width-100px_res {
+		float: left;
+		width: 100%;
+	}
+	.mjschool-wizard-main {
+		width: 100%;
+		overflow: auto;
+	}
+	li.mjschool-wizard-responsive {
+		width: unset;
+	}
+	.steps ul {
+		display: -webkit-box !important;
+	}
+	#sidebar ul li:hover ul {
+		width: 100%;
+		position: relative;
+		margin-top: -3px;
+	}
+	.mjschool-list-padding-5px{
+		margin-top: 40% !important;
+	}
+	.main_page #mjschool-main-sidebar-bgcolor {
+		z-index: 9999999;
+		position: fixed;
+		background-color: #fff;
+		margin-top: 2.1%;
+	}
+	.mjschool-content-frontend .main_page #mjschool-main-sidebar-bgcolor
+	{
+		margin-top: 10.5%;
+	}
+	.auto-fold #wpcontent{
+		padding-left: 0px !important;
+	}
+	.row .four_card_div{
+		padding-left: calc(var(--bs-gutter-x)/ 2 ) !important;
+	}
+	#sidebar {
+		width: 240px;
+		position: fixed;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		z-index: 10001;
+		padding-top: 0px;
+		transition: all 0.4s ease-in-out;
+	}
+	.mjschool-admin-dashboard{
+		margin-left: 40px !important;
+	}
+	.mjschool-calender-margin-top{
+		margin-top: 0 !important;
+	}
+	.fc-scroller{
+		max-height: 340px;
+		overflow: auto !important;
+		overflow-x: hidden !important;
+	}
+	#calendar .fc-view-harness {
+		height: 340px !important;
+	}
+	.mjschool-menu-row .mjschool-responsive-div-dashboard{
+		padding-right: 0 !important;
+		padding-left: 0 !important;
+	}
+	.mjschool-chart-div-1{
+		width: 40% !important;
+	}
+	.chart_div_3{
+		width: 20% !important;
+	}
+	.mjschool-card-title {
+		font-style: normal;
+		font-weight: normal;
+		font-size: 16px;
+		line-height: 20px;
+		text-align: center;
+		color: #818386;
+		margin-top: 10px;
+	}
+	.mjschool-no-data-img1 {
+		height: 230px;
+		margin-top: 0;
+	}
+	.mjschool-right-heder .row .mjschool-name-and-icon-dashboard {
+		padding-top: 10px;
+		padding-bottom: 10px;
+	}
+	.mjschool-admin-dashboard-main-div .mjschool-align-items-unset-res{
+		align-items: unset !important;
+	}
+	.mjschool-right-heder .row h3{
+		margin-top: 0px !important;
+	}
+	.mjschool-setting-notification{
+		margin-top: 0px !important;
+	}
+	#main-wrapper .mjschool-dashboard-content-rs{
+		padding: 13px;
+		padding-bottom: 0 !important;
+	}
+	.mjschool-setup-wizard-dashboard {
+		margin-top: 172px;
+		margin-bottom: 7%;
+	}
+	.mjschool-user-dashdoard-responsive {
+		margin-top: 53%;
+	}
+	.mjschool-card{
+		height: 200px!important;
+		background: #FFFFFF;
+		box-shadow: 0px 0px 20px 1px rgb(0 0 0 / 10%);
+		margin-bottom: 30px;
+		margin-right: 14px;
+	}
+	.mjschool-card-member-bg {
+		width: 60px;
+		height: 55px;
+		margin-top: 40px;
+	}
+	.mjschool-card-member-bg .center {
+		padding-top: 13px;
+	}
+	.mjschool-line-chat {
+		height: 460px !important;
+	}
+	p {
+		font-size: 16px !important;
+	}
+	.outer {
+		position: absolute;
+		width: 300px;
+		height: auto;
+	}
+	.mjschool-line-chat .line-chart-checkcolor-RegularMember {
+		margin-right: 0% !important;
+	}
+	.mjschool-line-chat .line-chart-checkcolor-VolunteerMember {
+		margin-left: 0% !important;
+	}
+	.row .mjschool-name-patient {
+		text-align: !important;
+		font-size: 15px !important;
+	}
+	.mjschool-label-margin-top-15px .events1 .calendar-event {
+		height: 60px !important;
+	}
+	.mjschool-label-margin-top-15px .calendar-event .mjschool-date-font-size {
+		font-size: 35px !important;
+	}
+	.mjschool-assign-bed-color0{
+		border-right: 4px #37CFD1 solid;
+		height: 44px;
+		font-size: 70px;
+	}
+	.mjschool-assign-bed-color1{
+		border-right: 4px #FF9054 solid;
+		height: 44px;
+		font-size: 70px;
+	}
+	.mjschool-assign-bed-color2{
+		border-right: 4px #44CB7F solid;
+		height: 44px;
+		font-size: 70px;
+	}
+	.mjschool-assign-bed-color3{
+		border-right: 4px #FFB400 solid;
+		height: 44px;
+		font-size: 70px;
+	}
+	.mjschool-assign-bed-color4{
+		border-right: 4px #4D4D4D solid;
+		height: 44px;
+		font-size: 70px;
+	}
+	.mjschool-label-margin-top-15px .events1 .calendar-event {
+		height: 60px !important;
+	}
+	.mjschool-class-image {
+		height: 24px;
+		width: 24px;
+		margin-top: 10px !important;
+	}
+	.mjschool-admin-homepage-padding-top .mjschool-profile-image-class .mjschool-class-width {
+		width: 31% !important;
+		margin-left: 10px !important;
+		font-size: 14px !important;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.mjschool-admin-homepage-padding-top .mjschool-profile-image-class .mjschool-holiday-width {
+		width: 70% !important;
+		margin-left: 10px !important;
+		font-size: 14px !important;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.mjschool-admin-homepage-padding-top .mjschool-profile-image-class .mjschool-date-background {
+		width: 38% !important;
+	}
+	.mjschool-content-frontend .mjschool-profile-image-class .mjschool-class-width {
+		width: 31% !important;
+		margin-left: 10px !important;
+		font-size: 14px !important;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.mjschool-content-frontend .mjschool-profile-image-class .mjschool-holiday-width {
+		width: 70% !important;
+		margin-left: 10px !important;
+		font-size: 14px !important;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.mjschool-content-frontend .mjschool-profile-image-class .mjschool-date-background {
+		width: 38% !important;
+	}
+	.mjschool-profile-image-class .mjschool-class-tag {
+		height: 54px;
+		width: 54px !important;
+		border-radius: 16px;
+	}
+	.mjschool-profile-image-class .mjschool-date-background {
+		background-color: #5840bb26 ;
+		color: #5840bb;
+		font-size: 10px !important;
+		box-shadow: none;
+		height: 27px !important;
+		width: 70px !important;
+		text-align: center;
+		font-family: Roboto;
+		float: right !important;
+	}
+	.mjschool-padding-top-card-content {
+		padding-top: 4px;
+	}
+	.calendar-event{
+		padding: 0px 0px 0px 0px !important;
+	}
+	.mjschool-label-for-date{
+		font-size: 12px !important;
+		margin-top: 2px;
+	}
+	.mjschool-admin-homepage-padding-top .mjschool-notice-div .notice_description_div {
+		padding-left: 10px !important;
+	}
+	.mjschool-content-frontend .mjschool-notice-div .notice_description_div {
+		padding-left: 10px !important;
+	}
+	.mjschool-notice-div {
+		border: 1px #E1E3E5 solid;
+	}
+	.mjschool-notice-content-rs {
+		padding-top: 10px !important;
+	}
+	.mjschool-assign-bed-name {
+		color: #818386 !important;
+		width: 65% !important;
+		background-color: white !important;
+		box-shadow: none !important;
+		line-height: 2rem;
+	}
+	.mjschool-date-font-size .mjschool-date-assign-bed-label{
+		width: 75% !important;
+	}
+	.calendar-event .mjschool-date-font-size{
+		width: 35% !important;
+	}
+	.mjschool-between-border{
+		display: none;
+	}
+	.modal-header h4{
+		float: initial;
+	}
+	.mjschool-overlay-content{
+		top: 30% !important;
+	}
+	.mjschool-no-data-img3{
+		height: 200px;
+		margin: auto !important;
+		display: block;
+	}
+	.mjschool-calendar-event-new3{
+		padding: initial !important;
+	}
+	.mjschool-calendar-event-new1{
+		padding: initial !important;
+	}
+	.mjschool-calendar-event-new2{
+		padding: initial !important;
+	}
+	.mjschool-dashboard-btn{
+		margin-top: -35px;
+		padding: 0px 20px;
+	}
+	.mjschool-group-list-record-col-img {
+		width: 35% !important;
+	}
+	.mjschool-group-list-record-col-count{
+		width: 43% !important;
+	}
+	.calendar-event .mjschool-exam-remainder-title-pr{
+		width: 70% !important;
+	}
+	.mjschool-main-list-margin-15px
+	{
+		margin-left: 35px !important;
+		margin-top: 35%;
+	}
+	.mjschool-main-list-margin-5px
+	{
+		margin-left: 30px !important;
+		margin-top: 37% !important;
+	}
+	.mjschool-height-1000px{
+		height: auto !important;
+		padding: 10px !important;
+	}
+	.mjschool-height-600px{
+		height: auto !important;
+		padding: 10px !important;
+	}
+	.mjschool-tab-margin-top-40px{
+		margin-top: 40% !important;
+	}
+	.mjschool-res-margin-bottom-20px{
+		margin-bottom: 20px;
+	}
+	.mjschool-user-profile-header-left {
+		margin-top: 6% !important;
+	}
+	.mjschool-user-profile-header-left {
+		margin-left: 18px !important;
+	}
+	.mjschool-view-top1 {
+		margin-left: 0%;
+		margin-top: 10px !important;
+		margin-bottom: 10px !important;
+	}
+	.mjschool-view-page-main .body_areas{
+		margin-top: 30%;
+	}
+	.table-responsive{
+		overflow: auto !important;
+	}
+	#main-wrapper .nav>li>a {
+		width: max-content;
+	}
+	.mjschool-flex-nowrap {
+		flex-wrap: nowrap !important;
+		overflow: auto;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(155, 155, 155, 0.5) rgba(255, 255, 255, 0.5);
+	}
+	.mjschool-view-page-main .dataTables_wrapper .row {
+		display: block;
+	}
+	.dataTables_length {
+		width: auto !important;
+	}
+	.mjschool-margin-top-20px {
+		/*margin-top: 0px !important;*/
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.row.mjschool-margin-top-20px
+	{
+	        width: 100%;
+            margin-left: 0px;
+	}
+	.row.mjschool-margin-top-20px .rtl_heads_logo, .row.mjschool-margin-top-20px .mjschool-rtl-heads
+	{
+	    border: 2px solid !important;
+        float: left !important;
+        width: 100% !important;
+        padding: 20px !important;
+        padding-top: 4px !important;
+        margin: unset !important;
+	}
+	.card-icon .img-top
+	{
+		top: auto;
+	}
+	.mjschool-fees-type-add-height{
+		height: 420px;
+	}
+	.mjschool-fees-type-model-height{
+		height: 400px;
+		overflow: scroll;
+		overflow-x: hidden;
+	}
+	.mjschool-image-width-98px{
+		width: 96%;
+	}
+	.mjschool-school-name-for-invoice-view{
+		position: relative;
+		word-break: break-word;
+		width: 70%;
+	}
+	.mjschool-margin-top-15px-rs{
+		margin-top: 15px !important;
+	}
+	.mjschool-margin-top-25px-rs{
+		margin-top: 25px !important;
+	}
+	.mjschool-inovice-width-100px-rs{
+		width: 100%;
+	}
+	.mjschool-view-invoice-lable .mjschool-invoice-total-label{
+		font-size: 16px !important;
+	}
+	.mjschool-rs-popup-width-20px{
+		width: 20% !important;
+	}
+	.mjschool-overlay-content{
+		overflow: scroll;
+		overflow-x: hidden;
+	}
+	.mjschool-responsive-40px
+	{
+		margin-top: 40%;
+	}
+	.mjschool-responsinve-5px
+	{
+		margin-left: 5px !important;
+	}
+	.mjschool-category-list{
+		height: auto;
+		overflow: scroll;
+		overflow-x: hidden;
+	}
+	.mjschool-invoice-total-value{
+		font-size: 20px !important;
+	}
+	.mjschool-view-page-main .body_areas .mjschool-panel-tabs>li>a {
+		margin: 10px 10px 0 0 !important;
+	}
+	.mjschool-print-button button{
+		margin-right: 5px !important;
+	}
+	.mjschool-profile-image-prescription .mjschool-prescription-tag {
+		height: 54px;
+		width: 54px !important;
+		border-radius: 16px;
+	}
+	.dataTables_wrapper .dataTables_length {
+		float: left !important;
+	}
+	.dataTables_wrapper .dataTables_info {
+		padding-top: 1.5em;
+	}
+	.mjschool-group-thumbs{
+		display: none;
+	}
+	.mjschool-address-student-div{
+		margin-top: 3% !important;
+	}
+	.mjschool-user-view-profile-image {
+		height: 54px;
+		border-radius: 20px;
+		border: 3px solid #FFFFFF;
+		box-sizing: border-box;
+		box-shadow: 0px 4px 10px rgb(0 0 0 / 10%);
+		float: left;
+		width: 54px;
+		background-color: white;
+		margin-top: 10px;
+	}
+	.mjschool-profile-user-name .mjschool-view-top1{
+		margin-left: 20px;
+	}
+	.mjschool-color-white-rs{
+		color: #fff !important;
+	}
+	.mjschool-view-user-name-label{
+		font-size: 18px !important;
+	}
+	.admission_mjschool-view-page-main_wrapper{
+		margin-top: 45%;
+		margin-left: 7%;
+	}
+	.mjschool-title-add-btn .mjschool-add-btn{
+		margin-top: 0 !important;
+	}
+	.mjschool-right-heder .mjschool-title-add-btn{
+		width: 100%;
+		display: inline;
+	}
+	.mjschool-right-heder .row h3{
+		float: left;
+	}
+	.mjschool-title-add-btn .mjschool-add-btn{
+		float: right;
+	}
+	.mjschool-formError{
+		left: 130px !important;
+	}
+	.calendar-event p.Bold{
+		font-size: 14px !important;
+	}
+	.mjschool-group-list-total-group{
+		font-size: 14px !important;
+	}
+	.dataTables_filter{
+		padding-top: 30px !important;
+		width: 100% !important;
+	}
+	.mjschool-dropdown-icon-link{
+		float: initial !important;
+		padding-top: 0 !important;
+	}
+	.mjschool-dropdown-menu-icon{
+		margin-top: -135px !important;
+	}
+	#calendar .fc-scrollgrid-sync-inner a{
+		font-size: 12px;
+	}
+	.mjschool-view-details-body .row .col-md-6{
+		width: 50% !important;
+	}
+	.pull-left .select_all{
+		margin-right: 5px;
+		margin-left: 0 !important;
+	}
+	.mjschool-view-user-teacher-label{
+		width: 100% !important;
+	}
+	.mjschool-margin-top-10px-res{
+		margin-top: 10px !important;
+	}
+	.mjschool-margin-top-13px-res
+	{
+		margin-top: 13px !important;
+	}
+	.mjschool-margin-right-10px-res
+	{
+		margin-right: 10px;
+	}
+	.mjschool-padding-bottom-15px-res{
+		padding-bottom: 15px;
+	}
+	.mjschool-padding-top-15px-res{
+		padding-top: 15px;
+	}
+	.mjschool-view-page-header-bg .mjschool-user-profile-header-left .mjschool-support-staff-address-row{
+		width: 100% !important;
+	}
+	.mjschool-support-view-page .body_areas {
+		margin-top: 27% !important;
+	}
+	.mjschool-padding-top-25px-res{
+		padding-top: 25px !important;
+	}
+	.whitespace_initial{
+		white-space: initial !important;
+	}
+	#mjschool-message p{
+		width: 90%;
+	}
+	.wp-core-ui .button, .wp-core-ui .button.button-large, .wp-core-ui .button.button-small, a.preview, input#publish, input#save-post{
+		margin-bottom: 0 !important;
+	}
+	.mjschool-view-user-phone{
+		margin-top: 5px !important;
+	}
+	.mjschool-width-80px-res{
+		width: 80% !important;
+	}
+	.mjschool-width-20px-res{
+		width: 20% !important;
+	}
+	.mjschool-margin-left-0px-res{
+		margin-left: 0 !important;
+	}
+	.mjschool-main-div{
+		position: inherit !important;
+	}
+	.mjschool-mozila-display-css{
+		display: block !important;
+	}
+	.mjschool-width-75px-res{
+		width: 75% !important;
+	}
+	.mjschool-width-25px-res{
+		width: 25% !important;
+	}
+	.mjschool-invoice-address-css{
+		padding-top: 30px;
+	}
+	.mjschool-invoice-model-heading{
+		width: 100% !important;
+	}
+	.mjschool-display-inherit-res{
+		display: inherit !important;
+	}
+	.mjschool-width-50-res{
+		width: 50% !important;
+	}
+	.mjschool-custom-padding-0_res{
+		padding: 0 !important;
+	}
+	.mjschool-payment-invoice-popup-main-div{
+		padding-right: 0 !important;
+	}
+	.font_size_12px_res{
+		font-size: 12px !important;
+	}
+	.mjschool-save-btn{
+		line-height: 15px !important;
+	}
+	.mjschool-msg-delete-btn {
+		line-height: 30px!important;
+	}
+	.mjschool-frontend-list-margin-30px-res{
+		margin-top: 40%;
+	}
+	.mjschool-frontend-list-margin-40px-res{
+		margin-top: 40%;
+	}
+	.dataTables_wrapper .dataTables_filter {
+		margin-top: 0 !important;
+	}
+	.mjschool-calendar-event-new .mjschool-no-data-img{
+		margin-bottom: 12px !important;
+	}
+	.mjschool-min-width-115{
+		min-width: 115px !important;
+	}
+	#mjschool-message{
+		top: 10px !important;
+	}
+	table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child::before{
+		top: 30px;
+	}
+	table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child::before{
+		left: -8px !important;
+	}
+	.mjschool-padding-bottom-10px{
+		padding-bottom : 10px !important;
+	}
+	#mjschool-student-form .mjschool-first-header{
+		padding-top: 12px !important;
+	}
+	.mjschool-print-button.pull-left {
+		margin-top: 0px !important;
+	}
+}
+/* maximum width 767px css End */
+@media (min-width: 920px) and (max-width: 1025px){
+	.mjschool-card-title {
+		font-style: normal;
+		font-weight: normal;
+		font-size: 14px;
+		line-height: 20px;
+		text-align: center;
+		color: #818386;
+		margin-top: 10px;
+	}
+}
+@media (min-width: 1025px){
+	.mjschool-card-title {
+		font-style: normal;
+		font-weight: normal;
+		font-size: 16px;
+		line-height: 20px;
+		text-align: center;
+		color: #818386;
+		margin-top: 10px;
+	}
+}
+@media (min-width: 776px) and (max-width: 920px){
+	.mjschool-card-title {
+		font-style: normal;
+		font-weight: normal;
+		font-size: 14px;
+		line-height: 20px;
+		text-align: center;
+		color: #818386;
+		margin-top: 10px;
+	}
+}
+/* minimum width 768px css  */
+@media (min-width: 768px)
+{
+	#sidebar .mjschool-frontend-navigation{
+		margin-top: 50px;
+	}
+	.mjschool-calander-heading-title-width{
+		margin-left: 20px !important;
+	}
+	.mjschool-margin-top-10px-web{
+		margin-top: 10px !important;
+	}
+	.mjschool-padding-left-30px{
+		padding-left: 30px !important;
+	}
+	.mjschool-margin-left-10px
+	{
+		margin-left: 10px;
+	}
+	.mjschool-error-msg-left-margin .mjschool-formError{
+		left: 340px !important;
+	}
+	.virtual_mjschool-error-msg-left-margin .mjschool-formError{
+		left: 250px !important;
+	}
+	.panel {
+		padding-bottom: 40px;
+	}
+	.table_overflow_scroll .add_multiple_subject_mark_form .table-responsive{
+		overflow-x: auto !important;
+	}
+	.table-responsive{
+		overflow: inherit !important;
+	}
+	.view_result {
+		overflow: auto;
+	}
+	.mjschool-mobile-error-massage-left-margin .mjschool-formError{
+		left: 200px !important;
+	}
+	.mjschool-overlay-content{
+		top: 20% !important;
+	}
+	.mjschool-user-profile-header-left {
+		margin-left: 30px;
+		margin-top: 30px;
+	}
+	.mjschool-profile-image-prescription .mjschool-prescription-tag {
+		width: 54px !important;
+		border-radius: 16px;
+		height: 54px;
+	}
+	.mjschool-card {
+		width: 45% !important;
+		height: 186px;
+		background: #FFFFFF;
+		box-shadow: 0px 0px 20px 1px rgb(0 0 0 / 10%);
+		margin-bottom: 20px;
+	}
+	.mjschool-line-chat-bottom .mjschool-responsive-div-dashboard .mjschool-count-patient{
+		padding-left: 25px !important;
+	}
+	.mjschool-line-chat-bottom .mjschool-responsive-div-dashboard .mjschool-name-patient{
+		padding-left: 10px !important;
+	}
+	.row .mjschool-line-chat-bottom span{
+		margin-left: 40px;
+		font-size: 15px;
+	}
+	.row .mjschool-line-chat-bottom p{
+		margin-left: 30px;
+	}
+	.color_dot_div_left {
+		padding-left: 0 !important;
+	}
+	#mjschool-line-chat-right-border {
+		padding-left: 0px !important;
+	}
+	.row .mjschool-name-patient {
+		text-align: !important;
+		font-size: 15px !important;
+	}
+	.row .inpatient_div {
+		padding-right: 0px !important;
+	}
+	.mjschool-card-member-bg .center {
+		padding-top: 20px;
+	}
+	.mjschool-card-member-bg{
+		width: 70px;
+		height: 70px;
+	}
+	.mjschool-card-2 {
+		margin-left: 25px;
+	}
+	.calendar-event {
+		padding: 0 !important;
+	}
+	.mjschool-assign-bed-color0{
+		border-right: 4px #37CFD1 solid;
+		height: 44px;
+		font-size: 50px;
+		margin-left: 5px;
+	}
+	.mjschool-assign-bed-color1{
+		border-right: 4px #FF9054 solid;
+		height: 44px;
+		font-size: 50px;
+		margin-left: 5px;
+	}
+	.mjschool-assign-bed-color2{
+		border-right: 4px #44CB7F solid;
+		height: 44px;
+		font-size: 50px;
+		margin-left: 5px;
+	}
+	.mjschool-assign-bed-color3{
+		border-right: 4px #FFB400 solid;
+		height: 44px;
+		font-size: 50px;
+		margin-left: 5px;
+	}
+	.mjschool-assign-bed-color4{
+		border-right: 4px #4D4D4D solid;
+		height: 44px;
+		font-size: 50px;
+		margin-left: 5px;
+	}
+	.mjschool-assign-bed-name {
+		color: #818386 !important;
+		width: 67% !important;
+		background-color: white !important;
+		box-shadow: none !important;
+		font-size: 15px !important;
+	}
+	.calendar-event {
+		padding: 0 !important;
+	}
+	.mjschool-setting-notification {
+		margin-top: 20px;
+		float: right;
+		display: flex;
+	}
+	.panel .mjschool-panel-heading .mjschool-panel-title {
+		line-height: 22px !important;
+	}
+}
+/* minimum width 768px css End */
+@media (min-width: 800px) and (max-width: 900px){
+	.calendar-event .mjschool-remainder-date-pr{
+		padding: 0 !important;
+	}
+}
+@media (min-width: 460px) and (max-width: 600px)
+{
+	#main-wrapper .mjschool-dashboard-content-rs{
+		margin-top: 40% !important;
+	}
+}
+@media (min-width: 768px) and (max-width: 830px)
+{
+	.mjschool-card-2{
+		margin-left: 18px !important;
+	}
+	.auto-fold #wpcontent, .auto-fold #wpfooter{
+		margin-left: 0px !important;
+	}
+	.mjschool-admin-homepage-padding-top {
+		padding-top: 7% !important;
+	}
+	.mjschool-content-frontend {
+		padding-top: 7% !important;
+	}
+	body{
+		font-size: 12px !important;
+	}
+	.mjschool-card-title{
+		text-align: center;
+	}
+	.panel .mjschool-panel-heading .mjschool-panel-title{
+		font-size: 16px !important;
+	}
+	.row .mjschool-line-chat .mjschool-line-chat{
+		padding-top: 0 !important;
+	}
+	.percent_report{
+		font-size: 13px !important;
+	}
+	.percent{
+		font-size: 26px !important;
+	}
+	.outer{
+		position: relative;
+		width: auto;
+	}
+	.mjschool-date-font-size .mjschool-date-assign-bed-label{
+		width: auto;
+	}
+	.mjschool-admmision-div .events1 .calendar-event .mjschool-date-font-size{
+		padding-top: 0;
+	}
+	.mjschool-member-chart{
+		width: auto !important;
+	}
+	.calendar-event .mjschool-date-font-size{
+		width: 35% !important;
+	}
+	.calendar-event{
+		display: block;
+	}
+	.mjschool-notice-div{
+		border: 1px #E1E3E5 solid;
+	}
+	.mjschool-profile-image-class .mjschool-date-background {
+		background-color: #5840bb26;
+		color: #5840bb;
+		font-size: 16px !important;
+		box-shadow: none;
+		height: 30px;
+		width: 30% !important;
+		text-align: center;
+		font-family: Roboto;
+		float: right;
+	}
+	.mjschool-notice-div .mjschool-notice-div-contant {
+		padding-left: 10px;
+		padding-top: 6px;
+	}
+	.mjschool-assign-bed-name
+	{
+		font-size: 12px !important;
+		width: 65% !important;
+	}
+	.mjschool-date-font-size .mjschool-date-assign-bed-label{
+		font-size: 16px !important;
+	}
+	.mjschool-profile-image-class .mjschool-profile-image-appointment {
+		border-radius: 16px;
+		height: 52px;
+		margin-right: 15px!important;
+		width: 52px !important;
+	}
+	.mjschool-group-list-record-col-count{
+		width: 40% !important;
+	}
+	.mjschool-group-list-record-col-img{
+		width: 35% !important;
+	}
+	.mjschool-group-list-total-group{
+		font-size: 14px !important;
+	}
+	.calendar-event .mjschool-exam-remainder-title-pr{
+		width: 76%;
+	}
+	.mjschool-class-image{
+		height: 24px;
+		width: 24px;
+		margin-top: 8px !important;
+	}
+	.mjschool-profile-image-class .mjschool-holiday-width
+	{
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.mjschool-holiday-list-description-res{
+		width: 70% !important;
+	}
+	.mjschool-profile-image-class .mjschool-class-tag{
+		border-radius: 16px;
+		height: 52px;
+		margin-right: 15px!important;
+		width: 52px !important;
+	}
+	.mjschool-profile-image-class .mjschool-card-content-width{
+		width: 45% !important;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.mjschool-label-for-date{
+		padding-top: 3px;
+	}
+	.mjschool-profile-image-class .mjschool-padding-top-5px-res{
+		padding-top: 5px;
+	}
+	.fc-header-toolbar .fc-toolbar-chunk{
+		text-align: center;
+	}
+	#calendar .fc-header-toolbar{
+		display: block !important;
+	}
+	.mjschool-calender-margin-top{
+		overflow: scroll;
+		height: 510px;
+		overflow-x: hidden;
+	}
+	#main-wrapper .row .event{
+		height: 424px;
+	}
+	#main-wrapper .row .massage {
+		height: 424px;
+	}
+	.mjschool-feesreport-list {
+		height: 282px;
+	}
+	.mjschool-attendance-list {
+		height: 282px;
+	}
+	.mjschool-calendar {
+		height: 590px;
+	}
+	.dataTables_info{
+		margin-left: 20px;
+	}
+	.mjschool-view-page-main .body_areas{
+		margin-top: 10%;
+	}
+	.mjschool-view-user-phone{
+		margin-top: 5px !important;
+	}
+	.mjschool-age-padding-left-right-0 {
+		padding: 0 !important;
+	}
+	#sidebar {
+		margin-top: 7%;
+	}
+	#sidebar .submenu {
+		width: 100%;
+	}
+}
+@media (min-width: 990px) and (max-width: 1050px)
+{
+	.mjschool-date-font-size .mjschool-date-assign-bed-label{
+		width: 80% !important;
+	}
+	.calendar-event .mjschool-date-font-size{
+		width: 30% !important;
+	}
+	.mjschool-group-list-record .mjschool-group-list-record-col-img{
+		width: 50% !important;
+	}
+	.mjschool-group-list-record .mjschool-group-list-record-col-count{
+		width: 35% !important;
+	}
+	.mjschool-profile-image-class .mjschool-class-width{
+		width: 49% !important;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.mjschool-profile-image-class .mjschool-date-background{
+		width: 30% !important;
+	}
+	.mjschool-profile-image-class .mjschool-holiday-width{
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.mjschool-member-chart{
+		width: auto !important;
+	}
+	.mjschool-member-chart .outer {
+		position: relative !important;
+		width: auto !important;
+	}
+	.percent_report{
+		font-size: 15px !important;
+	}
+	.mjschool-view-page-main .body_areas{
+		margin-top: 9%;
+	}
+	.mjschool-admin-homepage-padding-top{
+		padding-top: 4% !important;
+	}
+	.mjschool-content-frontend{
+		padding-top: 4% !important;
+	}
+	.mjschool-edit-btn-padding-left-25px-res{
+		padding-left: 25px !important;
+	}
+}
+@media (max-width: 1024px)
+{
+	label{
+		font-size: 12px !important;
+	}
+	.mjschool-padding-left-0-res{
+		padding-left: 0 !important;
+	}
+}
+@media (min-width: 300px) and (max-width: 530px)
+{
+	.alert.mjschool-message-disabled.mjschool-below-h2.notice.is-dismissible.alert-dismissible.responsive_alert_message
+	{
+		margin: -10px !important;
+		margin-bottom: 15px !important;
+	}
+	.mjschool-remove-certificate
+	{
+		margin-bottom: 15px!important;
+	}
+	video.qrPreviewVideo {
+		display: inline-block !important;
+		max-width: 100% !important;
+	}
+	#rs_fd_account_address_width{
+		width: 100%!important;
+	}
+	.fd_account_module #res_mt_8_per{
+		margin-top: 8%;
+	}
+	#sidebar .mjschool-general-setting-menu .mjschool-admin-submenu-css {
+		top: 0px !important;
+	}
+	.table-responsive{
+		margin-bottom:20px;
+	}
+	.mjschool-add-btn-possition-res
+	{
+		margin-top: 22%!important;
+	}
+	.mjschool-exam-result-pdf-margin{
+		margin:0px !important;
+	}
+	.teacher_view_tab .mjschool-rs-width{
+		width: 90%;
+	}
+	.mjschool-student-view-tab .mjschool-rs-width{
+		width: 90%;
+	}
+	.mjschool-add-btn_possition_teacher_res
+	{
+		margin-top: 22%!important;
+	}
+	.mjschool-rs-mb-15px{
+		margin-bottom: 15px;
+	}
+	.mjschool-new-popup-padding .mjschool-width-30px{
+		width: 34%!important;
+	}
+	.mjschool-new-popup-padding .mjschool-width-70px{
+		width: 67%!important;
+	}
+	.mjschool-res-pay-his-mt-10px{
+		margin-top: 5%;
+	}
+}
+/*----- ADD RESPONSIVE CSS FILE START ------ */
+@media (max-width: 360px){
+	.mjschool-addon-mtop{
+		margin-top: 32% !important;
+		margin-left: 3% !important;
+	}
+	.mjschool-view-top2{
+		margin-top: 0px;
+		height: 70px;
+		overflow-y: scroll;
+	}
+	.mjschool-support-view-page .body_areas {
+		margin-top: 28% !important;
+	}
+}
+@media (max-width: 540px)
+{
+	.addon_responsive
+	{
+		margin-top: 32%;
+		margin-left: 5%;
+	}
+	.mjschool-label-margin-top-15px .events1 .mjschool-fees-payment-height{
+		height: 55px !important;
+	}
+	.mjschool-user-profile-header-left .row {
+		width: 75%!important;
+	}
+	.mjschool-user-profile-header-left .row.mjschool-view-user-teacher-label
+	{
+		width: 100%!important;
+	}
+	.mjschool-viewpage-add-icon {
+		margin-top: 0px;
+	}
+	.mjschool-width-80px{
+		width: 80%!important;
+	}
+	.mjschool-width-75{
+		width: 75%!important;
+	}
+	.mjschool-width-20{
+		width: 20%!important;
+	}
+	.mjschool-res-width-20{
+		width: 20%!important;
+	}
+	.mjschool-res-width-25{
+		width: 25%!important;
+	}
+	.mjschool-width-30px{
+		width: 30%!important;
+	}
+	.mjschool-width-70px{
+		width: 70%!important;
+	}
+	.mjschool-view-top2
+	{
+		color: #818386;
+		margin-top: 10%;
+		margin-left: 2%;
+		height: 70px;
+		overflow-y: scroll;
+	}
+	.mjschool-width-60px
+	{
+		width: 60px !important;
+	}
+	/* view invoice responsive css start*/
+	.mjschool-rs-main-billed-to{
+		width: 100%!important;
+	}
+	.mjschool-rs-main-billed-to .mjschool-rs-width-billed-to{
+		float: left;
+		width: 100%!important;
+	}
+	.mjschool-rs-main-billed-to .mjschool-rs-bill-to-width-40px{
+		width: 40% !important;
+	}
+	/* view invoice responsive css End*/
+	.mjschool-view-top2{
+		margin-top: 0px;
+	}
+}
+@media (min-width: 320px) and (max-width: 414px)
+{
+	.mjschool-calendar .mjschool-panel-heading .mjschool-card-head .mjschool-cards-indicators{
+		float: unset!important;
+		padding-left: 0!important;
+		padding-top: 13px;
+	}
+	.mjschool-user-profile-header-left {
+		margin-left: 10px !important;
+	}
+	.mjschool-user-profile-header-left #mjschool-res-add-width{
+		width: 100%!important;
+	}
+	.mjschool-view-page-main .body_areas {
+		margin-top: 25% !important;
+	}
+	.responsive_account .mjschool-view-user-name-label , .responsive_account .mjschool-color-white-rs
+	{
+		color: #333333 !important;
+	}
+	section.responsive_account .row.user_student_account
+	{
+		width: 100% !important;
+	}
+	section.responsive_account #rs_fd_account_address_width
+	{
+		margin-top: -25px !important;
+		margin-left: 10px !important;
+	}
+	.responsive_account .student_qr_margin
+	{
+		margin-top: 55% !important;
+	}
+	section.responsive_account .mjschool-view-user-phone
+	{
+		color: #333333 !important;
+	}
+	.mjschool-support-view-page .body_areas {
+		margin-top: 28% !important;
+	}
+	.mjschool-remove-certificate
+	{
+		margin-bottom: 10px!important;
+	}
+	.mjschool-overlay-content {
+		top: 20%;
+	}
+	.mjschool-mailbox-content .pull-right {
+		float: unset!important;
+	}
+	.mjschool-no-data-list-div{
+		margin-top: 15%;
+	}
+	#rs_fd_account_address_width{
+		width: 100%!important;
+	}
+	.mjschool-frontend-homepage-padding-top .mjschool-frontend-list-margin-30px-res{
+		margin-top: 36%!important;
+	}
+	.mjschool-alert-msg .notice-dismiss {
+		padding: 2px!important;
+	}
+	#mjschool-rs-invoice-view-mt-15{
+		margin-top: 15%!important;
+	}
+	.mjschool-view-top2{
+		margin-top: unset;
+		height: 70px;
+		overflow-y: scroll;
+	}
+}
+@media only screen and (min-device-width: 320px) and (max-device-width: 428px) and (-webkit-device-pixel-ratio: 2 ), only screen and (min-device-width: 320px) and (max-device-width: 428px) and (-webkit-device-pixel-ratio: 3) {
+	.mjschool-user-dropdown .dropdown-menu {
+		margin-top: -10px !important;
+	}
+	.mjschool-view-top2{
+		margin-top: unset;
+	}
+}
+@media only screen and (min-device-width: 365px) and (max-device-width: 430px) and (orientation: portrait) and (-webkit-min-device-pixel-ratio: 2 ) {
+	.card-icon .img-top.mjschool-responsive-iphone-icon {
+		margin-left: 0px !important;
+	}
+	.card-icon .img-top {
+		margin-left: 25px !important;
+	}
+	.table-responsive table {
+		/*display: unset !important;*/
+		position: unset !important;
+		overflow: unset !important;
+	}
+	.table-responsive {
+		overflow: auto !important;
+		padding-bottom: 25px !important;
+	}
+	.mjschool-view-top2{
+		margin-top: unset;
+	}
+	/*----- ADD RESPONSIVE CSS FILE END ------ */
+	/* ---------------------------------- admin side  -------------------------------------- */
+	@media only screen and (min-device-width: 360px) and (max-device-width: 360px) {
+		.dtsb-delete,
+		.dtsb-clearAll {
+			margin-right: 16px !important;
+		}
+		.dtsb-dropDown,
+		.dtsb-buttonContainer,
+		.dtsb-buttonContainer,
+		.dtsb-input {
+			margin-bottom: 8px !important;
+		}
+		.dtsb-dropDown {
+			width: 94% !important;
+		}
+		/* ---------------------------------- user module  -------------------------------------- */
+		.dataTables_wrapper .dataTables_length {
+			margin-bottom: 8px !important;
+		}
+	}
+	/*----- ADD RESPONSIVE CSS FILE END ------ */
+	@media only screen and (min-width: 360px) and (max-width: 360px) {
+		/* View Fees Payment Invoice start */
+		#rtl_heads_logo {
+			border: 2px solid;
+			float: left;
+			width: 91.6% !important;
+			margin-bottom: 8px !important;
+			margin-left: 12px;
+		}
+		.mjschool-system-logo1 {
+			height: 54px !important;
+			margin-top: 29px !important;
+		}
+		.modal-body
+		{
+			height: 1700px !important;
+		}
+		.mjschool-print-btn-rs
+		{
+			margin-left:-14px !important
+		}
+		/* View Fees Payment Invoice end */
+		.mjschool-print-btn
+		{
+			margin-top: -17px;
+			margin-right: 5px;
+		}
+		.mjschool-view-page-header-bg
+		{
+			height: 140px !important;
+		}
+	}
+	@media (min-width: 460px) and (max-width: 600px)
+	{
+		/* View Fees Payment Invoice start */
+		#rtl_heads_logo{
+			width: 95.6% !important;
+			margin-bottom: 8px !important;
+		}
+		/* View Fees Payment Invoice end */
+	}
+	@media (min-width: 600px) and (max-width: 600px) {
+		/* View Fees Payment Invoice start */
+		#mjschool-res-rtl-width-100px {
+			width: 50% !important;
+			margin-right: auto !important;
+		}
+		/* View Fees Payment Invoice end */
+	}
+	@media screen and (max-width: 767px) and (min-width: 320px) {
+		/* View Fees Payment Invoice start */
+		.mjschool-page-inner {
+			margin-left: -27px !important;
+			min-height: 500px;
+		}
+        .mjschool-custom-logo-class img {
+            height: auto !important;
+            margin-top: 40% !important;
+        }
+		/* View Fees Payment Invoice endn */
+	}
+	@media only screen and (min-device-width: 340px) and (max-device-width: 430px) {
+		/* ---------------------------------- user module  -------------------------------------- */
+		.mjschool-view-page-header-bg {
+			height: 180px !important;
+		}
+		img.account_profile_qr,
+		img.qr_code_account {
+			height: 70px !important;
+			width: 70px !important;
+			margin-left: 20px;
+		}
+		.mjschool-user-profile-header-left .row {
+			width: 100% !important;
+		}
+		.mjschool-user-profile-header-left .row.user_student_account {
+			width: 100% !important;
+			float: none !important;
+		}
+		.mjschool-user-profile-header-left .row.user_student_account {
+			width: 100% !important;
+		}
+		.mjschool-address-detail-page {
+			margin-left: 19px;
+		}
+		.attendance_barcode {
+			/* add class  file:template/attendance*/
+			height: 88px;
+		}
+		/* ---------------------------------- teacher module  -------------------------------------- */
+		.mjschool-view-page-header-bg {
+			height: 135px;
+		}
+		.mjschool-first-header {
+			/* add class file:template/student :- */
+			/* add class file:template/document :- document information */
+			position: relative;
+			top: 10px;
+		}
+		.mjschool-Title-font-weight {
+			margin-top: -17px;
+		}
+		.multiselect {
+			margin-top: 8px;
+		}
+		.mjschool-document-img,.notification_img,.parent_img {
+			margin-top: 20px;
+		}
+		.mjschool-input-height-50px {
+			margin-bottom: 15px;
+		}
+	}
+	@media only screen and (min-device-width: 430px) and (max-device-width: 430px) {
+		.mjschool-first-header {
+			margin-top: 16%;
+		}
+	}
+	.no-scroll-mobile-table {
+		width: 100%;
+		table-layout: fixed;
+	}
+	.no-scroll-mobile-table th,
+	.no-scroll-mobile-table td {
+		font-size: 12px;
+		padding: 6px 4px;
+		word-wrap: break-word;
+		white-space: normal;
+	}
+	.scroll-table-mobile {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	.scroll-table-mobile table {
+		min-width: 600px; /* force scroll if content wider */
+	}
+	.scroll-table-mobile th,
+	.scroll-table-mobile td {
+		font-size: 12px;
+		padding: 6px 4px;
+		white-space: nowrap;
+	}
+}
+@media only screen and (min-width: 1024px) and (max-width: 1680px) {
+	.mjschool-document-img,.hostel_img,.mjschool-no-data-list-div
+	{
+		margin-top: 10px;
+	}
+}

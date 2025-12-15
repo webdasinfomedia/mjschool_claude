@@ -1,0 +1,83 @@
+.mjschool-student-registration-form .form-group,.mjschool-student-registration-form .form-group .form-control{float:left;width:100%}
+.mjschool-student-registration-form .form-group .mjschool-require-field{color:red;}
+.mjschool-student-registration-form select.form-control,.mjschool-student-registration-form input[type="file"] {
+	padding: 0.5278em;
+	margin-bottom: 5px;
+}
+.mjschool-student-registration-form .radio-inline {
+	float: left;
+	margin-bottom: 10px;
+	margin-top: 10px;
+	margin-right: 15px;
+}
+.mjschool-student-registration-form  .radio-inline .tog {
+	margin-right: 5px;
+}
+.mjschool-student-registration-form .col-sm-2.control-label {
+	line-height: 50px;
+	text-align: right;
+}
+.mjschool-student-registration-form .form-group .col-sm-2 {width: 32.666667%;}
+.mjschool-student-registration-form .form-group .col-sm-8 {     width: 66.66666667%;}
+.mjschool-student-registration-form .form-group .col-sm-7{  width: 53.33333333%;}
+.mjschool-student-registration-form .form-group .col-sm-1{  width: 13.33333333%;}
+.mjschool-student-registration-form .form-group .col-sm-8, .mjschool-student-registration-form .form-group .col-sm-2,.mjschool-student-registration-form .form-group .col-sm-7,.mjschool-student-registration-form .form-group .col-sm-1{
+	padding-left: 15px;
+	padding-right: 15px;
+	float:left;
+}
+.mjschool-student-registration-form .form-group .col-sm-8, .mjschool-student-registration-form .form-group .col-sm-2,.mjschool-student-registration-form .form-group .col-sm-7{
+	position: relative;
+	min-height: 1px;
+}
+.mjschool-student-registration-form div {
+	margin-bottom:7px;
+}
+.mjschool-student-registration-form input{
+	margin-bottom:4px;
+}
+.mjschool-student-reg-error .error{color:red;}
+.red{
+	color:red;
+}
+.gender
+{
+	display: flex;
+	align-items: center;
+}
+.ui-datepicker-calendar{ background-color: white!important; }
+.ui-datepicker-next{float: right!important;}
+.ui-icon-circle-triangle-w
+{
+	background: bottom;
+}
+.ui-icon-circle-triangle-e
+{
+	background: bottom!important;
+}
+.ui-corner-all
+{
+	color: black!important;
+}
+.mjschool-admission-successfully-message
+{
+	background-color: green;
+	color: white;
+}
+@media screen and (max-width : 767px) and (min-width : 320px)
+{
+	.mjschool-student-registration-form .form-group .col-sm-8
+	{
+		position: unset;
+		min-height: 1px;
+	}
+}
+.mjschool-student-registration-form .form-group textarea
+{
+	height: 44px;
+	border: 1px solid #ced4da;
+}
+.mjschool-error-msg-left-margin.mjschool-responsive-bottom-15
+{
+	margin-bottom: 15px;
+}

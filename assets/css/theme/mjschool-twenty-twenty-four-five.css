@@ -1,0 +1,97 @@
+/* -----------------------------------------------------------------------------
+ *  Project       : MjSchool Plugin Styles
+ *  File          : mjschool-twenty-twenty-four-five.css
+ *  Description   : stylesheet fix for twenty twenty four and five.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *
+ *  1. General Layout
+ *  2. Form Styling
+ *  3. Panels & Accordions
+ *  4. Dropdown Menu Styling
+ *  5. Responsive Breakpoints
+ *
+ * ----------------------------------------------------------------------------- */
+.mjschool-custom-login-form {
+    position: absolute;
+    top: 350px !important;
+    left: 422px;
+}
+.wp-block-post-title {
+    margin-top: -80px;
+}
+@media only screen and (max-width : 700px) {
+    .wp-block-post-title {
+        margin-top: -30px;
+    }
+    footer {
+        display: none;
+    }
+}
+
+.wp-block-group.alignfull.has-global-padding {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    text-align: center;
+}
+.mjschool-custom-login-form {
+    position: absolute;
+    top: 40% !important;
+    left: 35% !important;
+    margin: auto;
+}
+footer {
+    display: none;
+}
+.wp-block-group.alignfull.has-global-padding.is-layout-constrained.wp-block-group-is-layout-constrained {
+    padding-top: 0 !important;
+}
+
+.mjschool-custom-login-form {
+    position: absolute;
+    top: 400px;
+    left: 422px;
+}
+footer {
+    margin-top: 17rem !important;
+}
+.login-submit input[type="submit" i] {
+    height: 46px;
+    background-color: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?> !important;
+    background: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?> ;
+    color: #fff !important;
+    width: 40% !important;
+    font-weight: 500 !important;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: center;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    border: 0px solid black !important;
+}
+#loginform input[type="password" i],
+input[type="text" i] {
+    height: 46px !important;
+}
+@media only screen and (max-width : 700px) {
+    .mjschool-custom-login-form {
+        position: absolute !important;
+        top: 419px !important;
+        left: 5% !important;
+    }
+    .wp-block-template-part {
+        padding-top: 21px !important;
+    }
+    .form-body.mjschool-user-form.mjschool-padding-20px-child-theme {
+        margin-top: 15px !important;
+    }
+    #loginform {
+        margin-top: -115px !important;
+        margin-left: 45px;
+    }
+    a.mjschool-forgot-link {
+        margin-left: 45px;
+    }
+}

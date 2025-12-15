@@ -1,0 +1,25 @@
+/* --------------------------------------------------------------------------
+ *  Project  : MjSchool Plugin Styles
+ *  File     : mjschool-rtl.css
+ *  Purpose  : Main stylesheet for layout, forms, RTL support, tables, and UI.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *  
+ *  1. General Layout
+ *  2. Form Styling
+ *  3. RTL (Right-to-Left) Support
+ *  4. Panels & Accordions
+ *  5. Dropdown Menu Styling
+ *  6. DataTables Styling
+ *  7. Inputs & File Upload Fields
+ *  8. Responsive Breakpoints
+ *
+ *  -------------------------------------------------------------------------- */
+.ui-dialog .ui-dialog-title {
+    float: right !important;
+}
+.ui-dialog .ui-dialog-titlebar-close {
+    right: unset !important;
+}

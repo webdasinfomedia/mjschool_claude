@@ -1,0 +1,35 @@
+/* -----------------------------------------------------------------------------
+ *  Project       : MjSchool Plugin Styles
+ *  File          : mjschool-theme-rtl.css
+ *  Description   : stylesheet for Rtl theme.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *
+ *  1. General Layout
+ *  2. Form Styling
+ *
+ * ----------------------------------------------------------------------------- */
+.login-username label {}
+#loginform input[type="password" i],
+input[type="text" i] {
+    float: left;
+}
+.login-password label {
+    float: right;
+    width: 50%;
+    padding: 0px;
+}
+.login-username label {
+    float: right;
+    width: 50%;
+    margin-left: 10px;
+}
+.login-remember label {}
+.login-remember,
+.login-password {
+    margin-bottom: 0px;
+    float: left;
+    width: 100%;
+}

@@ -1,0 +1,186 @@
+/* --------------------------------------------------------------------------
+ *  Project  : MjSchool Plugin Styles
+ *  File     : mjschool-custome-rtl.css
+ *  Purpose  : Main stylesheet for layout, forms, RTL support, tables, and UI.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *  
+ *  1. General Layout
+ *  2. Form Styling
+ *  3. RTL (Right-to-Left) Support
+ *  4. Panels & Accordions
+ *  5. Dropdown Menu Styling
+ *  6. DataTables Styling
+ *  7. Inputs & File Upload Fields
+ *  8. Responsive Breakpoints
+ *
+ *  -------------------------------------------------------------------------- */
+.col-md-6.col-sm-6.col-xs-12.mjschool-attandance-padding {
+	padding-left: 15px ;
+}
+.mjschool-padding-left-0 {
+	padding-left: 20px;
+}
+.mjschool-padding-right-0 {
+	padding-right: 15px;
+}
+/** RTL start css **/
+.rtl .mjschool-student-registration-form #mjschool-registration-form .form-group{
+	display: block !important;
+}
+.rtl .mjschool-student-registration-form .radio-inline {
+	float: right !important;
+}
+.rtl .mjschool-student-admission-form .radio-inline {
+	float: right !important;
+}
+.rtl #mjschool-motid12 input.mjschool-file-validation.input-file[type=file]{
+	width: 100% !important;
+}
+.rtl #mjschool-fatid12 input.mjschool-file-validation.input-file[type=file]{
+	width: 100% !important;
+}
+.rtl .mjschool-student-reg-error .error {
+	direction: rtl;
+	float: left;
+}
+.rtl table.dataTable thead th, table.dataTable thead td {
+	padding: 10px 10px !important;
+}
+.rtl .mjschool-formError {
+	position: absolute;
+	left: -30px ;
+}
+
+.rtl .mjschool-student-registration-form #mjschool-registration-form .form-group .col-sm-8, .rtl .mjschool-student-registration-form #mjschool-registration-form .form-group .col-sm-2, .rtl .mjschool-student-registration-form #mjschool-registration-form .form-group .col-sm-1, .rtl .mjschool-student-registration-form #mjschool-registration-form .form-group .col-sm-7 {
+	width: 100% !important;
+}
+.rtl .mjschool-student-registration-form #mjschool-registration-form .form-group .col-sm-1{
+	padding-right: 15px !important;
+}
+.dropdown-menu.mjschool-setting-dropdown-menu:before {
+	top: -7px !important;
+	left: 185px !important;
+}
+.dropdown-menu.mjschool-setting-dropdown-menu:after {
+	top: -6px !important;
+	left: 186px !important;
+}
+.dropdown-menu.mjschool-setting-dropdown-menu:before {
+	top: -7px !important;
+	left: 185px !important;
+}
+.mjschool-id-margin {
+	margin-left: 3%;
+	margin-right:0px;
+}
+.mjschool-card-title-position {
+	padding: 15px 80px 20px 15px;
+}
+p.mjschool-icard-dotes {
+	display: inline;
+	float: right;
+	margin-top: -3px;
+}
+.mjschool-margin-15px-rtl
+{
+	margin-top:15px !important;
+}
+.input input[type=checkbox]+label:before
+{
+	right: 460px;
+}
+.input input[type=checkbox]:checked+label:after
+{
+	right: 466px;
+}
+.mjschool-wizard-accordion-rtl {
+	height: unset !important;
+}
+.mjschool-group-img-rtl{
+	margin-top: -160px;
+}
+.mjschool-email-temp-rtl{
+	height: 600px;
+}
+.rtl .mjschool-student-registration-form .form-control[readonly] {
+	background-color: #eee;
+	opacity: 1;
+}
+input.mjschool-margin-top-0px-rtl
+{
+	margin-top: 0px !important;
+}
+.rtl .panel-group .mjschool-panel-heading .mjschool-panel-title>a {
+	padding-right: 20px;
+}
+.panel-group .mjschool-panel-heading .mjschool-panel-title>a {
+	padding-right: 20px;
+}
+.mjschool-content .nav.navbar-right .dropdown {
+	float: left !important;
+}
+table.dataTable thead th, table.dataTable thead td {
+	padding: 10px 11px !important;
+}
+.rtl.wp-admin input[type=file] {
+	width: 100% !important;
+}
+.rtl .mjschool-student-admission-form #mjschool-admission-form .mjschool-formError {
+	position: absolute !important;
+	left: 200px !important;
+}
+.rtl #mjschool-upload-form .mjschool-formError {
+	position: absolute !important;
+	left: 400px !important;
+}
+.rtl input[type=checkbox]:checked::before {
+	margin: -3px 0 0 0px !important;
+}
+.wp-core-ui select {
+	background: #F2F5FA url(data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E) no-repeat right 52px top 55% !important;
+}
+.dropdown-menu li a i {
+	margin-right: 0px !important;
+}
+.dropdown-menu:after {
+	top: -6px !important;
+	left: 5px !important;
+}
+.dropdown-menu:before {
+	top: -7px !important;
+	left: 4px !important;
+}
+div input.mjschool-table-bottom-margin-rtl{
+	margin-bottom: 40px !important;
+}
+input[type=file] {
+	width: 100% !important;
+}
+.mjschool-margin-top-20px-rtl
+{
+	margin-top: -20px !important;
+}
+@media only screen and (min-width:1400px) and (max-width: 1599px) {
+	.rtl .mjschool-student-admission-form #mjschool-admission-form .mjschool-formError {
+		position: absolute !important;
+		left: 260px !important;
+	}
+	.rtl #mjschool-upload-form .mjschool-formError {
+		position: absolute !important;
+		left: 500px !important;
+	}
+}
+@media only screen and (min-width:1600px) and (max-width: 2000px) {
+	.rtl .mjschool-student-admission-form #mjschool-admission-form .mjschool-formError {
+		position: absolute !important;
+		left: 400px !important;
+	}
+	.rtl #mjschool-upload-form .mjschool-formError {
+		position: absolute !important;
+		left: 600px !important;
+	}
+}
+/** RTL End Css **/

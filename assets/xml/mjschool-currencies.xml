@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<currencies>
+    <currency>
+        <code>AED</code>
+        <name>United Arab Emirates Dirham</name>
+        <symbol>د.إ</symbol>
+    </currency>
+    <currency>
+        <code>AFN</code>
+        <name>Afghan Afghani</name>
+        <symbol>؋</symbol>
+    </currency>
+    <currency>
+        <code>ALL</code>
+        <name>Albanian Lek</name>
+        <symbol>L</symbol>
+    </currency>
+    <currency>
+        <code>AMD</code>
+        <name>Armenian Dram</name>
+        <symbol>֏</symbol>
+    </currency>
+    <currency>
+        <code>ANG</code>
+        <name>Netherlands Antillean Guilder</name>
+        <symbol>ƒ</symbol>
+    </currency>
+    <currency>
+        <code>AOA</code>
+        <name>Angolan Kwanza</name>
+        <symbol>Kz</symbol>
+    </currency>
+    <currency>
+        <code>ARS</code>
+        <name>Argentine Peso</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>AUD</code>
+        <name>Australian Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>AZN</code>
+        <name>Azerbaijani Manat</name>
+        <symbol>₼</symbol>
+    </currency>
+    <currency>
+        <code>BAM</code>
+        <name>Bosnia-Herzegovina Convertible Mark</name>
+        <symbol>KM</symbol>
+    </currency>
+    <currency>
+        <code>BBD</code>
+        <name>Barbadian Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>BDT</code>
+        <name>Bangladeshi Taka</name>
+        <symbol>৳</symbol>
+    </currency>
+    <currency>
+        <code>BGN</code>
+        <name>Bulgarian Lev</name>
+        <symbol>лв</symbol>
+    </currency>
+    <currency>
+        <code>BHD</code>
+        <name>Bahraini Dinar</name>
+        <symbol>.د.ب</symbol>
+    </currency>
+    <currency>
+        <code>BIF</code>
+        <name>Burundian Franc</name>
+        <symbol>FBu</symbol>
+    </currency>
+    <currency>
+        <code>BMD</code>
+        <name>Bermudian Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>BND</code>
+        <name>Brunei Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>BOB</code>
+        <name>Bolivian Boliviano</name>
+        <symbol>Bs.</symbol>
+    </currency>
+    <currency>
+        <code>BRL</code>
+        <name>Brazilian Real</name>
+        <symbol>R$</symbol>
+    </currency>
+    <currency>
+        <code>BSD</code>
+        <name>Bahamian Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>BTN</code>
+        <name>Bhutanese Ngultrum</name>
+        <symbol>Nu.</symbol>
+    </currency>
+    <currency>
+        <code>BWP</code>
+        <name>Botswana Pula</name>
+        <symbol>P</symbol>
+    </currency>
+    <currency>
+        <code>BYN</code>
+        <name>Belarusian Ruble</name>
+        <symbol>Br</symbol>
+    </currency>
+    <currency>
+        <code>BZD</code>
+        <name>Belize Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>CAD</code>
+        <name>Canadian Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>CDF</code>
+        <name>Congolese Franc</name>
+        <symbol>FC</symbol>
+    </currency>
+    <currency>
+        <code>CHF</code>
+        <name>Swiss Franc</name>
+        <symbol>Fr</symbol>
+    </currency>
+    <currency>
+        <code>CLP</code>
+        <name>Chilean Peso</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>CNY</code>
+        <name>Chinese Yuan</name>
+        <symbol>¥</symbol>
+    </currency>
+    <currency>
+        <code>COP</code>
+        <name>Colombian Peso</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>CRC</code>
+        <name>Costa Rican Colón</name>
+        <symbol>₡</symbol>
+    </currency>
+    <currency>
+        <code>CZK</code>
+        <name>Czech Koruna</name>
+        <symbol>Kč</symbol>
+    </currency>
+    <currency>
+        <code>DKK</code>
+        <name>Danish Krone</name>
+        <symbol>kr</symbol>
+    </currency>
+    <currency>
+        <code>DOP</code>
+        <name>Dominican Peso</name>
+        <symbol>RD$</symbol>
+    </currency>
+    <currency>
+        <code>DZD</code>
+        <name>Algerian Dinar</name>
+        <symbol>دج</symbol>
+    </currency>
+    <currency>
+        <code>EGP</code>
+        <name>Egyptian Pound</name>
+        <symbol>£</symbol>
+    </currency>
+    <currency>
+        <code>EUR</code>
+        <name>Euro</name>
+        <symbol>€</symbol>
+    </currency>
+    <currency>
+        <code>GBP</code>
+        <name>British Pound Sterling</name>
+        <symbol>£</symbol>
+    </currency>
+    <currency>
+        <code>GHS</code>
+        <name>Ghanaian Cedi</name>
+        <symbol>₵</symbol>
+    </currency>
+    <currency>
+        <code>HKD</code>
+        <name>Hong Kong Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>HRK</code>
+        <name>Croatian Kuna</name>
+        <symbol>kn</symbol>
+    </currency>
+    <currency>
+        <code>HUF</code>
+        <name>Hungarian Forint</name>
+        <symbol>Ft</symbol>
+    </currency>
+    <currency>
+        <code>IDR</code>
+        <name>Indonesian Rupiah</name>
+        <symbol>Rp</symbol>
+    </currency>
+    <currency>
+        <code>ILS</code>
+        <name>Israeli New Shekel</name>
+        <symbol>₪</symbol>
+    </currency>
+    <currency>
+        <code>INR</code>
+        <name>Indian Rupee</name>
+        <symbol>₹</symbol>
+    </currency>
+    <currency>
+        <code>ISK</code>
+        <name>Icelandic Króna</name>
+        <symbol>kr</symbol>
+    </currency>
+    <currency>
+        <code>JPY</code>
+        <name>Japanese Yen</name>
+        <symbol>¥</symbol>
+    </currency>
+    <currency>
+        <code>KES</code>
+        <name>Kenyan Shilling</name>
+        <symbol>KSh</symbol>
+    </currency>
+    <currency>
+        <code>KRW</code>
+        <name>South Korean Won</name>
+        <symbol>₩</symbol>
+    </currency>
+    <currency>
+        <code>KWD</code>
+        <name>Kuwaiti Dinar</name>
+        <symbol>د.ك</symbol>
+    </currency>
+    <currency>
+        <code>LAK</code>
+        <name>Lao Kip</name>
+        <symbol>₭</symbol>
+    </currency>
+    <currency>
+        <code>LBP</code>
+        <name>Lebanese Pound</name>
+        <symbol>ل.ل</symbol>
+    </currency>
+    <currency>
+        <code>LKR</code>
+        <name>Sri Lankan Rupee</name>
+        <symbol>Rs</symbol>
+    </currency>
+    <currency>
+        <code>LYD</code>
+        <name>Libyan Dinar</name>
+        <symbol>ل.د</symbol>
+    </currency>
+    <currency>
+        <code>MAD</code>
+        <name>Moroccan Dirham</name>
+        <symbol>د.م.</symbol>
+    </currency>
+    <currency>
+        <code>MMK</code>
+        <name>Myanmar Kyat</name>
+        <symbol>K</symbol>
+    </currency>
+    <currency>
+        <code>MNT</code>
+        <name>Mongolian Tögrög</name>
+        <symbol>₮</symbol>
+    </currency>
+    <currency>
+        <code>MUR</code>
+        <name>Mauritian Rupee</name>
+        <symbol>₨</symbol>
+    </currency>
+    <currency>
+        <code>MXN</code>
+        <name>Mexican Peso</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>MYR</code>
+        <name>Malaysian Ringgit</name>
+        <symbol>RM</symbol>
+    </currency>
+    <currency>
+        <code>NAD</code>
+        <name>Namibian Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>NGN</code>
+        <name>Nigerian Naira</name>
+        <symbol>₦</symbol>
+    </currency>
+    <currency>
+        <code>NOK</code>
+        <name>Norwegian Krone</name>
+        <symbol>kr</symbol>
+    </currency>
+    <currency>
+        <code>NPR</code>
+        <name>Nepalese Rupee</name>
+        <symbol>Rs</symbol>
+    </currency>
+    <currency>
+        <code>NZD</code>
+        <name>New Zealand Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>OMR</code>
+        <name>Omani Rial</name>
+        <symbol>ر.ع.</symbol>
+    </currency>
+    <currency>
+        <code>PEN</code>
+        <name>Peruvian Sol</name>
+        <symbol>S/</symbol>
+    </currency>
+    <currency>
+        <code>PGK</code>
+        <name>Papua New Guinean Kina</name>
+        <symbol>K</symbol>
+    </currency>
+    <currency>
+        <code>PHP</code>
+        <name>Philippine Peso</name>
+        <symbol>₱</symbol>
+    </currency>
+    <currency>
+        <code>PKR</code>
+        <name>Pakistani Rupee</name>
+        <symbol>₨</symbol>
+    </currency>
+    <currency>
+        <code>PLN</code>
+        <name>Polish Złoty</name>
+        <symbol>zł</symbol>
+    </currency>
+    <currency>
+        <code>QAR</code>
+        <name>Qatari Riyal</name>
+        <symbol>ر.ق</symbol>
+    </currency>
+    <currency>
+        <code>RON</code>
+        <name>Romanian Leu</name>
+        <symbol>lei</symbol>
+    </currency>
+    <currency>
+        <code>RSD</code>
+        <name>Serbian Dinar</name>
+        <symbol>дин.</symbol>
+    </currency>
+    <currency>
+        <code>RUB</code>
+        <name>Russian Ruble</name>
+        <symbol>₽</symbol>
+    </currency>
+    <currency>
+        <code>SAR</code>
+        <name>Saudi Riyal</name>
+        <symbol>﷼</symbol>
+    </currency>
+    <currency>
+        <code>SCR</code>
+        <name>Seychellois Rupee</name>
+        <symbol>₨</symbol>
+    </currency>
+    <currency>
+        <code>SEK</code>
+        <name>Swedish Krona</name>
+        <symbol>kr</symbol>
+    </currency>
+    <currency>
+        <code>SGD</code>
+        <name>Singapore Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>SLL</code>
+        <name>Sierra Leonean Leone</name>
+        <symbol>Le</symbol>
+    </currency>
+    <currency>
+        <code>SOS</code>
+        <name>Somali Shilling</name>
+        <symbol>S</symbol>
+    </currency>
+    <currency>
+        <code>SRD</code>
+        <name>Surinamese Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>SZL</code>
+        <name>Swazi Lilangeni</name>
+        <symbol>L</symbol>
+    </currency>
+    <currency>
+        <code>THB</code>
+        <name>Thai Baht</name>
+        <symbol>฿</symbol>
+    </currency>
+    <currency>
+        <code>TJS</code>
+        <name>Tajikistani Somoni</name>
+        <symbol>ЅМ</symbol>
+    </currency>
+    <currency>
+        <code>TMT</code>
+        <name>Turkmenistani Manat</name>
+        <symbol>m</symbol>
+    </currency>
+    <currency>
+        <code>TND</code>
+        <name>Tunisian Dinar</name>
+        <symbol>د.ت</symbol>
+    </currency>
+    <currency>
+        <code>TRY</code>
+        <name>Turkish Lira</name>
+        <symbol>₺</symbol>
+    </currency>
+    <currency>
+        <code>TTD</code>
+        <name>Trinidad Tobago Dollar</name>
+        <symbol>TT$</symbol>
+    </currency>
+    <currency>
+        <code>TWD</code>
+        <name>New Taiwan Dollar</name>
+        <symbol>NT$</symbol>
+    </currency>
+    <currency>
+        <code>UAH</code>
+        <name>Ukrainian Hryvnia</name>
+        <symbol>₴</symbol>
+    </currency>
+    <currency>
+        <code>UGX</code>
+        <name>Ugandan Shilling</name>
+        <symbol>USh</symbol>
+    </currency>
+    <currency>
+        <code>USD</code>
+        <name>United States Dollar</name>
+        <symbol>$</symbol>
+    </currency>
+    <currency>
+        <code>UYU</code>
+        <name>Uruguayan Peso</name>
+        <symbol>$U</symbol>
+    </currency>
+    <currency>
+        <code>UZS</code>
+        <name>Uzbekistani Som</name>
+        <symbol>so'm</symbol>
+    </currency>
+    <currency>
+        <code>VES</code>
+        <name>Venezuelan Bolívar Soberano</name>
+        <symbol>Bs.</symbol>
+    </currency>
+    <currency>
+        <code>VND</code>
+        <name>Vietnamese Dong</name>
+        <symbol>₫</symbol>
+    </currency>
+    <currency>
+        <code>YER</code>
+        <name>Yemeni Rial</name>
+        <symbol>﷼</symbol>
+    </currency>
+    <currency>
+        <code>ZAR</code>
+        <name>South African Rand</name>
+        <symbol>R</symbol>
+    </currency>
+    <currency>
+        <code>ZMW</code>
+        <name>Zambian Kwacha</name>
+        <symbol>ZK</symbol>
+    </currency>
+</currencies>

@@ -1,0 +1,29 @@
+/* -----------------------------------------------------------------------------
+ *  Project       : MjSchool Plugin Styles
+ *  File          : mjschool-invoice-rtl.css
+ *  Description   : RTL-specific adjustments and layout fixes for invoice pages.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *
+ *   1. Mozilla Display Fixes
+ *   2. RTL Header Adjustments
+ *   3. Padding & Alignment Fixes
+ *   4. RTL Signature Section Styling
+ *
+ * ----------------------------------------------------------------------------- */
+.mjschool-mozila-display-css {
+    padding-right: 0px !important;
+}
+.mjschool-rtl-heads {
+    margin-right: 13px !important;
+    width: 96.2% !important;
+}
+.padding_sign {
+    padding-left: 30px !important;
+}
+.rtl-signs {
+    width: 98% !important;
+    margin-left: 20px;
+}

@@ -1,0 +1,13 @@
+"Roll No","Student Name","Student Email","Class Name","Section Name","Subject Name",Attend_by_name,Attendence_date,Status,Comment
+789,"school A Student",schoolastudent@gmail.com,"School Class",A,,admin,2025-10-14,Absent,"On time"
+632,"Rushikesh Chaudhari",rushikesh@dasinfomedia.com,"School Class",B,,admin,2025-10-14,Present,Late
+789,"school A Student",schoolastudent@gmail.com,"School Class",A,hindi-H01,admin,2025-10-13,Absent,"On time"
+632,"Rushikesh Chaudhari",rushikesh@dasinfomedia.com,"School Class",B,Social-S01,admin,2025-10-13,Present,Late
+7,"nikhil patel",nikhil@gmail.com,"class xyz",,,admin,2025-10-10,Present,"On time"
+789,"school A Student",schoolastudent@gmail.com,"School Class",A,hindi-H01,admin,2025-10-10,Absent,"On time"
+632,"Rushikesh Chaudhari",rushikesh@dasinfomedia.com,"School Class",B,Social-S01,admin,2025-10-10,Present,Late
+106,"Smit Raval",smit@gmail.com,MCA,,C-C01,admin,2025-10-04,Absent,
+112,"Shivang Patel",shivang@gmail.com,MCA,,Presentation-PR01,admin,2025-10-04,"Half Day",
+106,"Smit Raval",smit@gmail.com,MCA,,Dart-D01,"Dhaval Patel",2025-10-04,Late,
+112,"Shivang Patel",shivang@gmail.com,MCA,,Presentation-PR01,"support First",2025-10-03,"Half Day",
+106,"Smit Raval",smit@gmail.com,MCA,,C-C01,admin,2025-09-26,"Half Day",

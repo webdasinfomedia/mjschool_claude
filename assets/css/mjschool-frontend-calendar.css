@@ -1,0 +1,57 @@
+/* --------------------------------------------------------------------------
+ *  Project  : MjSchool Plugin Styles
+ *  File          : fullcalendar.css
+ *  Description   : Overrides and additional styling for FullCalendar components.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *
+ *   1. Dialog Close Button
+ *   2. Dialog Header Styling
+ *   3. Dialog Container
+ *   4. Responsive Adjustments (≤ 768px)
+ *   5. Mobile Device Fixes (365px–430px)
+ *
+ * ----------------------------------------------------------------------------- */
+.ui-dialog-titlebar-close {
+    font-size: 13px !important;
+    border: 1px solid transparent !important;
+    border-radius: 0 !important;
+    outline: 0 !important;
+    background-color: #fff !important;
+    background-image: url("../images/dashboard-icon/mjschool-close.png");
+    background-repeat: no-repeat;
+    float: right;
+    color: #fff !important;
+    width: 10% !important;
+    height: 30px !important;
+}
+.ui-widget-header {
+    border: 0px solid #aaaaaa !important;
+    background: unset !important;
+    font-size: 22px !important;
+    color: #333333 !important;
+    font-weight: 500 !important;
+    font-style: normal !important;
+    font-family: Poppins !important;
+}
+.ui-dialog {
+    background: #ffffff none repeat scroll 0 0;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgb(0 0 0 / 90%);
+    cursor: default;
+}
+@media (max-width: 768px) {
+    .ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-draggable.ui-resizable {
+        width: 332px !important;
+        left: -131px !important;
+    }
+}
+@media only screen and (min-device-width: 365px) and (max-device-width: 430px) and (orientation: portrait) and (-webkit-min-device-pixel-ratio: 2 ) 
+{
+    #navbarNav .card-icon .img-top 
+    {
+        margin-left: 0px !important;
+    }
+}

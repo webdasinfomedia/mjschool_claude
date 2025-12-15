@@ -1,0 +1,45 @@
+/* --------------------------------------------------------------------------
+ *  Project  : MjSchool Plugin Styles
+ *  File     : mjschool-rtl-registration-form.css
+ *  Purpose  : Main stylesheet for layout, forms, RTL support, tables, and UI.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *  
+ *  1. General Layout
+ *  2. Form Styling
+ *  3. RTL (Right-to-Left) Support
+ *  4. Panels & Accordions
+ *  5. Dropdown Menu Styling
+ *  6. DataTables Styling
+ *  7. Inputs & File Upload Fields
+ *  8. Responsive Breakpoints
+ *
+ *  -------------------------------------------------------------------------- */
+select {
+    background #F2F5FA url(dataimagesvg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E) no-repeat right 95% top 55% !important;
+}
+#mjschool-registration-form div label {
+    direction rtl;
+    left 70% !important;
+}
+#mjschool-registration-form div label.label_mobile_number {
+    direction rtl;
+    left 35% !important;
+}
+#mjschool-registration-form div label.label_email {
+    direction rtl;
+    left 60% !important;
+}
+select {
+    background #F2F5F9 url(dataimagesvg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E) no-repeat left 5px top 55% !important;
+}
+#togglePassword {
+    position absolute;
+    top 30%;
+    left 5% !important;
+    right unset !important;
+    font-size 17px;
+    cursor pointer;
+}

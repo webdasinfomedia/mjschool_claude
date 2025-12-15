@@ -1,0 +1,49 @@
+/* --------------------------------------------------------------------------
+ *  Project  : MjSchool Plugin Styles
+ *  File     : mjschool-admission-rtl.css
+ *  Purpose  : RTL-specific stylesheet for Rtl admission forms and UI.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *  
+ *  1. General Layout
+ *  2. Form Styling
+ *  3. RTL Header Adjustments
+ *  4. Padding & Alignment Fixes
+ *  5. Dropdown Menu Styling
+ *  6. Responsive Breakpoints
+ *
+ *  -------------------------------------------------------------------------- */
+div.row select {
+    background: #F2F5FA url(data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E) no-repeat right 95% top 55% !important;
+}
+.accordion-button::after {
+    margin-right: auto !important;
+    margin-left: 0 !important;
+}
+#mjschool-admission-form div label {
+    direction: rtl;
+    left: 80% !important;
+}
+#mjschool-admission-form div label.mjschool-custom-top-label {
+    left: unset !important;
+}
+#mjschool-admission-form div label.phonecode {
+    direction: rtl;
+    left: 55% !important;
+}
+#mjschool-admission-form div label.mobile_number_rtl {
+    direction: rtl;
+    left: 68% !important;
+}
+@media (max-width: 768px) {
+    #mjschool-admission-form div label {
+        direction: rtl;
+        left: 50% !important;
+    }
+    #mjschool-admission-form div label.mjschool-gender-label-rtl {
+        direction: rtl;
+        left: 75% !important;
+    }
+}

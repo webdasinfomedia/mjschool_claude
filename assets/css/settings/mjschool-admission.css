@@ -1,0 +1,87 @@
+.mjschool-panel-title > a:before {
+	float: right !important;
+	font-family: FontAwesome;
+	content:"\f068";
+	padding-right: 5px;
+}
+.mjschool-panel-title > a.collapsed:before {
+	float: right !important;
+	content:"\f067";
+}
+.mjschool-panel-title > a:hover,
+.mjschool-panel-title > a:active,
+.mjschool-panel-title > a:focus  {
+	text-decoration:none;
+}
+.mjschool-student-admission-form .form-group,.mjschool-student-admission-form .form-group .form-control{float:left;width:100%}
+.mjschool-student-admission-form .form-group .mjschool-require-field{color:red;}
+.mjschool-student-admission-form select.form-control,.mjschool-student-admission-form input[type="file"] {
+	padding: 0.5278em;
+	margin-bottom: 5px;
+}
+.mjschool-width-100px{
+	width: 100px;
+}
+.mjschool-student-admission-form .radio-inline {
+	float: left;
+	margin-bottom: 10px;
+	margin-right: 15px;
+}
+.mjschool-student-admission-form .radio-inline .tog {
+	margin-right: 5px;
+}
+.mjschool-margin-bottom-15px{
+	margin-bottom:15px !important;
+}
+.mjschool-margin-top-10px{
+	margin-top:10px !important;
+}
+.mjschool-student-admission-form  .form-control[readonly]
+{
+	background-color: #eee;
+	opacity: 1;
+}
+.mjschool-student-reg-error .error{color:red;}
+.ui-datepicker-calendar{ background-color: white!important; }
+.ui-datepicker-next{float: right!important;}
+.ui-corner-all
+{
+	color: black!important;
+}
+.ui-icon-circle-triangle-w
+{
+	background: bottom;
+}
+.ui-icon-circle-triangle-e
+{
+	background: bottom!important;
+}
+.mjschool-father_doc
+{
+	padding: 4px!important;
+}
+#mjschool-admission-form .form-group
+{
+	padding: 10px!important;
+}
+.mjschool-admission-button
+{
+	margin-top: 20px!important;
+}
+#mjschool-admission-form input[type="radio"]
+{
+	margin: 0px 5px -5px 0px!important;
+}
+.twentytwenty .accordion-header
+{
+	margin: 1rem auto 1rem!important;
+}
+.twentytwenty .mjschool-standard-category
+{
+	height: 81%!important;
+}
+.mjschool-admission-successfully-message
+{
+	background-color: green!important;
+	color: white!important;
+}

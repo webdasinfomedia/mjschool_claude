@@ -1,0 +1,91 @@
+/* --------------------------------------------------------------------------
+ *  Project  : MjSchool Plugin Styles
+ *  File     : mjschool-admission.css
+ *  Purpose  : stylesheet for admission forms and UI.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *  
+ *  1. General Layout
+ *  2. Form Styling
+ *  3. Panels & Accordions
+ *  4. Dropdown Menu Styling
+ *  5. Responsive Breakpoints
+ *
+ *  -------------------------------------------------------------------------- */
+.mjschool-email-validation-div-student-email,.mjschool-email-validation-div-father-email,.mjschool-email-validation-div-mother-email
+{
+    display: none;
+}
+.mjschool-sibling-div-none {
+    display: none !important;
+}
+.mjschool-sibling-div_block {
+    display: block !important;
+}
+.mjschool-save-btn {
+    height: 46px;
+    background-color: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?> !important;
+    background: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>;
+    color: #fff !important;
+    width: 100% !important;
+    font-weight: 500 !important;
+    font-size: 16px !important;
+    line-height: 24px;
+    text-align: center;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    border: 0px solid black !important;
+}
+.form-control:focus {
+    box-shadow: 0 0 0 0rem rgb(13 110 253 / 25%) !important;
+}
+.form-control:disabled,
+.form-control[readonly] {
+    background-color: #fff !important;
+}
+.input input[type=email]+label,
+.input input[type=number]+label,
+.input input[type=password]+label,
+.input input[type=text]+label,
+.input textarea+label {
+    left: 30px !important;
+}
+.mjschool-line-height-29px-registration-from {
+    line-height: 29px !important;
+}
+.mjschool-line-height-27px-registration-form {
+    line-height: 25px !important;
+}
+.accordion-button:focus {
+    box-shadow: 0 0 0 0rem rgb(13 110 253 / 25%) !important;
+}
+.mjschool-class-border-div {
+    border: 1px solid #E1E3E5 !important;
+    border-left: 5px solid <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?> !important;
+    margin-bottom: 15px !important;
+}
+.class_route_list:not(.collapsed) {
+    background-color: #5840bb26 !important;
+    color: #5840bb !important;
+}
+.input {
+    margin-bottom: 0;
+}
+.mjschool-margin-top-15px {
+    margin-top: 15px !important;
+}
+.admintion_page_checkbox_span.front {
+    font-size: 20px !important;
+}
+.mjschool-sibling-div_clss {
+    padding: 20px !important;
+}
+.mjschool-margin-top-10pxpx {
+    margin-top: 10px !important;
+}
+.admission_custom .header
+{
+    padding: 10px;
+}

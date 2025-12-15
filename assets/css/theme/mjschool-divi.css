@@ -1,0 +1,27 @@
+/* -----------------------------------------------------------------------------
+ *  Project       : MjSchool Plugin Styles
+ *  File          : mjschool-divi.css
+ *  Description   : stylesheet for divi theme.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *
+ *  1. General Layout
+ *  2. Form Styling
+ *
+ * ----------------------------------------------------------------------------- */
+.login-username label {
+    padding-right: 28px;
+}
+#wp-submit {
+    background: #5840bb;
+    width: 25%;
+    height: 30px;
+    margin-bottom: 10px;
+    color: white;
+    border: none;
+}
+#left-area {
+    text-align: center;
+}

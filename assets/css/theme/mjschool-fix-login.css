@@ -1,0 +1,25 @@
+/* -----------------------------------------------------------------------------
+ *  Project       : MjSchool Plugin Styles
+ *  File          : mjschool-fix-login.css
+ *  Description   : Login form fix style.
+ *
+ *  ============================
+ *  TABLE OF CONTENTS
+ *  ============================
+ *
+ *  1. General Layout
+ *  2. Form Styling
+ *
+ * ----------------------------------------------------------------------------- */
+.login-username {
+    padding-bottom: 10px;
+    width: 100%;
+}
+.login-username label {
+    width: 50%;
+    float: left;
+}
+.login-password label {
+    width: 50%;
+    float: left;
+}

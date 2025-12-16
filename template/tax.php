@@ -61,7 +61,7 @@ if ( isset( $_POST['save_tax'] ) ) {
 				$module              = 'tax';
 				$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $tax_id );
 				if ( $result ) {
-					wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=tax&tab=tax&message=2' );
+					wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=tax&tab=tax&message=2' ));
 					die();
 				}
 			} else {
@@ -73,7 +73,7 @@ if ( isset( $_POST['save_tax'] ) ) {
 			$module             = 'tax';
 			$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=tax&tab=tax&message=1' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=tax&tab=tax&message=1' ));
 				die();
 			}
 		}
@@ -84,7 +84,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
 		$result = $obj_tax->mjschool_delete_tax( mjschool_decrypt_id( wp_unslash($_REQUEST['tax_id']) ) );
 		if ( $result ) {
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=tax&tab=tax&message=3' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=tax&tab=tax&message=3' ));
 			die();
 		}
 	} else {
@@ -254,7 +254,7 @@ if( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message'])
 															<?php
 															if ( ! empty( $custom_field_value ) ) {
 																?>
-																<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																<?php
 															} else {
 																esc_html_e( 'N/A', 'mjschool' );
@@ -381,7 +381,7 @@ if( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message'])
 				// --------- Get module-wise custom field data. --------------//
 				$custom_field_obj = new Mjschool_Custome_Field();
 				$module           = 'tax';
-				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>
 				<div class="form-body mjschool-user-form">
 					<div class="row">	

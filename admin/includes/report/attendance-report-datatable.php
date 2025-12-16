@@ -179,7 +179,7 @@ if ( isset( $_GET['tab'] ) ) {
 		$students_without_hash = array_filter(
 			$students,
 			function ( $mjschool_user ) {
-				return get_user_meta( $mjschool_user->ID, 'hash', true ) ==== '';
+				return get_user_meta( $mjschool_user->ID, 'hash', true ) === '';
 			}
 		);
 		$student_ids           = wp_list_pluck( $students_without_hash, 'ID' );
@@ -188,7 +188,7 @@ if ( isset( $_GET['tab'] ) ) {
 		$students_without_hash = array_filter(
 			$students,
 			function ( $mjschool_user ) {
-				return get_user_meta( $mjschool_user->ID, 'hash', true ) ==== '';
+				return get_user_meta( $mjschool_user->ID, 'hash', true ) === '';
 			}
 		);
 		$student_ids           = wp_list_pluck( $students_without_hash, 'ID' );
@@ -323,7 +323,7 @@ if ( isset( $_GET['tab'] ) ) {
 		} else {
 			?>
 			<div class="mjschool-calendar-event-new">
-				<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+				<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 			</div>
 			<?php
 		}

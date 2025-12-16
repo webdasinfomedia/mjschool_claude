@@ -41,6 +41,7 @@ function mjschool_load_required_files() {
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-document.php',
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-notification.php',
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-tax.php',
+		MJSCHOOL_INCLUDES_DIR . '/class-mjschool-message.php',
         MJSCHOOL_INCLUDES_DIR . '/mjschool-function.php',
         MJSCHOOL_INCLUDES_DIR . '/mjschool-print-pdf-functions.php',
         MJSCHOOL_INCLUDES_DIR . '/mjschool-ajax-function.php',
@@ -311,3292 +312,2190 @@ if ( is_admin() ) {
         mjschool_log( 'Admin file not found: ' . $admin_file, 'error' );
     }
 }
-	/**
-	 * Plugin activation callback
-	 * 
-	 * This function is called by the activation hook in mjschool.php
-	 * It performs the following tasks:
-	 * 1. Adds default roles with capabilities
-	 * 2. Migrates old plugin options if necessary
-	 * 3. Creates required database tables
-	 * 4. Registers custom post types
-	 * 5. Performs attendance migration for new tables
-	 *
-	 * @since 1.0.0
-	 */
-	function mjschool_activate() {
-		// Create teacher role
-		if ( ! mjschool_role_exists( 'teacher' ) ) {
-			add_role(
-				'teacher',
-				esc_attr__( 'Teacher', 'mjschool' ),
-				array(
-					'read'    => true,
-					'level_0' => true,
-				)
-			);
-		}
-		
-		// Create student role
-		if ( ! mjschool_role_exists( 'student' ) ) {
-			add_role(
-				'student',
-				esc_attr__( 'Student', 'mjschool' ),
-				array(
-					'read'    => true,
-					'level_0' => true,
-				)
-			);
-		}
-		
-		// Create parent role
-		if ( ! mjschool_role_exists( 'parent' ) ) {
-			add_role(
-				'parent',
-				esc_attr__( 'Parent', 'mjschool' ),
-				array(
-					'read'    => true,
-					'level_0' => true,
-				)
-			);
-		}
-		
-		// Create support staff role
-		if ( ! mjschool_role_exists( 'supportstaff' ) ) {
-			add_role(
-				'supportstaff',
-				esc_attr__( 'Support Staff', 'mjschool' ),
-				array(
-					'read'    => true,
-					'level_0' => true,
-				)
-			);
-		}
-		
-		// Create management role
-		if ( ! mjschool_role_exists( 'management' ) ) {
-			add_role(
-				'management',
-				esc_attr__( 'Management', 'mjschool' ),
-				array(
-					'read'    => true,
-					'level_1' => true,
-				)
-			);
-		}
-		
-		// Migrate old options if needed
-		if ( get_option( 'mjschool_migrate_options_check' ) !== '1' ) {
-			if ( function_exists( 'mjschool_migrate_options' ) ) {
-				mjschool_migrate_options();
-			}
-		}
-		
-		// Create database tables
-		if ( function_exists( 'mjschool_install_tables' ) ) {
-			mjschool_install_tables();
-		}
-		
-		// Register custom post types
-		if ( function_exists( 'mjschool_register_post' ) ) {
-			mjschool_register_post();
-		}
-		
-		// Migrate attendance data
-		if ( function_exists( 'mjschool_attendance_migratation_for_new_table' ) ) {
-			mjschool_attendance_migratation_for_new_table();
+/**
+ * Plugin activation callback
+ * 
+ * This function is called by the activation hook in mjschool.php
+ * It performs the following tasks:
+ * 1. Adds default roles with capabilities
+ * 2. Migrates old plugin options if necessary
+ * 3. Creates required database tables
+ * 4. Registers custom post types
+ * 5. Performs attendance migration for new tables
+ *
+ * @since 1.0.0
+ */
+function mjschool_activate() {
+	// Create teacher role
+	if ( ! mjschool_role_exists( 'teacher' ) ) {
+		add_role(
+			'teacher',
+			esc_attr__( 'Teacher', 'mjschool' ),
+			array(
+				'read'    => true,
+				'level_0' => true,
+			)
+		);
+	}
+	
+	// Create student role
+	if ( ! mjschool_role_exists( 'student' ) ) {
+		add_role(
+			'student',
+			esc_attr__( 'Student', 'mjschool' ),
+			array(
+				'read'    => true,
+				'level_0' => true,
+			)
+		);
+	}
+	
+	// Create parent role
+	if ( ! mjschool_role_exists( 'parent' ) ) {
+		add_role(
+			'parent',
+			esc_attr__( 'Parent', 'mjschool' ),
+			array(
+				'read'    => true,
+				'level_0' => true,
+			)
+		);
+	}
+	
+	// Create support staff role
+	if ( ! mjschool_role_exists( 'supportstaff' ) ) {
+		add_role(
+			'supportstaff',
+			esc_attr__( 'Support Staff', 'mjschool' ),
+			array(
+				'read'    => true,
+				'level_0' => true,
+			)
+		);
+	}
+	
+	// Create management role
+	if ( ! mjschool_role_exists( 'management' ) ) {
+		add_role(
+			'management',
+			esc_attr__( 'Management', 'mjschool' ),
+			array(
+				'read'    => true,
+				'level_1' => true,
+			)
+		);
+	}
+	
+	// Migrate old options if needed
+	if ( get_option( 'mjschool_migrate_options_check' ) !== '1' ) {
+		if ( function_exists( 'mjschool_migrate_options' ) ) {
+			mjschool_migrate_options();
 		}
 	}
+	
+	// Create database tables
+	if ( function_exists( 'mjschool_install_tables' ) ) {
+		mjschool_install_tables();
+	}
+	
+	// Register custom post types
+	if ( function_exists( 'mjschool_register_post' ) ) {
+		mjschool_register_post();
+	}
+	
+	// Migrate attendance data
+	if ( function_exists( 'mjschool_attendance_migratation_for_new_table' ) ) {
+		mjschool_attendance_migratation_for_new_table();
+	}
+}
 
-	// Note: The actual register_activation_hook() is in mjschool.php
-
-	/**
-	 *
-	 * This function sets default access rights for all user roles (student, teacher, parent, support staff, etc.)
-	 * and defines default plugin options such as school name, logo, contact info, and system settings.
-	 *
-	 * @since 1.0.0
-	 */
-	function mjschool_option() {
-		$role_access_right_student            = array();
-		// Access rights for 'student' role.
-		$role_access_right_student['student'] = array(
-			'teacher'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-teacher.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-teacher.png' ),
-				'menu_title' => 'Teacher',
-				'page_link'  => 'teacher',
-				'own_data'   => isset( $_REQUEST['teacher_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['teacher_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_add'])) : 0,
-				'edit'       => isset( $_REQUEST['teacher_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_edit'])) : 0,
-				'view'       => isset( $_REQUEST['teacher_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_view'])) : 1,
-				'delete'     => isset( $_REQUEST['teacher_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_delete'])) : 0,
-			),
-			'student'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-student-icon.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-student.png' ),
-				'menu_title' => 'Student',
-				'page_link'  => 'student',
-				'own_data'   => isset( $_REQUEST['student_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['student_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['student_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['student_add'])) : 0,
-				'edit'       => isset( $_REQUEST['student_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['student_edit'])) : 0,
-				'view'       => isset( $_REQUEST['student_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['student_view'])) : 1,
-				'delete'     => isset( $_REQUEST['student_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['student_delete'])) : 0,
-			),
-			'parent'            => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-parents.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-parents.png' ),
-				'menu_title' => 'Parent',
-				'page_link'  => 'parent',
-				'own_data'   => isset( $_REQUEST['parent_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['parent_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['parent_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['parent_add'])) : 0,
-				'edit'       => isset( $_REQUEST['parent_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['parent_edit'])) : 0,
-				'view'       => isset( $_REQUEST['parent_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['parent_view'])) : 1,
-				'delete'     => isset( $_REQUEST['parent_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['parent_delete'])) : 0,
-			),
-			'supportstaff'      => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-support-staff.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-support-staff.png' ),
-				'menu_title' => 'Supportstaff',
-				'page_link'  => 'supportstaff',
-				'own_data'   => isset( $_REQUEST['supportstaff_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['supportstaff_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_add'])) : 0,
-				'edit'       => isset( $_REQUEST['supportstaff_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_edit'])) : 0,
-				'view'       => isset( $_REQUEST['supportstaff_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_view'])) : 1,
-				'delete'     => isset( $_REQUEST['supportstaff_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_delete'])) : 0,
-			),
-			'subject'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-subject.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-subject.png' ),
-				'menu_title' => 'Subject',
-				'page_link'  => 'subject',
-				'own_data'   => isset( $_REQUEST['subject_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['subject_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['subject_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['subject_add'])) : 0,
-				'edit'       => isset( $_REQUEST['subject_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['subject_edit'])) : 0,
-				'view'       => isset( $_REQUEST['subject_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['subject_view'])) : 1,
-				'delete'     => isset( $_REQUEST['subject_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['subject_delete'])) : 0,
-			),
-			'schedule'          => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-class-route.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-class-route.png' ),
-				'menu_title' => 'Class Routine',
-				'page_link'  => 'schedule',
-				'own_data'   => isset( $_REQUEST['schedule_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['schedule_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_add'])) : 0,
-				'edit'       => isset( $_REQUEST['schedule_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_edit'])) : 0,
-				'view'       => isset( $_REQUEST['schedule_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_view'])) : 1,
-				'delete'     => isset( $_REQUEST['schedule_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_delete'])) : 0,
-			),
-			'virtual_classroom' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-virtual-classroom.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-virtual-class.png' ),
-				'menu_title' => 'virtual_classroom',
-				'page_link'  => 'virtual_classroom',
-				'own_data'   => isset( $_REQUEST['virtual_classroom_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['virtual_classroom_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_add'])) : 0,
-				'edit'       => isset( $_REQUEST['virtual_classroom_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_edit'])) : 0,
-				'view'       => isset( $_REQUEST['virtual_classroom_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_view'])) : 1,
-				'delete'     => isset( $_REQUEST['virtual_classroom_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_delete'])) : 0,
-			),
-			'attendance'        => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-attandance.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-attandance.png' ),
-				'menu_title' => 'Attendance',
-				'page_link'  => 'attendance',
-				'own_data'   => isset( $_REQUEST['attendance_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['attendance_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_add'])) : 0,
-				'edit'       => isset( $_REQUEST['attendance_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_edit'])) : 0,
-				'view'       => isset( $_REQUEST['attendance_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_view'])) : 1,
-				'delete'     => isset( $_REQUEST['attendance_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_delete'])) : 0,
-			),
-			'notification'      => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-notification_new.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/mjschool-notification_new.png' ),
-				'menu_title' => 'Notification',
-				'page_link'  => 'notification',
-				'own_data'   => isset( $_REQUEST['notification_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notification_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['notification_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notification_add'])) : 0,
-				'edit'       => isset( $_REQUEST['notification_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notification_edit'])) : 0,
-				'view'       => isset( $_REQUEST['notification_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notification_view'])) : 1,
-				'delete'     => isset( $_REQUEST['notification_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notification_delete'])) : 0,
-			),
-			'exam'              => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-exam.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/exam.png' ),
-				'menu_title' => 'Exam',
-				'page_link'  => 'exam',
-				'own_data'   => isset( $_REQUEST['exam_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['exam_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_add'])) : 0,
-				'edit'       => isset( $_REQUEST['exam_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_edit'])) : 0,
-				'view'       => isset( $_REQUEST['exam_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_view'])) : 1,
-				'delete'     => isset( $_REQUEST['exam_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_delete'])) : 0,
-			),
-			'class_room'      => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-exam.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/exam.png' ),
-				'menu_title' => 'Class Room',
-				'page_link'  => 'class_room',
-				"own_data"	 => isset($_REQUEST['class_room_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_own_data'])) : 1,
-				"add"		 => isset($_REQUEST['class_room_add']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_add'])) : 0,
-				"edit"		 => isset($_REQUEST['class_room_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_edit'])) : 0,
-				"view"		 => isset($_REQUEST['class_room_view']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_view'])) : 1,
-				"delete"	 => isset($_REQUEST['class_room_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_delete'])) : 0
-			),
-			'grade'            => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-grade.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-grade.png' ),
-				'menu_title' => 'Grade',
-				'page_link'  => 'grade',
-				'own_data'   => isset( $_REQUEST['grade_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['grade_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['grade_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['grade_add'])) : 0,
-				'edit'       => isset( $_REQUEST['grade_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['grade_edit'])) : 0,
-				'view'       => isset( $_REQUEST['grade_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['grade_view'])) : 1,
-				'delete'     => isset( $_REQUEST['grade_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['grade_delete'])) : 0,
-			),
-			'hostel'            => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-hostel.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-hostel.png' ),
-				'menu_title' => 'Hostel',
-				'page_link'  => 'hostel',
-				'own_data'   => isset( $_REQUEST['hostel_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['hostel_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_add'])) : 0,
-				'edit'       => isset( $_REQUEST['hostel_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_edit'])) : 0,
-				'view'       => isset( $_REQUEST['hostel_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_view'])) : 1,
-				'delete'     => isset( $_REQUEST['hostel_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_delete'])) : 0,
-			),
-			'document'          => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-hostel.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-hostel.png' ),
-				'menu_title' => 'Document',
-				'page_link'  => 'document',
-				'own_data'   => isset( $_REQUEST['document_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['document_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['document_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['document_add'])) : 0,
-				'edit'       => isset( $_REQUEST['document_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['document_edit'])) : 0,
-				'view'       => isset( $_REQUEST['document_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['document_view'])) : 1,
-				'delete'     => isset( $_REQUEST['document_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['document_delete'])) : 0,
-			),
-			'leave'             => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-notification_new.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/mjschool-notification_new.png' ),
-				'menu_title' => 'Leave',
-				'page_link'  => 'leave',
-				'own_data'   => isset( $_REQUEST['leave_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['leave_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['leave_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['leave_add'])) : 1,
-				'edit'       => isset( $_REQUEST['leave_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['leave_edit'])) : 0,
-				'view'       => isset( $_REQUEST['leave_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['leave_view'])) : 1,
-				'delete'     => isset( $_REQUEST['leave_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['leave_delete'])) : 0,
-			),
-			'homework'          => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-homework.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-homework.png' ),
-				'menu_title' => 'Home Work',
-				'page_link'  => 'homework',
-				'own_data'   => isset( $_REQUEST['homework_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['homework_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['homework_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['homework_add'])) : 0,
-				'edit'       => isset( $_REQUEST['homework_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['homework_edit'])) : 0,
-				'view'       => isset( $_REQUEST['homework_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['homework_view'])) : 1,
-				'delete'     => isset( $_REQUEST['homework_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['homework_delete'])) : 0,
-			),
-			'manage_marks'      => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-mark-manage.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-mark-manage.png' ),
-				'menu_title' => 'Mark Manage',
-				'page_link'  => 'manage-marks',
-				'own_data'   => isset( $_REQUEST['manage_marks_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['manage_marks_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_add'])) : 0,
-				'edit'       => isset( $_REQUEST['manage_marks_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_edit'])) : 0,
-				'view'       => isset( $_REQUEST['manage_marks_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_view'])) : 0,
-				'delete'     => isset( $_REQUEST['manage_marks_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_delete'])) : 0,
-			),
-			'feepayment'        => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-fee.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-fee-payment.png' ),
-				'menu_title' => 'Fees Payment',
-				'page_link'  => 'feepayment',
-				'own_data'   => isset( $_REQUEST['feepayment_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['feepayment_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_add'])) : 0,
-				'edit'       => isset( $_REQUEST['feepayment_edit'] ) ? sanitize_text_field(wp_unslash(_REQUEST['feepayment_edit'])) : 0,
-				'view'       => isset( $_REQUEST['feepayment_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_view'])) : 1,
-				'delete'     => isset( $_REQUEST['feepayment_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_delete'])) : 0,
-			),
-			'payment'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-payment.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-payment.png' ),
-				'menu_title' => 'Payment',
-				'page_link'  => 'payment',
-				'own_data'   => isset( $_REQUEST['payment_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['payment_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['payment_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['payment_add'])) : 0,
-				'edit'       => isset( $_REQUEST['payment_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['payment_edit'])) : 0,
-				'view'       => isset( $_REQUEST['payment_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['payment_view'])) : 1,
-				'delete'     => isset( $_REQUEST['payment_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['payment_delete'])) : 0,
-			),
-			'transport'         => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-transport.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-transport.png' ),
-				'menu_title' => 'Transport',
-				'page_link'  => 'transport',
-				'own_data'   => isset( $_REQUEST['transport_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['transport_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['transport_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['transport_add'])) : 0,
-				'edit'       => isset( $_REQUEST['transport_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['transport_edit'])) : 0,
-				'view'       => isset( $_REQUEST['transport_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['transport_view'])) : 1,
-				'delete'     => isset( $_REQUEST['transport_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['transport_delete'])) : 0,
-			),
-			'notice'            => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-notice.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-notice.png' ),
-				'menu_title' => 'Notice Board',
-				'page_link'  => 'notice',
-				'own_data'   => isset( $_REQUEST['notice_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notice_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['notice_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notice_add'])) : 0,
-				'edit'       => isset( $_REQUEST['notice_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notice_edit'])) : 0,
-				'view'       => isset( $_REQUEST['notice_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notice_view'])) : 1,
-				'delete'     => isset( $_REQUEST['notice_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notice_delete'])) : 0,
-			),
-			'message'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-message.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-message.png' ),
-				'menu_title' => 'Message',
-				'page_link'  => 'message',
-				'own_data'   => isset( $_REQUEST['message_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['message_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message_add'])) : 1,
-				'edit'       => isset( $_REQUEST['message_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message_edit'])) : 0,
-				'view'       => isset( $_REQUEST['message_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message_view'])) : 1,
-				'delete'     => isset( $_REQUEST['message_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message_delete'])) : 1,
-			),
-			'holiday'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-holiday.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-holiday.png' ),
-				'menu_title' => 'Holiday',
-				'page_link'  => 'holiday',
-				'own_data'   => isset( $_REQUEST['holiday_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['holiday_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_add'])) : 0,
-				'edit'       => isset( $_REQUEST['holiday_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_edit'])) : 0,
-				'view'       => isset( $_REQUEST['holiday_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_view'])) : 1,
-				'delete'     => isset( $_REQUEST['holiday_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_delete'])) : 0,
-			),
-			'library'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-library.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-library.png' ),
-				'menu_title' => 'Library',
-				'page_link'  => 'library',
-				'own_data'   => isset( $_REQUEST['library_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['library_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['library_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['library_add'])) : 0,
-				'edit'       => isset( $_REQUEST['library_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['library_edit'])) : 0,
-				'view'       => isset( $_REQUEST['library_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['library_view'])) : 1,
-				'delete'     => isset( $_REQUEST['library_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['library_delete'])) : 0,
-			),
-			'certificate'       => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-library.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-library.png' ),
-				'menu_title' => 'Certificate',
-				'page_link'  => 'certificate',
-				'own_data'   => isset( $_REQUEST['certificate_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['certificate_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_add'])) : 0,
-				'edit'       => isset( $_REQUEST['certificate_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_edit'])) : 0,
-				'view'       => isset( $_REQUEST['certificate_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_view'])) : 1,
-				'delete'     => isset( $_REQUEST['certificate_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_delete'])) : 0,
-			),
-			'account'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-account.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-account.png' ),
-				'menu_title' => 'Account',
-				'page_link'  => 'account',
-				'own_data'   => isset( $_REQUEST['account_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['account_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['account_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['account_add'])) : 0,
-				'edit'       => isset( $_REQUEST['account_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['account_edit'])) : 1,
-				'view'       => isset( $_REQUEST['account_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['account_view'])) : 1,
-				'delete'     => isset( $_REQUEST['account_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['account_delete'])) : 0,
-			),
-			'report'            => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-report.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-report.png' ),
-				'menu_title' => 'Report',
-				'page_link'  => 'report',
-				'own_data'   => isset( $_REQUEST['report_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['report_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['report_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['report_add'])) : 0,
-				'edit'       => isset( $_REQUEST['report_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['report_edit'])) : 0,
-				'view'       => isset( $_REQUEST['report_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['report_view'])) : 0,
-				'delete'     => isset( $_REQUEST['report_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['report_delete'])) : 0,
-			),
-			'event'             => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-report.png' ),
-				'menu_title' => 'Event',
-				'page_link'  => 'event',
-				'own_data'   => isset( $_REQUEST['event_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['event_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['event_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['event_add'])) : 0,
-				'edit'       => isset( $_REQUEST['event_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['event_edit'])) : 0,
-				'view'       => isset( $_REQUEST['event_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['event_view'])) : 1,
-				'delete'     => isset( $_REQUEST['event_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['event_delete'])) : 0,
-			),
-		);
-		// Access rights for 'teacher' role.
-		$role_access_right_teacher            = array();
-		$role_access_right_teacher['teacher'] = array(
-			'admission'         => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-admission.png' ),
-				'menu_title' => 'Admission',
-				'page_link'  => 'admission',
-				'own_data'   => isset( $_REQUEST['admission_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['admission_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['admission_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['admission_add'])) : 1,
-				'edit'       => isset( $_REQUEST['admission_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['admission_edit'])) : 1,
-				'view'       => isset( $_REQUEST['admission_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['admission_view'])) : 1,
-				'delete'     => isset( $_REQUEST['admission_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['admission_delete'])) : 0,
-			),
-			'teacher'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-teacher.png' ),
-				'menu_title' => 'Teacher',
-				'page_link'  => 'teacher',
-				'own_data'   => isset( $_REQUEST['teacher_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['teacher_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_add'])) : 0,
-				'edit'       => isset( $_REQUEST['teacher_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_edit'])) : 0,
-				'view'       => isset( $_REQUEST['teacher_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_view'])) : 1,
-				'delete'     => isset( $_REQUEST['teacher_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_delete'])) : 0,
-			),
-			'student'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-student-icon.png' ),
-				'menu_title' => 'Student',
-				'page_link'  => 'student',
-				'own_data'   => isset( $_REQUEST['student_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['student_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['student_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['student_add'])) : 1,
-				'edit'       => isset( $_REQUEST['student_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['student_edit'])) : 0,
-				'view'       => isset( $_REQUEST['student_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['student_view'])) : 1,
-				'delete'     => isset( $_REQUEST['student_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['student_delete'])) : 0,
-			),
-			'parent'            => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-parents.png' ),
-				'menu_title' => 'Parent',
-				'page_link'  => 'parent',
-				'own_data'   => isset( $_REQUEST['parent_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['parent_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['parent_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['parent_add'])) : 1,
-				'edit'       => isset( $_REQUEST['parent_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['parent_edit'])) : 0,
-				'view'       => isset( $_REQUEST['parent_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['parent_view'])) : 1,
-				'delete'     => isset( $_REQUEST['parent_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['parent_delete'])) : 0,
-			),
-			'subject'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-subject.png' ),
-				'menu_title' => 'Subject',
-				'page_link'  => 'subject',
-				'own_data'   => isset( $_REQUEST['subject_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['subject_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['subject_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['subject_add'])) : 1,
-				'edit'       => isset( $_REQUEST['subject_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['subject_edit'])) : 1,
-				'view'       => isset( $_REQUEST['subject_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['subject_view'])) : 1,
-				'delete'     => isset( $_REQUEST['subject_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['subject_delete'])) : 0,
-			),
-			'class'             => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-class.png' ),
-				'menu_title' => 'Class',
-				'page_link'  => 'class',
-				'own_data'   => isset( $_REQUEST['class_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['class_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['class_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['class_add'])) : 0,
-				'edit'       => isset( $_REQUEST['class_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['class_edit'])) : 0,
-				'view'       => isset( $_REQUEST['class_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['class_view'])) : 1,
-				'delete'     => isset( $_REQUEST['class_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['class_delete'])) : 0,
-			),
-			'virtual_classroom' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-virtual-classroom.png' ),
-				'menu_title' => 'virtual_classroom',
-				'page_link'  => 'virtual_classroom',
-				'own_data'   => isset( $_REQUEST['virtual_classroom_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['virtual_classroom_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_add'])) : 1,
-				'edit'       => isset( $_REQUEST['virtual_classroom_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_edit'])) : 1,
-				'view'       => isset( $_REQUEST['virtual_classroom_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_view'])) : 1,
-				'delete'     => isset( $_REQUEST['virtual_classroom_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_delete'])) : 0,
-			),
-			'schedule'          => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-class-route.png' ),
-				'menu_title' => 'Class Routine',
-				'page_link'  => 'schedule',
-				'own_data'   => isset( $_REQUEST['schedule_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['schedule_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_add'])) : 1,
-				'edit'       => isset( $_REQUEST['schedule_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_edit'])) : 0,
-				'view'       => isset( $_REQUEST['schedule_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_view'])) : 1,
-				'delete'     => isset( $_REQUEST['schedule_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_delete'])) : 0,
-			),
-			'attendance'        => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-attandance.png' ),
-				'menu_title' => 'Attendance',
-				'page_link'  => 'attendance',
-				'own_data'   => isset( $_REQUEST['attendance_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['attendance_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_add'])) : 1,
-				'edit'       => isset( $_REQUEST['attendance_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_edit'])) : 1,
-				'view'       => isset( $_REQUEST['attendance_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_view'])) : 1,
-				'delete'     => isset( $_REQUEST['attendance_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_delete'])) : 0,
-			),
-			'notification'      => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-attandance.png' ),
-				'menu_title' => 'Notification',
-				'page_link'  => 'notification',
-				'own_data'   => isset( $_REQUEST['notification_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notification_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['notification_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notification_add'])) : 1,
-				'edit'       => isset( $_REQUEST['notification_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notification_edit'])) : 1,
-				'view'       => isset( $_REQUEST['notification_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notification_view'])) : 1,
-				'delete'     => isset( $_REQUEST['notification_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notification_delete'])) : 1,
-			),
-			'exam'              => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-exam.png' ),
-				'menu_title' => 'Exam',
-				'page_link'  => 'exam',
-				'own_data'   => isset( $_REQUEST['exam_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['exam_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_add'])) : 1,
-				'edit'       => isset( $_REQUEST['exam_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_edit'])) : 1,
-				'view'       => isset( $_REQUEST['exam_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_view'])) : 1,
-				'delete'     => isset( $_REQUEST['exam_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_delete'])) : 0,
-			),
-			'class_room'      => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-exam.png' ),
-				'menu_title' => 'Class Room',
-				'page_link'  => 'class_room',
-				"own_data" 	 => isset($_REQUEST['class_room_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_own_data'])) : 1,
-				"add" 		 => isset($_REQUEST['class_room_add']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_add'])) : 1,
-				"edit"		 => isset($_REQUEST['class_room_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_edit'])) : 1,
-				"view"		 => isset($_REQUEST['class_room_view']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_view'])) : 1,
-				"delete"	 => isset($_REQUEST['class_room_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_delete'])) : 0
-			),
-			'exam_hall'         => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-exam_hall.png' ),
-				'menu_title' => 'Exam Hall',
-				'page_link'  => 'exam_hall',
-				'own_data'   => isset( $_REQUEST['exam_hall_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['exam_hall_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_add'])) : 1,
-				'edit'       => isset( $_REQUEST['exam_hall_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_edit'])) : 1,
-				'view'       => isset( $_REQUEST['exam_hall_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_view'])) : 1,
-				'delete'     => isset( $_REQUEST['exam_hall_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_delete'])) : 0,
-			),
-			'hostel'            => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-hostel.png' ),
-				'menu_title' => 'Hostel',
-				'page_link'  => 'hostel',
-				'own_data'   => isset( $_REQUEST['hostel_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['hostel_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_add'])) : 0,
-				'edit'       => isset( $_REQUEST['hostel_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_edit'])) : 0,
-				'view'       => isset( $_REQUEST['hostel_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_view'])) : 1,
-				'delete'     => isset( $_REQUEST['hostel_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_delete'])) : 0,
-			),
-			'homework'          => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-homework.png' ),
-				'menu_title' => 'Home Work',
-				'page_link'  => 'homework',
-				'own_data'   => isset( $_REQUEST['homework_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['homework_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['homework_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['homework_add'])) : 1,
-				'edit'       => isset( $_REQUEST['homework_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['homework_edit'])) : 1,
-				'view'       => isset( $_REQUEST['homework_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['homework_view'])) : 1,
-				'delete'     => isset( $_REQUEST['homework_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['homework_delete'])) : 0,
-			),
-			'manage_marks'      => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-mark-manage.png' ),
-				'menu_title' => 'Mark Manage',
-				'page_link'  => 'manage-marks',
-				'own_data'   => isset( $_REQUEST['manage_marks_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['manage_marks_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_add'])) : 1,
-				'edit'       => isset( $_REQUEST['manage_marks_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_edit'])) : 1,
-				'view'       => isset( $_REQUEST['manage_marks_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_view'])) : 1,
-				'delete'     => isset( $_REQUEST['manage_marks_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_delete'])) : 0,
-			),
-			'feepayment'        => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-fee.png' ),
-				'menu_title' => 'Fee Payment',
-				'page_link'  => 'feepayment',
-				'own_data'   => isset( $_REQUEST['feepayment_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['feepayment_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_add'])) : 1,
-				'edit'       => isset( $_REQUEST['feepayment_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_edit'])) : 1,
-				'view'       => isset( $_REQUEST['feepayment_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_view'])) : 1,
-				'delete'     => isset( $_REQUEST['feepayment_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_delete'])) : 0,
-			),
-			'payment'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-payment.png' ),
-				'menu_title' => 'Payment',
-				'page_link'  => 'payment',
-				'own_data'   => isset( $_REQUEST['payment_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['payment_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['payment_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['payment_add'])) : 0,
-				'edit'       => isset( $_REQUEST['payment_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['payment_edit'])) : 0,
-				'view'       => isset( $_REQUEST['payment_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['payment_view'])) : 0,
-				'delete'     => isset( $_REQUEST['payment_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['payment_delete'])) : 0,
-			),
-			'transport'         => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-transport.png' ),
-				'menu_title' => 'Transport',
-				'page_link'  => 'transport',
-				'own_data'   => isset( $_REQUEST['transport_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['transport_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['transport_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['transport_add'])) : 0,
-				'edit'       => isset( $_REQUEST['transport_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['transport_edit'])) : 0,
-				'view'       => isset( $_REQUEST['transport_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['transport_view'])) : 1,
-				'delete'     => isset( $_REQUEST['transport_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['transport_delete'])) : 0,
-			),
-			'document'          => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-hostel.png' ),
-				'menu_title' => 'Document',
-				'page_link'  => 'document',
-				'own_data'   => isset( $_REQUEST['document_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['document_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['document_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['document_add'])) : 1,
-				'edit'       => isset( $_REQUEST['document_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['document_edit'])) : 1,
-				'view'       => isset( $_REQUEST['document_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['document_view'])) : 1,
-				'delete'     => isset( $_REQUEST['document_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['document_delete'])) : 1,
-			),
-			'leave'             => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-notification_new.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/mjschool-notification_new.png' ),
-				'menu_title' => 'Leave',
-				'page_link'  => 'leave',
-				'own_data'   => isset( $_REQUEST['leave_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['leave_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['leave_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['leave_add'])) : 1,
-				'edit'       => isset( $_REQUEST['leave_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['leave_edit'])) : 1,
-				'view'       => isset( $_REQUEST['leave_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['leave_view'])) : 1,
-				'delete'     => isset( $_REQUEST['leave_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['leave_delete'])) : 1,
-			),
-			'notice'            => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-notice.png' ),
-				'menu_title' => 'Notice Board',
-				'page_link'  => 'notice',
-				'own_data'   => isset( $_REQUEST['notice_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notice_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['notice_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notice_add'])) : 1,
-				'edit'       => isset( $_REQUEST['notice_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notice_edit'])) : 1,
-				'view'       => isset( $_REQUEST['notice_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notice_view'])) : 1,
-				'delete'     => isset( $_REQUEST['notice_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['notice_delete'])) : 0,
-			),
-			'message'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-message.png' ),
-				'menu_title' => 'Message',
-				'page_link'  => 'message',
-				'own_data'   => isset( $_REQUEST['message_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['message_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message_add'])) : 1,
-				'edit'       => isset( $_REQUEST['message_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message_edit'])) : 0,
-				'view'       => isset( $_REQUEST['message_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message_view'])) : 1,
-				'delete'     => isset( $_REQUEST['message_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message_delete'])) : 0,
-			),
-			// Migration //
-			'migration'         => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-message.png' ),
-				'menu_title' => 'Migration',
-				'page_link'  => 'migration',
-				'own_data'   => isset( $_REQUEST['migration_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['migration_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['migration_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['migration_add'])) : 1,
-				'edit'       => isset( $_REQUEST['migration_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['migration_edit'])) : 0,
-				'view'       => isset( $_REQUEST['migration_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['migration_view'])) : 1,
-				'delete'     => isset( $_REQUEST['migration_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['migration_delete'])) : 0,
-			),
-			'holiday'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-holiday.png' ),
-				'menu_title' => 'Holiday',
-				'page_link'  => 'holiday',
-				'own_data'   => isset( $_REQUEST['holiday_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['holiday_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_add'])) : 1,
-				'edit'       => isset( $_REQUEST['holiday_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_edit'])) : 1,
-				'view'       => isset( $_REQUEST['holiday_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_view'])) : 1,
-				'delete'     => isset( $_REQUEST['holiday_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_delete'])) : 0,
-			),
-			'library'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-library.png' ),
-				'menu_title' => 'Library',
-				'page_link'  => 'library',
-				'own_data'   => isset( $_REQUEST['library_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['library_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['library_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['library_add'])) : 1,
-				'edit'       => isset( $_REQUEST['library_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['library_edit'])) : 0,
-				'view'       => isset( $_REQUEST['library_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['library_view'])) : 1,
-				'delete'     => isset( $_REQUEST['library_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['library_delete'])) : 0,
-			),
-			'certificate'       => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-library.png' ),
-				'menu_title' => 'Certificate',
-				'page_link'  => 'certificate',
-				'own_data'   => isset( $_REQUEST['certificate_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['certificate_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_add'])) : 0,
-				'edit'       => isset( $_REQUEST['certificate_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_edit'])) : 0,
-				'view'       => isset( $_REQUEST['certificate_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_view'])) : 0,
-				'delete'     => isset( $_REQUEST['certificate_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_delete'])) : 0,
-			),
-			'account'           => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-account.png' ),
-				'menu_title' => 'Account',
-				'page_link'  => 'account',
-				'own_data'   => isset( $_REQUEST['account_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['account_own_data'])) : 1,
-				'add'        => isset( $_REQUEST['account_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['account_add'])) : 0,
-				'edit'       => isset( $_REQUEST['account_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['account_edit'])) : 1,
-				'view'       => isset( $_REQUEST['account_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['account_view'])) : 1,
-				'delete'     => isset( $_REQUEST['account_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['account_delete'])) : 0,
-			),
-			'report'            => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-report.png' ),
-				'menu_title' => 'Report',
-				'page_link'  => 'report',
-				'own_data'   => isset( $_REQUEST['report_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['report_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['report_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['report_add'])) : 0,
-				'edit'       => isset( $_REQUEST['report_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['report_edit'])) : 0,
-				'view'       => isset( $_REQUEST['report_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['report_view'])) : 1,
-				'delete'     => isset( $_REQUEST['report_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['report_delete'])) : 0,
-			),
-			'event'             => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-report.png' ),
-				'menu_title' => 'Event',
-				'page_link'  => 'event',
-				'own_data'   => isset( $_REQUEST['event_own_data'] ) ? sanitize_text_field(wp_unslash($_REQUEST['event_own_data'])) : 0,
-				'add'        => isset( $_REQUEST['event_add'] ) ? sanitize_text_field(wp_unslash($_REQUEST['event_add'])) : 1,
-				'edit'       => isset( $_REQUEST['event_edit'] ) ? sanitize_text_field(wp_unslash($_REQUEST['event_edit'])) : 1,
-				'view'       => isset( $_REQUEST['event_view'] ) ? sanitize_text_field(wp_unslash($_REQUEST['event_view'])) : 1,
-				'delete'     => isset( $_REQUEST['event_delete'] ) ? sanitize_text_field(wp_unslash($_REQUEST['event_delete'])) : 1,
-			),
-		);
-		// Access rights for 'parent' role.
-		$role_access_right_parent            = array();
-		$role_access_right_parent['parent'] = array(
-			'teacher' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-teacher.png' ),
-				'menu_title' => 'Teacher',
-				'page_link'  => 'teacher',
-				'own_data'   => isset( $_REQUEST['teacher_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['teacher_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['teacher_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['teacher_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['teacher_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['teacher_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['teacher_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['teacher_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['teacher_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['teacher_delete'] ) ) : 0,
-			),
-			'student' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-student-icon.png' ),
-				'menu_title' => 'Student',
-				'page_link'  => 'student',
-				'own_data'   => isset( $_REQUEST['student_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['student_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['student_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['student_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['student_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['student_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['student_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['student_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['student_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['student_delete'] ) ) : 0,
-			),
-			'parent' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-parents.png' ),
-				'menu_title' => 'Parent',
-				'page_link'  => 'parent',
-				'own_data'   => isset( $_REQUEST['parent_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['parent_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['parent_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['parent_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['parent_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['parent_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['parent_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['parent_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['parent_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['parent_delete'] ) ) : 0,
-			),
-			'subject' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-subject.png' ),
-				'menu_title' => 'Subject',
-				'page_link'  => 'subject',
-				'own_data'   => isset( $_REQUEST['subject_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['subject_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['subject_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['subject_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['subject_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['subject_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['subject_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['subject_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['subject_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['subject_delete'] ) ) : 0,
-			),
-			'schedule' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-class-route.png' ),
-				'menu_title' => 'Class Routine',
-				'page_link'  => 'schedule',
-				'own_data'   => isset( $_REQUEST['schedule_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['schedule_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['schedule_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['schedule_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['schedule_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['schedule_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['schedule_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['schedule_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['schedule_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['schedule_delete'] ) ) : 0,
-			),
-			'virtual_classroom' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-virtual-classroom.png' ),
-				'menu_title' => 'virtual_classroom',
-				'page_link'  => 'virtual_classroom',
-				'own_data'   => isset( $_REQUEST['virtual_classroom_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['virtual_classroom_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['virtual_classroom_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['virtual_classroom_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['virtual_classroom_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['virtual_classroom_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['virtual_classroom_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['virtual_classroom_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['virtual_classroom_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['virtual_classroom_delete'] ) ) : 0,
-			),
-			'attendance' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-attandance.png' ),
-				'menu_title' => 'Attendance',
-				'page_link'  => 'attendance',
-				'own_data'   => isset( $_REQUEST['attendance_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['attendance_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['attendance_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['attendance_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['attendance_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['attendance_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['attendance_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['attendance_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['attendance_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['attendance_delete'] ) ) : 0,
-			),
-			'exam' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-exam.png' ),
-				'menu_title' => 'Exam',
-				'page_link'  => 'exam',
-				'own_data'   => isset( $_REQUEST['exam_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['exam_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['exam_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['exam_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['exam_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['exam_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['exam_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['exam_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['exam_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['exam_delete'] ) ) : 0,
-			),
-			'class_room' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-exam.png' ),
-				'menu_title' => 'Class Room',
-				'page_link'  => 'class_room',
-				'own_data'   => isset( $_REQUEST['class_room_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['class_room_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['class_room_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['class_room_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['class_room_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_delete'] ) ) : 0,
-			),
-			'hostel' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-hostel.png' ),
-				'menu_title' => 'Hostel',
-				'page_link'  => 'hostel',
-				'own_data'   => isset( $_REQUEST['hostel_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['hostel_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['hostel_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['hostel_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['hostel_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_delete'] ) ) : 0,
-			),
-			'notification' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-attandance.png' ),
-				'menu_title' => 'Notification',
-				'page_link'  => 'notification',
-				'own_data'   => isset( $_REQUEST['notification_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notification_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['notification_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notification_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['notification_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notification_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['notification_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notification_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['notification_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notification_delete'] ) ) : 0,
-			),
-			'homework' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-homework.png' ),
-				'menu_title' => 'Home Work',
-				'page_link'  => 'homework',
-				'own_data'   => isset( $_REQUEST['homework_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['homework_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['homework_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['homework_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['homework_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['homework_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['homework_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['homework_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['homework_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['homework_delete'] ) ) : 0,
-			),
-			'manage_marks' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-mark-manage.png' ),
-				'menu_title' => 'Mark Manage',
-				'page_link'  => 'manage-marks',
-				'own_data'   => isset( $_REQUEST['manage_marks_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['manage_marks_own_data'] ) ) : 0,
-				'add'        => isset( $_REQUEST['manage_marks_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['manage_marks_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['manage_marks_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['manage_marks_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['manage_marks_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['manage_marks_view'] ) ) : 0,
-				'delete'     => isset( $_REQUEST['manage_marks_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['manage_marks_delete'] ) ) : 0,
-			),
-			'feepayment' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-fee.png' ),
-				'menu_title' => 'Fee Payment',
-				'page_link'  => 'feepayment',
-				'own_data'   => isset( $_REQUEST['feepayment_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['feepayment_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['feepayment_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['feepayment_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['feepayment_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['feepayment_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['feepayment_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['feepayment_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['feepayment_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['feepayment_delete'] ) ) : 0,
-			),
-			'document' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-hostel.png' ),
-				'menu_title' => 'Document',
-				'page_link'  => 'document',
-				'own_data'   => isset( $_REQUEST['document_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['document_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['document_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['document_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['document_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['document_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['document_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['document_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['document_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['document_delete'] ) ) : 0,
-			),
-			'leave' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-notification_new.png' ),
-				'app_icone'  => plugins_url( 'mjschool/assets/images/icons/mjschool-notification_new.png' ),
-				'menu_title' => 'Leave',
-				'page_link'  => 'leave',
-				'own_data'   => isset( $_REQUEST['leave_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['leave_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['leave_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['leave_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['leave_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['leave_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['leave_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['leave_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['leave_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['leave_delete'] ) ) : 0,
-			),
-			'payment' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-payment.png' ),
-				'menu_title' => 'Payment',
-				'page_link'  => 'payment',
-				'own_data'   => isset( $_REQUEST['payment_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['payment_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['payment_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['payment_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['payment_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['payment_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['payment_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['payment_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['payment_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['payment_delete'] ) ) : 0,
-			),
-			'transport' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-transport.png' ),
-				'menu_title' => 'Transport',
-				'page_link'  => 'transport',
-				'own_data'   => isset( $_REQUEST['transport_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['transport_own_data'] ) ) : 0,
-				'add'        => isset( $_REQUEST['transport_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['transport_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['transport_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['transport_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['transport_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['transport_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['transport_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['transport_delete'] ) ) : 0,
-			),
-			'notice' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-notice.png' ),
-				'menu_title' => 'Notice Board',
-				'page_link'  => 'notice',
-				'own_data'   => isset( $_REQUEST['notice_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notice_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['notice_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notice_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['notice_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notice_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['notice_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notice_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['notice_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notice_delete'] ) ) : 0,
-			),
-			'message' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-message.png' ),
-				'menu_title' => 'Message',
-				'page_link'  => 'message',
-				'own_data'   => isset( $_REQUEST['message_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['message_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message_add'] ) ) : 1,
-				'edit'       => isset( $_REQUEST['message_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['message_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['message_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message_delete'] ) ) : 1,
-			),
-			'holiday' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-holiday.png' ),
-				'menu_title' => 'Holiday',
-				'page_link'  => 'holiday',
-				'own_data'   => isset( $_REQUEST['holiday_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['holiday_own_data'] ) ) : 0,
-				'add'        => isset( $_REQUEST['holiday_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['holiday_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['holiday_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['holiday_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['holiday_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['holiday_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['holiday_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['holiday_delete'] ) ) : 0,
-			),
-			'library' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-library.png' ),
-				'menu_title' => 'Library',
-				'page_link'  => 'library',
-				'own_data'   => isset( $_REQUEST['library_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['library_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['library_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['library_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['library_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['library_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['library_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['library_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['library_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['library_delete'] ) ) : 0,
-			),
-			'certificate' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-library.png' ),
-				'menu_title' => 'Certificate',
-				'page_link'  => 'certificate',
-				'own_data'   => isset( $_REQUEST['certificate_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['certificate_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['certificate_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['certificate_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['certificate_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['certificate_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['certificate_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['certificate_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['certificate_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['certificate_delete'] ) ) : 0,
-			),
-			'account' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-account.png' ),
-				'menu_title' => 'Account',
-				'page_link'  => 'account',
-				'own_data'   => isset( $_REQUEST['account_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['account_own_data'] ) ) : 1,
-				'add'        => isset( $_REQUEST['account_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['account_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['account_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['account_edit'] ) ) : 1,
-				'view'       => isset( $_REQUEST['account_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['account_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['account_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['account_delete'] ) ) : 0,
-			),
-			'report' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-report.png' ),
-				'menu_title' => 'Report',
-				'page_link'  => 'report',
-				'own_data'   => isset( $_REQUEST['report_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['report_own_data'] ) ) : 0,
-				'add'        => isset( $_REQUEST['report_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['report_add'] ) ) : 0,
-				'edit'       => isset( $_REQUEST['report_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['report_edit'] ) ) : 0,
-				'view'       => isset( $_REQUEST['report_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['report_view'] ) ) : 0,
-				'delete'     => isset( $_REQUEST['report_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['report_delete'] ) ) : 0,
-			),
-			'event' => array(
-				'menu_icone' => plugins_url( 'mjschool/assets/images/icons/mjschool-report.png' ),
-				'menu_title' => 'Event',
-				'page_link'  => 'event',
-				'own_data'   => isset( $_REQUEST['event_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['event_own_data'] ) ) : 0,
-				'add'        => isset( $_REQUEST['event_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['event_add'] ) ) : 1,
-				'edit'       => isset( $_REQUEST['event_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['event_edit'] ) ) : 1,
-				'view'       => isset( $_REQUEST['event_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['event_view'] ) ) : 1,
-				'delete'     => isset( $_REQUEST['event_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['event_delete'] ) ) : 1,
-			),
-		);
-		// Access rights for 'supportstaff' role.
-		$role_access_right_support_staff                 = array();
-		$role_access_right_support_staff['supportstaff'] = array(
-			// Admission
-			'admission' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-admission.png'),
-				'menu_title' => 'Admission',
-				'page_link'  => 'admission',
-				'own_data'   => isset($_REQUEST['admission_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['admission_own_data'])) : 0,
-				'add'        => isset($_REQUEST['admission_add']) ? sanitize_text_field(wp_unslash($_REQUEST['admission_add'])) : 1,
-				'edit'       => isset($_REQUEST['admission_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['admission_edit'])) : 1,
-				'view'       => isset($_REQUEST['admission_view']) ? sanitize_text_field(wp_unslash($_REQUEST['admission_view'])) : 1,
-				'delete'     => isset($_REQUEST['admission_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['admission_delete'])) : 0,
-			),
-			// Student
-			'student' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-student-icon.png'),
-				'menu_title' => 'Student',
-				'page_link'  => 'student',
-				'own_data'   => isset($_REQUEST['student_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['student_own_data'])) : 0,
-				'add'        => isset($_REQUEST['student_add']) ? sanitize_text_field(wp_unslash($_REQUEST['student_add'])) : 1,
-				'edit'       => isset($_REQUEST['student_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['student_edit'])) : 1,
-				'view'       => isset($_REQUEST['student_view']) ? sanitize_text_field(wp_unslash($_REQUEST['student_view'])) : 1,
-				'delete'     => isset($_REQUEST['student_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['student_delete'])) : 1,
-			),
-			// Teacher
-			'teacher' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'Teacher',
-				'page_link'  => 'teacher',
-				'own_data'   => isset($_REQUEST['teacher_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_own_data'])) : 0,
-				'add'        => isset($_REQUEST['teacher_add']) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_add'])) : 1,
-				'edit'       => isset($_REQUEST['teacher_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_edit'])) : 1,
-				'view'       => isset($_REQUEST['teacher_view']) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_view'])) : 1,
-				'delete'     => isset($_REQUEST['teacher_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_delete'])) : 1,
-			),
-			// Support Staff
-			'supportstaff' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-support-staff.png'),
-				'menu_title' => 'Supportstaff',
-				'page_link'  => 'supportstaff',
-				'own_data'   => isset($_REQUEST['supportstaff_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_own_data'])) : 1,
-				'add'        => isset($_REQUEST['supportstaff_add']) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_add'])) : 0,
-				'edit'       => isset($_REQUEST['supportstaff_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_edit'])) : 0,
-				'view'       => isset($_REQUEST['supportstaff_view']) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_view'])) : 1,
-				'delete'     => isset($_REQUEST['supportstaff_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_delete'])) : 0,
-			),
-			// Parent
-			'parent' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-parents.png'),
-				'menu_title' => 'Parent',
-				'page_link'  => 'parent',
-				'own_data'   => isset($_REQUEST['parent_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['parent_own_data'])) : 0,
-				'add'        => isset($_REQUEST['parent_add']) ? sanitize_text_field(wp_unslash($_REQUEST['parent_add'])) : 1,
-				'edit'       => isset($_REQUEST['parent_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['parent_edit'])) : 1,
-				'view'       => isset($_REQUEST['parent_view']) ? sanitize_text_field(wp_unslash($_REQUEST['parent_view'])) : 1,
-				'delete'     => isset($_REQUEST['parent_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['parent_delete'])) : 1,
-			),
-			// Subject
-			'subject' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-subject.png'),
-				'menu_title' => 'Subject',
-				'page_link'  => 'subject',
-				'own_data'   => isset($_REQUEST['subject_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['subject_own_data'])) : 0,
-				'add'        => isset($_REQUEST['subject_add']) ? sanitize_text_field(wp_unslash($_REQUEST['subject_add'])) : 1,
-				'edit'       => isset($_REQUEST['subject_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['subject_edit'])) : 1,
-				'view'       => isset($_REQUEST['subject_view']) ? sanitize_text_field(wp_unslash($_REQUEST['subject_view'])) : 1,
-				'delete'     => isset($_REQUEST['subject_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['subject_delete'])) : 1,
-			),
-			// Class
-			'class' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-class.png'),
-				'menu_title' => 'Class',
-				'page_link'  => 'class',
-				'own_data'   => isset($_REQUEST['class_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['class_own_data'])) : 0,
-				'add'        => isset($_REQUEST['class_add']) ? sanitize_text_field(wp_unslash($_REQUEST['class_add'])) : 1,
-				'edit'       => isset($_REQUEST['class_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['class_edit'])) : 1,
-				'view'       => isset($_REQUEST['class_view']) ? sanitize_text_field(wp_unslash($_REQUEST['class_view'])) : 1,
-				'delete'     => isset($_REQUEST['class_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['class_delete'])) : 1,
-			),
-			// Class Routine
-			'schedule' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-class-route.png'),
-				'menu_title' => 'Class Routine',
-				'page_link'  => 'schedule',
-				'own_data'   => isset($_REQUEST['schedule_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_own_data'])) : 0,
-				'add'        => isset($_REQUEST['schedule_add']) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_add'])) : 1,
-				'edit'       => isset($_REQUEST['schedule_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_edit'])) : 1,
-				'view'       => isset($_REQUEST['schedule_view']) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_view'])) : 1,
-				'delete'     => isset($_REQUEST['schedule_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_delete'])) : 1,
-			),
-			// Virtual Classroom
-			'virtual_classroom' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-virtual-classroom.png'),
-				'menu_title' => 'virtual_classroom',
-				'page_link'  => 'virtual_classroom',
-				'own_data'   => isset($_REQUEST['virtual_classroom_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_own_data'])) : 0,
-				'add'        => isset($_REQUEST['virtual_classroom_add']) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_add'])) : 1,
-				'edit'       => isset($_REQUEST['virtual_classroom_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_edit'])) : 1,
-				'view'       => isset($_REQUEST['virtual_classroom_view']) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_view'])) : 1,
-				'delete'     => isset($_REQUEST['virtual_classroom_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_delete'])) : 1,
-			),
-			// Attendance
-			'attendance' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-attandance.png'),
-				'menu_title' => 'Attendance',
-				'page_link'  => 'attendance',
-				'own_data'   => isset($_REQUEST['attendance_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_own_data'])) : 0,
-				'add'        => isset($_REQUEST['attendance_add']) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_add'])) : 1,
-				'edit'       => isset($_REQUEST['attendance_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_edit'])) : 1,
-				'view'       => isset($_REQUEST['attendance_view']) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_view'])) : 1,
-				'delete'     => isset($_REQUEST['attendance_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_delete'])) : 1,
-			),
-			// Exam
-			'exam' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-exam.png'),
-				'menu_title' => 'Exam',
-				'page_link'  => 'exam',
-				'own_data'   => isset($_REQUEST['exam_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_own_data'])) : 0,
-				'add'        => isset($_REQUEST['exam_add']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_add'])) : 1,
-				'edit'       => isset($_REQUEST['exam_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_edit'])) : 1,
-				'view'       => isset($_REQUEST['exam_view']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_view'])) : 1,
-				'delete'     => isset($_REQUEST['exam_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_delete'])) : 1,
-			),
-			// Class Room
-			'class_room' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-exam.png'),
-				'menu_title' => 'Class Room',
-				'page_link'  => 'class_room',
-				'own_data'   => isset($_REQUEST['class_room_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_own_data'])) : 1,
-				'add'        => isset($_REQUEST['class_room_add']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_add'])) : 1,
-				'edit'       => isset($_REQUEST['class_room_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_edit'])) : 1,
-				'view'       => isset($_REQUEST['class_room_view']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_view'])) : 1,
-				'delete'     => isset($_REQUEST['class_room_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_delete'])) : 1,
-			),
-			// Notification
-			'notification' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-attandance.png'),
-				'menu_title' => 'Notification',
-				'page_link'  => 'notification',
-				'own_data'   => isset($_REQUEST['notification_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['notification_own_data'])) : 1,
-				'add'        => isset($_REQUEST['notification_add']) ? sanitize_text_field(wp_unslash($_REQUEST['notification_add'])) : 1,
-				'edit'       => isset($_REQUEST['notification_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['notification_edit'])) : 1,
-				'view'       => isset($_REQUEST['notification_view']) ? sanitize_text_field(wp_unslash($_REQUEST['notification_view'])) : 1,
-				'delete'     => isset($_REQUEST['notification_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['notification_delete'])) : 1,
-			),
-			// Exam Hall
-			'exam_hall' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-exam_hall.png'),
-				'menu_title' => 'Exam Hall',
-				'page_link'  => 'exam_hall',
-				'own_data'   => isset($_REQUEST['exam_hall_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_own_data'])) : 0,
-				'add'        => isset($_REQUEST['exam_hall_add']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_add'])) : 1,
-				'edit'       => isset($_REQUEST['exam_hall_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_edit'])) : 1,
-				'view'       => isset($_REQUEST['exam_hall_view']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_view'])) : 1,
-				'delete'     => isset($_REQUEST['exam_hall_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_delete'])) : 1,
-			),
-			// Grade
-			'grade' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-grade.png'),
-				'menu_title' => 'Grade',
-				'page_link'  => 'grade',
-				'own_data'   => isset($_REQUEST['grade_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['grade_own_data'])) : 0,
-				'add'        => isset($_REQUEST['grade_add']) ? sanitize_text_field(wp_unslash($_REQUEST['grade_add'])) : 1,
-				'edit'       => isset($_REQUEST['grade_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['grade_edit'])) : 1,
-				'view'       => isset($_REQUEST['grade_view']) ? sanitize_text_field(wp_unslash($_REQUEST['grade_view'])) : 1,
-				'delete'     => isset($_REQUEST['grade_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['grade_delete'])) : 1,
-			),
-			// Manage Marks
-			'manage_marks' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-mark-manage.png'),
-				'menu_title' => 'Mark Manage',
-				'page_link'  => 'manage-marks',
-				'own_data'   => isset($_REQUEST['manage_marks_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_own_data'])) : 0,
-				'add'        => isset($_REQUEST['manage_marks_add']) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_add'])) : 1,
-				'edit'       => isset($_REQUEST['manage_marks_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_edit'])) : 1,
-				'view'       => isset($_REQUEST['manage_marks_view']) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_view'])) : 1,
-				'delete'     => isset($_REQUEST['manage_marks_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_delete'])) : 0,
-			),
-			// Homework
-			'homework' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-homework.png'),
-				'menu_title' => 'Home Work',
-				'page_link'  => 'homework',
-				'own_data'   => isset($_REQUEST['homework_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['homework_own_data'])) : 0,
-				'add'        => isset($_REQUEST['homework_add']) ? sanitize_text_field(wp_unslash($_REQUEST['homework_add'])) : 1,
-				'edit'       => isset($_REQUEST['homework_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['homework_edit'])) : 1,
-				'view'       => isset($_REQUEST['homework_view']) ? sanitize_text_field(wp_unslash($_REQUEST['homework_view'])) : 1,
-				'delete'     => isset($_REQUEST['homework_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['homework_delete'])) : 1,
-			),
-			// Hostel
-			'hostel' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-hostel.png'),
-				'menu_title' => 'Hostel',
-				'page_link'  => 'hostel',
-				'own_data'   => isset($_REQUEST['hostel_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_own_data'])) : 0,
-				'add'        => isset($_REQUEST['hostel_add']) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_add'])) : 1,
-				'edit'       => isset($_REQUEST['hostel_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_edit'])) : 1,
-				'view'       => isset($_REQUEST['hostel_view']) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_view'])) : 1,
-				'delete'     => isset($_REQUEST['hostel_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_delete'])) : 1,
-			),
-			// Document
-			'document' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-hostel.png'),
-				'menu_title' => 'Document',
-				'page_link'  => 'document',
-				'own_data'   => isset($_REQUEST['document_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['document_own_data'])) : 1,
-				'add'        => isset($_REQUEST['document_add']) ? sanitize_text_field(wp_unslash($_REQUEST['document_add'])) : 1,
-				'edit'       => isset($_REQUEST['document_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['document_edit'])) : 1,
-				'view'       => isset($_REQUEST['document_view']) ? sanitize_text_field(wp_unslash($_REQUEST['document_view'])) : 1,
-				'delete'     => isset($_REQUEST['document_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['document_delete'])) : 1,
-			),
-			// Leave
-			'leave' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-notification_new.png'),
-				'app_icone'  => plugins_url('mjschool/assets/images/icons/mjschool-notification_new.png'),
-				'menu_title' => 'Leave',
-				'page_link'  => 'leave',
-				'own_data'   => isset($_REQUEST['leave_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['leave_own_data'])) : 0,
-				'add'        => isset($_REQUEST['leave_add']) ? sanitize_text_field(wp_unslash($_REQUEST['leave_add'])) : 1,
-				'edit'       => isset($_REQUEST['leave_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['leave_edit'])) : 1,
-				'view'       => isset($_REQUEST['leave_view']) ? sanitize_text_field(wp_unslash($_REQUEST['leave_view'])) : 1,
-				'delete'     => isset($_REQUEST['leave_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['leave_delete'])) : 1,
-			),
-			// Transport
-			'transport' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-transport.png'),
-				'menu_title' => 'Transport',
-				'page_link'  => 'transport',
-				'own_data'   => isset($_REQUEST['transport_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['transport_own_data'])) : 0,
-				'add'        => isset($_REQUEST['transport_add']) ? sanitize_text_field(wp_unslash($_REQUEST['transport_add'])) : 1,
-				'edit'       => isset($_REQUEST['transport_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['transport_edit'])) : 1,
-				'view'       => isset($_REQUEST['transport_view']) ? sanitize_text_field(wp_unslash($_REQUEST['transport_view'])) : 1,
-				'delete'     => isset($_REQUEST['transport_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['transport_delete'])) : 1,
-			),
-			// Notice Board
-			'notice' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-notice.png'),
-				'menu_title' => 'Notice Board',
-				'page_link'  => 'notice',
-				'own_data'   => isset($_REQUEST['notice_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['notice_own_data'])) : 0,
-				'add'        => isset($_REQUEST['notice_add']) ? sanitize_text_field(wp_unslash($_REQUEST['notice_add'])) : 1,
-				'edit'       => isset($_REQUEST['notice_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['notice_edit'])) : 1,
-				'view'       => isset($_REQUEST['notice_view']) ? sanitize_text_field(wp_unslash($_REQUEST['notice_view'])) : 1,
-				'delete'     => isset($_REQUEST['notice_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['notice_delete'])) : 1,
-			),
-			// Message
-			'message' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-message.png'),
-				'menu_title' => 'Message',
-				'page_link'  => 'message',
-				'own_data'   => isset($_REQUEST['message_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['message_own_data'])) : 0,
-				'add'        => isset($_REQUEST['message_add']) ? sanitize_text_field(wp_unslash($_REQUEST['message_add'])) : 1,
-				'edit'       => isset($_REQUEST['message_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['message_edit'])) : 0,
-				'view'       => isset($_REQUEST['message_view']) ? sanitize_text_field(wp_unslash($_REQUEST['message_view'])) : 1,
-				'delete'     => isset($_REQUEST['message_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['message_delete'])) : 1,
-			),
-			// Migration
-			'migration' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-message.png'),
-				'menu_title' => 'Migration',
-				'page_link'  => 'migration',
-				'own_data'   => isset($_REQUEST['migration_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['migration_own_data'])) : 0,
-				'add'        => isset($_REQUEST['migration_add']) ? sanitize_text_field(wp_unslash($_REQUEST['migration_add'])) : 1,
-				'edit'       => isset($_REQUEST['migration_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['migration_edit'])) : 0,
-				'view'       => isset($_REQUEST['migration_view']) ? sanitize_text_field(wp_unslash($_REQUEST['migration_view'])) : 1,
-				'delete'     => isset($_REQUEST['migration_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['migration_delete'])) : 0,
-			),
-			// Tax
-			'tax' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-fee.png'),
-				'menu_title' => 'Tax',
-				'page_link'  => 'tax',
-				'own_data'   => isset($_REQUEST['tax_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['tax_own_data'])) : 0,
-				'add'        => isset($_REQUEST['tax_add']) ? sanitize_text_field(wp_unslash($_REQUEST['tax_add'])) : 0,
-				'edit'       => isset($_REQUEST['tax_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['tax_edit'])) : 0,
-				'view'       => isset($_REQUEST['tax_view']) ? sanitize_text_field(wp_unslash($_REQUEST['tax_view'])) : 1,
-				'delete'     => isset($_REQUEST['tax_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['tax_delete'])) : 0,
-			),
-			// Fee Payment
-			'feepayment' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-fee.png'),
-				'menu_title' => 'Fee Payment',
-				'page_link'  => 'feepayment',
-				'own_data'   => isset($_REQUEST['feepayment_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_own_data'])) : 0,
-				'add'        => isset($_REQUEST['feepayment_add']) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_add'])) : 1,
-				'edit'       => isset($_REQUEST['feepayment_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_edit'])) : 1,
-				'view'       => isset($_REQUEST['feepayment_view']) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_view'])) : 1,
-				'delete'     => isset($_REQUEST['feepayment_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['feepayment_delete'])) : 1,
-			),
-			// Payment
-			'payment' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-payment.png'),
-				'menu_title' => 'Payment',
-				'page_link'  => 'payment',
-				'own_data'   => isset($_REQUEST['payment_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['payment_own_data'])) : 0,
-				'add'        => isset($_REQUEST['payment_add']) ? sanitize_text_field(wp_unslash($_REQUEST['payment_add'])) : 1,
-				'edit'       => isset($_REQUEST['payment_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['payment_edit'])) : 1,
-				'view'       => isset($_REQUEST['payment_view']) ? sanitize_text_field(wp_unslash($_REQUEST['payment_view'])) : 1,
-				'delete'     => isset($_REQUEST['payment_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['payment_delete'])) : 1,
-			),
-			// Holiday
-			'holiday' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-holiday.png'),
-				'menu_title' => 'Holiday',
-				'page_link'  => 'holiday',
-				'own_data'   => isset($_REQUEST['holiday_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_own_data'])) : 0,
-				'add'        => isset($_REQUEST['holiday_add']) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_add'])) : 1,
-				'edit'       => isset($_REQUEST['holiday_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_edit'])) : 1,
-				'view'       => isset($_REQUEST['holiday_view']) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_view'])) : 1,
-				'delete'     => isset($_REQUEST['holiday_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_delete'])) : 1,
-			),
-			// Library
-			'library' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-library.png'),
-				'menu_title' => 'Library',
-				'page_link'  => 'library',
-				'own_data'   => isset($_REQUEST['library_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['library_own_data'])) : 0,
-				'add'        => isset($_REQUEST['library_add']) ? sanitize_text_field(wp_unslash($_REQUEST['library_add'])) : 1,
-				'edit'       => isset($_REQUEST['library_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['library_edit'])) : 1,
-				'view'       => isset($_REQUEST['library_view']) ? sanitize_text_field(wp_unslash($_REQUEST['library_view'])) : 1,
-				'delete'     => isset($_REQUEST['library_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['library_delete'])) : 1,
-			),
-			// Certificate
-			'certificate' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-library.png'),
-				'menu_title' => 'Certificate',
-				'page_link'  => 'certificate',
-				'own_data'   => isset($_REQUEST['certificate_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_own_data'])) : 0,
-				'add'        => isset($_REQUEST['certificate_add']) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_add'])) : 0,
-				'edit'       => isset($_REQUEST['certificate_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_edit'])) : 0,
-				'view'       => isset($_REQUEST['certificate_view']) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_view'])) : 0,
-				'delete'     => isset($_REQUEST['certificate_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_delete'])) : 0,
-			),
-			// Custom Field
-			'custom_field' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-custom.png'),
-				'menu_title' => 'Custom Field',
-				'page_link'  => 'custom_field',
-				'own_data'   => isset($_REQUEST['custom_field_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['custom_field_own_data'])) : 0,
-				'add'        => isset($_REQUEST['custom_field_add']) ? sanitize_text_field(wp_unslash($_REQUEST['custom_field_add'])) : 1,
-				'edit'       => isset($_REQUEST['custom_field_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['custom_field_edit'])) : 1,
-				'view'       => isset($_REQUEST['custom_field_view']) ? sanitize_text_field(wp_unslash($_REQUEST['custom_field_view'])) : 1,
-				'delete'     => isset($_REQUEST['custom_field_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['custom_field_delete'])) : 1,
-			),
-			// Report
-			'report' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-report.png'),
-				'menu_title' => 'Report',
-				'page_link'  => 'report',
-				'own_data'   => isset($_REQUEST['report_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['report_own_data'])) : 0,
-				'add'        => isset($_REQUEST['report_add']) ? sanitize_text_field(wp_unslash($_REQUEST['report_add'])) : 0,
-				'edit'       => isset($_REQUEST['report_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['report_edit'])) : 0,
-				'view'       => isset($_REQUEST['report_view']) ? sanitize_text_field(wp_unslash($_REQUEST['report_view'])) : 1,
-				'delete'     => isset($_REQUEST['report_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['report_delete'])) : 0,
-			),
-			// SMS Setting
-			'mjschool_setting' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool_setting.png'),
-				'menu_title' => 'SMS Setting',
-				'page_link'  => 'mjschool_setting',
-				'own_data'   => isset($_REQUEST['mjschool_setting_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_setting_own_data'])) : 0,
-				'add'        => isset($_REQUEST['mjschool_setting_add']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_setting_add'])) : 1,
-				'edit'       => isset($_REQUEST['mjschool_setting_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_setting_edit'])) : 1,
-				'view'       => isset($_REQUEST['mjschool_setting_view']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_setting_view'])) : 1,
-				'delete'     => isset($_REQUEST['mjschool_setting_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_setting_delete'])) : 0,
-			),
-			// Email Template
-			'email_template' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-email-template.png'),
-				'menu_title' => 'Email Template',
-				'page_link'  => 'email_template',
-				'own_data'   => isset($_REQUEST['email_template_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['email_template_own_data'])) : 0,
-				'add'        => isset($_REQUEST['email_template_add']) ? sanitize_text_field(wp_unslash($_REQUEST['email_template_add'])) : 1,
-				'edit'       => isset($_REQUEST['email_template_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['email_template_edit'])) : 1,
-				'view'       => isset($_REQUEST['email_template_view']) ? sanitize_text_field(wp_unslash($_REQUEST['email_template_view'])) : 1,
-				'delete'     => isset($_REQUEST['email_template_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['email_template_delete'])) : 0,
-			),
-			// Email Template (duplicate module)
-			'mjschool_template' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-email-template.png'),
-				'menu_title' => 'Email Template',
-				'page_link'  => 'mjschool_template',
-				'own_data'   => isset($_REQUEST['mjschool_template_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_template_own_data'])) : 0,
-				'add'        => isset($_REQUEST['mjschool_template_add']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_template_add'])) : 1,
-				'edit'       => isset($_REQUEST['mjschool_template_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_template_edit'])) : 1,
-				'view'       => isset($_REQUEST['mjschool_template_view']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_template_view'])) : 1,
-				'delete'     => isset($_REQUEST['mjschool_template_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_template_delete'])) : 0,
-			),
-			// General Settings
-			'general_settings' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-general-settings.png'),
-				'menu_title' => 'General Settings',
-				'page_link'  => 'general_settings',
-				'own_data'   => isset($_REQUEST['general_settings_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['general_settings_own_data'])) : 0,
-				'add'        => isset($_REQUEST['general_settings_add']) ? sanitize_text_field(wp_unslash($_REQUEST['general_settings_add'])) : 0,
-				'edit'       => isset($_REQUEST['general_settings_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['general_settings_edit'])) : 0,
-				'view'       => isset($_REQUEST['general_settings_view']) ? sanitize_text_field(wp_unslash($_REQUEST['general_settings_view'])) : 0,
-				'delete'     => isset($_REQUEST['general_settings_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['general_settings_delete'])) : 0,
-			),
-			// Account
-			'account' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-account.png'),
-				'menu_title' => 'Account',
-				'page_link'  => 'account',
-				'own_data'   => isset($_REQUEST['account_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['account_own_data'])) : 1,
-				'add'        => isset($_REQUEST['account_add']) ? sanitize_text_field(wp_unslash($_REQUEST['account_add'])) : 0,
-				'edit'       => isset($_REQUEST['account_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['account_edit'])) : 1,
-				'view'       => isset($_REQUEST['account_view']) ? sanitize_text_field(wp_unslash($_REQUEST['account_view'])) : 1,
-				'delete'     => isset($_REQUEST['account_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['account_delete'])) : 0,
-			),
-			// Event
-			'event' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-report.png'),
-				'menu_title' => 'Event',
-				'page_link'  => 'event',
-				'own_data'   => isset($_REQUEST['event_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['event_own_data'])) : 0,
-				'add'        => isset($_REQUEST['event_add']) ? sanitize_text_field(wp_unslash($_REQUEST['event_add'])) : 1,
-				'edit'       => isset($_REQUEST['event_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['event_edit'])) : 1,
-				'view'       => isset($_REQUEST['event_view']) ? sanitize_text_field(wp_unslash($_REQUEST['event_view'])) : 1,
-				'delete'     => isset($_REQUEST['event_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['event_delete'])) : 1,
-			),
-		);
-		// Access rights for 'management' role.
-		$role_access_right_management               = array();
-		$role_access_right_management['management'] = array(
-			// NEw Menu Addded. //
-			'admission' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'Admission',
-				'page_link'  => 'admission',
-				'own_data'   => isset($_REQUEST['admission_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['admission_own_data'])) : 0,
-				'add'        => isset($_REQUEST['admission_add']) ? sanitize_text_field(wp_unslash($_REQUEST['admission_add'])) : 1,
-				'edit'       => isset($_REQUEST['admission_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['admission_edit'])) : 1,
-				'view'       => isset($_REQUEST['admission_view']) ? sanitize_text_field(wp_unslash($_REQUEST['admission_view'])) : 1,
-				'delete'     => isset($_REQUEST['admission_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['admission_delete'])) : 1,
-			),
-			'supportstaff' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'Supportstaff',
-				'page_link'  => 'supportstaff',
-				'own_data'   => isset($_REQUEST['supportstaff_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_own_data'])) : 0,
-				'add'        => isset($_REQUEST['supportstaff_add']) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_add'])) : 1,
-				'edit'       => isset($_REQUEST['supportstaff_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_edit'])) : 1,
-				'view'       => isset($_REQUEST['supportstaff_view']) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_view'])) : 1,
-				'delete'     => isset($_REQUEST['supportstaff_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['supportstaff_delete'])) : 1,
-			),
-			'exam_hall' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'Exam Hall',
-				'page_link'  => 'exam_hall',
-				'own_data'   => isset($_REQUEST['exam_hall_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_own_data'])) : 0,
-				'add'        => isset($_REQUEST['exam_hall_add']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_add'])) : 1,
-				'edit'       => isset($_REQUEST['exam_hall_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_edit'])) : 1,
-				'view'       => isset($_REQUEST['exam_hall_view']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_view'])) : 1,
-				'delete'     => isset($_REQUEST['exam_hall_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_hall_delete'])) : 1,
-			),
-			'grade' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'Grade',
-				'page_link'  => 'grade',
-				'own_data'   => isset($_REQUEST['grade_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['grade_own_data'])) : 0,
-				'add'        => isset($_REQUEST['grade_add']) ? sanitize_text_field(wp_unslash($_REQUEST['grade_add'])) : 1,
-				'edit'       => isset($_REQUEST['grade_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['grade_edit'])) : 1,
-				'view'       => isset($_REQUEST['grade_view']) ? sanitize_text_field(wp_unslash($_REQUEST['grade_view'])) : 1,
-				'delete'     => isset($_REQUEST['grade_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['grade_delete'])) : 1,
-			),
-			'notification' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'Notification',
-				'page_link'  => 'notification',
-				'own_data'   => isset($_REQUEST['notification_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['notification_own_data'])) : 0,
-				'add'        => isset($_REQUEST['notification_add']) ? sanitize_text_field(wp_unslash($_REQUEST['notification_add'])) : 1,
-				'edit'       => isset($_REQUEST['notification_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['notification_edit'])) : 1,
-				'view'       => isset($_REQUEST['notification_view']) ? sanitize_text_field(wp_unslash($_REQUEST['notification_view'])) : 1,
-				'delete'     => isset($_REQUEST['notification_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['notification_delete'])) : 1,
-			),
-			'custom_field' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'Custom Field',
-				'page_link'  => 'custom_field',
-				'own_data'   => isset($_REQUEST['custom_field_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['custom_field_own_data'])) : 0,
-				'add'        => isset($_REQUEST['custom_field_add']) ? sanitize_text_field(wp_unslash($_REQUEST['custom_field_add'])) : 1,
-				'edit'       => isset($_REQUEST['custom_field_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['custom_field_edit'])) : 1,
-				'view'       => isset($_REQUEST['custom_field_view']) ? sanitize_text_field(wp_unslash($_REQUEST['custom_field_view'])) : 1,
-				'delete'     => isset($_REQUEST['custom_field_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['custom_field_delete'])) : 1,
-			),
-			'migration' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'Migration',
-				'page_link'  => 'migration',
-				'own_data'   => isset($_REQUEST['migration_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['migration_own_data'])) : 0,
-				'add'        => isset($_REQUEST['migration_add']) ? sanitize_text_field(wp_unslash($_REQUEST['migration_add'])) : 0,
-				'edit'       => isset($_REQUEST['migration_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['migration_edit'])) : 0,
-				'view'       => isset($_REQUEST['migration_view']) ? sanitize_text_field(wp_unslash($_REQUEST['migration_view'])) : 1,
-				'delete'     => isset($_REQUEST['migration_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['migration_delete'])) : 0,
-			),
-			'mjschool_setting' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'SMS Setting',
-				'page_link'  => 'mjschool_setting',
-				'own_data'   => isset($_REQUEST['mjschool_setting_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_setting_own_data'])) : 0,
-				'add'        => isset($_REQUEST['mjschool_setting_add']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_setting_add'])) : 0,
-				'edit'       => isset($_REQUEST['mjschool_setting_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_setting_edit'])) : 1,
-				'view'       => isset($_REQUEST['mjschool_setting_view']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_setting_view'])) : 1,
-				'delete'     => isset($_REQUEST['mjschool_setting_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_setting_delete'])) : 0,
-			),
-			// TAX. //
-			'tax' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-fee.png'),
-				'menu_title' => 'Tax',
-				'page_link'  => 'tax',
-				'own_data'   => isset($_REQUEST['tax_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['tax_own_data'])) : 0,
-				'add'        => isset($_REQUEST['tax_add']) ? sanitize_text_field(wp_unslash($_REQUEST['tax_add'])) : 1,
-				'edit'       => isset($_REQUEST['tax_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['tax_edit'])) : 1,
-				'view'       => isset($_REQUEST['tax_view']) ? sanitize_text_field(wp_unslash($_REQUEST['tax_view'])) : 1,
-				'delete'     => isset($_REQUEST['tax_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['tax_delete'])) : 1,
-			),
-			'email_template' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'Email Template',
-				'page_link'  => 'email_template',
-				'own_data'   => isset($_REQUEST['email_template_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['email_template_own_data'])) : 0,
-				'add'        => isset($_REQUEST['email_template_add']) ? sanitize_text_field(wp_unslash($_REQUEST['email_template_add'])) : 1,
-				'edit'       => isset($_REQUEST['email_template_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['email_template_edit'])) : 1,
-				'view'       => isset($_REQUEST['email_template_view']) ? sanitize_text_field(wp_unslash($_REQUEST['email_template_view'])) : 1,
-				'delete'     => isset($_REQUEST['email_template_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['email_template_delete'])) : 1,
-			),
-			'mjschool_template' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-email-template.png'),
-				'menu_title' => 'Email Template',
-				'page_link'  => 'mjschool_template',
-				'own_data'   => isset($_REQUEST['mjschool_template_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_template_own_data'])) : 0,
-				'add'        => isset($_REQUEST['mjschool_template_add']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_template_add'])) : 1,
-				'edit'       => isset($_REQUEST['mjschool_template_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_template_edit'])) : 1,
-				'view'       => isset($_REQUEST['mjschool_template_view']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_template_view'])) : 1,
-				'delete'     => isset($_REQUEST['mjschool_template_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_template_delete'])) : 0,
-			),
-			'access_right' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'Access Right',
-				'page_link'  => 'access_right',
-				'own_data'   => isset($_REQUEST['access_right_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['access_right_own_data'])) : 0,
-				'add'        => isset($_REQUEST['access_right_add']) ? sanitize_text_field(wp_unslash($_REQUEST['access_right_add'])) : 0,
-				'edit'       => isset($_REQUEST['access_right_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['access_right_edit'])) : 1,
-				'view'       => isset($_REQUEST['access_right_view']) ? sanitize_text_field(wp_unslash($_REQUEST['access_right_view'])) : 1,
-				'delete'     => isset($_REQUEST['access_right_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['access_right_delete'])) : 0,
-			),
-			// teacher.
-			'teacher' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-teacher.png'),
-				'menu_title' => 'Teacher',
-				'page_link'  => 'teacher',
-				'own_data'   => isset($_REQUEST['teacher_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_own_data'])) : 0,
-				'add'        => isset($_REQUEST['teacher_add']) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_add'])) : 1,
-				'edit'       => isset($_REQUEST['teacher_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_edit'])) : 1,
-				'view'       => isset($_REQUEST['teacher_view']) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_view'])) : 1,
-				'delete'     => isset($_REQUEST['teacher_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['teacher_delete'])) : 1,
-			),
-			// student.
-			'student' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-student-icon.png'),
-				'menu_title' => 'Student',
-				'page_link'  => 'student',
-				'own_data'   => isset($_REQUEST['student_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['student_own_data'])) : 0,
-				'add'        => isset($_REQUEST['student_add']) ? sanitize_text_field(wp_unslash($_REQUEST['student_add'])) : 1,
-				'edit'       => isset($_REQUEST['student_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['student_edit'])) : 1,
-				'view'       => isset($_REQUEST['student_view']) ? sanitize_text_field(wp_unslash($_REQUEST['student_view'])) : 1,
-				'delete'     => isset($_REQUEST['student_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['student_delete'])) : 1,
-			),
-			// parent.
-			'parent' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-parents.png'),
-				'menu_title' => 'Parent',
-				'page_link'  => 'parent',
-				'own_data'   => isset($_REQUEST['parent_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['parent_own_data'])) : 0,
-				'add'        => isset($_REQUEST['parent_add']) ? sanitize_text_field(wp_unslash($_REQUEST['parent_add'])) : 1,
-				'edit'       => isset($_REQUEST['parent_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['parent_edit'])) : 1,
-				'view'       => isset($_REQUEST['parent_view']) ? sanitize_text_field(wp_unslash($_REQUEST['parent_view'])) : 1,
-				'delete'     => isset($_REQUEST['parent_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['parent_delete'])) : 1,
-			),
-			// subject.
-			'subject' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-subject.png'),
-				'menu_title' => 'Subject',
-				'page_link'  => 'subject',
-				'own_data'   => isset($_REQUEST['subject_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['subject_own_data'])) : 0,
-				'add'        => isset($_REQUEST['subject_add']) ? sanitize_text_field(wp_unslash($_REQUEST['subject_add'])) : 1,
-				'edit'       => isset($_REQUEST['subject_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['subject_edit'])) : 1,
-				'view'       => isset($_REQUEST['subject_view']) ? sanitize_text_field(wp_unslash($_REQUEST['subject_view'])) : 1,
-				'delete'     => isset($_REQUEST['subject_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['subject_delete'])) : 1,
-			),
-			// class.
-			'class' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-class.png'),
-				'menu_title' => 'Class',
-				'page_link'  => 'class',
-				'own_data'   => isset($_REQUEST['class_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['class_own_data'])) : 0,
-				'add'        => isset($_REQUEST['class_add']) ? sanitize_text_field(wp_unslash($_REQUEST['class_add'])) : 1,
-				'edit'       => isset($_REQUEST['class_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['class_edit'])) : 1,
-				'view'       => isset($_REQUEST['class_view']) ? sanitize_text_field(wp_unslash($_REQUEST['class_view'])) : 1,
-				'delete'     => isset($_REQUEST['class_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['class_delete'])) : 1,
-			),
-			// virtual classroom.
-			'virtual_classroom' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-virtual-classroom.png'),
-				'menu_title' => 'virtual_classroom',
-				'page_link'  => 'virtual_classroom',
-				'own_data'   => isset($_REQUEST['virtual_classroom_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_own_data'])) : 0,
-				'add'        => isset($_REQUEST['virtual_classroom_add']) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_add'])) : 1,
-				'edit'       => isset($_REQUEST['virtual_classroom_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_edit'])) : 1,
-				'view'       => isset($_REQUEST['virtual_classroom_view']) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_view'])) : 1,
-				'delete'     => isset($_REQUEST['virtual_classroom_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['virtual_classroom_delete'])) : 1,
-			),
-			// schedule.
-			'schedule' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-class-route.png'),
-				'menu_title' => 'Class Routine',
-				'page_link'  => 'schedule',
-				'own_data'   => isset($_REQUEST['schedule_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_own_data'])) : 0,
-				'add'        => isset($_REQUEST['schedule_add']) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_add'])) : 1,
-				'edit'       => isset($_REQUEST['schedule_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_edit'])) : 1,
-				'view'       => isset($_REQUEST['schedule_view']) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_view'])) : 1,
-				'delete'     => isset($_REQUEST['schedule_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['schedule_delete'])) : 1,
-			),
-			// attendance.
-			'attendance' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-attandance.png'),
-				'menu_title' => 'Attendance',
-				'page_link'  => 'attendance',
-				'own_data'   => isset($_REQUEST['attendance_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_own_data'])) : 0,
-				'add'        => isset($_REQUEST['attendance_add']) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_add'])) : 1,
-				'edit'       => isset($_REQUEST['attendance_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_edit'])) : 1,
-				'view'       => isset($_REQUEST['attendance_view']) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_view'])) : 1,
-				'delete'     => isset($_REQUEST['attendance_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['attendance_delete'])) : 1,
-			),
-			// exam.
-			'exam' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-exam.png'),
-				'menu_title' => 'Exam',
-				'page_link'  => 'exam',
-				'own_data'   => isset($_REQUEST['exam_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_own_data'])) : 0,
-				'add'        => isset($_REQUEST['exam_add']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_add'])) : 1,
-				'edit'       => isset($_REQUEST['exam_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_edit'])) : 1,
-				'view'       => isset($_REQUEST['exam_view']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_view'])) : 1,
-				'delete'     => isset($_REQUEST['exam_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['exam_delete'])) : 1,
-			),
-			// class_room.
-			'class_room' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-exam.png'),
-				'menu_title' => 'Class Room',
-				'page_link'  => 'class_room',
-				'own_data'   => isset($_REQUEST['class_room_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_own_data'])) : 0,
-				'add'        => isset($_REQUEST['class_room_add']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_add'])) : 1,
-				'edit'       => isset($_REQUEST['class_room_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_edit'])) : 1,
-				'view'       => isset($_REQUEST['class_room_view']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_view'])) : 1,
-				'delete'     => isset($_REQUEST['class_room_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['class_room_delete'])) : 1,
-			),
-			// hostel.
-			'hostel' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-hostel.png'),
-				'menu_title' => 'Hostel',
-				'page_link'  => 'hostel',
-				'own_data'   => isset($_REQUEST['hostel_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_own_data'])) : 0,
-				'add'        => isset($_REQUEST['hostel_add']) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_add'])) : 1,
-				'edit'       => isset($_REQUEST['hostel_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_edit'])) : 1,
-				'view'       => isset($_REQUEST['hostel_view']) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_view'])) : 1,
-				'delete'     => isset($_REQUEST['hostel_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['hostel_delete'])) : 1,
-			),
-			// homework.
-			'homework' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-homework.png'),
-				'menu_title' => 'Home Work',
-				'page_link'  => 'homework',
-				'own_data'   => isset($_REQUEST['homework_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['homework_own_data'])) : 0,
-				'add'        => isset($_REQUEST['homework_add']) ? sanitize_text_field(wp_unslash($_REQUEST['homework_add'])) : 1,
-				'edit'       => isset($_REQUEST['homework_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['homework_edit'])) : 1,
-				'view'       => isset($_REQUEST['homework_view']) ? sanitize_text_field(wp_unslash($_REQUEST['homework_view'])) : 1,
-				'delete'     => isset($_REQUEST['homework_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['homework_delete'])) : 1,
-			),
-			// manage marks.
-			'manage_marks' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-mark-manage.png'),
-				'menu_title' => 'Mark Manage',
-				'page_link'  => 'manage-marks',
-				'own_data'   => isset($_REQUEST['manage_marks_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_own_data'])) : 0,
-				'add'        => isset($_REQUEST['manage_marks_add']) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_add'])) : 1,
-				'edit'       => isset($_REQUEST['manage_marks_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_edit'])) : 1,
-				'view'       => isset($_REQUEST['manage_marks_view']) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_view'])) : 1,
-				'delete'     => isset($_REQUEST['manage_marks_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['manage_marks_delete'])) : 1,
-			),
-			// payment.
-			'payment' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-payment.png'),
-				'menu_title' => 'Payment',
-				'page_link'  => 'payment',
-				'own_data'   => isset($_REQUEST['payment_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['payment_own_data'])) : 0,
-				'add'        => isset($_REQUEST['payment_add']) ? sanitize_text_field(wp_unslash($_REQUEST['payment_add'])) : 1,
-				'edit'       => isset($_REQUEST['payment_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['payment_edit'])) : 1,
-				'view'       => isset($_REQUEST['payment_view']) ? sanitize_text_field(wp_unslash($_REQUEST['payment_view'])) : 1,
-				'delete'     => isset($_REQUEST['payment_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['payment_delete'])) : 1,
-			),
-			// transport.
-			'transport' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-transport.png'),
-				'menu_title' => 'Transport',
-				'page_link'  => 'transport',
-				'own_data'   => isset($_REQUEST['transport_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['transport_own_data'])) : 0,
-				'add'        => isset($_REQUEST['transport_add']) ? sanitize_text_field(wp_unslash($_REQUEST['transport_add'])) : 1,
-				'edit'       => isset($_REQUEST['transport_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['transport_edit'])) : 1,
-				'view'       => isset($_REQUEST['transport_view']) ? sanitize_text_field(wp_unslash($_REQUEST['transport_view'])) : 1,
-				'delete'     => isset($_REQUEST['transport_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['transport_delete'])) : 1,
-			),
-			// document.
-			'document' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-hostel.png'),
-				'menu_title' => 'Document',
-				'page_link'  => 'document',
-				'own_data'   => isset($_REQUEST['document_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['document_own_data'])) : 0,
-				'add'        => isset($_REQUEST['document_add']) ? sanitize_text_field(wp_unslash($_REQUEST['document_add'])) : 1,
-				'edit'       => isset($_REQUEST['document_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['document_edit'])) : 1,
-				'view'       => isset($_REQUEST['document_view']) ? sanitize_text_field(wp_unslash($_REQUEST['document_view'])) : 1,
-				'delete'     => isset($_REQUEST['document_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['document_delete'])) : 1,
-			),
-			// leave.
-			'leave' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-notification_new.png'),
-				'app_icone'  => plugins_url('mjschool/assets/images/icons/mjschool-notification_new.png'),
-				'menu_title' => 'Leave',
-				'page_link'  => 'leave',
-				'own_data'   => isset($_REQUEST['leave_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['leave_own_data'])) : 1,
-				'add'        => isset($_REQUEST['leave_add']) ? sanitize_text_field(wp_unslash($_REQUEST['leave_add'])) : 1,
-				'edit'       => isset($_REQUEST['leave_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['leave_edit'])) : 1,
-				'view'       => isset($_REQUEST['leave_view']) ? sanitize_text_field(wp_unslash($_REQUEST['leave_view'])) : 1,
-				'delete'     => isset($_REQUEST['leave_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['leave_delete'])) : 1,
-			),
-			// notice.
-			'notice' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-notice.png'),
-				'menu_title' => 'Notice Board',
-				'page_link'  => 'notice',
-				'own_data'   => isset($_REQUEST['notice_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['notice_own_data'])) : 0,
-				'add'        => isset($_REQUEST['notice_add']) ? sanitize_text_field(wp_unslash($_REQUEST['notice_add'])) : 1,
-				'edit'       => isset($_REQUEST['notice_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['notice_edit'])) : 1,
-				'view'       => isset($_REQUEST['notice_view']) ? sanitize_text_field(wp_unslash($_REQUEST['notice_view'])) : 1,
-				'delete'     => isset($_REQUEST['notice_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['notice_delete'])) : 1,
-			),
-			// message.
-			'message' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-message.png'),
-				'menu_title' => 'Message',
-				'page_link'  => 'message',
-				'own_data'   => isset($_REQUEST['message_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['message_own_data'])) : 0,
-				'add'        => isset($_REQUEST['message_add']) ? sanitize_text_field(wp_unslash($_REQUEST['message_add'])) : 1,
-				'edit'       => isset($_REQUEST['message_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['message_edit'])) : 1,
-				'view'       => isset($_REQUEST['message_view']) ? sanitize_text_field(wp_unslash($_REQUEST['message_view'])) : 1,
-				'delete'     => isset($_REQUEST['message_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['message_delete'])) : 1,
-			),
-			// holiday.
-			'holiday' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-holiday.png'),
-				'menu_title' => 'Holiday',
-				'page_link'  => 'holiday',
-				'own_data'   => isset($_REQUEST['holiday_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_own_data'])) : 0,
-				'add'        => isset($_REQUEST['holiday_add']) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_add'])) : 1,
-				'edit'       => isset($_REQUEST['holiday_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_edit'])) : 1,
-				'view'       => isset($_REQUEST['holiday_view']) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_view'])) : 1,
-				'delete'     => isset($_REQUEST['holiday_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['holiday_delete'])) : 1,
-			),
-			// library.
-			'library' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-library.png'),
-				'menu_title' => 'Library',
-				'page_link'  => 'library',
-				'own_data'   => isset($_REQUEST['library_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['library_own_data'])) : 0,
-				'add'        => isset($_REQUEST['library_add']) ? sanitize_text_field(wp_unslash($_REQUEST['library_add'])) : 1,
-				'edit'       => isset($_REQUEST['library_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['library_edit'])) : 1,
-				'view'       => isset($_REQUEST['library_view']) ? sanitize_text_field(wp_unslash($_REQUEST['library_view'])) : 1,
-				'delete'     => isset($_REQUEST['library_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['library_delete'])) : 1,
-			),
-			// certificate.
-			'certificate' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-library.png'),
-				'menu_title' => 'Certificate',
-				'page_link'  => 'certificate',
-				'own_data'   => isset($_REQUEST['certificate_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_own_data'])) : 0,
-				'add'        => isset($_REQUEST['certificate_add']) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_add'])) : 1,
-				'edit'       => isset($_REQUEST['certificate_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_edit'])) : 1,
-				'view'       => isset($_REQUEST['certificate_view']) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_view'])) : 1,
-				'delete'     => isset($_REQUEST['certificate_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['certificate_delete'])) : 1,
-			),
-			// account.
-			'account' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-account.png'),
-				'menu_title' => 'Account',
-				'page_link'  => 'account',
-				'own_data'   => isset($_REQUEST['account_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['account_own_data'])) : 0,
-				'add'        => isset($_REQUEST['account_add']) ? sanitize_text_field(wp_unslash($_REQUEST['account_add'])) : 0,
-				'edit'       => isset($_REQUEST['account_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['account_edit'])) : 1,
-				'view'       => isset($_REQUEST['account_view']) ? sanitize_text_field(wp_unslash($_REQUEST['account_view'])) : 1,
-				'delete'     => isset($_REQUEST['account_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['account_delete'])) : 0,
-			),
-			// report.
-			'report' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-report.png'),
-				'menu_title' => 'Report',
-				'page_link'  => 'report',
-				'own_data'   => isset($_REQUEST['report_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['report_own_data'])) : 0,
-				'add'        => isset($_REQUEST['report_add']) ? sanitize_text_field(wp_unslash($_REQUEST['report_add'])) : 0,
-				'edit'       => isset($_REQUEST['report_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['report_edit'])) : 0,
-				'view'       => isset($_REQUEST['report_view']) ? sanitize_text_field(wp_unslash($_REQUEST['report_view'])) : 1,
-				'delete'     => isset($_REQUEST['report_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['report_delete'])) : 0,
-			),
-			// event.
-			'event' => array(
-				'menu_icone' => plugins_url('mjschool/assets/images/icons/mjschool-report.png'),
-				'menu_title' => 'Event',
-				'page_link'  => 'event',
-				'own_data'   => isset($_REQUEST['event_own_data']) ? sanitize_text_field(wp_unslash($_REQUEST['event_own_data'])) : 0,
-				'add'        => isset($_REQUEST['event_add']) ? sanitize_text_field(wp_unslash($_REQUEST['event_add'])) : 1,
-				'edit'       => isset($_REQUEST['event_edit']) ? sanitize_text_field(wp_unslash($_REQUEST['event_edit'])) : 1,
-				'view'       => isset($_REQUEST['event_view']) ? sanitize_text_field(wp_unslash($_REQUEST['event_view'])) : 1,
-				'delete'     => isset($_REQUEST['event_delete']) ? sanitize_text_field(wp_unslash($_REQUEST['event_delete'])) : 1,
-			),
-		);
-		$dashboard_card_access_for_student       = array();
-		$dashboard_card_access_for_student       = array(
-			'mjschool_payment_status_chart' => isset( $_REQUEST['payment_status_chart_enable_student'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['payment_status_chart_enable_student'])) ) : 'yes',
-			'mjschool_user_chart'           => isset( $_REQUEST['user_chart_enable_student'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['user_chart_enable_student'])) ) : 'yes',
-			'mjschool_invoice_chart'        => isset( $_REQUEST['invoice_enable'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['invoice_enable'])) ) : 'yes',
-		);
-		$dashboard_card_access_for_support_staff = array();
-		$dashboard_card_access_for_support_staff = array(
-			'mjschool_student_status_chart' => isset( $_REQUEST['student_status_staff'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['student_status_staff'])) ) : 'yes',
-			'mjschool_attendance_chart'     => isset( $_REQUEST['attendance_staff'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['attendance_staff'])) ) : 'yes',
-			'mjschool_payment_status_chart' => isset( $_REQUEST['payment_status_staff'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['payment_status_staff'])) ) : 'yes',
-			'mjschool_payment_report'       => isset( $_REQUEST['payment_report_staff'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['payment_report_staff'])) ) : 'yes',
-			'mjschool_invoice_chart'        => isset( $_REQUEST['invoice_enable_staff'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['invoice_enable_staff'])) ) : 'yes',
-			'mjschool_user_chart'           => isset( $_REQUEST['users_chart_staff'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['users_chart_staff'])) ) : 'yes',
-		);
-		$dashboard_card_access_for_teacher       = array();
-		$dashboard_card_access_for_teacher       = array(
-			'mjschool_student_status_chart' => isset( $_REQUEST['student_status_enable_teacher'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['student_status_enable_teacher'])) ) : 'yes',
-			'mjschool_attendance_chart'     => isset( $_REQUEST['attendance_chart_enable_teacher'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['attendance_chart_enable_teacher'])) ) : 'yes',
-			'mjschool_user_chart'           => isset( $_REQUEST['user_chart_enable_teacher'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['user_chart_enable_teacher'])) ) : 'yes',
-		);
-		$dashboard_card_access_for_parent        = array();
-		$dashboard_card_access_for_parent        = array(
-			'mjschool_user_chart'           => isset( $_REQUEST['user_chart_parent'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['user_chart_parent'])) ) : 'yes',
-			'mjschool_invoice_chart'        => isset( $_REQUEST['invoice_enable_parent'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['invoice_enable_parent'])) ) : 'yes',
-			'mjschool_payment_status_chart' => isset( $_REQUEST['payment_status_parent'] ) ? esc_attr( sanitize_text_field(wp_unslash($_REQUEST['payment_status_parent'])) ) : 'yes',
-		);
-		/* Setup Wizard Options. */
-		$mjschool_setup_wizard_step = array(
-			'step1_general_setting'  => 'no',
-			'step2_class'            => 'no',
-			'step3_teacher'          => 'no',
-			'step4_subject'          => 'no',
-			'step5_class_time_table' => 'no',
-			'step6_student'          => 'no',
-			'step7_email_temp'       => 'no',
-		);
-		/* Setup Wizard Step */
-		$wizard_option = get_option( 'mjschool_setup_wizard_step' );
-		if ( empty( $wizard_option ) ) {
-			$wizard_option = add_option( 'mjschool_setup_wizard_step', $mjschool_setup_wizard_step );
-		}
-		/* Setup Wizard Status */
-		$mjschool_setup_wizard_status = 'no';
-		
-		// Define other system options like school name, logo, and contact info.
-		$options = array(
-			'mjschool_name'                         => esc_attr__( 'School Management System', 'mjschool' ),
-			'mjschool_staring_year'                        => '2025',
-			'mjschool_address'		                      => '',
-			'mjschool_contact_number'                      => '',
-			'mjschool_combine'                             => 0,
-			'mjschool_contry'                              => 'United States',
-			'mjschool_city'                                => 'Los Angeles',
-			"mjschool_class_room"	 					  => 0,
-			"mjschool_custom_class" 					  => "school",
-			"mjschool_custom_class_display" 			  => 0,
-			'mjschool_past_pay'                           => 'no',
-			'mjschool_prefix'                              => 'S-',
-			'mjschool_email'                               => 'admin@gmail.com',
-			'mjschool_datepicker_format'                   => 'yy/mm/dd',
-			'mjschool_app_logo'		                       => plugins_url( 'mjschool/assets/images/mjschool-mobile-app-default.png' ),
-			'mjschool_logo'          		               => plugins_url( 'mjschool/assets/images/mjschool-final-logo.png' ),
-			'mjschool_system_logo'                         => plugins_url( 'mjschool/assets/images/mjschool-logo-white.png' ),
-			'mjschool_background_image'  		           => plugins_url( 'mjschool/assets/images/school_life.jpg' ),
-			'mjschool_student_thumb'                       => plugins_url( 'mjschool/assets/images/thumb-icon/mjschool-student.png' ),
-			'mjschool_mjschool-no-data-img'                => plugins_url( 'mjschool/assets/images/thumb-icon/mjschool-plus-icon.png' ),
-			'mjschool_parent_thumb'                        => plugins_url( 'mjschool/assets/images/thumb-icon/mjschool-parents.png' ),
-			'mjschool_teacher_thumb'                       => plugins_url( 'mjschool/assets/images/thumb-icon/mjschool-teacher.png' ),
-			'mjschool_supportstaff_thumb'                  => plugins_url( 'mjschool/assets/images/thumb-icon/mjschool-support-staff.png' ),
-			'mjschool_driver_thumb'                        => plugins_url( 'mjschool/assets/images/thumb-icon/mjschool-transport.png' ),
-			'mjschool_principal_signature'                 => plugins_url( 'mjschool/assets/images/mjschool-signature-stamp.png' ),
-			'mjschool_student_thumb_new'                   => plugins_url( 'mjschool/assets/images/thumb-icon/mjschool-student.png' ),
-			'mjschool_parent_thumb_new'                    => plugins_url( 'mjschool/assets/images/thumb-icon/mjschool-parents.png' ),
-			'mjschool_teacher_thumb_new'                   => plugins_url( 'mjschool/assets/images/thumb-icon/mjschool-teacher.png' ),
-			'mjschool_supportstaff_thumb_new'              => plugins_url( 'mjschool/assets/images/thumb-icon/mjschool-support-staff.png' ),
-			'mjschool_driver_thumb_new'                    => plugins_url( 'mjschool/assets/images/thumb-icon/mjschool-transport.png' ),
-			'mjschool_footer_description'                  => 'Copyright ©' . date( 'Y' ) . ' Mojoomla. All rights reserved.',
-			'mjschool_access_right_student'                => $role_access_right_student,
-			'mjschool_access_right_teacher'                => $role_access_right_teacher,
-			'mjschool_access_right_parent'                 => $role_access_right_parent,
-			'mjschool_access_right_supportstaff'           => $role_access_right_support_staff,
-			'mjschool_access_right_management'             => $role_access_right_management,
-			'mjschool_dashboard_card_for_student'          => $dashboard_card_access_for_student,
-			'mjschool_dashboard_card_for_teacher'          => $dashboard_card_access_for_teacher,
-			'mjschool_dashboard_card_for_support_staff'    => $dashboard_card_access_for_support_staff,
-			'mjschool_dashboard_card_for_parent'           => $dashboard_card_access_for_parent,
-			'mjschool_setup_wizard_status'                 => $mjschool_setup_wizard_status,
-			'mjschool_service'                    => 'msg91',
-			// Mobile APP Settings Option.//
-			'mjschool_app_domain_name'                         => '',
-			'mjschool_app_licence_key'                         => '',
-			'mjschool_app_setup_email'                         => '',
-			// PAY MASTER OPTION.//
-			'mjschool_paymaster_pack'                      => 'no',
-			'mjschool_invoice_option'                      => 1,
-			'mjschool_mail_notification'                   => 1,
-			'mjschool_notification_fcm_key'                => '',
-			'mjschool_service_enable'             => 0,
-			'mjschool_student_approval'                    => 1,
-			'mjschool_sms_template'                            => 'Hello [mjschool_USER_NAME] ',
-			'mjschool_clickatell_mjschool_service'         => array(),
-			'mjschool_twillo_mjschool_service'             => array(),
-			'mjschool_parent_send_message'                 => 1,
-			'mjschool_enable_total_student'                => 1,
-			'mjschool_enable_total_teacher'                => 1,
-			'mjschool_enable_total_parent'                 => 1,
-			'mjschool_enable_homework_mail'                => 0,
-			'mjschool_enable_total_attendance'             => 1,
-			'mjschool_enable_sandbox'                      => 'yes',
-			'mjschool_virtual_classroom_account_id'        => '',
-			'mjschool_virtual_classroom_client_id'         => '',
-			'mjschool_virtual_classroom_client_secret_id'  => '',
-			'mjschool_virtual_classroom_access_token'      => '',
-			'mjschool_enable_virtual_classroom'            => 'no',
-			'mjschool_return_option'                       => 'yes',
-			'mjschool_return_period'                       => 3,
-			'mjschool_system_payment_reminder_day'         => 3,
-			'mjschool_system_payment_reminder_enable'      => 'no',
-			'mjschool_paypal_email'                        => '',
-			'razorpay__key'                                => '',
-			'razorpay_secret_mid'                          => '',
-			'mjschool_currency_code'                       => 'USD',
-			'mjschool_teacher_manage_allsubjects_marks'    => 'yes',
-			'mjschool_enable_video_popup_show'             => 'yes',
-			'mjschool_registration_title'                  => 'Student Registration',
-			'mjschool_student_activation_title'            => 'Student Approved',
-			'mjschool_fee_payment_title'                   => 'Fees Alert',
-			'mjschool_fee_payment_title_for_parent'        => 'Fees Alert',
-			'mjschool_teacher_show_access'                 => 'own_class',
-			'mjschool_admissiion_title'                    => 'Request For Admission',
-			'mjschool_exam_receipt_subject'                => 'Exam Receipt Generate',
-			'mjschool_bed_subject'                         => 'Hostel Bed Assigned',
-			'mjschool_add_approve_admisson_mail_subject'   => 'Admission Approved',
-			'mjschool_admissiion_approve_subject_for_parent_subject' => 'Student Admission Approved',
-			'mjschool_student_assign_teacher_mail_subject' => 'New Student has been assigned to you.',
-			'mjschool_enable_virtual_classroom_reminder'   => 'yes',
-			'mjschool_enable_mjschool_virtual_classroom_reminder' => 'yes',
-			'mjschool_virtual_classroom_reminder_before_time' => '30',
-			'mjschool_heder_enable'                        => 'yes',
-			'mjschool_admission_fees'                      => 'no',
-			'mjschool_enable_recurring_invoices'           => 'no',
-			'mjschool_admission_amount'                    => '',
-			'mjschool_system_color_code'                   => '#5840bb',
-			'mjschool_registration_fees'                   => 'no',
-			'mjschool_registration_amount'                 => '',
-			'mjschool_invoice_notice'                      => 'If You Paid Your Payment than Invoice are automatically Generated.',
-			'mjschool_attendence_migration_status'         => 'no',
-			'mjschool_add_leave_emails'                    => '',
-			'mjschool_leave_approveemails'                 => '',
-			'mjschool_add_leave_subject'                   => 'Request For Leave',
-			'mjschool_add_leave_subject_of_admin'          => 'Request For Leave',
-			'mjschool_add_leave_subject_for_student'       => 'Request For Leave',
-			'mjschool_add_leave_subject_for_parent'        => 'Request For Leave',
-			'mjschool_leave_approve_subject'               => 'Your leave has been Approved Successfully',
-			'mjschool_leave_reject_subject'                => 'Your leave has been Rejected',
-			'mjschool_add_exam_mail_title'                 => 'New exam has been assigned to you.',
-			'mjschool_upload_document_type'                => 'pdf, doc, docx, ppt, pptx, gif, png, jpg, jpeg, webp',
-			'mjschool_upload_profile_extention'            => 'gif, png, jpg, jpeg, webp',
-			'mjschool_upload_document_size'                => '30',
-			'mjschool_upload_profile_size'                 => '10',
-			// ------------- SMS Template Start. --------------- //
-			'mjschool_attendance_mjschool_content'         => 'Dear {{parent_name}}, your child {{student_name}} is absent on {{current_date}} at {{school_name}}.',
-			'mjschool_fees_payment_mjschool_content_for_student' => 'Dear {{student_name}}, A new fees payment invoice has been generated for you at {{school_name}}.',
-			'mjschool_fees_payment_mjschool_content_for_parent' => 'Dear {{parent_name}}, A new fees payment invoice has been generated for your {{student_name}} at {{school_name}}.',
-			'mjschool_fees_payment_reminder_mjschool_content' => 'Dear {{parent_name}}, we just wanted to send you a reminder that the tuition fee has not been paid against your child {{student_name}} at {{school_name}}.',
-			'mjschool_student_approve_mjschool_content'    => 'Dear {{student_name}}, your account with {{school_name}} is approved.',
-			'mjschool_student_admission_approve_mjschool_content' => 'Dear {{student_name}}, your admission has been successfully approved with {{school_name}}.',
-			'mjschool_holiday_mjschool_content'            => 'Dear {{user_name}}, New Holiday {{title}} Announced at {{school_name}}.',
-			'mjschool_leave_student_mjschool_content'      => 'Dear {{student_name}}, your Leave for {{date}} are Added Successfully at {{school_name}}.',
-			'mjschool_leave_parent_mjschool_content'       => 'Dear {{parent_name}}, your child {{student_name}}, has been added leave of {{date}} at {{school_name}}.',
-			'mjschool_event_mjschool_content'              => 'Dear {{student_name}}, we are inform you about an exciting new event {{event_title}} at {{school_name}}.',
-			'mjschool_exam_student_mjschool_content'       => 'This is a reminder that your upcoming exam {{exam_name}} is scheduled for {{date}} At {{school_name}}.',
-			'mjschool_exam_parent_mjschool_content'        => 'We would like to inform you that your child {{student_name}} will have an important exam {{exam_name}} on {{date}} At {{school_name}}.',
-			'mjschool_homework_student_mjschool_content'   => 'Dear {{student_name}}, your new homework {{title}} is posted. Please check and submit it by the submission date {{date}} At {{school_name}}.',
-			'mjschool_homework_parent_mjschool_content'    => 'Dear {{parent_name}}, your child has a new homework {{title}} assignment. Please review it with them and provide any necessary support and submit at {{school_name}}.',
-			// ------------- SMS Template End. --------------- //
-			'mjschool_student_assign_teacher_mail_content' => 'Dear {{teacher_name}},
-         New Student {{student_name}} has been assigned to you.
-		Regards From {{school_name}}.',
-					'mjschool_generate_invoice_mail_subject'       => 'Generate Invoice',
-					'mjschool_generate_invoice_mail_content'       => 'Dear {{student_name}},
-				Your have a new invoice.  You can check the invoice attached here.
-		Regards From {{school_name}}.',
-					// ------------ ADD USER. ---------------//
-					'mjschool_add_user_mail_subject'               => 'Your have been assigned role of {{role}} in {{school_name}}.',
-					'mjschool_add_user_mail_content'               => 'Dear {{user_name}},
-				You are Added by admin in {{school_name}} . Your have been assigned role of {{role}} in {{school_name}}.  You can sign in using this link. {{login_link}}
-		UserName : {{username}}
-		Password : {{Password}}
-		Regards From {{school_name}}.',
-					// ------- Registration Successfully. ----------//
-					'mjschool_registration_mailtemplate'           => 'Hello {{student_name}} ,
-		Your registration has been successful with {{school_name}}.
-		Class Name : {{class_name}}
-		Email ID : {{email_id}}
-		Password : {{password}}
-		Regards From {{school_name}}.',
-					// ------- Request for  Admission. ----------//
-					'mjschool_admission_mailtemplate_content'      => 'Hello {{student_name}} ,
-		Your admission request has been successful with {{school_name}}. You will be able to access your account after school admin approves it and we will send username and password shortly.
-		Student Name : {{user_name}}
-		Email : {{email}}
-		Regards From {{school_name}}.',
-					// ------- Exam Receipt GENERATE.----------//
-					'mjschool_exam_receipt_content'                => 'Hello {{student_name}} ,
-				your exam hall receipt has been generated.
-		Regards From {{school_name}}.',
-					// ------- Hostel Bed Assigned. ----------//
-					'mjschool_bed_content'                         => 'Hello {{student_name}} ,
-				You have been assigned new hostel bed in {{school_name}}.
-		Hostel Name : {{hostel_name}}
-		Room Number : {{room_id}}
-		Bed Number : {{bed_id}}
-		Bed Charge : {{bed_charge}}
-		Regards From {{school_name}}.',
-					// ------- Approved mail perents. ----------//
-					'mjschool_admission_mailtemplate_content_for_parent' => 'Hello {{student_name}},
-			Your admission has been successfully approved with {{school_name}}.
-			You can sign in using this link: {{login_link}}
-			Class Name : {{class_name}}
-			Roll No    : {{roll_no}}
-			Email      : {{email}}
-			Password   : {{password}}
-			Regards,
-			{{school_name}}',
-					// ------- Approved Admission. ----------//
-					'mjschool_add_approve_admission_mail_content'  => 'Hello {{user_name}} ,
-				Your admission has been successful approved with {{school_name}}.
-				You can signin using this link. {{login_link}}
-				Class Name : {{class_name}}
-				Roll No : {{roll_no}}
-				Email : {{email}}
-				Password : {{Password}}
-				Regards From {{school_name}}.',
-					// ----------- Student Activation. --------------//
-					'mjschool_student_activation_mailcontent'      => 'Hello {{student_name}},
-						Your account with {{school_name}} is approved. You can access student account using your login details. Your other details are given bellow.
-		User Name : {{user_name}}
-		Class Name : {{class_name}}
-		Email : {{email}}
-		Regards From {{school_name}}.',
-					// --------- student Appoved Leave.   --------------//
-					'mjschool_addleave_email_template'             =>
-					'Hello,
-		Date : {{date}}
-		Leave Type : {{leave_type}}
-		Leave Duration : {{leave_duration}}
-		Reason : {{reason}}
-		Thank you
-		{{employee_name}}
-		',
-					'mjschool_leave_approve_email_template'        =>
-					'Hello,
-		Leave of {{user_name}} is approved successfully.
-		Date     :  {{date}}
-		Comment  : {{comment}}
-		Regards From {{system_name}}.
-		Thank you
-		{{system_name}}
-		',
-					// -------------------- LEAVE REQUEST MAIL TEMPLATE FOR STUDENT. ---------------------//
-					'mjschool_addleave_email_template_student'     =>
-					'Hello {{student_name}},
-		Your Leave are Added Successfully.
-		Date : {{date}},
-		Leave Type : {{leave_type}},
-		Leave Duration : {{leave_duration}},
-		Reason : {{reason}},
-		Thank you
-		{{school_name}}.
-		',
-					// -------------------- LEAVE REQUEST MAIL TEMPLATE FOR PARENT. ---------------------//
-					'mjschool_addleave_email_template_parent'      =>
-					'Hello {{parent_name}},
-		Your child {{student_name}}, has been added leave of {{date}}.
-		Leave Type : {{leave_type}},
-		Leave Duration : {{leave_duration}},
-		Reason : {{reason}},
-		Thank you
-		{{school_name}}.
-		',
-					// -------------------- LEAVE REQUEST MAIL TEMPLATE FOR ADMIN. ---------------------//
-					'mjschool_addleave_email_template_of_admin'    =>
-					'Dear Admin,
-		{{student_name}} are Add Leave of {{date}}.
-		Leave Type : {{leave_type}},
-		Leave Duration : {{leave_duration}},
-		Reason : {{reason}},
-		Thank you
-		{{school_name}}.
-		',
-					// --------------- LEAVE REJECT MAIL TEMPLATE. ----------------//
-					'mjschool_leave_reject_email_template'         =>
-					'Hello {{student_name}} ,
-		Leave of {{student_name}} is Rejected.
-		Date     :  {{date}}
-		Comment  : {{comment}}
-		Regards From {{school_name}}
-		Thank you',
-					// --------------- ADD EXAM MAIL TEMPLATE. ----------------//
-					'mjschool_add_exam_mailcontent'                =>
-					'Dear {{user_name}},
-		A new exam {{exam_name}} has been assigned to you.
-		Exam Details:
-		Exam Name : {{exam_name}}
-		Exam Start To End Date : {{exam_start_end_date}}
-		Exam Comment : {{exam_comment}}
-		Regards From
-		{{school_name}}',
-					// --------------- FEES PAYMENT FOR STUDENT. --------------//
-					'mjschool_fee_payment_mailcontent'             => 'Dear {{student_name}},
-				You have a new invoice.  You can check the invoice attached here.
-			Date : {{date}}
-			Amount : {{amount}}
-		Regards From {{school_name}}
-		Thank you',
-					// --------------- FEES PAYMENT FOR PARENT. --------------//
-					'mjschool_fee_payment_mailcontent_for_parent'  => 'Dear {{parent_name}},
-			You have a new invoice for your child {{child_name}}. You can check the invoice attached here.
-			Date : {{date}}
-			Amount : {{amount}}
-			Regards From {{school_name}}
-		Thank you',
-					// ------------------ MESSAGE RECEIVED. ---------------//
-					'mjschool_message_received_mailcontent'        => 'Dear {{receiver_name}},
-				You have received new message {{message_content}}.
-		Regards From {{school_name}}.',
-					'mjschool_message_received_mailsubject'        => 'You have received new message from {{from_mail}} at {{school_name}}',
-					// ------------------ CHILD ABSENT. -------------------//
-					'mjschool_absent_mail_notification_subject'    => 'Your Child {{child_name}} is absent today',
-					'mjschool_absent_mail_notification_content'    => 'Your Child {{child_name}} is absent today.
-		Regards From {{school_name}}.',
-					// ----------------- ASSIGNED TEACHER. ------------------//
-					'mjschoool_student_assign_to_teacher_subject'  => 'You have been Assigned {{teacher_name}} at {{school_name}}',
-					'mjschool_student_assign_to_teacher_content'   => 'Dear {{student_name}},
-				You are assigned to  {{teacher_name}}. {{teacher_name}} belongs to {{class_name}}.
-		Regards From {{school_name}}.',
-					'mjschool_payment_recived_mailsubject'         => 'Payment Received against Invoice',
-					'mjschool_payment_recived_mailcontent'         => 'Dear {{student_name}},
-				Your have successfully paid your invoice {{invoice_no}}. You can check the invoice attached here.
-		Regards From {{school_name}}.',
-					'mjschool_notice_mailsubject'                  => 'New Notice For You',
-					'mjschool_notice_mailcontent'                  => 'New Notice For You.
-		Notice Title : {{notice_title}}
-		Notice Date  : {{notice_date}}
-		Notice Comment :  {{notice_comment}}
-		Regards From {{school_name}}
-		',
-					/* ----------------- Event Mail Template. ------------------- */
-					'mjschool_event_mailsubject'                   => 'Exciting New Event at {{school_name}}.',
-					'mjschool_event_mailcontent'                   => 'Dear {{user_name}},
-					We are delighted to announce an exciting new event at {{school_name}} that promises to be a memorable experience for all attendees!
-		Event Details:
-		Event Name: {{event_title}}
-		Date: {{event_date}}
-		Time: {{event_time}}
-		Description: {{description}}
-		Regards From {{school_name}}.',
-					/*   -------Parent mail notification template.------- */
-					'mjschool_parent_homework_mail_subject'        => 'New Homework Assigned',
-					'mjschool_parent_homework_mail_content'        => 'Dear {{parent_name}},
-		New homework has been assign to your child.
-		Student name : {{student_name}}
-		Homework Title : {{title}}
-		Subject : {{subject}}
-		Homework Date : {{homework_date}}
-		Submission Date : {{submition_date}}
-		Regards From {{school_name}}
-		',
-					/*   -------student mail notification template.------- */
-					'mjschool_homework_title'                      => 'New Homework Assigned',
-					'mjschool_homework_mailcontent'                => 'Dear {{student_name}},
-		New homework has been assign to you.
-		Homework Title : {{title}}
-		Subject : {{subject}}
-		Homework Date : {{homework_date}}
-		Submission Date : {{submition_date}}
-		Regards From {{school_name}}
-		',
-					// -------------- HOLIDAY MAILTEMPLATE. -----------//
-					'mjschool_holiday_mailsubject'                 => 'Holiday Announcement',
-					'mjschool_holiday_mailcontent'                 => 'Holiday Announcement
-		Holiday Title : {{holiday_title}}
-		Holiday Date : {{holiday_date}}
-		Regards From {{school_name}}
-		',
-					// ----------------------- VIRTUAL CLASSROOM TEACHER INVITE MAIL. ------//
-					'mjschool_virtual_class_invite_teacher_mail_subject' => 'Inviting you to a scheduled Zoom meeting',
-					'mjschool_virtual_class_invite_teacher_mail_content' => 'Inviting you to a scheduled Zoom meeting
-			Class Name : {{class_name}}
-			Time : {{time}}
-			Virtual Class ID : {{virtual_class_id}}
-			Password : {{password}}
-			Join Zoom Virtual Class : {{join_zoom_virtual_class}}
-			Start Zoom Virtual Class : {{start_zoom_virtual_class}}
-			Regards From {{school_name}}
-		',
-					// ----------------------- VIRTUAL CLASSROOM TEACHER REMINDER MAIL. ------//
-					'mjschool_virtual_class_teacher_reminder_mail_subject' => 'Your virtual class just start',
-					'mjschool_virtual_class_teacher_reminder_mail_content' => 'Dear {{teacher_name}}
-			Your virtual class just start
-			Class Name : {{class_name}}
-			subject Name : {{subject_name}}
-			Date : {{date}}
-			Time : {{time}}
-			Virtual Class ID : {{virtual_class_id}}
-			Password : {{password}}
-			{{start_zoom_virtual_class}}
-			Regards From {{school_name}}
-		',
-					// ----------------------- VIRTUAL CLASSROOM STUDENT REMINDER MAIL. ------//
-					'mjschool_virtual_class_student_reminder_mail_subject' => 'Your virtual class just start',
-					'mjschool_virtual_class_student_reminder_mail_content' => 'Dear {{student_name}}
-			Your virtual class just start
-			Class Name : {{class_name}}
-			Subject Name : {{subject_name}}
-			Teacher Name : {{teacher_name}}
-			Date : {{date}}
-			Time : {{time}}
-			Virtual Class ID : {{virtual_class_id}}
-			Password : {{password}}
-			{{join_zoom_virtual_class}}
-			Regards From {{school_name}}
-		',
-					// ----------------- Fee Payment Reminder Mail. ---------------------//
-					'mjschool_fee_payment_reminder_title'          => 'Fees Payment Reminder',
-					'mjschool_fee_payment_reminder_mailcontent'    => '
-		Dear {{parent_name}},
-		We just wanted to send you a reminder that the tuition fee has not been paid against your son/daughter {{student_name}} of class {{class_name}} .the total amount is {{total_amount}} and the due amount is {{due_amount}}.
-		Regards From
-		{{school_name}}',
-					// ----------------- Fee Payment Reminder Mail For Student.---------------------//
-					'mjschool_fee_payment_reminder_title_for_student' => 'Fees Payment Reminder',
-					'mjschool_fee_payment_reminder_mailcontent_for_student' => '
-		Dear {{student_name}},
-		We just wanted to send you a reminder that the tuition fee has not been paid against you. the total amount is {{total_amount}} and the due amount is {{due_amount}}.
-		Regards From
-		{{school_name}}',
-					// ----------------- Assign Subject Mail. ---------------------//
-					'mjschool_assign_subject_title'                => 'New subject has been assigned to you.',
-					'mjschool_assign_subject_mailcontent'          => '
-		Dear {{teacher_name}},
-		New subject {{subject_name}} has been assigned to you.
-		Regards From
-		{{school_name}}',
-					// PROMOTION LETTER TEMPLATE START.
-					'mjschool_transfer_certificate_title'          => 'Transfer Certificate',
-					// lol.
-					'mjschool_transfer_certificate_template'       => '
-		<div class="container_table">
-		<div class="header">
-			<h2 style="text-align: center;border-collapse: collapse;" class="certificate_heading">TRANSFER CERTIFICATE</h2>
-			<div style="width: 100%; overflow: hidden; line-height: 4px;">
-				<div style="width: 49%; float: left;">
-					<p><strong>Affiliation Number.:</strong> 2134012</p>
-					<p><strong>Book Number.:</strong> 08</p>
-					<p><strong>Admission Number.:</strong> {{admission_no}}</p>
-				</div>
-				<div style="width: 49%; float: right;">
-					<p><strong>School Code:</strong> 72055</p>
-					<p><strong>Sr Number.:</strong> 045</p>
-					<p><strong>Roll Number.:</strong> {{roll_no}}</p>
-				</div>
-			</div>
-		</div>
-			<table style="width: 100%; border-collapse: collapse; border: 1px solid black; font-size: 12px;">
-			<tr><td style="border: 1px solid black;text-align: center;"><b>1.</b></td><td style="border: 1px solid black;padding-left: 6px;">Student’s Name</td><td style="border: 1px solid black;padding-left: 6px;">{{student_name}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>2.</b></td><td style="border: 1px solid black;padding-left: 6px;">Father’s/Guardian’s Name</td><td style="border: 1px solid black;padding-left: 6px;">{{father_name}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>3.</b></td><td style="border: 1px solid black;padding-left: 6px;">Mother’s Name</td><td style="border: 1px solid black;padding-left: 6px;">{{mother_name}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>4.</b></td><td style="border: 1px solid black;padding-left: 6px;">Date of Birth (DD-MM-YYYY)</td><td style="border: 1px solid black;padding-left: 6px;">{{birth_date}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>5.</b></td><td style="border: 1px solid black;padding-left: 6px;">Date of Birth (in Words)</td><td style="border: 1px solid black;padding-left: 6px;">{{birth_date_words}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>6.</b></td><td style="border: 1px solid black;padding-left: 6px;">Nationality</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>7.</b></td><td style="border: 1px solid black;padding-left: 6px;">Category (SC/ST/OBC)</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>8.</b></td><td style="border: 1px solid black;padding-left: 6px;">First Admission Date & Class</td><td style="border: 1px solid black;padding-left: 6px;">{{admission_date}} & {{class_name}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>9.</b></td><td style="border: 1px solid black;padding-left: 6px;">Last Class Studied</td><td style="border: 1px solid black;padding-left: 6px;">{{last_class}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>10.</b></td><td style="border: 1px solid black;padding-left: 6px;">Last Examination with Result</td><td style="border: 1px solid black;padding-left: 6px;">{{last_exam_name}} {{last_result}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>11.</b></td><td style="border: 1px solid black;padding-left: 6px;">Failed (if yes, once/twice)</td><td style="border: 1px solid black;padding-left: 6px;">{{fails}}</td></tr>
-			<tr>
-				<td style="border: 1px solid black;text-align: center;"><b>12.</b></td>
-				<td style="border: 1px solid black;padding-left: 6px;">Subjects Studied</td>
-				<td style="border: 1px solid black;padding-left: 6px;"> {{subject}}</td>
-			</tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>13.</b></td><td style="border: 1px solid black;padding-left: 6px;">Qualified for Higher Class</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>14.</b></td><td style="border: 1px solid black;padding-left: 6px;">Fee Paid Up To</td><td style="border: 1px solid black;padding-left: 6px;">{{fees_pay}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>15.</b></td><td style="border: 1px solid black;padding-left: 6px;">Fee Concession (if any)</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>16.</b></td><td style="border: 1px solid black;padding-left: 6px;">Working Days in Session</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>17.</b></td><td style="border: 1px solid black;padding-left: 6px;">Days Present</td><td style="border: 1px solid black;padding-left: 6px;">{{total_present}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>18.</b></td><td style="border: 1px solid black;padding-left: 6px;">NCC/Scout/Guide (details)</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>19.</b></td><td style="border: 1px solid black;padding-left: 6px;">Extracurricular Activities & Achievements</td><td style="padding-left: 6px;"></td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>20.</b></td><td style="border: 1px solid black;padding-left: 6px;">General Conduct</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>21.</b></td><td style="border: 1px solid black;padding-left: 6px;">Application Date</td><td style="border: 1px solid black;padding-left: 6px;">{{date}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>22.</b></td><td style="border: 1px solid black;padding-left: 6px;">Certificate Issue Date</td><td style="border: 1px solid black;padding-left: 6px;">{{date}}</td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>23.</b></td><td style="border: 1px solid black;padding-left: 6px;">Reason for Leaving</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
-			<tr><td style="border: 1px solid black;text-align: center;"><b>24.</b></td><td style="border: 1px solid black;padding-left: 6px;">Other Remarks</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
-			</table>
-			<table style="width: 100%; border-collapse: collapse; border: none; margin-top: 6px; font-size: 14px;">
-			<tbody>
-			<tr>
-			<td style="width: 33%; vertical-align: top; border-collapse: collapse; border: none;"><strong>Signature of Class Teacher:</strong>
-			<img src="{{teacher_signature}}" width="100px" height="50px" />
-			<strong>Name:</strong> {{teacher_name}}
-			<strong>Designation:</strong> {{teacher_designation}}</td>
-			<td style="width: 33%; vertical-align: top; border-collapse: collapse; border: none;"><strong>Checked by:</strong>
-			<img src="{{check_by_signature}}" width="100px" height="50px" />
-			<strong>Name:</strong> {{checking_teacher_name}}
-			<strong>Designation:</strong> {{checking_teacher_designation}}</td>
-			<td style="width: 33%; vertical-align: top; border-collapse: collapse; border: none;"><strong>Signature of Principal:</strong>
-			<img src="{{principal_signature}}" width="100px" height="50px" />
-			<strong>Name:</strong>
-			<strong>Designation:</strong>
-			<strong>Date:</strong> {{date}}
-			<strong>Place:</strong> {{place}}</td>
-			</tr>
-			</tbody>
-			</table>
-		</div>
-		',
-					// ----------------- Issue Book  Mail. ---------------------//
-					'mjschool_issue_book_title'                    => 'New book has been issue to you.',
-					'mjschool_issue_book_mailcontent'              => '
-		Dear {{student_name}},
-		New book {{book_name}} has been issue to you.
-		Issue Date : {{issue_date}}
-		Return Date : {{return_date}}
-		Regards From
-		{{school_name}}',
-		);
-		
-		return $options;
-	}
-	add_action( 'admin_init', 'mjschool_general_setting' );
-	/**
-	 *
-	 * This function retrieves default plugin options from `mjschool_option()`
-	 * and adds them to the WordPress database using `add_option()` during admin initialization.
-	 *
-	 * @since 1.0.0
-	 */
-	function mjschool_general_setting() {
-		$options = mjschool_option();
-		foreach ( $options as $key => $val ) {
-			add_option( $key, $val );
-		}
-	}
-	/**
-	 *
-	 * This function defines all the admin page slugs used in the MJ School Management plugin.
-	 * These slugs can be used to enqueue scripts, styles, or perform page-specific logic.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return array List of all MJ School plugin page slugs.
-	 */
-	function mjschool_call_script_page() {
-		// Define all admin page slugs.
-		$page_array = array(
-			'mjschool',
-			'mjschool_admission',
-			'mjschool_setup',
-			'mjschool_student',
-			'mjschool_student_homewrok',
-			'mjschool_teacher',
-			'mjschool_parent',
-			'mjschool_Subject',
-			'mjschool_class',
-			'mjschool_route',
-			'mjschool_custom_class',
-			'mjschool_class_room',
-			'mjschool_attendence',
-			'mjschool_exam',
-			'mjschool_grade',
-			'mjschool_result',
-			'mjschool_leave',
-			'mjschool_document',
-			'mjschool_transport',
-			'mjschool_certificate',
-			'mjschool_notice',
-			'mjschool_event',
-			'mjschool_message',
-			'mjschool_hall',
-			'mjschool_fees',
-			'mjschool_fees_payment',
-			'mjschool_payment',
-			'mjschool_holiday',
-			'mjschool_report',
-			'mjschool_advance_report',
-			'mjschool_Migration',
-			'mjschool_sms_setting',
-			'mjschool_system_addon',
-			'mjschool_system_videos',
-			'mjschool_general_settings',
-			'mjschool_supportstaff',
-			'mjschool_library',
-			'mjschool_custom_field',
-			'mjschool_access_right',
-			'mjschool_hostel',
-			'mjschool_view-attendance',
-			'mjschool_email_template',
-			'mjschool_sms_template',
-			'mjschool_show_infographic',
-			'mjschool_notification',
-			'mjschool_homework',
-			'mjschool_virtual_classroom',
-			'mjschool_dashboard',
-			'mjschool_tax',
-		);
-		return $page_array;
-	}
-	/**
-	 * Enqueues all required CSS and JS files for the MJ School admin pages.
-	 *
-	 * This function checks the current admin page and conditionally loads
-	 * scripts and styles required for that page. It supports multiple
-	 * plugins features like data tables, full calendar, chart JS, time pickers,
-	 * validation, RTL support, media uploads, and more.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $hook The current admin page hook.
-	 */
-	function mjschool_change_adminbar_css( $hook ) {
-		$school_type = get_option( 'mjschool_custom_class' );
-		$current_page = isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '';
-		$current_tab = isset($_REQUEST['tab']) ? sanitize_text_field(wp_unslash($_REQUEST['tab'])) : '';
-		$page_array   = mjschool_call_script_page();
-		if ( in_array( $current_page, $page_array ) ) {
-			if ( $current_page === 'mjschool' ) {
-				
-				wp_enqueue_style( 'fullcalendar', plugins_url( '/assets/css/third-party-css/fullcalendar.min.css', __FILE__ ) );
-			}
-			wp_enqueue_script( 'thickbox' );
-			wp_enqueue_style( 'thickbox' );
-			wp_enqueue_script( 'jquery' );
-			wp_enqueue_script( 'jquery-ui-core' );
-    		wp_enqueue_script( 'jquery-ui-accordion' );
-			wp_enqueue_script( 'jquery-ui-datepicker' );
-			wp_enqueue_script( 'jquery-ui-dialog' );
-			wp_enqueue_style( 'wp-jquery-ui-dialog' );
-			wp_enqueue_media();
-			
-			wp_enqueue_style( 'datatable', plugins_url( '/assets/css/third-party-css/third-party-css/dataTables.min.css', __FILE__), array( 'bootstrap-main' ), '', 'all' );
-			wp_enqueue_style( 'jquery-datatable', plugins_url( '/assets/css/third-party-css/jquery.dataTables.min.css', __FILE__ ) );
-			// wp_enqueue_style( 'mjschool-dynamic', plugins_url( '/assets/css/mjschool-dynamic-css.php', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-style', plugins_url( '/assets/css/mjschool-style.css', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-newversion', plugins_url( '/assets/css/mjschool-new-version.css', __FILE__ ) );
-			if (is_rtl( ) ) {
-				// Load RTL CSS.
-				wp_enqueue_style( 'mjschool-rtl', plugins_url( '/assets/css/mjschool-new-design-rtl.css', __FILE__ ) );
-				wp_enqueue_style( 'mjschool-rtl-css', plugins_url( '/assets/css/theme/mjschool-rtl.css', __FILE__ ) );
-			}
-			wp_enqueue_style( 'mjschool-dashboard', plugins_url( '/assets/css/mjschool-dashboard.css', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-popup', plugins_url( '/assets/css/mjschool-popup.css', __FILE__ ) );
-			wp_enqueue_style( 'dataTables-responsive', plugins_url( '/assets/css/third-party-css/dataTables.responsive.css', __FILE__ ) );
-			wp_enqueue_style( 'bootstrap-multiselect', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap-multiselect.css', __FILE__ ) );
-			wp_enqueue_style( 'bootstrap-timepicker', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap-timepicker.min.css', __FILE__ ) );
-			wp_enqueue_style( 'sweetalert2-css', plugins_url( '/lib/sweetalert2/sweetalert2.min.css', __FILE__ ) );
-			// poppins font family css.
-			wp_enqueue_style( 'mjschool-poppins-font-family', plugins_url( '/assets/css/mjschool-popping-font.css', __FILE__ ) );
-			// End  poppins font family css.
-			// new design css. //
-			wp_enqueue_style( 'mjschool-new-design', plugins_url( '/assets/css/mjschool-smgt-new-design.css', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-responsive-new-design', plugins_url( '/assets/css/mjschool-responsive-new-design.css', __FILE__ ) );
-			wp_enqueue_style( 'roboto-fontfamily', plugins_url( '/assets/css/mjschool-roboto-font.css', __FILE__ ) );
-			// End new design css. //
-			// chart js & css.
-			wp_enqueue_style( 'chart', plugins_url( '/assets/css/third-party-css/chart.min.css', __FILE__ ) );
-			wp_enqueue_script( 'chart-loder', plugins_url( '/assets/js/third-party-js/chart-loder.js', __FILE__), [], '', true);
-			wp_enqueue_script( 'loader', plugins_url( '/assets/js/third-party-js/loader.min.js', __FILE__ ) );
-			wp_enqueue_script( 'html5-qrcode', plugins_url( '/lib/html5-qrcode/html5-qrcode.min.js', __FILE__ ) );
-			wp_enqueue_script( 'sweetalert2-js', plugins_url( '/lib/sweetalert2/sweetalert2.all.min.js', __FILE__ ) );
-			// chart js & css.
-			wp_enqueue_script( 'jquery-timeago', plugins_url( '/assets/js/third-party-js/jquery.timeago.min.js', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-open-sans-fonts', plugins_url( '/assets/css/mjschool-open-sans-fonts.css', __FILE__ ) );
-			wp_enqueue_script( 'datatable-editor', plugins_url( '/assets/js/third-party-js/dataTables.editor.min.js', __FILE__ ) );
-			wp_enqueue_script( 'mjschool-customfield', plugins_url( 'assets/js/mjschool-customfield.js', __FILE__), array(), '1.0.0', true);
-			wp_enqueue_script( 'moment' ); 
-			/*--------Full calendar multilanguage.---------*/
-			$lancode = get_locale();
-			$code = substr( $lancode, 0, 2 );
-			if ( isset( $_REQUEST['tab'] ) ) {
-				if ( $_REQUEST['tab'] !== 'view_all_message' && $_REQUEST['tab'] !== 'view_all_message_reply' ) {
-					wp_enqueue_script( 'datatables', plugins_url( '/assets/js/third-party-js/datatables.min.js', __FILE__), array( 'jquery' ), true);
-					wp_enqueue_script( 'jquery-datatable', plugins_url( '/assets/js/third-party-js/jquery.dataTables.min.js', __FILE__), array( 'jquery' ), true);
-				}
-			} else {
-				wp_enqueue_script( 'jquery-datatable', plugins_url( '/assets/js/third-party-js/jquery.dataTables.min.js', __FILE__), array( 'jquery' ), true);
-			}
-			if ( isset( $_REQUEST['tab'] ) ) {
-				if ( $current_tab === 'student_information_report' || $current_tab === 'student_attendance_report' || $current_tab === 'finance_report' ) {
-					wp_enqueue_style( 'searchBuilder-dataTables', plugins_url( '/assets/css/third-party-css/searchBuilder.dataTables.min.css', __FILE__ ) );
-					wp_enqueue_script( 'dataTables-searchBuilder', plugins_url( '/assets/js/third-party-js/dataTables.searchBuilder.min.js', __FILE__ ) );
-					wp_enqueue_style( 'searchBuilder-bootstrap4', plugins_url( '/assets/css/third-party-css/searchBuilder.bootstrap4.min.css', __FILE__ ) );
-				}
-			}
-
-			$lancode = get_locale();
-			$code = substr( $lancode, 0, 2 );
-			if ( $current_page === 'mjschool' )
-			{
-				wp_enqueue_script( 'fullcalendar', plugins_url( '/assets/js/third-party-js/fullcalendar.min.js', __FILE__), array( 'jquery' ), '', true);
-				wp_enqueue_script( 'calendar-lang', plugins_url( '/assets/js/calendar-lang/' . $code . '.js', __FILE__), array( 'jquery' ), '', true);
-			}
-			wp_enqueue_script( 'datatable-buttons', plugins_url( '/assets/js/third-party-js/dataTables.buttons.min.js', __FILE__), '', true);
-			wp_enqueue_script( 'datatable-button-html', plugins_url( '/assets/js/third-party-js/buttons.html5.min.js', __FILE__ ) );
-			wp_enqueue_script( 'datatable-button-print', plugins_url( 'assets/js/third-party-js/buttons.print.min.js', __FILE__), array( 'jquery' ), '', true );
-			wp_enqueue_script( 'pdfmake', plugins_url( '/assets/js/third-party-js/pdfmake.min.js', __FILE__), array( 'jquery' ), '', true);
-			wp_enqueue_script( 'buttons-colVis', plugins_url( '/assets/js/third-party-js/buttons.colVis.min.js', __FILE__), array( 'jquery' ), '', true);
-			wp_enqueue_script( 'icheckjs', plugins_url( '/assets/js/third-party-js/icheck.min.js', __FILE__), array( 'jquery' ), '', true);
-			wp_enqueue_script( 'popper', plugins_url( '/assets/js/third-party-js/popper.min.js', __FILE__ ) );
-			if ( $current_page === 'mjschool_result' )
-			{
-				wp_enqueue_script( 'mjschool-customfield', plugins_url( '/assets/js/pages/marks.js', __FILE__ ) );
-			}
-			wp_enqueue_script( 'bootstrap-multiselect', plugins_url( '/assets/js/third-party-js/bootstrap/bootstrap-multiselect.min.js', __FILE__), array( 'jquery' ), '', true);
-			// Print and PDF.
-			wp_enqueue_script( 'datatables-buttons-print', plugins_url( '/assets/js/third-party-js/datatables-buttons-print.min.js', __FILE__), array( 'jquery' ), '', true);
-			wp_enqueue_script( 'mjschool-popup', plugins_url( '/assets/js/mjschool-popup.js', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-frontend-calendar', plugins_url( '/assets/css/mjschool-frontend-calendar.css', __FILE__ ) );
-			wp_localize_script( 'mjschool-popup', 'mjschool', array(
-				'ajax' => admin_url( 'admin-ajax.php' ),
-				'nonce'    => wp_create_nonce( 'mjschool_ajax_nonce' ),
-			) );
-			//Enqueue js files-wise.
-			$document_option = get_option( 'mjschool_upload_document_type' );
-			$document_type = explode( ', ', $document_option );
-			$document_type_json = $document_type;
-			$document_size = get_option( 'mjschool_upload_document_size' );
-			$datatable_nonce = wp_create_nonce('mjschool_student_list_nonce');
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
-			$module                    = mjschool_get_module_name_for_custom_field($current_page);
-			$user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
-			$custom_columns = array();
-			if ( ! empty( $user_custom_field ) ) {
-				foreach ( $user_custom_field as $custom_field ) {
-					if ( $custom_field->show_in_table === '1' ) {
-						$custom_columns[] = true; // sortable
-					}
-				}
-			}
-			$class_name      = mjschool_get_all_class_array();
-			$class_name_list = array_map(
-				function ( $s ) {
-					return trim( $s->class_name ); // Trim each class name.
-				},
-				$class_name
-			);
-			if(isset($_REQUEST['exam_id'])){
-				$exam_data = mjschool_get_exam_by_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['exam_id'])) ) ) );
-			}
-			$extra_student_data = array();
-			$sb_id = null;
-			
-			$mix_data = array(
-				'select_days'                    => esc_html__('Select Days', 'mjschool'),
-				'select_teacher'                 => esc_html__('Select Teacher', 'mjschool'),
-				'select_all'                     => esc_html__('Select all', 'mjschool'),
-				'select_class'                   => esc_html__('Select Class', 'mjschool'),
-				'select_user'                    => esc_html__('Select Users', 'mjschool'),
-				'select_tax'                     => esc_html__('Select Tax', 'mjschool'),
-				'select_book'                    => esc_html__('Select Book', 'mjschool'),
-				'all_selected'                   => esc_html__('All Selected', 'mjschool'),
-				'csv_text'                       => esc_html__('CSV', 'mjschool'),
-				'print_text'                     => esc_html__('PRINT', 'mjschool'),
-				'admission_report_text'          => esc_html__('Admission Report', 'mjschool'),
-				'attendance_report_text'         => esc_html__('Attendance Report', 'mjschool'),
-				'fees_payment_report_text'   	 => esc_html__('Fees Payment Report', 'mjschool'),
-				'leave_report_text'              => esc_html__('Leave Report', 'mjschool'),
-				'guardian_report_text'           => esc_html__('Guardian Report', 'mjschool'),
-				'student_report_text'            => esc_html__('Student Report', 'mjschool'),
-				'class_name_list'                => $class_name_list,
-				'select_fees_type'               => esc_html__('Select Fees Type', 'mjschool'),
-				'expense_amount_label'           => esc_html__( "Expense Amount", "mjschool" ),
-    			'expense_entry_label'            => esc_html__( "Expense Entry Label", "mjschool" ),
-				'income_amount_label'            => esc_html__( "Income Amount", "mjschool" ),
-    			'income_entry_label'             => esc_html__( "Income Entry Label", "mjschool" ),
-    			'audit_trail_report_text'        => esc_html__( "Audit Trail Report", "mjschool" ),
-    			'class_section_report_text'      => esc_html__( "Class & Section Report", "mjschool" ),
-    			'sibling_report_text'            => esc_html__( "Sibling Report", "mjschool" ),
-    			'income_report_text'             => esc_html__( "Income Report", "mjschool" ),
-    			'expense_report_text'            => esc_html__( "Expense Report", "mjschool" ),
-    			'income_expense_report_text'     => esc_html__( "Income Expense Report", "mjschool" ),
-    			'student_attendance_report_text' => esc_html__( "Student Attendance Report", "mjschool" ),
-    			'subject_text'                   => esc_html__( "Subject", "mjschool" ),
-    			'end_time_must_greater_text'     => esc_html__( "End time must be greater than start time", "mjschool" ),
-    			'reply_user_alert'               => esc_html__( 'Please select at least one user to reply', 'mjschool' ),
-				'delete_icon'                    => esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-delete.png" ),
-				'datatable_language'             => mjschool_datatable_multi_language(),
-				'search_placeholder'             => esc_html__( 'Search...', 'mjschool' ),
-				'attachment_text'      			 => esc_html__( 'Attachment', 'mjschool' ),
-				'is_school'                      => ($school_type === 'school'),
-				'is_university'                  => ($school_type === 'university'),
-				'is_add_access'                  => 1,
-				'is_edit_access'                 => 1,
-				'is_delete_access'               => 1,
-				'is_view_access'                 => 1,
-				// 'sibling_index'                 => esc_js($sb_id),
-				'select_student'                 => esc_html__( 'Select Student', 'mjschool' ),
-				'document_type_json'             => $document_type_json,
-				'document_size'                  => $document_size,
-				'date_format'                    => get_option('mjschool_datepicker_format'),
-				'date_format_for_sorting'        => mjschool_return_date_format_for_shorting(),
-				'datatable_nonce'       		 => $datatable_nonce,
-				'module_columns'        		 => $custom_columns,
-				'exam_data_id'        		     => isset($exam_data)?esc_js($exam_data->exam_id):null,
-				'calendar_language'              => mjschool_calender_laungage(),
-				'inactive_student_text'          => esc_html__( 'Inactive Students', 'mjschool' ),
-				'student_text'                   => esc_html__( 'Students', 'mjschool' ),
-				'active_student_text'       	 => esc_html__( 'Active Students', 'mjschool' ),
-				'parent_text'    			     => esc_html__( 'Parents', 'mjschool' ),
-				'teacher_text'    			     => esc_html__( 'Teachers', 'mjschool' ),
-				'support_staff_text' 	         => esc_html__( 'Support Staff', 'mjschool' ),
-				'paid_text'      				 => esc_html__( 'Paid', 'mjschool' ),
-				'unpaid_text'        			 => esc_html__( 'Unpaid', 'mjschool' ),
-				'present_text'        			 => esc_html__( 'Present', 'mjschool' ),
-				'absent_text'     			     => esc_html__( 'Absent', 'mjschool' ),
-				'late_text'       			     => esc_html__( 'Late', 'mjschool' ),
-				'cash_text'       			     => esc_html__( 'Cash', 'mjschool' ),
-				'cheque_text'     			     => esc_html__( 'Cheque', 'mjschool' ),
-				'half_day_text'    			     => esc_html__( 'Half Day', 'mjschool' ),
-				'bank_transfer_text'       		 => esc_html__( 'Bank Transfer', 'mjschool' ),
-				'paypal_text'    			     => esc_html__( 'PayPal', 'mjschool' ),
-				'stripe_text'    			     => esc_html__( 'Stripe', 'mjschool' ),
-				'select_document_type_text'      => esc_html__( 'Select Document Type', 'mjschool' ),
-				'one_document_alert_text'        => esc_html__( 'Please select at least one document extension.', 'mjschool' ),
-				'profile_alert_text'             => esc_html__( 'Please select at least one profile extension.', 'mjschool' ),
-				'select_child_alert_text'          => esc_html__( 'This child is already selected. Please choose a different child.', 'mjschool' ),
-				'csv_file_alert_text'             => esc_html__( 'Only CSV format is allowed.', 'mjschool' ),
-				'permission_alert_text'             => esc_html__( 'You do not have permission to perform this operation.', 'mjschool' ),
-				'start_end_date_alert_text'          => esc_html__( 'End Date should be greater than the Start Date.', 'mjschool' ),
-			);
-			if(isset($_REQUEST['student_id'])) {
-				$student_id                = intval(mjschool_decrypt_id(sanitize_text_field(wp_unslash($_REQUEST['student_id']))));
-				$class_id                  = get_user_meta( $student_id, 'class_name', true );
-				$section_name              = get_user_meta( $student_id, 'class_section', true );
-				$extra_student_data = array(
-					'student_id'   => esc_js($student_id),
-					'class_id'     => esc_js($class_id),
-					'section_name' => esc_js($section_name),
-				);
-				$mix_data = array_merge($mix_data, $extra_student_data);
-			}
-			if ( $current_page === 'mjschool_class' || $current_page === 'mjschool_route' || $current_page === 'mjschool_Subject' || $current_page === 'mjschool_virtual_classroom' || $current_page === 'mjschool_class_room'){
-				wp_enqueue_script( 'mjschool-class', plugins_url( '/assets/js/public-js/mjschool-class.js', __FILE__ ) );
-				wp_localize_script('mjschool-class','mjschool_class_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_student' || $current_page === 'mjschool_teacher' || $current_page === 'mjschool_supportstaff' || $current_page === 'mjschool_parent'){
-				wp_enqueue_script( 'mjschool-users', plugins_url( '/assets/js/public-js/mjschool-users.js', __FILE__ ) );
-				wp_localize_script('mjschool-users','mjschool_users_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_student_homewrok'){
-				wp_enqueue_script( 'mjschool-homework', plugins_url( '/assets/js/public-js/mjschool-homework.js', __FILE__ ) );
-				wp_localize_script('mjschool-homework','mjschool_homework_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_document'){
-				wp_enqueue_script( 'mjschool-document', plugins_url( '/assets/js/public-js/mjschool-document.js', __FILE__ ) );
-				wp_localize_script('mjschool-document','mjschool_document_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_leave'){
-				wp_enqueue_script( 'mjschool-leave', plugins_url( '/assets/js/public-js/mjschool-leave.js', __FILE__ ) );
-				wp_localize_script('mjschool-leave','mjschool_leave_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_fees_payment' || $current_page === 'mjschool_payment' || $current_page === 'mjschool_tax'){
-				wp_enqueue_script( 'mjschool-payment', plugins_url( '/assets/js/public-js/mjschool-payment.js', __FILE__ ) );
-				wp_localize_script('mjschool-payment','mjschool_payment_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_library'){
-				wp_enqueue_script( 'mjschool-library', plugins_url( '/assets/js/public-js/mjschool-library.js', __FILE__ ) );
-				wp_localize_script('mjschool-library','mjschool_library_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_hostel'){
-				wp_enqueue_script( 'mjschool-hostel', plugins_url( '/assets/js/public-js/mjschool-hostel.js', __FILE__ ) );
-				wp_localize_script('mjschool-hostel','mjschool_hostel_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_transport'){
-				wp_enqueue_script( 'mjschool-transport', plugins_url( '/assets/js/public-js/mjschool-transport.js', __FILE__ ) );
-				wp_localize_script('mjschool-transport','mjschool_transport_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_certificate'){
-				wp_enqueue_script( 'mjschool-certificate', plugins_url( '/assets/js/public-js/mjschool-certificate.js', __FILE__ ) );
-				wp_localize_script('mjschool-certificate','mjschool_certificate_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_advance_report'){
-				wp_enqueue_script( 'mjschool-advance-report', plugins_url( '/assets/js/admin-js/mjschool-advance-report.js', __FILE__ ) );
-				wp_localize_script('mjschool-advance-report','mjschool_advance_report_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_notice' || $current_page === 'mjschool_message' || $current_page === 'mjschool_notification' || $current_page === 'mjschool_event' || $current_page === 'mjschool_holiday'){
-				wp_enqueue_script( 'mjschool-notification', plugins_url( '/assets/js/public-js/mjschool-notification.js', __FILE__ ) );
-				wp_localize_script('mjschool-notification','mjschool_notification_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_report'){
-				wp_enqueue_script( 'mjschool-report', plugins_url( '/assets/js/admin-js/mjschool-report.js', __FILE__ ) );
-				wp_localize_script('mjschool-report','mjschool_report_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_admission'){
-				wp_enqueue_script( 'mjschool-admission', plugins_url( '/assets/js/public-js/mjschool-admission.js', __FILE__ ) );
-				wp_localize_script('mjschool-admission','mjschool_admission_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_exam' || $current_page === 'mjschool_hall' || $current_page === 'mjschool_result' || $current_page === 'mjschool_grade' || $current_page === 'mjschool_Migration'){
-				wp_enqueue_script( 'mjschool-student-evaluation', plugins_url( '/assets/js/public-js/mjschool-student-evaluation.js', __FILE__ ) );
-				wp_localize_script('mjschool-student-evaluation','mjschool_student_evaluation_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_attendence'){
-				wp_enqueue_script( 'mjschool-attendance', plugins_url( '/assets/js/public-js/mjschool-attendance.js', __FILE__ ) );
-				wp_localize_script('mjschool-attendance','mjschool_attendance_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool_custom_field' || $current_page === 'mjschool_email_template' || $current_page === 'mjschool_sms_setting' || $current_page === 'mjschool_sms_template' || $current_page === 'mjschool_general_settings'){
-				wp_enqueue_script( 'mjschool-general-setting', plugins_url( '/assets/js/public-js/mjschool-general-setting.js', __FILE__ ) );
-				wp_localize_script('mjschool-general-setting','mjschool_general_setting_data',$mix_data);
-			}
-			if ( $current_page === 'mjschool'){
-				wp_enqueue_script( 'mjschool-admin-dashboard', plugins_url( '/assets/js/public-js/mjschool-admin-dashboard.js', __FILE__ ) );
-				wp_localize_script('mjschool-admin-dashboard','mjschool_dashboard_data',$mix_data);
-			}
-
-			wp_enqueue_script( 'mjschool-common', plugins_url( '/assets/js/mjschool-common.js', __FILE__ ) );	
-			wp_localize_script('mjschool-common','mjschool_common_data',$mix_data);
-			wp_enqueue_script( 'mjschool-ajax-function', plugins_url( '/assets/js/mjschool-ajax-function.js', __FILE__ ) );	
-			wp_localize_script('mjschool-ajax-function','mjschool_ajax_function_data',$mix_data);
-			wp_enqueue_script( 'mjschool-function', plugins_url( '/assets/js/mjschool-function-file.js', __FILE__ ) );	
-			wp_localize_script('mjschool-function','mjschool_function_data',$mix_data);
-			//Enqueue js files-wise end.
-			wp_enqueue_script( 'mjschool-image-upload', plugins_url( '/assets/js/mjschool-image-upload.js', __FILE__), array( 'jquery' ), '', true);			
-			//image upload file alert msg languages translation.
-			wp_localize_script(
-				'mjschool-image-upload',
-				'language_translate1',
-				array(
-					'allow_file_alert' => esc_attr__( 'Only jpg,jpeg,png File allowed', 'mjschool' ),
-				)
-			);
-			wp_localize_script(
-				'mjschool-popup',
-				'language_translate2',
-				array(
-					'edit_record_alert' => esc_attr__( 'Are you sure want to edit this record?', 'mjschool' ),
-					'category_alert' => esc_attr__( 'You must fill out the field', 'mjschool' ),
-					'class_limit_alert' => esc_attr__( 'Class Limit Is Full.', 'mjschool' ),
-					'enter_room_alert' => esc_attr__( 'Please Enter Room Category Name.', 'mjschool' ),
-					'enter_value_alert' => esc_attr__( 'Please Enter Value.', 'mjschool' ),
-					'delete_record_alert' => esc_attr__( 'Are you sure you want to delete this record?', 'mjschool' ),
-					'select_hall_alert' => esc_attr__( 'Please Select Exam Hall', 'mjschool' ),
-					'one_record_alert' => esc_attr__( 'Please Select Atleast One Student', 'mjschool' ),
-					'select_member_alert' => esc_attr__( 'Please select Student', 'mjschool' ),
-					'one_record_select_alert' => esc_attr__( 'Please select atleast one record', 'mjschool' ),
-					'one_class_select_alert' => esc_attr__( 'Please select atleast one class', 'mjschool' ),
-					'one_select_Validation_alert' => esc_attr__( 'Please select atleast one Validation', 'mjschool' ),
-					'lower_starting_year_alert' => esc_attr__( 'You can not select year lower then starting year', 'mjschool' ),
-					'do_delete_record' => esc_attr__( 'Do you really want to delete this ?', 'mjschool' ),
-					'select_one_book_alert' => esc_attr__( 'Please select atleast one book', 'mjschool' ),
-					'select_different_student_alert' => esc_attr__( 'Please Select Different Student', 'mjschool' ),
-					'select_user_label' => esc_attr__( 'Select Users', 'mjschool' ),
-					'select_all_label' => esc_attr__( 'Select all', 'mjschool' ),
-					'same_email_alert' => esc_attr__( 'you have used the same email', 'mjschool' ),
-					'image_forame_alert' => esc_attr__( "Only '.jpeg','.jpg', '.png', '.bmp' formats are allowed.", "mjschool" ),
-					'more_then_exam_date_time' => esc_attr__( "Fail! More than one subject exam date & time same.", "mjschool" ),
-					'single_entry_alert' => esc_attr__( "There is only single entry,You can not remove it.", "mjschool" ),
-					'one_teacher_alert' => esc_attr__( "Please select atleast one teacher", "mjschool" ),
-					'one_assign_room_alert' => esc_attr__( "Please select Student", "mjschool" ),
-					'one_message_alert' => esc_attr__( "Please select atleast one message", "mjschool" ),
-					'large_file_size_alert' => esc_attr__( "Too large file Size. Only file smaller than 10MB can be uploaded.", "mjschool" ),
-					'pdf_alert' => esc_attr__( "Only pdf formate are allowed.", "mjschool" ),
-					'starting_year_alert' => esc_attr__( "You Can Not Select Ending Year Lower Than Starting Year", "mjschool" ),
-					'one_user_replys_alert' => esc_attr__( "Please select atleast one users to replys", "mjschool" ),
-					'csv_alert' => esc_attr__( "Problems with user: we are going to skip", "mjschool" ),
-					'select_user' => esc_attr__( "Select Users", "mjschool" ),
-					'select_all' => esc_attr__( "Select all", "mjschool" ),
-					'mail_reminder' => esc_attr__( "Are you sure you want to send a mail reminder?", "mjschool" ),
-					'account_alert_1' => esc_attr__( "Only jpeg,jpg,png and bmp formate are allowed.", "mjschool" ),
-					'account_alert_2' => esc_attr__( "formate are not allowed.", "mjschool" ),
-					'exam_hallCapacity_1' => esc_attr__( "Exam Hall Capacity", "mjschool" ),
-					'exam_hallCapacity_2' => esc_attr__( "Out Of", "mjschool" ),
-					'exam_hallCapacity_3' => esc_attr__( "Students.", "mjschool" )
-				)
-			);
-			wp_enqueue_style( 'mjschool-white', plugins_url( '/assets/css/mjschool-white.css', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-schoolmgt', plugins_url( '/assets/css/mjschool-school-mgt.min.css', __FILE__ ) );
-			wp_enqueue_style( 'jquery-ui', plugins_url( '/assets/css/third-party-css/jquery-ui.min.css', __FILE__ ) );
-			wp_enqueue_style( 'bootstrap', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap.min.css', __FILE__ ) );
-			if (is_rtl( ) ) {
-				wp_enqueue_style( 'bootstrap-rtl', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap.rtl.min.css', __FILE__ ) );
-				wp_enqueue_style( 'mjschool-rtl-css', plugins_url( '/assets/css/theme/mjschool-rtl.css', __FILE__ ) );
-				wp_enqueue_style( 'mjschool-custome-rtl', plugins_url( '/assets/css/mjschool-custome-rtl.css', __FILE__ ) );
-			}
-			wp_enqueue_style( 'mjschool-inputs', plugins_url( '/assets/css/mjschool-inputs.css', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-responsive', plugins_url( '/assets/css/mjschool-school-responsive.css', __FILE__ ) );
-			wp_enqueue_style( 'buttons-dataTables', plugins_url( '/assets/css/third-party-css/buttons.dataTables.min.css', __FILE__ ) );
-			wp_enqueue_script( 'bootstrap', plugins_url( '/assets/js/third-party-js/bootstrap/bootstrap.min.js', __FILE__ ) );
-			//metrial design js.
-			wp_enqueue_script( 'material', plugins_url( '/assets/js/third-party-js/material.min.js', __FILE__ ) );
-			//End metrial design js.
-			wp_enqueue_script( 'modernizr', plugins_url( '/assets/js/third-party-js/modernizr.min.js', __FILE__ ) );
-			wp_enqueue_script( 'jquery-waypoints', plugins_url( '/assets/js/third-party-js/jquery.waypoints.min.js', __FILE__ ) );
-			wp_enqueue_script( 'jquery-counterup', plugins_url( '/assets/js/third-party-js/jquery.counterup.min.js', __FILE__ ) );
-			//validation style And Script.
-			//validation lib.
-			wp_enqueue_style( 'jquery-validationEngine', plugins_url( '/lib/validationEngine/css/validationEngine.jquery.css', __FILE__ ) );
-			wp_enqueue_script( 'font-awesome-all', plugins_url( '/assets/js/third-party-js/font-awesome.all.min.js', __FILE__ ) );
-			//------- time picker js. -------//
-			wp_enqueue_script( 'mdtimepicker', plugins_url( '/assets/js/third-party-js/mdtimepicker.min.js', __FILE__ ) );
-			wp_enqueue_style( 'mdtimepicker', plugins_url( '/assets/css/third-party-css/mdtimepicker.min.css', __FILE__ ) );
-			//------- time picker js. -------//
-			wp_register_script( 'jquery-validationEngine-' . $code . '', plugins_url( '/lib/validationEngine/js/languages/jquery.validationEngine-' . $code . '.js', __FILE__), array( 'jquery' ) );
-			wp_enqueue_script( 'jquery-validationEngine-' . $code . '' );
-			wp_register_script( 'jquery-validationEngine', plugins_url( '/lib/validationEngine/js/jquery.validationEngine.js', __FILE__), array( 'jquery' ), '', true );
-			wp_enqueue_script( 'jquery-validationEngine' );
-			//------ MULTIPLE SELECT ITEM JS. -------//
-			wp_enqueue_script( 'select2' );
-    		wp_enqueue_style( 'select2' );
-			//------ END MULTIPLE SELECT ITEM JS. ------//
-			if ( $current_page === 'mjschool_report' || $current_page === 'mjschool' ) {
-				wp_enqueue_script( 'chart-umd', plugins_url( '/assets/js/third-party-js/chart.umd.min.js', __FILE__), array( 'jquery' ), '', true);
-			}
-			wp_enqueue_script( 'mjschool-custom-obj', plugins_url( '/assets/js/mjschool-custom-confilict-obj.js', __FILE__), array( 'jquery' ), '', false);
-		}
-	}
-	if ( isset( $_REQUEST['page'] ) ) {
-		add_action( 'admin_enqueue_scripts', 'mjschool_change_adminbar_css' );
-	}
+// Note: The actual register_activation_hook() is in mjschool.php
 
 /**
+ * Helper function to get permission value from request
  *
- * This function hooks into the WordPress gettext filter when
- * on the MJ School plugin page. It allows you to customize
- * the text of the "Insert into Post" button in Thickbox/Media Uploader.
+ * @param string $key     The request key.
+ * @param int    $default Default value (0 or 1).
+ * @return int Sanitized permission value.
+ */
+function mjschool_get_permission_value( $key, $default = 0 ) {
+	// Only process if we're in an admin context with proper permissions
+	if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+		return absint( $default );
+	}
+
+	// Check for nonce if processing form data
+	if ( isset( $_REQUEST[ $key ] ) ) {
+		// Verify nonce for form submissions
+		if ( isset( $_REQUEST['mjschool_settings_nonce'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['mjschool_settings_nonce'] ) ), 'mjschool_save_settings' ) ) {
+				return absint( $default );
+			}
+		}
+		
+		$value = absint( wp_unslash( $_REQUEST[ $key ] ) );
+		// Validate: only allow 0 or 1
+		return ( $value === 1 ) ? 1 : 0;
+	}
+
+	return absint( $default );
+}
+
+/**
+ * Helper function to build module access rights array
+ *
+ * @param string $module_key  Module identifier.
+ * @param array  $config      Module configuration.
+ * @return array Module access rights.
+ */
+function mjschool_build_module_access( $module_key, $config ) {
+	$defaults = array(
+		'menu_icone' => '',
+		'app_icone'  => '',
+		'menu_title' => ucfirst( str_replace( '_', ' ', $module_key ) ),
+		'page_link'  => $module_key,
+		'own_data'   => 0,
+		'add'        => 0,
+		'edit'       => 0,
+		'view'       => 1,
+		'delete'     => 0,
+	);
+
+	$config = wp_parse_args( $config, $defaults );
+
+	return array(
+		'menu_icone' => esc_url( $config['menu_icone'] ),
+		'app_icone'  => esc_url( $config['app_icone'] ),
+		'menu_title' => sanitize_text_field( $config['menu_title'] ),
+		'page_link'  => sanitize_key( $config['page_link'] ),
+		'own_data'   => mjschool_get_permission_value( $module_key . '_own_data', $config['own_data'] ),
+		'add'        => mjschool_get_permission_value( $module_key . '_add', $config['add'] ),
+		'edit'       => mjschool_get_permission_value( $module_key . '_edit', $config['edit'] ),
+		'view'       => mjschool_get_permission_value( $module_key . '_view', $config['view'] ),
+		'delete'     => mjschool_get_permission_value( $module_key . '_delete', $config['delete'] ),
+	);
+}
+
+/**
+ * Get the base URL for plugin icons
+ *
+ * @return string Base URL for icons.
+ */
+function mjschool_get_icons_url() {
+	return plugins_url( 'mjschool/assets/images/icons/' );
+}
+
+/**
+ * Get the base URL for app icons
+ *
+ * @return string Base URL for app icons.
+ */
+function mjschool_get_app_icons_url() {
+	return plugins_url( 'mjschool/assets/images/icons/app-icon/' );
+}
+
+/**
+ * Define all modules with their default configurations
+ *
+ * @return array Module configurations.
+ */
+function mjschool_get_module_definitions() {
+	$icons_url     = mjschool_get_icons_url();
+	$app_icons_url = mjschool_get_app_icons_url();
+
+	return array(
+		'teacher' => array(
+			'menu_icone' => $icons_url . 'mjschool-teacher.png',
+			'app_icone'  => $app_icons_url . 'mjschool-teacher.png',
+			'menu_title' => 'Teacher',
+		),
+		'student' => array(
+			'menu_icone' => $icons_url . 'mjschool-student-icon.png',
+			'app_icone'  => $app_icons_url . 'mjschool-student.png',
+			'menu_title' => 'Student',
+		),
+		'parent' => array(
+			'menu_icone' => $icons_url . 'mjschool-parents.png',
+			'app_icone'  => $app_icons_url . 'mjschool-parents.png',
+			'menu_title' => 'Parent',
+		),
+		'supportstaff' => array(
+			'menu_icone' => $icons_url . 'mjschool-support-staff.png',
+			'app_icone'  => $app_icons_url . 'mjschool-support-staff.png',
+			'menu_title' => 'Supportstaff',
+		),
+		'subject' => array(
+			'menu_icone' => $icons_url . 'mjschool-subject.png',
+			'app_icone'  => $app_icons_url . 'mjschool-subject.png',
+			'menu_title' => 'Subject',
+		),
+		'schedule' => array(
+			'menu_icone' => $icons_url . 'mjschool-class-route.png',
+			'app_icone'  => $app_icons_url . 'mjschool-class-route.png',
+			'menu_title' => 'Class Routine',
+		),
+		'virtual_classroom' => array(
+			'menu_icone' => $icons_url . 'mjschool-virtual-classroom.png',
+			'app_icone'  => $app_icons_url . 'mjschool-virtual-class.png',
+			'menu_title' => 'Virtual Classroom',
+		),
+		'attendance' => array(
+			'menu_icone' => $icons_url . 'mjschool-attandance.png',
+			'app_icone'  => $app_icons_url . 'mjschool-attandance.png',
+			'menu_title' => 'Attendance',
+		),
+		'notification' => array(
+			'menu_icone' => $icons_url . 'mjschool-notification_new.png',
+			'app_icone'  => $icons_url . 'mjschool-notification_new.png',
+			'menu_title' => 'Notification',
+		),
+		'exam' => array(
+			'menu_icone' => $icons_url . 'mjschool-exam.png',
+			'app_icone'  => $app_icons_url . 'exam.png',
+			'menu_title' => 'Exam',
+		),
+		'class_room' => array(
+			'menu_icone' => $icons_url . 'mjschool-exam.png',
+			'app_icone'  => $app_icons_url . 'exam.png',
+			'menu_title' => 'Class Room',
+		),
+		'class' => array(
+			'menu_icone' => $icons_url . 'mjschool-class.png',
+			'app_icone'  => $app_icons_url . 'mjschool-class.png',
+			'menu_title' => 'Class',
+		),
+		'grade' => array(
+			'menu_icone' => $icons_url . 'mjschool-grade.png',
+			'app_icone'  => $app_icons_url . 'mjschool-grade.png',
+			'menu_title' => 'Grade',
+		),
+		'hostel' => array(
+			'menu_icone' => $icons_url . 'mjschool-hostel.png',
+			'app_icone'  => $app_icons_url . 'mjschool-hostel.png',
+			'menu_title' => 'Hostel',
+		),
+		'document' => array(
+			'menu_icone' => $icons_url . 'mjschool-hostel.png',
+			'app_icone'  => $app_icons_url . 'mjschool-hostel.png',
+			'menu_title' => 'Document',
+		),
+		'leave' => array(
+			'menu_icone' => $icons_url . 'mjschool-notification_new.png',
+			'app_icone'  => $icons_url . 'mjschool-notification_new.png',
+			'menu_title' => 'Leave',
+		),
+		'homework' => array(
+			'menu_icone' => $icons_url . 'mjschool-homework.png',
+			'app_icone'  => $app_icons_url . 'mjschool-homework.png',
+			'menu_title' => 'Home Work',
+		),
+		'manage_marks' => array(
+			'menu_icone' => $icons_url . 'mjschool-mark-manage.png',
+			'app_icone'  => $app_icons_url . 'mjschool-mark-manage.png',
+			'menu_title' => 'Mark Manage',
+			'page_link'  => 'manage-marks',
+		),
+		'feepayment' => array(
+			'menu_icone' => $icons_url . 'mjschool-fee.png',
+			'app_icone'  => $app_icons_url . 'mjschool-fee-payment.png',
+			'menu_title' => 'Fees Payment',
+		),
+		'payment' => array(
+			'menu_icone' => $icons_url . 'mjschool-payment.png',
+			'app_icone'  => $app_icons_url . 'mjschool-payment.png',
+			'menu_title' => 'Payment',
+		),
+		'transport' => array(
+			'menu_icone' => $icons_url . 'mjschool-transport.png',
+			'app_icone'  => $app_icons_url . 'mjschool-transport.png',
+			'menu_title' => 'Transport',
+		),
+		'notice' => array(
+			'menu_icone' => $icons_url . 'mjschool-notice.png',
+			'app_icone'  => $app_icons_url . 'mjschool-notice.png',
+			'menu_title' => 'Notice Board',
+		),
+		'message' => array(
+			'menu_icone' => $icons_url . 'mjschool-message.png',
+			'app_icone'  => $app_icons_url . 'mjschool-message.png',
+			'menu_title' => 'Message',
+		),
+		'holiday' => array(
+			'menu_icone' => $icons_url . 'mjschool-holiday.png',
+			'app_icone'  => $app_icons_url . 'mjschool-holiday.png',
+			'menu_title' => 'Holiday',
+		),
+		'library' => array(
+			'menu_icone' => $icons_url . 'mjschool-library.png',
+			'app_icone'  => $app_icons_url . 'mjschool-library.png',
+			'menu_title' => 'Library',
+		),
+		'certificate' => array(
+			'menu_icone' => $icons_url . 'mjschool-library.png',
+			'app_icone'  => $app_icons_url . 'mjschool-library.png',
+			'menu_title' => 'Certificate',
+		),
+		'account' => array(
+			'menu_icone' => $icons_url . 'mjschool-account.png',
+			'app_icone'  => $app_icons_url . 'mjschool-account.png',
+			'menu_title' => 'Account',
+		),
+		'report' => array(
+			'menu_icone' => $icons_url . 'mjschool-report.png',
+			'app_icone'  => $app_icons_url . 'mjschool-report.png',
+			'menu_title' => 'Report',
+		),
+		'event' => array(
+			'menu_icone' => $icons_url . 'mjschool-report.png',
+			'app_icone'  => $app_icons_url . 'mjschool-report.png',
+			'menu_title' => 'Event',
+		),
+		'admission' => array(
+			'menu_icone' => $icons_url . 'mjschool-admission.png',
+			'app_icone'  => $app_icons_url . 'mjschool-admission.png',
+			'menu_title' => 'Admission',
+		),
+		'exam_hall' => array(
+			'menu_icone' => $icons_url . 'mjschool-exam_hall.png',
+			'app_icone'  => $app_icons_url . 'mjschool-exam_hall.png',
+			'menu_title' => 'Exam Hall',
+		),
+		'migration' => array(
+			'menu_icone' => $icons_url . 'mjschool-message.png',
+			'app_icone'  => $app_icons_url . 'mjschool-message.png',
+			'menu_title' => 'Migration',
+		),
+		'tax' => array(
+			'menu_icone' => $icons_url . 'mjschool-fee.png',
+			'app_icone'  => $app_icons_url . 'mjschool-fee.png',
+			'menu_title' => 'Tax',
+		),
+		'custom_field' => array(
+			'menu_icone' => $icons_url . 'mjschool-custom.png',
+			'app_icone'  => $app_icons_url . 'mjschool-custom.png',
+			'menu_title' => 'Custom Field',
+		),
+		'mjschool_setting' => array(
+			'menu_icone' => $icons_url . 'mjschool_setting.png',
+			'app_icone'  => $app_icons_url . 'mjschool_setting.png',
+			'menu_title' => 'SMS Setting',
+		),
+		'email_template' => array(
+			'menu_icone' => $icons_url . 'mjschool-email-template.png',
+			'app_icone'  => $app_icons_url . 'mjschool-email-template.png',
+			'menu_title' => 'Email Template',
+		),
+		'mjschool_template' => array(
+			'menu_icone' => $icons_url . 'mjschool-email-template.png',
+			'app_icone'  => $app_icons_url . 'mjschool-email-template.png',
+			'menu_title' => 'Email Template',
+		),
+		'general_settings' => array(
+			'menu_icone' => $icons_url . 'mjschool-general-settings.png',
+			'app_icone'  => $app_icons_url . 'mjschool-general-settings.png',
+			'menu_title' => 'General Settings',
+		),
+		'access_right' => array(
+			'menu_icone' => $icons_url . 'mjschool-teacher.png',
+			'app_icone'  => $app_icons_url . 'mjschool-teacher.png',
+			'menu_title' => 'Access Right',
+		),
+	);
+}
+
+/**
+ * Build role access rights based on role-specific permissions
+ *
+ * @param string $role         Role identifier.
+ * @param array  $permissions  Role-specific permission overrides.
+ * @return array Role access rights.
+ */
+function mjschool_build_role_access_rights( $role, $permissions ) {
+	$modules        = mjschool_get_module_definitions();
+	$access_rights  = array();
+
+	foreach ( $permissions as $module_key => $perms ) {
+		if ( isset( $modules[ $module_key ] ) ) {
+			$config = array_merge( $modules[ $module_key ], $perms );
+			$access_rights[ $module_key ] = mjschool_build_module_access( $module_key, $config );
+		}
+	}
+
+	return array( $role => $access_rights );
+}
+
+/**
+ * Get student role default permissions
+ *
+ * @return array Student permissions configuration.
+ */
+function mjschool_get_student_permissions() {
+	return array(
+		'teacher'           => array( 'own_data' => 1, 'view' => 1 ),
+		'student'           => array( 'own_data' => 1, 'view' => 1 ),
+		'parent'            => array( 'own_data' => 1, 'view' => 1 ),
+		'supportstaff'      => array( 'view' => 1 ),
+		'subject'           => array( 'own_data' => 1, 'view' => 1 ),
+		'schedule'          => array( 'own_data' => 1, 'view' => 1 ),
+		'virtual_classroom' => array( 'own_data' => 1, 'view' => 1 ),
+		'attendance'        => array( 'own_data' => 1, 'view' => 1 ),
+		'notification'      => array( 'own_data' => 1, 'view' => 1 ),
+		'exam'              => array( 'own_data' => 1, 'view' => 1 ),
+		'class_room'        => array( 'own_data' => 1, 'view' => 1 ),
+		'grade'             => array( 'view' => 1 ),
+		'hostel'            => array( 'own_data' => 1, 'view' => 1 ),
+		'document'          => array( 'own_data' => 1, 'view' => 1 ),
+		'leave'             => array( 'own_data' => 1, 'add' => 1, 'view' => 1 ),
+		'homework'          => array( 'own_data' => 1, 'view' => 1 ),
+		'manage_marks'      => array(),
+		'feepayment'        => array( 'own_data' => 1, 'view' => 1 ),
+		'payment'           => array( 'own_data' => 1, 'view' => 1 ),
+		'transport'         => array( 'view' => 1 ),
+		'notice'            => array( 'own_data' => 1, 'view' => 1 ),
+		'message'           => array( 'own_data' => 1, 'add' => 1, 'view' => 1, 'delete' => 1 ),
+		'holiday'           => array( 'view' => 1 ),
+		'library'           => array( 'own_data' => 1, 'view' => 1 ),
+		'certificate'       => array( 'own_data' => 1, 'view' => 1 ),
+		'account'           => array( 'own_data' => 1, 'edit' => 1, 'view' => 1 ),
+		'report'            => array(),
+		'event'             => array( 'view' => 1 ),
+	);
+}
+
+/**
+ * Get teacher role default permissions
+ *
+ * @return array Teacher permissions configuration.
+ */
+function mjschool_get_teacher_permissions() {
+	return array(
+		'admission'         => array( 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'teacher'           => array( 'own_data' => 1, 'view' => 1 ),
+		'student'           => array( 'own_data' => 1, 'add' => 1, 'view' => 1 ),
+		'parent'            => array( 'own_data' => 1, 'add' => 1, 'view' => 1 ),
+		'subject'           => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'class'             => array( 'own_data' => 1, 'view' => 1 ),
+		'virtual_classroom' => array( 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'schedule'          => array( 'own_data' => 1, 'add' => 1, 'view' => 1 ),
+		'attendance'        => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'notification'      => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'exam'              => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'class_room'        => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'exam_hall'         => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'hostel'            => array( 'view' => 1 ),
+		'homework'          => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'manage_marks'      => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'feepayment'        => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'payment'           => array(),
+		'transport'         => array( 'view' => 1 ),
+		'document'          => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'leave'             => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'notice'            => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'message'           => array( 'own_data' => 1, 'add' => 1, 'view' => 1 ),
+		'migration'         => array( 'add' => 1, 'view' => 1 ),
+		'holiday'           => array( 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'library'           => array( 'own_data' => 1, 'add' => 1, 'view' => 1 ),
+		'certificate'       => array( 'own_data' => 1 ),
+		'account'           => array( 'own_data' => 1, 'edit' => 1, 'view' => 1 ),
+		'report'            => array( 'view' => 1 ),
+		'event'             => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+	);
+}
+
+/**
+ * Get parent role default permissions
+ *
+ * @return array Parent permissions configuration.
+ */
+function mjschool_get_parent_permissions() {
+	return array(
+		'teacher'           => array( 'own_data' => 1, 'view' => 1 ),
+		'student'           => array( 'own_data' => 1, 'view' => 1 ),
+		'parent'            => array( 'own_data' => 1, 'view' => 1 ),
+		'subject'           => array( 'own_data' => 1, 'view' => 1 ),
+		'schedule'          => array( 'own_data' => 1, 'view' => 1 ),
+		'virtual_classroom' => array( 'own_data' => 1, 'view' => 1 ),
+		'attendance'        => array( 'own_data' => 1, 'view' => 1 ),
+		'exam'              => array( 'own_data' => 1, 'view' => 1 ),
+		'class_room'        => array( 'own_data' => 1, 'view' => 1 ),
+		'hostel'            => array( 'own_data' => 1, 'view' => 1 ),
+		'notification'      => array( 'own_data' => 1, 'view' => 1 ),
+		'homework'          => array( 'own_data' => 1, 'view' => 1 ),
+		'manage_marks'      => array(),
+		'feepayment'        => array( 'own_data' => 1, 'view' => 1 ),
+		'document'          => array( 'own_data' => 1, 'view' => 1 ),
+		'leave'             => array( 'own_data' => 1, 'view' => 1 ),
+		'payment'           => array( 'own_data' => 1, 'view' => 1 ),
+		'transport'         => array( 'view' => 1 ),
+		'notice'            => array( 'own_data' => 1, 'view' => 1 ),
+		'message'           => array( 'own_data' => 1, 'add' => 1, 'view' => 1, 'delete' => 1 ),
+		'holiday'           => array( 'view' => 1 ),
+		'library'           => array( 'own_data' => 1, 'view' => 1 ),
+		'certificate'       => array( 'own_data' => 1, 'view' => 1 ),
+		'account'           => array( 'own_data' => 1, 'edit' => 1, 'view' => 1 ),
+		'report'            => array(),
+		'event'             => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+	);
+}
+
+/**
+ * Get support staff role default permissions
+ *
+ * @return array Support staff permissions configuration.
+ */
+function mjschool_get_supportstaff_permissions() {
+	return array(
+		'admission'         => array( 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'student'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'teacher'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'supportstaff'      => array( 'own_data' => 1, 'view' => 1 ),
+		'parent'            => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'subject'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'class'             => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'schedule'          => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'virtual_classroom' => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'attendance'        => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'exam'              => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'class_room'        => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'notification'      => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'exam_hall'         => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'grade'             => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'manage_marks'      => array( 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'homework'          => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'hostel'            => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'document'          => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'leave'             => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'transport'         => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'notice'            => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'message'           => array( 'add' => 1, 'view' => 1, 'delete' => 1 ),
+		'migration'         => array( 'add' => 1, 'view' => 1 ),
+		'tax'               => array( 'view' => 1 ),
+		'feepayment'        => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'payment'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'holiday'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'library'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'certificate'       => array(),
+		'custom_field'      => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'report'            => array( 'view' => 1 ),
+		'mjschool_setting'  => array( 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'email_template'    => array( 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'mjschool_template' => array( 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'general_settings'  => array(),
+		'account'           => array( 'own_data' => 1, 'edit' => 1, 'view' => 1 ),
+		'event'             => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+	);
+}
+
+/**
+ * Get management role default permissions
+ *
+ * @return array Management permissions configuration.
+ */
+function mjschool_get_management_permissions() {
+	return array(
+		'admission'         => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'supportstaff'      => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'exam_hall'         => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'grade'             => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'notification'      => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'custom_field'      => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'migration'         => array( 'view' => 1 ),
+		'mjschool_setting'  => array( 'edit' => 1, 'view' => 1 ),
+		'tax'               => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'email_template'    => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'mjschool_template' => array( 'add' => 1, 'edit' => 1, 'view' => 1 ),
+		'access_right'      => array( 'edit' => 1, 'view' => 1 ),
+		'teacher'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'student'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'parent'            => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'subject'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'class'             => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'virtual_classroom' => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'schedule'          => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'attendance'        => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'exam'              => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'class_room'        => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'hostel'            => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'homework'          => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'manage_marks'      => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'payment'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'transport'         => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'document'          => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'leave'             => array( 'own_data' => 1, 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'notice'            => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'message'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'holiday'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'library'           => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'certificate'       => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+		'account'           => array( 'edit' => 1, 'view' => 1 ),
+		'report'            => array( 'view' => 1 ),
+		'event'             => array( 'add' => 1, 'edit' => 1, 'view' => 1, 'delete' => 1 ),
+	);
+}
+
+/**
+ * Get dashboard card access for a specific role
+ *
+ * @param string $role Role identifier.
+ * @return array Dashboard card access configuration.
+ */
+function mjschool_get_dashboard_card_access( $role ) {
+	$defaults = array(
+		'student' => array(
+			'mjschool_payment_status_chart' => 'yes',
+			'mjschool_user_chart'           => 'yes',
+			'mjschool_invoice_chart'        => 'yes',
+		),
+		'teacher' => array(
+			'mjschool_student_status_chart' => 'yes',
+			'mjschool_attendance_chart'     => 'yes',
+			'mjschool_user_chart'           => 'yes',
+		),
+		'supportstaff' => array(
+			'mjschool_student_status_chart' => 'yes',
+			'mjschool_attendance_chart'     => 'yes',
+			'mjschool_payment_status_chart' => 'yes',
+			'mjschool_payment_report'       => 'yes',
+			'mjschool_invoice_chart'        => 'yes',
+			'mjschool_user_chart'           => 'yes',
+		),
+		'parent' => array(
+			'mjschool_user_chart'           => 'yes',
+			'mjschool_invoice_chart'        => 'yes',
+			'mjschool_payment_status_chart' => 'yes',
+		),
+	);
+
+	if ( ! isset( $defaults[ $role ] ) ) {
+		return array();
+	}
+
+	$access = array();
+	$role_defaults = $defaults[ $role ];
+
+	foreach ( $role_defaults as $key => $default ) {
+		$request_key = str_replace( 'mjschool_', '', $key ) . '_enable_' . $role;
+		
+		if ( isset( $_REQUEST[ $request_key ] ) && current_user_can( 'manage_options' ) ) {
+			$access[ $key ] = sanitize_text_field( wp_unslash( $_REQUEST[ $request_key ] ) ) === 'yes' ? 'yes' : 'no';
+		} else {
+			$access[ $key ] = $default;
+		}
+	}
+
+	return $access;
+}
+
+/**
+ * Main function to get all MJSchool options
+ *
+ * @return array All plugin options.
+ */
+function mjschool_option() {
+	// Build role access rights
+	$role_access_right_student      = mjschool_build_role_access_rights( 'student', mjschool_get_student_permissions() );
+	$role_access_right_teacher      = mjschool_build_role_access_rights( 'teacher', mjschool_get_teacher_permissions() );
+	$role_access_right_parent       = mjschool_build_role_access_rights( 'parent', mjschool_get_parent_permissions() );
+	$role_access_right_supportstaff = mjschool_build_role_access_rights( 'supportstaff', mjschool_get_supportstaff_permissions() );
+	$role_access_right_management   = mjschool_build_role_access_rights( 'management', mjschool_get_management_permissions() );
+
+	// Dashboard card access
+	$dashboard_card_access_for_student       = mjschool_get_dashboard_card_access( 'student' );
+	$dashboard_card_access_for_teacher       = mjschool_get_dashboard_card_access( 'teacher' );
+	$dashboard_card_access_for_support_staff = mjschool_get_dashboard_card_access( 'supportstaff' );
+	$dashboard_card_access_for_parent        = mjschool_get_dashboard_card_access( 'parent' );
+
+	// Setup Wizard Options
+	$mjschool_setup_wizard_step = array(
+		'step1_general_setting'  => 'no',
+		'step2_class'            => 'no',
+		'step3_teacher'          => 'no',
+		'step4_subject'          => 'no',
+		'step5_class_time_table' => 'no',
+		'step6_student'          => 'no',
+		'step7_email_temp'       => 'no',
+	);
+
+	// Setup Wizard Status
+	$wizard_option = get_option( 'mjschool_setup_wizard_step' );
+	if ( empty( $wizard_option ) ) {
+		add_option( 'mjschool_setup_wizard_step', $mjschool_setup_wizard_step );
+	}
+
+	$plugin_url = plugins_url( 'mjschool/' );
+
+	// Define all system options
+	$options = array(
+		// Basic Settings
+		'mjschool_name'                    => esc_attr__( 'School Management System', 'mjschool' ),
+		'mjschool_staring_year'            => gmdate( 'Y' ),
+		'mjschool_address'                 => '',
+		'mjschool_contact_number'          => '',
+		'mjschool_combine'                 => 0,
+		'mjschool_contry'                  => 'United States',
+		'mjschool_city'                    => 'Los Angeles',
+		'mjschool_class_room'              => 0,
+		'mjschool_custom_class'            => 'school',
+		'mjschool_custom_class_display'    => 0,
+		'mjschool_past_pay'                => 'no',
+		'mjschool_prefix'                  => 'S-',
+		'mjschool_email'                   => 'admin@gmail.com',
+		'mjschool_datepicker_format'       => 'yy/mm/dd',
+
+		// Logos and Images
+		'mjschool_app_logo'                => $plugin_url . 'assets/images/mjschool-mobile-app-default.png',
+		'mjschool_logo'                    => $plugin_url . 'assets/images/mjschool-final-logo.png',
+		'mjschool_system_logo'             => $plugin_url . 'assets/images/mjschool-logo-white.png',
+		'mjschool_background_image'        => $plugin_url . 'assets/images/school_life.jpg',
+		'mjschool_student_thumb'           => $plugin_url . 'assets/images/thumb-icon/mjschool-student.png',
+		'mjschool_mjschool-no-data-img'    => $plugin_url . 'assets/images/thumb-icon/mjschool-plus-icon.png',
+		'mjschool_parent_thumb'            => $plugin_url . 'assets/images/thumb-icon/mjschool-parents.png',
+		'mjschool_teacher_thumb'           => $plugin_url . 'assets/images/thumb-icon/mjschool-teacher.png',
+		'mjschool_supportstaff_thumb'      => $plugin_url . 'assets/images/thumb-icon/mjschool-support-staff.png',
+		'mjschool_driver_thumb'            => $plugin_url . 'assets/images/thumb-icon/mjschool-transport.png',
+		'mjschool_principal_signature'     => $plugin_url . 'assets/images/mjschool-signature-stamp.png',
+		'mjschool_student_thumb_new'       => $plugin_url . 'assets/images/thumb-icon/mjschool-student.png',
+		'mjschool_parent_thumb_new'        => $plugin_url . 'assets/images/thumb-icon/mjschool-parents.png',
+		'mjschool_teacher_thumb_new'       => $plugin_url . 'assets/images/thumb-icon/mjschool-teacher.png',
+		'mjschool_supportstaff_thumb_new'  => $plugin_url . 'assets/images/thumb-icon/mjschool-support-staff.png',
+		'mjschool_driver_thumb_new'        => $plugin_url . 'assets/images/thumb-icon/mjschool-transport.png',
+
+		// Footer
+		'mjschool_footer_description'      => 'Copyright ©' . gmdate( 'Y' ) . ' Mojoomla. All rights reserved.',
+
+		// Access Rights
+		'mjschool_access_right_student'    => $role_access_right_student,
+		'mjschool_access_right_teacher'    => $role_access_right_teacher,
+		'mjschool_access_right_parent'     => $role_access_right_parent,
+		'mjschool_access_right_supportstaff' => $role_access_right_supportstaff,
+		'mjschool_access_right_management' => $role_access_right_management,
+
+		// Dashboard Cards
+		'mjschool_dashboard_card_for_student'       => $dashboard_card_access_for_student,
+		'mjschool_dashboard_card_for_teacher'       => $dashboard_card_access_for_teacher,
+		'mjschool_dashboard_card_for_support_staff' => $dashboard_card_access_for_support_staff,
+		'mjschool_dashboard_card_for_parent'        => $dashboard_card_access_for_parent,
+
+		// Setup Wizard
+		'mjschool_setup_wizard_status'     => 'no',
+
+		// Service Settings
+		'mjschool_service'                 => 'msg91',
+		'mjschool_app_domain_name'         => '',
+		'mjschool_app_licence_key'         => '',
+		'mjschool_app_setup_email'         => '',
+
+		// Payment Settings
+		'mjschool_paymaster_pack'          => 'no',
+		'mjschool_invoice_option'          => 1,
+		'mjschool_mail_notification'       => 1,
+		'mjschool_notification_fcm_key'    => '',
+		'mjschool_service_enable'          => 0,
+		'mjschool_student_approval'        => 1,
+		'mjschool_sms_template'            => 'Hello [mjschool_USER_NAME] ',
+		'mjschool_clickatell_mjschool_service' => array(),
+		'mjschool_twillo_mjschool_service' => array(),
+		'mjschool_parent_send_message'     => 1,
+
+		// Dashboard Toggles
+		'mjschool_enable_total_student'    => 1,
+		'mjschool_enable_total_teacher'    => 1,
+		'mjschool_enable_total_parent'     => 1,
+		'mjschool_enable_homework_mail'    => 0,
+		'mjschool_enable_total_attendance' => 1,
+
+		// Virtual Classroom Settings
+		'mjschool_enable_sandbox'          => 'yes',
+		'mjschool_virtual_classroom_account_id'       => '',
+		'mjschool_virtual_classroom_client_id'        => '',
+		'mjschool_virtual_classroom_client_secret_id' => '',
+		'mjschool_virtual_classroom_access_token'     => '',
+		'mjschool_enable_virtual_classroom'           => 'no',
+
+		// Return and Reminder Settings
+		'mjschool_return_option'           => 'yes',
+		'mjschool_return_period'           => 3,
+		'mjschool_system_payment_reminder_day'    => 3,
+		'mjschool_system_payment_reminder_enable' => 'no',
+
+		// Payment Gateway Settings
+		'mjschool_paypal_email'            => '',
+		'razorpay__key'                    => '',
+		'razorpay_secret_mid'              => '',
+		'mjschool_currency_code'           => 'USD',
+
+		// Other Settings
+		'mjschool_teacher_manage_allsubjects_marks' => 'yes',
+		'mjschool_enable_video_popup_show' => 'yes',
+		'mjschool_teacher_show_access'     => 'own_class',
+		'mjschool_heder_enable'            => 'yes',
+		'mjschool_admission_fees'          => 'no',
+		'mjschool_enable_recurring_invoices' => 'no',
+		'mjschool_admission_amount'        => '',
+		'mjschool_system_color_code'       => '#5840bb',
+		'mjschool_registration_fees'       => 'no',
+		'mjschool_registration_amount'     => '',
+		'mjschool_invoice_notice'          => 'If You Paid Your Payment than Invoice are automatically Generated.',
+		'mjschool_attendence_migration_status' => 'no',
+
+		// Upload Settings
+		'mjschool_upload_document_type'    => 'pdf, doc, docx, ppt, pptx, gif, png, jpg, jpeg, webp',
+		'mjschool_upload_profile_extention' => 'gif, png, jpg, jpeg, webp',
+		'mjschool_upload_document_size'    => '30',
+		'mjschool_upload_profile_size'     => '10',
+
+		// Email Subjects
+		'mjschool_registration_title'      => 'Student Registration',
+		'mjschool_student_activation_title' => 'Student Approved',
+		'mjschool_fee_payment_title'       => 'Fees Alert',
+		'mjschool_fee_payment_title_for_parent' => 'Fees Alert',
+		'mjschool_admissiion_title'        => 'Request For Admission',
+		'mjschool_exam_receipt_subject'    => 'Exam Receipt Generate',
+		'mjschool_bed_subject'             => 'Hostel Bed Assigned',
+		'mjschool_add_approve_admisson_mail_subject' => 'Admission Approved',
+		'mjschool_admissiion_approve_subject_for_parent_subject' => 'Student Admission Approved',
+		'mjschool_student_assign_teacher_mail_subject' => 'New Student has been assigned to you.',
+		'mjschool_enable_virtual_classroom_reminder' => 'yes',
+		'mjschool_enable_mjschool_virtual_classroom_reminder' => 'yes',
+		'mjschool_virtual_classroom_reminder_before_time' => '30',
+		'mjschool_add_leave_emails'        => '',
+		'mjschool_leave_approveemails'     => '',
+		'mjschool_add_leave_subject'       => 'Request For Leave',
+		'mjschool_add_leave_subject_of_admin' => 'Request For Leave',
+		'mjschool_add_leave_subject_for_student' => 'Request For Leave',
+		'mjschool_add_leave_subject_for_parent' => 'Request For Leave',
+		'mjschool_leave_approve_subject'   => 'Your leave has been Approved Successfully',
+		'mjschool_leave_reject_subject'    => 'Your leave has been Rejected',
+		'mjschool_add_exam_mail_title'     => 'New exam has been assigned to you.',
+	);
+
+	// Add email templates
+	$options = array_merge( $options, mjschool_get_email_templates() );
+
+	return $options;
+}
+
+/**
+ * Get all email template defaults
+ *
+ * @return array Email templates.
+ */
+function mjschool_get_email_templates() {
+	return array(
+		// SMS Templates
+		'mjschool_attendance_mjschool_content' => 'Dear {{parent_name}}, your child {{student_name}} is absent on {{current_date}} at {{school_name}}.',
+		'mjschool_fees_payment_mjschool_content_for_student' => 'Dear {{student_name}}, A new fees payment invoice has been generated for you at {{school_name}}.',
+		'mjschool_fees_payment_mjschool_content_for_parent' => 'Dear {{parent_name}}, A new fees payment invoice has been generated for your {{student_name}} at {{school_name}}.',
+		'mjschool_fees_payment_reminder_mjschool_content' => 'Dear {{parent_name}}, we just wanted to send you a reminder that the tuition fee has not been paid against your child {{student_name}} at {{school_name}}.',
+		'mjschool_student_approve_mjschool_content' => 'Dear {{student_name}}, your account with {{school_name}} is approved.',
+		'mjschool_student_admission_approve_mjschool_content' => 'Dear {{student_name}}, your admission has been successfully approved with {{school_name}}.',
+		'mjschool_holiday_mjschool_content' => 'Dear {{user_name}}, New Holiday {{title}} Announced at {{school_name}}.',
+		'mjschool_leave_student_mjschool_content' => 'Dear {{student_name}}, your Leave for {{date}} are Added Successfully at {{school_name}}.',
+		'mjschool_leave_parent_mjschool_content' => 'Dear {{parent_name}}, your child {{student_name}}, has been added leave of {{date}} at {{school_name}}.',
+		'mjschool_event_mjschool_content' => 'Dear {{student_name}}, we are inform you about an exciting new event {{event_title}} at {{school_name}}.',
+		'mjschool_exam_student_mjschool_content' => 'This is a reminder that your upcoming exam {{exam_name}} is scheduled for {{date}} At {{school_name}}.',
+		'mjschool_exam_parent_mjschool_content' => 'We would like to inform you that your child {{student_name}} will have an important exam {{exam_name}} on {{date}} At {{school_name}}.',
+		'mjschool_homework_student_mjschool_content' => 'Dear {{student_name}}, your new homework {{title}} is posted. Please check and submit it by the submission date {{date}} At {{school_name}}.',
+		'mjschool_homework_parent_mjschool_content' => 'Dear {{parent_name}}, your child has a new homework {{title}} assignment. Please review it with them and provide any necessary support and submit at {{school_name}}.',
+
+		// Email Templates
+		'mjschool_student_assign_teacher_mail_content' => 'Dear {{teacher_name}},
+New Student {{student_name}} has been assigned to you.
+Regards From {{school_name}}.',
+
+		'mjschool_generate_invoice_mail_subject' => 'Generate Invoice',
+		'mjschool_generate_invoice_mail_content' => 'Dear {{student_name}},
+Your have a new invoice. You can check the invoice attached here.
+Regards From {{school_name}}.',
+
+		'mjschool_add_user_mail_subject' => 'Your have been assigned role of {{role}} in {{school_name}}.',
+		'mjschool_add_user_mail_content' => 'Dear {{user_name}},
+You are Added by admin in {{school_name}}. Your have been assigned role of {{role}} in {{school_name}}. You can sign in using this link. {{login_link}}
+UserName : {{username}}
+Password : {{Password}}
+Regards From {{school_name}}.',
+
+		'mjschool_registration_mailtemplate' => 'Hello {{student_name}},
+Your registration has been successful with {{school_name}}.
+Class Name : {{class_name}}
+Email ID : {{email_id}}
+Password : {{password}}
+Regards From {{school_name}}.',
+
+		'mjschool_admission_mailtemplate_content' => 'Hello {{student_name}},
+Your admission request has been successful with {{school_name}}. You will be able to access your account after school admin approves it and we will send username and password shortly.
+Student Name : {{user_name}}
+Email : {{email}}
+Regards From {{school_name}}.',
+
+		'mjschool_exam_receipt_content' => 'Hello {{student_name}},
+Your exam hall receipt has been generated.
+Regards From {{school_name}}.',
+
+		'mjschool_bed_content' => 'Hello {{student_name}},
+You have been assigned new hostel bed in {{school_name}}.
+Hostel Name : {{hostel_name}}
+Room Number : {{room_id}}
+Bed Number : {{bed_id}}
+Bed Charge : {{bed_charge}}
+Regards From {{school_name}}.',
+
+		'mjschool_admission_mailtemplate_content_for_parent' => 'Hello {{student_name}},
+Your admission has been successfully approved with {{school_name}}.
+You can sign in using this link: {{login_link}}
+Class Name : {{class_name}}
+Roll No : {{roll_no}}
+Email : {{email}}
+Password : {{password}}
+Regards,
+{{school_name}}',
+
+		'mjschool_add_approve_admission_mail_content' => 'Hello {{user_name}},
+Your admission has been successful approved with {{school_name}}.
+You can signin using this link. {{login_link}}
+Class Name : {{class_name}}
+Roll No : {{roll_no}}
+Email : {{email}}
+Password : {{Password}}
+Regards From {{school_name}}.',
+
+		'mjschool_student_activation_mailcontent' => 'Hello {{student_name}},
+Your account with {{school_name}} is approved. You can access student account using your login details. Your other details are given bellow.
+User Name : {{user_name}}
+Class Name : {{class_name}}
+Email : {{email}}
+Regards From {{school_name}}.',
+
+		'mjschool_addleave_email_template' => 'Hello,
+Date : {{date}}
+Leave Type : {{leave_type}}
+Leave Duration : {{leave_duration}}
+Reason : {{reason}}
+Thank you
+{{employee_name}}',
+
+		'mjschool_leave_approve_email_template' => 'Hello,
+Leave of {{user_name}} is approved successfully.
+Date : {{date}}
+Comment : {{comment}}
+Regards From {{system_name}}.
+Thank you
+{{system_name}}',
+
+		'mjschool_addleave_email_template_student' => 'Hello {{student_name}},
+Your Leave are Added Successfully.
+Date : {{date}},
+Leave Type : {{leave_type}},
+Leave Duration : {{leave_duration}},
+Reason : {{reason}},
+Thank you
+{{school_name}}.',
+
+		'mjschool_addleave_email_template_parent' => 'Hello {{parent_name}},
+Your child {{student_name}}, has been added leave of {{date}}.
+Leave Type : {{leave_type}},
+Leave Duration : {{leave_duration}},
+Reason : {{reason}},
+Thank you
+{{school_name}}.',
+
+		'mjschool_addleave_email_template_of_admin' => 'Dear Admin,
+{{student_name}} are Add Leave of {{date}}.
+Leave Type : {{leave_type}},
+Leave Duration : {{leave_duration}},
+Reason : {{reason}},
+Thank you
+{{school_name}}.',
+
+		'mjschool_leave_reject_email_template' => 'Hello {{student_name}},
+Leave of {{student_name}} is Rejected.
+Date : {{date}}
+Comment : {{comment}}
+Regards From {{school_name}}
+Thank you',
+
+		'mjschool_add_exam_mailcontent' => 'Dear {{user_name}},
+A new exam {{exam_name}} has been assigned to you.
+Exam Details:
+Exam Name : {{exam_name}}
+Exam Start To End Date : {{exam_start_end_date}}
+Exam Comment : {{exam_comment}}
+Regards From
+{{school_name}}',
+
+		'mjschool_fee_payment_mailcontent' => 'Dear {{student_name}},
+You have a new invoice. You can check the invoice attached here.
+Date : {{date}}
+Amount : {{amount}}
+Regards From {{school_name}}
+Thank you',
+
+		'mjschool_fee_payment_mailcontent_for_parent' => 'Dear {{parent_name}},
+You have a new invoice for your child {{child_name}}. You can check the invoice attached here.
+Date : {{date}}
+Amount : {{amount}}
+Regards From {{school_name}}
+Thank you',
+
+		'mjschool_message_received_mailcontent' => 'Dear {{receiver_name}},
+You have received new message {{message_content}}.
+Regards From {{school_name}}.',
+
+		'mjschool_message_received_mailsubject' => 'You have received new message from {{from_mail}} at {{school_name}}',
+
+		'mjschool_absent_mail_notification_subject' => 'Your Child {{child_name}} is absent today',
+		'mjschool_absent_mail_notification_content' => 'Your Child {{child_name}} is absent today.
+Regards From {{school_name}}.',
+
+		'mjschoool_student_assign_to_teacher_subject' => 'You have been Assigned {{teacher_name}} at {{school_name}}',
+		'mjschool_student_assign_to_teacher_content' => 'Dear {{student_name}},
+You are assigned to {{teacher_name}}. {{teacher_name}} belongs to {{class_name}}.
+Regards From {{school_name}}.',
+
+		'mjschool_payment_recived_mailsubject' => 'Payment Received against Invoice',
+		'mjschool_payment_recived_mailcontent' => 'Dear {{student_name}},
+Your have successfully paid your invoice {{invoice_no}}. You can check the invoice attached here.
+Regards From {{school_name}}.',
+
+		'mjschool_notice_mailsubject' => 'New Notice For You',
+		'mjschool_notice_mailcontent' => 'New Notice For You.
+Notice Title : {{notice_title}}
+Notice Date : {{notice_date}}
+Notice Comment : {{notice_comment}}
+Regards From {{school_name}}',
+
+		'mjschool_event_mailsubject' => 'Exciting New Event at {{school_name}}.',
+		'mjschool_event_mailcontent' => 'Dear {{user_name}},
+We are delighted to announce an exciting new event at {{school_name}} that promises to be a memorable experience for all attendees!
+Event Details:
+Event Name: {{event_title}}
+Date: {{event_date}}
+Time: {{event_time}}
+Description: {{description}}
+Regards From {{school_name}}.',
+
+		'mjschool_parent_homework_mail_subject' => 'New Homework Assigned',
+		'mjschool_parent_homework_mail_content' => 'Dear {{parent_name}},
+New homework has been assign to your child.
+Student name : {{student_name}}
+Homework Title : {{title}}
+Subject : {{subject}}
+Homework Date : {{homework_date}}
+Submission Date : {{submition_date}}
+Regards From {{school_name}}',
+
+		'mjschool_homework_title' => 'New Homework Assigned',
+		'mjschool_homework_mailcontent' => 'Dear {{student_name}},
+New homework has been assign to you.
+Homework Title : {{title}}
+Subject : {{subject}}
+Homework Date : {{homework_date}}
+Submission Date : {{submition_date}}
+Regards From {{school_name}}',
+
+		'mjschool_holiday_mailsubject' => 'Holiday Announcement',
+		'mjschool_holiday_mailcontent' => 'Holiday Announcement
+Holiday Title : {{holiday_title}}
+Holiday Date : {{holiday_date}}
+Regards From {{school_name}}',
+
+		'mjschool_virtual_class_invite_teacher_mail_subject' => 'Inviting you to a scheduled Zoom meeting',
+		'mjschool_virtual_class_invite_teacher_mail_content' => 'Inviting you to a scheduled Zoom meeting
+Class Name : {{class_name}}
+Time : {{time}}
+Virtual Class ID : {{virtual_class_id}}
+Password : {{password}}
+Join Zoom Virtual Class : {{join_zoom_virtual_class}}
+Start Zoom Virtual Class : {{start_zoom_virtual_class}}
+Regards From {{school_name}}',
+
+		'mjschool_virtual_class_teacher_reminder_mail_subject' => 'Your virtual class just start',
+		'mjschool_virtual_class_teacher_reminder_mail_content' => 'Dear {{teacher_name}}
+Your virtual class just start
+Class Name : {{class_name}}
+subject Name : {{subject_name}}
+Date : {{date}}
+Time : {{time}}
+Virtual Class ID : {{virtual_class_id}}
+Password : {{password}}
+{{start_zoom_virtual_class}}
+Regards From {{school_name}}',
+
+		'mjschool_virtual_class_student_reminder_mail_subject' => 'Your virtual class just start',
+		'mjschool_virtual_class_student_reminder_mail_content' => 'Dear {{student_name}}
+Your virtual class just start
+Class Name : {{class_name}}
+Subject Name : {{subject_name}}
+Teacher Name : {{teacher_name}}
+Date : {{date}}
+Time : {{time}}
+Virtual Class ID : {{virtual_class_id}}
+Password : {{password}}
+{{join_zoom_virtual_class}}
+Regards From {{school_name}}',
+
+		'mjschool_fee_payment_reminder_title' => 'Fees Payment Reminder',
+		'mjschool_fee_payment_reminder_mailcontent' => 'Dear {{parent_name}},
+We just wanted to send you a reminder that the tuition fee has not been paid against your son/daughter {{student_name}} of class {{class_name}}. The total amount is {{total_amount}} and the due amount is {{due_amount}}.
+Regards From
+{{school_name}}',
+
+		'mjschool_fee_payment_reminder_title_for_student' => 'Fees Payment Reminder',
+		'mjschool_fee_payment_reminder_mailcontent_for_student' => 'Dear {{student_name}},
+We just wanted to send you a reminder that the tuition fee has not been paid against you. The total amount is {{total_amount}} and the due amount is {{due_amount}}.
+Regards From
+{{school_name}}',
+
+		'mjschool_assign_subject_title' => 'New subject has been assigned to you.',
+		'mjschool_assign_subject_mailcontent' => 'Dear {{teacher_name}},
+New subject {{subject_name}} has been assigned to you.
+Regards From
+{{school_name}}',
+
+		'mjschool_transfer_certificate_title' => 'Transfer Certificate',
+		'mjschool_transfer_certificate_template' => mjschool_get_transfer_certificate_template(),
+
+		'mjschool_issue_book_title' => 'New book has been issue to you.',
+		'mjschool_issue_book_mailcontent' => 'Dear {{student_name}},
+New book {{book_name}} has been issue to you.
+Issue Date : {{issue_date}}
+Return Date : {{return_date}}
+Regards From
+{{school_name}}',
+	);
+}
+
+/**
+ * Get transfer certificate HTML template
+ *
+ * @return string Transfer certificate template.
+ */
+function mjschool_get_transfer_certificate_template() {
+	return '<div class="container_table">
+<div class="header">
+	<h2 style="text-align: center;border-collapse: collapse;" class="certificate_heading">TRANSFER CERTIFICATE</h2>
+	<div style="width: 100%; overflow: hidden; line-height: 4px;">
+		<div style="width: 49%; float: left;">
+			<p><strong>Affiliation Number.:</strong> 2134012</p>
+			<p><strong>Book Number.:</strong> 08</p>
+			<p><strong>Admission Number.:</strong> {{admission_no}}</p>
+		</div>
+		<div style="width: 49%; float: right;">
+			<p><strong>School Code:</strong> 72055</p>
+			<p><strong>Sr Number.:</strong> 045</p>
+			<p><strong>Roll Number.:</strong> {{roll_no}}</p>
+		</div>
+	</div>
+</div>
+	<table style="width: 100%; border-collapse: collapse; border: 1px solid black; font-size: 12px;">
+	<tr><td style="border: 1px solid black;text-align: center;"><b>1.</b></td><td style="border: 1px solid black;padding-left: 6px;">Student\'s Name</td><td style="border: 1px solid black;padding-left: 6px;">{{student_name}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>2.</b></td><td style="border: 1px solid black;padding-left: 6px;">Father\'s/Guardian\'s Name</td><td style="border: 1px solid black;padding-left: 6px;">{{father_name}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>3.</b></td><td style="border: 1px solid black;padding-left: 6px;">Mother\'s Name</td><td style="border: 1px solid black;padding-left: 6px;">{{mother_name}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>4.</b></td><td style="border: 1px solid black;padding-left: 6px;">Date of Birth (DD-MM-YYYY)</td><td style="border: 1px solid black;padding-left: 6px;">{{birth_date}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>5.</b></td><td style="border: 1px solid black;padding-left: 6px;">Date of Birth (in Words)</td><td style="border: 1px solid black;padding-left: 6px;">{{birth_date_words}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>6.</b></td><td style="border: 1px solid black;padding-left: 6px;">Nationality</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>7.</b></td><td style="border: 1px solid black;padding-left: 6px;">Category (SC/ST/OBC)</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>8.</b></td><td style="border: 1px solid black;padding-left: 6px;">First Admission Date &amp; Class</td><td style="border: 1px solid black;padding-left: 6px;">{{admission_date}} &amp; {{class_name}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>9.</b></td><td style="border: 1px solid black;padding-left: 6px;">Last Class Studied</td><td style="border: 1px solid black;padding-left: 6px;">{{last_class}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>10.</b></td><td style="border: 1px solid black;padding-left: 6px;">Last Examination with Result</td><td style="border: 1px solid black;padding-left: 6px;">{{last_exam_name}} {{last_result}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>11.</b></td><td style="border: 1px solid black;padding-left: 6px;">Failed (if yes, once/twice)</td><td style="border: 1px solid black;padding-left: 6px;">{{fails}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>12.</b></td><td style="border: 1px solid black;padding-left: 6px;">Subjects Studied</td><td style="border: 1px solid black;padding-left: 6px;">{{subject}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>13.</b></td><td style="border: 1px solid black;padding-left: 6px;">Qualified for Higher Class</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>14.</b></td><td style="border: 1px solid black;padding-left: 6px;">Fee Paid Up To</td><td style="border: 1px solid black;padding-left: 6px;">{{fees_pay}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>15.</b></td><td style="border: 1px solid black;padding-left: 6px;">Fee Concession (if any)</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>16.</b></td><td style="border: 1px solid black;padding-left: 6px;">Working Days in Session</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>17.</b></td><td style="border: 1px solid black;padding-left: 6px;">Days Present</td><td style="border: 1px solid black;padding-left: 6px;">{{total_present}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>18.</b></td><td style="border: 1px solid black;padding-left: 6px;">NCC/Scout/Guide (details)</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>19.</b></td><td style="border: 1px solid black;padding-left: 6px;">Extracurricular Activities &amp; Achievements</td><td style="padding-left: 6px;"></td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>20.</b></td><td style="border: 1px solid black;padding-left: 6px;">General Conduct</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>21.</b></td><td style="border: 1px solid black;padding-left: 6px;">Application Date</td><td style="border: 1px solid black;padding-left: 6px;">{{date}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>22.</b></td><td style="border: 1px solid black;padding-left: 6px;">Certificate Issue Date</td><td style="border: 1px solid black;padding-left: 6px;">{{date}}</td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>23.</b></td><td style="border: 1px solid black;padding-left: 6px;">Reason for Leaving</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
+	<tr><td style="border: 1px solid black;text-align: center;"><b>24.</b></td><td style="border: 1px solid black;padding-left: 6px;">Other Remarks</td><td style="border: 1px solid black;padding-left: 6px;"></td></tr>
+	</table>
+	<table style="width: 100%; border-collapse: collapse; border: none; margin-top: 6px; font-size: 14px;">
+	<tbody>
+	<tr>
+	<td style="width: 33%; vertical-align: top; border-collapse: collapse; border: none;"><strong>Signature of Class Teacher:</strong>
+	<img src="{{teacher_signature}}" width="100px" height="50px" />
+	<strong>Name:</strong> {{teacher_name}}
+	<strong>Designation:</strong> {{teacher_designation}}</td>
+	<td style="width: 33%; vertical-align: top; border-collapse: collapse; border: none;"><strong>Checked by:</strong>
+	<img src="{{check_by_signature}}" width="100px" height="50px" />
+	<strong>Name:</strong> {{checking_teacher_name}}
+	<strong>Designation:</strong> {{checking_teacher_designation}}</td>
+	<td style="width: 33%; vertical-align: top; border-collapse: collapse; border: none;"><strong>Signature of Principal:</strong>
+	<img src="{{principal_signature}}" width="100px" height="50px" />
+	<strong>Name:</strong>
+	<strong>Designation:</strong>
+	<strong>Date:</strong> {{date}}
+	<strong>Place:</strong> {{place}}</td>
+	</tr>
+	</tbody>
+	</table>
+</div>';
+}
+
+/**
+ * Initialize MJSchool general settings
+ *
+ * @return void
+ */
+function mjschool_general_setting() {
+	$options = mjschool_option();
+	foreach ( $options as $key => $val ) {
+		add_option( $key, $val );
+	}
+}
+add_action( 'admin_init', 'mjschool_general_setting' );
+
+/**
+ * Output nonce field for settings forms
+ *
+ * @return void
+ */
+function mjschool_settings_nonce_field() {
+	wp_nonce_field( 'mjschool_save_settings', 'mjschool_settings_nonce' );
+}
+
+/**
+ * Define plugin constants for script versions
+ */
+if ( ! defined( 'MJSCHOOL_SCRIPT_VERSION' ) ) {
+    define( 'MJSCHOOL_SCRIPT_VERSION', '1.0.0' );
+}
+
+/**
+ * Get all MJSchool admin page slugs
+ *
+ * @since 1.0.0
+ * @return array List of all MJ School plugin page slugs.
+ */
+function mjschool_call_script_page() {
+    return array(
+        'mjschool',
+        'mjschool_admission',
+        'mjschool_setup',
+        'mjschool_student',
+        'mjschool_student_homewrok', // Note: typo in original - 'homewrok' should be 'homework'
+        'mjschool_teacher',
+        'mjschool_parent',
+        'mjschool_Subject',
+        'mjschool_class',
+        'mjschool_route',
+        'mjschool_custom_class',
+        'mjschool_class_room',
+        'mjschool_attendence', // Note: typo - should be 'attendance'
+        'mjschool_exam',
+        'mjschool_grade',
+        'mjschool_result',
+        'mjschool_leave',
+        'mjschool_document',
+        'mjschool_transport',
+        'mjschool_certificate',
+        'mjschool_notice',
+        'mjschool_event',
+        'mjschool_message',
+        'mjschool_hall',
+        'mjschool_fees',
+        'mjschool_fees_payment',
+        'mjschool_payment',
+        'mjschool_holiday',
+        'mjschool_report',
+        'mjschool_advance_report',
+        'mjschool_Migration',
+        'mjschool_sms_setting',
+        'mjschool_system_addon',
+        'mjschool_system_videos',
+        'mjschool_general_settings',
+        'mjschool_supportstaff',
+        'mjschool_library',
+        'mjschool_custom_field',
+        'mjschool_access_right',
+        'mjschool_hostel',
+        'mjschool_view-attendance',
+        'mjschool_email_template',
+        'mjschool_sms_template',
+        'mjschool_show_infographic',
+        'mjschool_notification',
+        'mjschool_homework',
+        'mjschool_virtual_classroom',
+        'mjschool_dashboard',
+        'mjschool_tax',
+    );
+}
+
+/**
+ * Get current page and tab from request
+ *
+ * @since 2.0.0
+ * @return array Array containing 'page' and 'tab' values.
+ */
+function mjschool_get_current_page_info() {
+    return array(
+        'page' => isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '',
+        'tab'  => isset( $_REQUEST['tab'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['tab'] ) ) : '',
+    );
+}
+
+/**
+ * Get plugin assets URL
+ *
+ * @since 2.0.0
+ * @param string $path Relative path to asset.
+ * @return string Full URL to asset.
+ */
+function mjschool_asset_url( $path ) {
+    return plugins_url( $path, __FILE__ );
+}
+
+/**
+ * Enqueue core WordPress dependencies
+ *
+ * @since 2.0.0
+ */
+function mjschool_enqueue_core_dependencies() {
+    wp_enqueue_script( 'thickbox' );
+    wp_enqueue_style( 'thickbox' );
+    wp_enqueue_script( 'jquery' );
+    wp_enqueue_script( 'jquery-ui-core' );
+    wp_enqueue_script( 'jquery-ui-accordion' );
+    wp_enqueue_script( 'jquery-ui-datepicker' );
+    wp_enqueue_script( 'jquery-ui-dialog' );
+    wp_enqueue_style( 'wp-jquery-ui-dialog' );
+    wp_enqueue_media();
+    wp_enqueue_script( 'moment' );
+    wp_enqueue_script( 'select2' );
+    wp_enqueue_style( 'select2' );
+}
+
+/**
+ * Enqueue third-party CSS files
+ *
+ * @since 2.0.0
+ */
+function mjschool_enqueue_third_party_css() {
+    $version = MJSCHOOL_SCRIPT_VERSION;
+    
+    // DataTables - FIXED: removed duplicate 'third-party-css' folder
+    wp_enqueue_style( 'datatable', mjschool_asset_url( '/assets/css/third-party-css/dataTables.min.css' ), array(), $version );
+    wp_enqueue_style( 'jquery-datatable', mjschool_asset_url( '/assets/css/third-party-css/jquery.dataTables.min.css' ), array(), $version );
+    wp_enqueue_style( 'dataTables-responsive', mjschool_asset_url( '/assets/css/third-party-css/dataTables.responsive.css' ), array(), $version );
+    wp_enqueue_style( 'buttons-dataTables', mjschool_asset_url( '/assets/css/third-party-css/buttons.dataTables.min.css' ), array(), $version );
+    
+    // Bootstrap
+    wp_enqueue_style( 'bootstrap', mjschool_asset_url( '/assets/css/third-party-css/bootstrap/bootstrap.min.css' ), array(), $version );
+    wp_enqueue_style( 'bootstrap-multiselect', mjschool_asset_url( '/assets/css/third-party-css/bootstrap/bootstrap-multiselect.css' ), array( 'bootstrap' ), $version );
+    wp_enqueue_style( 'bootstrap-timepicker', mjschool_asset_url( '/assets/css/third-party-css/bootstrap/bootstrap-timepicker.min.css' ), array( 'bootstrap' ), $version );
+    
+    // jQuery UI
+    wp_enqueue_style( 'jquery-ui', mjschool_asset_url( '/assets/css/third-party-css/jquery-ui.min.css' ), array(), $version );
+    
+    // Chart.js
+    wp_enqueue_style( 'chart', mjschool_asset_url( '/assets/css/third-party-css/chart.min.css' ), array(), $version );
+    
+    // Time picker
+    wp_enqueue_style( 'mdtimepicker', mjschool_asset_url( '/assets/css/third-party-css/mdtimepicker.min.css' ), array(), $version );
+    
+    // Validation Engine
+    wp_enqueue_style( 'jquery-validationEngine', mjschool_asset_url( '/lib/validationEngine/css/validationEngine.jquery.css' ), array(), $version );
+    
+    // SweetAlert2
+    wp_enqueue_style( 'sweetalert2-css', mjschool_asset_url( '/lib/sweetalert2/sweetalert2.min.css' ), array(), $version );
+}
+
+/**
+ * Enqueue plugin CSS files
+ *
+ * @since 2.0.0
+ */
+function mjschool_enqueue_plugin_css() {
+    $version = MJSCHOOL_SCRIPT_VERSION;
+    
+    wp_enqueue_style( 'mjschool-style', mjschool_asset_url( '/assets/css/mjschool-style.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-newversion', mjschool_asset_url( '/assets/css/mjschool-new-version.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-dashboard', mjschool_asset_url( '/assets/css/mjschool-dashboard.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-popup', mjschool_asset_url( '/assets/css/mjschool-popup.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-new-design', mjschool_asset_url( '/assets/css/mjschool-smgt-new-design.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-responsive-new-design', mjschool_asset_url( '/assets/css/mjschool-responsive-new-design.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-white', mjschool_asset_url( '/assets/css/mjschool-white.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-schoolmgt', mjschool_asset_url( '/assets/css/mjschool-school-mgt.min.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-inputs', mjschool_asset_url( '/assets/css/mjschool-inputs.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-responsive', mjschool_asset_url( '/assets/css/mjschool-school-responsive.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-frontend-calendar', mjschool_asset_url( '/assets/css/mjschool-frontend-calendar.css' ), array(), $version );
+    
+    // Font families
+    wp_enqueue_style( 'mjschool-poppins-font-family', mjschool_asset_url( '/assets/css/mjschool-popping-font.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-roboto-fontfamily', mjschool_asset_url( '/assets/css/mjschool-roboto-font.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-open-sans-fonts', mjschool_asset_url( '/assets/css/mjschool-open-sans-fonts.css' ), array(), $version );
+}
+
+/**
+ * Enqueue RTL CSS files if needed
+ *
+ * @since 2.0.0
+ */
+function mjschool_enqueue_rtl_css() {
+    if ( ! is_rtl() ) {
+        return;
+    }
+    
+    $version = MJSCHOOL_SCRIPT_VERSION;
+    
+    wp_enqueue_style( 'mjschool-rtl', mjschool_asset_url( '/assets/css/mjschool-new-design-rtl.css' ), array(), $version );
+    wp_enqueue_style( 'mjschool-rtl-css', mjschool_asset_url( '/assets/css/theme/mjschool-rtl.css' ), array(), $version );
+    wp_enqueue_style( 'bootstrap-rtl', mjschool_asset_url( '/assets/css/third-party-css/bootstrap/bootstrap.rtl.min.css' ), array( 'bootstrap' ), $version );
+    wp_enqueue_style( 'mjschool-custome-rtl', mjschool_asset_url( '/assets/css/mjschool-custome-rtl.css' ), array(), $version );
+}
+
+/**
+ * Enqueue third-party JavaScript files
+ *
+ * @since 2.0.0
+ * @param string $current_page Current admin page slug.
+ * @param string $current_tab  Current tab slug.
+ */
+function mjschool_enqueue_third_party_js( $current_page, $current_tab ) {
+    $version = MJSCHOOL_SCRIPT_VERSION;
+    
+    // DataTables
+    if ( ! in_array( $current_tab, array( 'view_all_message', 'view_all_message_reply' ), true ) ) {
+        wp_enqueue_script( 'datatables', mjschool_asset_url( '/assets/js/third-party-js/datatables.min.js' ), array( 'jquery' ), $version, true );
+        wp_enqueue_script( 'jquery-datatable', mjschool_asset_url( '/assets/js/third-party-js/jquery.dataTables.min.js' ), array( 'jquery' ), $version, true );
+    }
+    
+    wp_enqueue_script( 'datatable-editor', mjschool_asset_url( '/assets/js/third-party-js/dataTables.editor.min.js' ), array( 'jquery-datatable' ), $version, true );
+    wp_enqueue_script( 'datatable-buttons', mjschool_asset_url( '/assets/js/third-party-js/dataTables.buttons.min.js' ), array( 'jquery-datatable' ), $version, true );
+    wp_enqueue_script( 'datatable-button-html', mjschool_asset_url( '/assets/js/third-party-js/buttons.html5.min.js' ), array( 'datatable-buttons' ), $version, true );
+    wp_enqueue_script( 'datatable-button-print', mjschool_asset_url( '/assets/js/third-party-js/buttons.print.min.js' ), array( 'datatable-buttons' ), $version, true );
+    wp_enqueue_script( 'buttons-colVis', mjschool_asset_url( '/assets/js/third-party-js/buttons.colVis.min.js' ), array( 'datatable-buttons' ), $version, true );
+    wp_enqueue_script( 'pdfmake', mjschool_asset_url( '/assets/js/third-party-js/pdfmake.min.js' ), array( 'jquery' ), $version, true );
+    wp_enqueue_script( 'datatables-buttons-print', mjschool_asset_url( '/assets/js/third-party-js/datatables-buttons-print.min.js' ), array( 'jquery' ), $version, true );
+    
+    // Bootstrap
+    wp_enqueue_script( 'popper', mjschool_asset_url( '/assets/js/third-party-js/popper.min.js' ), array( 'jquery' ), $version, true );
+    wp_enqueue_script( 'bootstrap', mjschool_asset_url( '/assets/js/third-party-js/bootstrap/bootstrap.min.js' ), array( 'popper' ), $version, true );
+    wp_enqueue_script( 'bootstrap-multiselect', mjschool_asset_url( '/assets/js/third-party-js/bootstrap/bootstrap-multiselect.min.js' ), array( 'bootstrap' ), $version, true );
+    
+    // Chart.js
+    wp_enqueue_script( 'chart-loder', mjschool_asset_url( '/assets/js/third-party-js/chart-loder.js' ), array(), $version, true );
+    wp_enqueue_script( 'loader', mjschool_asset_url( '/assets/js/third-party-js/loader.min.js' ), array(), $version, true );
+    
+    // Other utilities
+    wp_enqueue_script( 'html5-qrcode', mjschool_asset_url( '/lib/html5-qrcode/html5-qrcode.min.js' ), array(), $version, true );
+    wp_enqueue_script( 'sweetalert2-js', mjschool_asset_url( '/lib/sweetalert2/sweetalert2.all.min.js' ), array(), $version, true );
+    wp_enqueue_script( 'jquery-timeago', mjschool_asset_url( '/assets/js/third-party-js/jquery.timeago.min.js' ), array( 'jquery' ), $version, true );
+    wp_enqueue_script( 'icheckjs', mjschool_asset_url( '/assets/js/third-party-js/icheck.min.js' ), array( 'jquery' ), $version, true );
+    wp_enqueue_script( 'mdtimepicker', mjschool_asset_url( '/assets/js/third-party-js/mdtimepicker.min.js' ), array( 'jquery' ), $version, true );
+    wp_enqueue_script( 'material', mjschool_asset_url( '/assets/js/third-party-js/material.min.js' ), array(), $version, true );
+    wp_enqueue_script( 'modernizr', mjschool_asset_url( '/assets/js/third-party-js/modernizr.min.js' ), array(), $version, true );
+    wp_enqueue_script( 'jquery-waypoints', mjschool_asset_url( '/assets/js/third-party-js/jquery.waypoints.min.js' ), array( 'jquery' ), $version, true );
+    wp_enqueue_script( 'jquery-counterup', mjschool_asset_url( '/assets/js/third-party-js/jquery.counterup.min.js' ), array( 'jquery-waypoints' ), $version, true );
+    wp_enqueue_script( 'font-awesome-all', mjschool_asset_url( '/assets/js/third-party-js/font-awesome.all.min.js' ), array(), $version, true );
+    
+    // Validation Engine with localization
+    $locale = get_locale();
+    $lang_code = substr( $locale, 0, 2 );
+    
+    wp_enqueue_script( 
+        'jquery-validationEngine-' . $lang_code, 
+        mjschool_asset_url( '/lib/validationEngine/js/languages/jquery.validationEngine-' . $lang_code . '.js' ), 
+        array( 'jquery' ), 
+        $version, 
+        true 
+    );
+    wp_enqueue_script( 
+        'jquery-validationEngine', 
+        mjschool_asset_url( '/lib/validationEngine/js/jquery.validationEngine.js' ), 
+        array( 'jquery' ), 
+        $version, 
+        true 
+    );
+    
+    // Search Builder for specific tabs
+    $search_builder_tabs = array( 'student_information_report', 'student_attendance_report', 'finance_report' );
+    if ( in_array( $current_tab, $search_builder_tabs, true ) ) {
+        wp_enqueue_style( 'searchBuilder-dataTables', mjschool_asset_url( '/assets/css/third-party-css/searchBuilder.dataTables.min.css' ), array(), $version );
+        wp_enqueue_script( 'dataTables-searchBuilder', mjschool_asset_url( '/assets/js/third-party-js/dataTables.searchBuilder.min.js' ), array( 'jquery-datatable' ), $version, true );
+        wp_enqueue_style( 'searchBuilder-bootstrap4', mjschool_asset_url( '/assets/css/third-party-css/searchBuilder.bootstrap4.min.css' ), array(), $version );
+    }
+}
+
+/**
+ * Enqueue calendar scripts for dashboard
+ *
+ * @since 2.0.0
+ * @param string $current_page Current admin page slug.
+ */
+function mjschool_enqueue_calendar_scripts( $current_page ) {
+    if ( 'mjschool' !== $current_page ) {
+        return;
+    }
+    
+    $version = MJSCHOOL_SCRIPT_VERSION;
+    $locale = get_locale();
+    $lang_code = substr( $locale, 0, 2 );
+    
+    wp_enqueue_style( 'fullcalendar', mjschool_asset_url( '/assets/css/third-party-css/fullcalendar.min.css' ), array(), $version );
+    wp_enqueue_script( 'fullcalendar', mjschool_asset_url( '/assets/js/third-party-js/fullcalendar.min.js' ), array( 'jquery', 'moment' ), $version, true );
+    wp_enqueue_script( 'calendar-lang', mjschool_asset_url( '/assets/js/calendar-lang/' . $lang_code . '.js' ), array( 'fullcalendar' ), $version, true );
+}
+
+/**
+ * Enqueue chart scripts for specific pages
+ *
+ * @since 2.0.0
+ * @param string $current_page Current admin page slug.
+ */
+function mjschool_enqueue_chart_scripts( $current_page ) {
+    $chart_pages = array( 'mjschool_report', 'mjschool' );
+    
+    if ( ! in_array( $current_page, $chart_pages, true ) ) {
+        return;
+    }
+    
+    wp_enqueue_script( 
+        'chart-umd', 
+        mjschool_asset_url( '/assets/js/third-party-js/chart.umd.min.js' ), 
+        array( 'jquery' ), 
+        MJSCHOOL_SCRIPT_VERSION, 
+        true 
+    );
+}
+
+/**
+ * Get localized data for JavaScript
+ *
+ * @since 2.0.0
+ * @param string $current_page Current admin page slug.
+ * @return array Localized data array.
+ */
+function mjschool_get_localized_data( $current_page ) {
+    $school_type = get_option( 'mjschool_custom_class', 'school' );
+    
+    // Get document settings
+    $document_option = get_option( 'mjschool_upload_document_type', 'pdf, doc, docx, ppt, pptx, gif, png, jpg, jpeg, webp' );
+    $document_type = array_map( 'trim', explode( ',', $document_option ) );
+    $document_size = get_option( 'mjschool_upload_document_size', '30' );
+    
+    // Get class names
+    $class_name = function_exists( 'mjschool_get_all_class_array' ) ? mjschool_get_all_class_array() : array();
+    $class_name_list = array_map(
+        function ( $s ) {
+            return isset( $s->class_name ) ? trim( $s->class_name ) : '';
+        },
+        $class_name
+    );
+    
+    // Get custom field columns
+    $custom_columns = array();
+    if ( class_exists( 'Mjschool_Custome_Field' ) && function_exists( 'mjschool_get_module_name_for_custom_field' ) ) {
+        $mjschool_custom_field_obj = new Mjschool_Custome_Field();
+        $module = mjschool_get_module_name_for_custom_field( $current_page );
+        $user_custom_field = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+        
+        if ( ! empty( $user_custom_field ) ) {
+            foreach ( $user_custom_field as $custom_field ) {
+                if ( isset( $custom_field->show_in_table ) && '1' === $custom_field->show_in_table ) {
+                    $custom_columns[] = true;
+                }
+            }
+        }
+    }
+    
+    // Build localized data array
+    $data = array(
+        // Select labels
+        'select_days'        => esc_html__( 'Select Days', 'mjschool' ),
+        'select_teacher'     => esc_html__( 'Select Teacher', 'mjschool' ),
+        'select_all'         => esc_html__( 'Select all', 'mjschool' ),
+        'select_class'       => esc_html__( 'Select Class', 'mjschool' ),
+        'select_user'        => esc_html__( 'Select Users', 'mjschool' ),
+        'select_tax'         => esc_html__( 'Select Tax', 'mjschool' ),
+        'select_book'        => esc_html__( 'Select Book', 'mjschool' ),
+        'select_student'     => esc_html__( 'Select Student', 'mjschool' ),
+        'select_fees_type'   => esc_html__( 'Select Fees Type', 'mjschool' ),
+        'all_selected'       => esc_html__( 'All Selected', 'mjschool' ),
+        
+        // Button labels
+        'csv_text'           => esc_html__( 'CSV', 'mjschool' ),
+        'print_text'         => esc_html__( 'PRINT', 'mjschool' ),
+        
+        // Report labels
+        'admission_report_text'          => esc_html__( 'Admission Report', 'mjschool' ),
+        'attendance_report_text'         => esc_html__( 'Attendance Report', 'mjschool' ),
+        'fees_payment_report_text'       => esc_html__( 'Fees Payment Report', 'mjschool' ),
+        'leave_report_text'              => esc_html__( 'Leave Report', 'mjschool' ),
+        'guardian_report_text'           => esc_html__( 'Guardian Report', 'mjschool' ),
+        'student_report_text'            => esc_html__( 'Student Report', 'mjschool' ),
+        'audit_trail_report_text'        => esc_html__( 'Audit Trail Report', 'mjschool' ),
+        'class_section_report_text'      => esc_html__( 'Class & Section Report', 'mjschool' ),
+        'sibling_report_text'            => esc_html__( 'Sibling Report', 'mjschool' ),
+        'income_report_text'             => esc_html__( 'Income Report', 'mjschool' ),
+        'expense_report_text'            => esc_html__( 'Expense Report', 'mjschool' ),
+        'income_expense_report_text'     => esc_html__( 'Income Expense Report', 'mjschool' ),
+        'student_attendance_report_text' => esc_html__( 'Student Attendance Report', 'mjschool' ),
+        
+        // Other labels
+        'expense_amount_label'       => esc_html__( 'Expense Amount', 'mjschool' ),
+        'expense_entry_label'        => esc_html__( 'Expense Entry Label', 'mjschool' ),
+        'income_amount_label'        => esc_html__( 'Income Amount', 'mjschool' ),
+        'income_entry_label'         => esc_html__( 'Income Entry Label', 'mjschool' ),
+        'subject_text'               => esc_html__( 'Subject', 'mjschool' ),
+        'attachment_text'            => esc_html__( 'Attachment', 'mjschool' ),
+        'search_placeholder'         => esc_html__( 'Search...', 'mjschool' ),
+        
+        // Status labels
+        'inactive_student_text' => esc_html__( 'Inactive Students', 'mjschool' ),
+        'student_text'          => esc_html__( 'Students', 'mjschool' ),
+        'active_student_text'   => esc_html__( 'Active Students', 'mjschool' ),
+        'parent_text'           => esc_html__( 'Parents', 'mjschool' ),
+        'teacher_text'          => esc_html__( 'Teachers', 'mjschool' ),
+        'support_staff_text'    => esc_html__( 'Support Staff', 'mjschool' ),
+        'paid_text'             => esc_html__( 'Paid', 'mjschool' ),
+        'unpaid_text'           => esc_html__( 'Unpaid', 'mjschool' ),
+        'present_text'          => esc_html__( 'Present', 'mjschool' ),
+        'absent_text'           => esc_html__( 'Absent', 'mjschool' ),
+        'late_text'             => esc_html__( 'Late', 'mjschool' ),
+        'half_day_text'         => esc_html__( 'Half Day', 'mjschool' ),
+        
+        // Payment methods
+        'cash_text'          => esc_html__( 'Cash', 'mjschool' ),
+        'cheque_text'        => esc_html__( 'Cheque', 'mjschool' ),
+        'bank_transfer_text' => esc_html__( 'Bank Transfer', 'mjschool' ),
+        'paypal_text'        => esc_html__( 'PayPal', 'mjschool' ),
+        'stripe_text'        => esc_html__( 'Stripe', 'mjschool' ),
+        
+        // Alert messages
+        'end_time_must_greater_text'  => esc_html__( 'End time must be greater than start time', 'mjschool' ),
+        'reply_user_alert'            => esc_html__( 'Please select at least one user to reply', 'mjschool' ),
+        'select_document_type_text'   => esc_html__( 'Select Document Type', 'mjschool' ),
+        'one_document_alert_text'     => esc_html__( 'Please select at least one document extension.', 'mjschool' ),
+        'profile_alert_text'          => esc_html__( 'Please select at least one profile extension.', 'mjschool' ),
+        'select_child_alert_text'     => esc_html__( 'This child is already selected. Please choose a different child.', 'mjschool' ),
+        'csv_file_alert_text'         => esc_html__( 'Only CSV format is allowed.', 'mjschool' ),
+        'permission_alert_text'       => esc_html__( 'You do not have permission to perform this operation.', 'mjschool' ),
+        'start_end_date_alert_text'   => esc_html__( 'End Date should be greater than the Start Date.', 'mjschool' ),
+        
+        // Configuration
+        'class_name_list'         => $class_name_list,
+        'delete_icon'             => defined( 'MJSCHOOL_PLUGIN_URL' ) ? esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-delete.png' ) : '',
+        'datatable_language'      => function_exists( 'mjschool_datatable_multi_language' ) ? mjschool_datatable_multi_language() : array(),
+        'is_school'               => ( 'school' === $school_type ),
+        'is_university'           => ( 'university' === $school_type ),
+        'is_add_access'           => 1,
+        'is_edit_access'          => 1,
+        'is_delete_access'        => 1,
+        'is_view_access'          => 1,
+        'document_type_json'      => $document_type,
+        'document_size'           => $document_size,
+        'date_format'             => get_option( 'mjschool_datepicker_format', 'yy/mm/dd' ),
+        'date_format_for_sorting' => function_exists( 'mjschool_return_date_format_for_shorting' ) ? mjschool_return_date_format_for_shorting() : 'yy/mm/dd',
+        'datatable_nonce'         => wp_create_nonce( 'mjschool_student_list_nonce' ),
+        'module_columns'          => $custom_columns,
+        'calendar_language'       => function_exists( 'mjschool_calender_laungage' ) ? mjschool_calender_laungage() : 'en',
+    );
+    
+    // Add exam data if available - with proper validation
+    if ( isset( $_REQUEST['exam_id'] ) && function_exists( 'mjschool_decrypt_id' ) && function_exists( 'mjschool_get_exam_by_id' ) ) {
+        $exam_id = sanitize_text_field( wp_unslash( $_REQUEST['exam_id'] ) );
+        $decrypted_id = mjschool_decrypt_id( $exam_id );
+        
+        if ( $decrypted_id ) {
+            $exam_data = mjschool_get_exam_by_id( absint( $decrypted_id ) );
+            if ( $exam_data && isset( $exam_data->exam_id ) ) {
+                $data['exam_data_id'] = absint( $exam_data->exam_id );
+            }
+        }
+    }
+    
+    // Add student data if available - with proper validation
+    if ( isset( $_REQUEST['student_id'] ) && function_exists( 'mjschool_decrypt_id' ) ) {
+        $student_id_encrypted = sanitize_text_field( wp_unslash( $_REQUEST['student_id'] ) );
+        $student_id = mjschool_decrypt_id( $student_id_encrypted );
+        
+        if ( $student_id ) {
+            $student_id = absint( $student_id );
+            $data['student_id'] = $student_id;
+            $data['class_id'] = get_user_meta( $student_id, 'class_name', true );
+            $data['section_name'] = get_user_meta( $student_id, 'class_section', true );
+        }
+    }
+    
+    return $data;
+}
+
+/**
+ * Get alert messages for JavaScript localization
+ *
+ * @since 2.0.0
+ * @return array Alert messages array.
+ */
+function mjschool_get_alert_messages() {
+    return array(
+        'edit_record_alert'              => esc_attr__( 'Are you sure want to edit this record?', 'mjschool' ),
+        'category_alert'                 => esc_attr__( 'You must fill out the field', 'mjschool' ),
+        'class_limit_alert'              => esc_attr__( 'Class Limit Is Full.', 'mjschool' ),
+        'enter_room_alert'               => esc_attr__( 'Please Enter Room Category Name.', 'mjschool' ),
+        'enter_value_alert'              => esc_attr__( 'Please Enter Value.', 'mjschool' ),
+        'delete_record_alert'            => esc_attr__( 'Are you sure you want to delete this record?', 'mjschool' ),
+        'select_hall_alert'              => esc_attr__( 'Please Select Exam Hall', 'mjschool' ),
+        'one_record_alert'               => esc_attr__( 'Please Select Atleast One Student', 'mjschool' ),
+        'select_member_alert'            => esc_attr__( 'Please select Student', 'mjschool' ),
+        'one_record_select_alert'        => esc_attr__( 'Please select atleast one record', 'mjschool' ),
+        'one_class_select_alert'         => esc_attr__( 'Please select atleast one class', 'mjschool' ),
+        'one_select_Validation_alert'    => esc_attr__( 'Please select atleast one Validation', 'mjschool' ),
+        'lower_starting_year_alert'      => esc_attr__( 'You can not select year lower then starting year', 'mjschool' ),
+        'do_delete_record'               => esc_attr__( 'Do you really want to delete this ?', 'mjschool' ),
+        'select_one_book_alert'          => esc_attr__( 'Please select atleast one book', 'mjschool' ),
+        'select_different_student_alert' => esc_attr__( 'Please Select Different Student', 'mjschool' ),
+        'select_user_label'              => esc_attr__( 'Select Users', 'mjschool' ),
+        'select_all_label'               => esc_attr__( 'Select all', 'mjschool' ),
+        'same_email_alert'               => esc_attr__( 'you have used the same email', 'mjschool' ),
+        'image_forame_alert'             => esc_attr__( "Only '.jpeg','.jpg', '.png', '.bmp' formats are allowed.", 'mjschool' ),
+        'more_then_exam_date_time'       => esc_attr__( 'Fail! More than one subject exam date & time same.', 'mjschool' ),
+        'single_entry_alert'             => esc_attr__( 'There is only single entry,You can not remove it.', 'mjschool' ),
+        'one_teacher_alert'              => esc_attr__( 'Please select atleast one teacher', 'mjschool' ),
+        'one_assign_room_alert'          => esc_attr__( 'Please select Student', 'mjschool' ),
+        'one_message_alert'              => esc_attr__( 'Please select atleast one message', 'mjschool' ),
+        'large_file_size_alert'          => esc_attr__( 'Too large file Size. Only file smaller than 10MB can be uploaded.', 'mjschool' ),
+        'pdf_alert'                      => esc_attr__( 'Only pdf formate are allowed.', 'mjschool' ),
+        'starting_year_alert'            => esc_attr__( 'You Can Not Select Ending Year Lower Than Starting Year', 'mjschool' ),
+        'one_user_replys_alert'          => esc_attr__( 'Please select atleast one users to replys', 'mjschool' ),
+        'csv_alert'                      => esc_attr__( 'Problems with user: we are going to skip', 'mjschool' ),
+        'select_user'                    => esc_attr__( 'Select Users', 'mjschool' ),
+        'select_all'                     => esc_attr__( 'Select all', 'mjschool' ),
+        'mail_reminder'                  => esc_attr__( 'Are you sure you want to send a mail reminder?', 'mjschool' ),
+        'account_alert_1'                => esc_attr__( 'Only jpeg,jpg,png and bmp formate are allowed.', 'mjschool' ),
+        'account_alert_2'                => esc_attr__( 'formate are not allowed.', 'mjschool' ),
+        'exam_hallCapacity_1'            => esc_attr__( 'Exam Hall Capacity', 'mjschool' ),
+        'exam_hallCapacity_2'            => esc_attr__( 'Out Of', 'mjschool' ),
+        'exam_hallCapacity_3'            => esc_attr__( 'Students.', 'mjschool' ),
+    );
+}
+
+/**
+ * Enqueue page-specific JavaScript files
+ *
+ * @since 2.0.0
+ * @param string $current_page Current admin page slug.
+ * @param array  $localized_data Localized data for scripts.
+ */
+function mjschool_enqueue_page_specific_js( $current_page, $localized_data ) {
+    $version = MJSCHOOL_SCRIPT_VERSION;
+    
+    // Define page to script mappings
+    $page_scripts = array(
+        'mjschool_class'             => array( 'mjschool-class', '/assets/js/public-js/mjschool-class.js', 'mjschool_class_data' ),
+        'mjschool_route'             => array( 'mjschool-class', '/assets/js/public-js/mjschool-class.js', 'mjschool_class_data' ),
+        'mjschool_Subject'           => array( 'mjschool-class', '/assets/js/public-js/mjschool-class.js', 'mjschool_class_data' ),
+        'mjschool_virtual_classroom' => array( 'mjschool-class', '/assets/js/public-js/mjschool-class.js', 'mjschool_class_data' ),
+        'mjschool_class_room'        => array( 'mjschool-class', '/assets/js/public-js/mjschool-class.js', 'mjschool_class_data' ),
+        'mjschool_student'           => array( 'mjschool-users', '/assets/js/public-js/mjschool-users.js', 'mjschool_users_data' ),
+        'mjschool_teacher'           => array( 'mjschool-users', '/assets/js/public-js/mjschool-users.js', 'mjschool_users_data' ),
+        'mjschool_supportstaff'      => array( 'mjschool-users', '/assets/js/public-js/mjschool-users.js', 'mjschool_users_data' ),
+        'mjschool_parent'            => array( 'mjschool-users', '/assets/js/public-js/mjschool-users.js', 'mjschool_users_data' ),
+        'mjschool_student_homewrok'  => array( 'mjschool-homework', '/assets/js/public-js/mjschool-homework.js', 'mjschool_homework_data' ),
+        'mjschool_document'          => array( 'mjschool-document', '/assets/js/public-js/mjschool-document.js', 'mjschool_document_data' ),
+        'mjschool_leave'             => array( 'mjschool-leave', '/assets/js/public-js/mjschool-leave.js', 'mjschool_leave_data' ),
+        'mjschool_fees_payment'      => array( 'mjschool-payment', '/assets/js/public-js/mjschool-payment.js', 'mjschool_payment_data' ),
+        'mjschool_payment'           => array( 'mjschool-payment', '/assets/js/public-js/mjschool-payment.js', 'mjschool_payment_data' ),
+        'mjschool_tax'               => array( 'mjschool-payment', '/assets/js/public-js/mjschool-payment.js', 'mjschool_payment_data' ),
+        'mjschool_library'           => array( 'mjschool-library', '/assets/js/public-js/mjschool-library.js', 'mjschool_library_data' ),
+        'mjschool_hostel'            => array( 'mjschool-hostel', '/assets/js/public-js/mjschool-hostel.js', 'mjschool_hostel_data' ),
+        'mjschool_transport'         => array( 'mjschool-transport', '/assets/js/public-js/mjschool-transport.js', 'mjschool_transport_data' ),
+        'mjschool_certificate'       => array( 'mjschool-certificate', '/assets/js/public-js/mjschool-certificate.js', 'mjschool_certificate_data' ),
+        'mjschool_advance_report'    => array( 'mjschool-advance-report', '/assets/js/admin-js/mjschool-advance-report.js', 'mjschool_advance_report_data' ),
+        'mjschool_notice'            => array( 'mjschool-notification', '/assets/js/public-js/mjschool-notification.js', 'mjschool_notification_data' ),
+        'mjschool_message'           => array( 'mjschool-notification', '/assets/js/public-js/mjschool-notification.js', 'mjschool_notification_data' ),
+        'mjschool_notification'      => array( 'mjschool-notification', '/assets/js/public-js/mjschool-notification.js', 'mjschool_notification_data' ),
+        'mjschool_event'             => array( 'mjschool-notification', '/assets/js/public-js/mjschool-notification.js', 'mjschool_notification_data' ),
+        'mjschool_holiday'           => array( 'mjschool-notification', '/assets/js/public-js/mjschool-notification.js', 'mjschool_notification_data' ),
+        'mjschool_report'            => array( 'mjschool-report', '/assets/js/admin-js/mjschool-report.js', 'mjschool_report_data' ),
+        'mjschool_admission'         => array( 'mjschool-admission', '/assets/js/public-js/mjschool-admission.js', 'mjschool_admission_data' ),
+        'mjschool_exam'              => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
+        'mjschool_hall'              => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
+        'mjschool_result'            => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
+        'mjschool_grade'             => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
+        'mjschool_Migration'         => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
+        'mjschool_attendence'        => array( 'mjschool-attendance', '/assets/js/public-js/mjschool-attendance.js', 'mjschool_attendance_data' ),
+        'mjschool_custom_field'      => array( 'mjschool-general-setting', '/assets/js/public-js/mjschool-general-setting.js', 'mjschool_general_setting_data' ),
+        'mjschool_email_template'    => array( 'mjschool-general-setting', '/assets/js/public-js/mjschool-general-setting.js', 'mjschool_general_setting_data' ),
+        'mjschool_sms_setting'       => array( 'mjschool-general-setting', '/assets/js/public-js/mjschool-general-setting.js', 'mjschool_general_setting_data' ),
+        'mjschool_sms_template'      => array( 'mjschool-general-setting', '/assets/js/public-js/mjschool-general-setting.js', 'mjschool_general_setting_data' ),
+        'mjschool_general_settings'  => array( 'mjschool-general-setting', '/assets/js/public-js/mjschool-general-setting.js', 'mjschool_general_setting_data' ),
+        'mjschool'                   => array( 'mjschool-admin-dashboard', '/assets/js/public-js/mjschool-admin-dashboard.js', 'mjschool_dashboard_data' ),
+    );
+    
+    // Enqueue page-specific script
+    if ( isset( $page_scripts[ $current_page ] ) ) {
+        $script_info = $page_scripts[ $current_page ];
+        wp_enqueue_script( $script_info[0], mjschool_asset_url( $script_info[1] ), array( 'jquery' ), $version, true );
+        wp_localize_script( $script_info[0], $script_info[2], $localized_data );
+    }
+    
+    // Special case for marks page
+    if ( 'mjschool_result' === $current_page ) {
+        wp_enqueue_script( 'mjschool-marks', mjschool_asset_url( '/assets/js/pages/marks.js' ), array( 'jquery' ), $version, true );
+    }
+}
+
+/**
+ * Enqueue common plugin JavaScript files
+ *
+ * @since 2.0.0
+ * @param array $localized_data Localized data for scripts.
+ */
+function mjschool_enqueue_common_js( $localized_data ) {
+    $version = MJSCHOOL_SCRIPT_VERSION;
+    
+    // Custom field handler
+    wp_enqueue_script( 'mjschool-customfield', mjschool_asset_url( '/assets/js/mjschool-customfield.js' ), array( 'jquery' ), $version, true );
+    
+    // Popup handler
+    wp_enqueue_script( 'mjschool-popup', mjschool_asset_url( '/assets/js/mjschool-popup.js' ), array( 'jquery' ), $version, true );
+    wp_localize_script( 'mjschool-popup', 'mjschool', array(
+        'ajax'  => admin_url( 'admin-ajax.php' ),
+        'nonce' => wp_create_nonce( 'mjschool_ajax_nonce' ),
+    ) );
+    wp_localize_script( 'mjschool-popup', 'language_translate2', mjschool_get_alert_messages() );
+    
+    // Common functions
+    wp_enqueue_script( 'mjschool-common', mjschool_asset_url( '/assets/js/mjschool-common.js' ), array( 'jquery' ), $version, true );
+    wp_localize_script( 'mjschool-common', 'mjschool_common_data', $localized_data );
+    
+    // AJAX functions
+    wp_enqueue_script( 'mjschool-ajax-function', mjschool_asset_url( '/assets/js/mjschool-ajax-function.js' ), array( 'jquery', 'mjschool-common' ), $version, true );
+    wp_localize_script( 'mjschool-ajax-function', 'mjschool_ajax_function_data', $localized_data );
+    
+    // Main function file
+    wp_enqueue_script( 'mjschool-function', mjschool_asset_url( '/assets/js/mjschool-function-file.js' ), array( 'jquery', 'mjschool-common' ), $version, true );
+    wp_localize_script( 'mjschool-function', 'mjschool_function_data', $localized_data );
+    
+    // Image upload handler
+    wp_enqueue_script( 'mjschool-image-upload', mjschool_asset_url( '/assets/js/mjschool-image-upload.js' ), array( 'jquery' ), $version, true );
+    wp_localize_script( 'mjschool-image-upload', 'language_translate1', array(
+        'allow_file_alert' => esc_attr__( 'Only jpg,jpeg,png File allowed', 'mjschool' ),
+    ) );
+    
+    // Conflict resolution
+    wp_enqueue_script( 'mjschool-custom-obj', mjschool_asset_url( '/assets/js/mjschool-custom-confilict-obj.js' ), array( 'jquery' ), $version, false );
+}
+
+/**
+ * Main function to enqueue admin scripts and styles
+ *
+ * @since 1.0.0
+ * @param string $hook The current admin page hook.
+ */
+function mjschool_change_adminbar_css( $hook ) {
+    $page_info = mjschool_get_current_page_info();
+    $current_page = $page_info['page'];
+    $current_tab = $page_info['tab'];
+    
+    // Check if we're on a plugin page
+    $page_array = mjschool_call_script_page();
+    if ( ! in_array( $current_page, $page_array, true ) ) {
+        return;
+    }
+    
+    // Enqueue all assets
+    mjschool_enqueue_core_dependencies();
+    mjschool_enqueue_third_party_css();
+    mjschool_enqueue_plugin_css();
+    mjschool_enqueue_rtl_css();
+    mjschool_enqueue_third_party_js( $current_page, $current_tab );
+    mjschool_enqueue_calendar_scripts( $current_page );
+    mjschool_enqueue_chart_scripts( $current_page );
+    
+    // Get and apply localized data
+    $localized_data = mjschool_get_localized_data( $current_page );
+    mjschool_enqueue_page_specific_js( $current_page, $localized_data );
+    mjschool_enqueue_common_js( $localized_data );
+}
+
+// Hook the main enqueue function - only if page parameter is set
+if ( isset( $_REQUEST['page'] ) ) {
+    add_action( 'admin_enqueue_scripts', 'mjschool_change_adminbar_css' );
+}
+
+/**
+ * Replace Thickbox button text for media uploads
  *
  * @since 1.0.0
  */
 function mjschool_upload_image() {
-	global $mjschool_pagenow;
-	$current_page = isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '';
-	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $current_page === 'mjschool' ) {
-			// Now we'll replace the 'Insert into Post Button' inside Thickbox.
-			add_filter( 'gettext', 'mjschool_replace_thickbox_text', 1, 3 );
-		}
-	}
+    $page_info = mjschool_get_current_page_info();
+    
+    if ( 'mjschool' === $page_info['page'] ) {
+        add_filter( 'gettext', 'mjschool_replace_thickbox_text', 1, 3 );
+    }
 }
 add_action( 'admin_init', 'mjschool_upload_image' );
+
 /**
- * Replaces the default "Insert into Post" button text in Thickbox/Media Uploader.
- *
- * This function hooks into the 'gettext' filter to change the text
- * of the "Insert into Post" button to "Upload Image" when the
- * user is on the MJ School settings page.
+ * Replace "Insert into Post" button text
  *
  * @since 1.0.0
- *
- * @param string $translated_text The translated text (may have been translated by other filters).
+ * @param string $translated_text The translated text.
  * @param string $text            The original text.
  * @param string $domain          The text domain.
- * @return string Modified text if conditions match; otherwise original translated text.
+ * @return string Modified text.
  */
 function mjschool_replace_thickbox_text( $translated_text, $text, $domain ) {
-	// Check if the current translatable text is exactly "Insert into Post".
-	if ( 'Insert into Post' === $text ) {
-		$referer = strpos( wp_get_referer(), 'wptuts-settings' );
-		if ( $referer != '' ) {
-			return esc_html__( 'Upload Image', 'mjschool' );
-		}
-	}
-	return $translated_text;
+    if ( 'Insert into Post' === $text ) {
+        $referer = wp_get_referer();
+        if ( $referer && strpos( $referer, 'wptuts-settings' ) !== false ) {
+            return esc_html__( 'Upload Image', 'mjschool' );
+        }
+    }
+    return $translated_text;
 }
+
 /**
- * Loads the plugin's translation files for localization.
- *
- * This function enables the plugin to support multiple languages
- * by loading the text domain 'mjschool' from the /languages/ directory.
+ * Load plugin text domain for translations
  *
  * @since 1.0.0
  */
 function mjschool_domain_load() {
-	load_plugin_textdomain( 'mjschool', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+    load_plugin_textdomain( 'mjschool', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
+add_action( 'plugins_loaded', 'mjschool_domain_load' );
+
 /**
- * Creates a Login Page post with the [smgt_login] shortcode.
- *
- * This function checks if the plugin option 'mjschool_login_page' exists.
- * If it does not exist, it creates a new WordPress page titled
- * "School Management Login Page" with the [smgt_login] shortcode,
- * and stores the page ID in the option for later use.
+ * Create login page on plugin activation
  *
  * @since 1.0.0
  */
-add_action( 'plugins_loaded', 'mjschool_domain_load' );
 function mjschool_install_login_page() {
-	if ( ! get_option( 'mjschool_login_page' ) ) {
-		$curr_page    = array(
-			'post_title'     => esc_attr__( 'School Management Login Page', 'mjschool' ),
-			'post_content'   => '[smgt_login]',
-			'post_status'    => 'publish',
-			'post_type'      => 'page',
-			'comment_status' => 'closed',
-			'ping_status'    => 'closed',
-			'post_category'  => array(1),
-			'post_parent'    => 0,
-		);
-		$curr_created = wp_insert_post( $curr_page );
-		update_option( 'mjschool_login_page', $curr_created );
-	}
+    if ( get_option( 'mjschool_login_page' ) ) {
+        return;
+    }
+    
+    $page_data = array(
+        'post_title'     => esc_attr__( 'School Management Login Page', 'mjschool' ),
+        'post_content'   => '[smgt_login]',
+        'post_status'    => 'publish',
+        'post_type'      => 'page',
+        'comment_status' => 'closed',
+        'ping_status'    => 'closed',
+        'post_category'  => array( 1 ),
+        'post_parent'    => 0,
+    );
+    
+    $page_id = wp_insert_post( $page_data );
+    
+    if ( $page_id && ! is_wp_error( $page_id ) ) {
+        update_option( 'mjschool_login_page', $page_id );
+    }
 }
+
 /**
- * Creates a Student Registration Page post with the [smgt_student_registration] shortcode.
- *
- * This function checks if the plugin option 'mjschool_install_student_registration_page' exists.
- * If it does not exist, it creates a new WordPress page titled
- * "Student Registration" with the [smgt_student_registration] shortcode,
- * and stores the page ID in the option for later use.
+ * Create student registration page on plugin activation
  *
  * @since 1.0.0
  */
 function mjschool_install_student_registration_page() {
-	if ( ! get_option( 'mjschool_install_student_registration_page' ) ) {
-		$curr_page    = array(
-			'post_title'     => esc_attr__( 'Student Registration', 'mjschool' ),
-			'post_content'   => '[smgt_student_registration]',
-			'post_status'    => 'publish',
-			'post_type'      => 'page',
-			'comment_status' => 'closed',
-			'ping_status'    => 'closed',
-			'post_category'  => array(1),
-			'post_parent'    => 0,
-		);
-		$curr_created = wp_insert_post( $curr_page );
-		update_option( 'mjschool_install_student_registration_page', $curr_created );
-	}
+    if ( get_option( 'mjschool_install_student_registration_page' ) ) {
+        return;
+    }
+    
+    $page_data = array(
+        'post_title'     => esc_attr__( 'Student Registration', 'mjschool' ),
+        'post_content'   => '[smgt_student_registration]',
+        'post_status'    => 'publish',
+        'post_type'      => 'page',
+        'comment_status' => 'closed',
+        'ping_status'    => 'closed',
+        'post_category'  => array( 1 ),
+        'post_parent'    => 0,
+    );
+    
+    $page_id = wp_insert_post( $page_data );
+    
+    if ( $page_id && ! is_wp_error( $page_id ) ) {
+        update_option( 'mjschool_install_student_registration_page', $page_id );
+    }
 }
+
 /**
- * Loads the frontend dashboard template or hooks into login authentication.
- *
- * This function checks for specific request parameters to determine
- * whether to load the frontend dashboard template or modify the login process.
+ * Load frontend dashboard template
  *
  * @since 1.0.0
  */
 function mjschool_user_dashboard() {
-	if ( isset( $_REQUEST['dashboard'] ) ) {
-		require_once MJSCHOOL_INCLUDES_DIR . '/mjschool-frontend-template.php';
-		die();
-	}
-	if ( isset( $_REQUEST['mjschool_login'] ) ) {
-		add_action( 'authenticate', 'mjschool_pu_blank_login' );
-	}
+    if ( isset( $_REQUEST['dashboard'] ) ) {
+        $dashboard = sanitize_text_field( wp_unslash( $_REQUEST['dashboard'] ) );
+        
+        if ( defined( 'MJSCHOOL_INCLUDES_DIR' ) && file_exists( MJSCHOOL_INCLUDES_DIR . '/mjschool-frontend-template.php' ) ) {
+            require_once MJSCHOOL_INCLUDES_DIR . '/mjschool-frontend-template.php';
+            exit;
+        }
+    }
+    
+    if ( isset( $_REQUEST['mjschool_login'] ) ) {
+        if ( function_exists( 'mjschool_pu_blank_login' ) ) {
+            add_action( 'authenticate', 'mjschool_pu_blank_login' );
+        }
+    }
 }
+
 /**
- * Enqueues all required frontend scripts and styles for the MJ School User dashboard.
- *
- * This function only loads assets if the request parameter 'dashboard' equals 'mjschool_user'.
+ * Enqueue frontend assets for user dashboard
  *
  * @since 1.0.0
  */
 function mjschool_enqueue_front_assets() {
-	$current_page = isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '';
-	$current_tab = isset($_REQUEST['tab']) ? sanitize_text_field(wp_unslash($_REQUEST['tab'])) : '';
-	if ( isset( $_REQUEST['dashboard'] ) && sanitize_text_field(wp_unslash($_REQUEST['dashboard'])) === 'mjschool_user' ) 
-	{
-		wp_register_script( 'popup-front', plugins_url( 'assets/js/mjschool-popup.js', __FILE__), array( 'jquery' ) );
-		wp_enqueue_script( 'popup-front' );
-		wp_localize_script( 'popup-front', 'mjschool', array(
-			'ajax' => admin_url( 'admin-ajax.php' ),
-			'nonce'    => wp_create_nonce( 'mjschool_ajax_nonce' ),
-		) );
-		wp_localize_script(
-			'popup-front',
-			'language_translate2',
-			array(
-				'edit_record_alert'              => esc_attr__( 'Are you sure want to edit this record?', 'mjschool' ),
-				'category_alert'                 => esc_attr__( 'You must fill out the field!', 'mjschool' ),
-				'class_limit_alert'              => esc_attr__( 'Class Limit Is Full.', 'mjschool' ),
-				'enter_room_alert'               => esc_attr__( 'Please Enter Room Category Name.', 'mjschool' ),
-				'enter_value_alert'              => esc_attr__( 'Please Enter Value.', 'mjschool' ),
-				'delete_record_alert'            => esc_attr__( 'Are you sure you want to delete this record?', 'mjschool' ),
-				'select_hall_alert'              => esc_attr__( 'Please Select Exam Hall', 'mjschool' ),
-				'one_record_alert'               => esc_attr__( 'Please Checked Atleast One Student', 'mjschool' ),
-				'select_member_alert'            => esc_attr__( 'Please select Student', 'mjschool' ),
-				// New Updated alert message. //
-				'one_record_select_alert'        => esc_attr__( 'Please select atleast one record', 'mjschool' ),
-				'one_class_select_alert'         => esc_attr__( 'Please select atleast one class', 'mjschool' ),
-				'one_select_Validation_alert'    => esc_attr__( 'Please select atleast one Validation', 'mjschool' ),
-				'lower_starting_year_alert'      => esc_attr__( 'You can not select year lower then starting year', 'mjschool' ),
-				'do_delete_record'               => esc_attr__( 'Do you really want to delete this ?', 'mjschool' ),
-				'select_one_book_alert'          => esc_attr__( 'Please select atleast one book', 'mjschool' ),
-				'select_different_student_alert' => esc_attr__( 'Please Select Different Student', 'mjschool' ),
-				'select_user_label'              => esc_attr__( 'Select Users', 'mjschool' ),
-				'select_all_label'               => esc_attr__( 'Select all', 'mjschool' ),
-				'same_email_alert'               => esc_attr__( 'you have used the same email', 'mjschool' ),
-				'image_forame_alert'             => esc_attr__( "Only '.jpeg','.jpg', '.png', '.bmp' formats are allowed.", 'mjschool' ),
-				'more_then_exam_date_time'       => esc_attr__( 'Fail! More than one subject exam date & time same.', 'mjschool' ),
-				'single_entry_alert'             => esc_attr__( 'There is only single entry,You can not remove it.', 'mjschool' ),
-				'one_teacher_alert'              => esc_attr__( 'Please select atleast one teacher', 'mjschool' ),
-				'one_assign_room_alert'         => esc_attr__( 'Please select Student', 'mjschool' ),
-				'one_message_alert'              => esc_attr__( 'Please select atleast one message', 'mjschool' ),
-				'large_file_size_alert'          => esc_attr__( 'Too large file Size. Only file smaller than 10MB can be uploaded.', 'mjschool' ),
-				'pdf_alert'                      => esc_attr__( 'Only pdf formate are allowed.', 'mjschool' ),
-				'starting_year_alert'            => esc_attr__( 'You can not select year lower then starting year', 'mjschool' ),
-				'one_user_replys_alert'          => esc_attr__( 'Please select atleast one users to replys', 'mjschool' ),
-				'csv_alert'                      => esc_attr__( 'Problems with user: we are going to skip', 'mjschool' ),
-				'mail_reminder'                  => esc_attr__( 'Are you sure you want to send a mail reminder?', 'mjschool' ),
-				'account_alert_1'                => esc_attr__( 'Only jpeg,jpg,png and bmp formate are allowed.', 'mjschool' ),
-				'account_alert_2'                => esc_attr__( 'formate are not allowed.', 'mjschool' ),
-				'exam_hallCapacity_1'            => esc_attr__( 'Exam Hall Capacity', 'mjschool' ),
-				'exam_hallCapacity_2'            => esc_attr__( 'Out Of', 'mjschool' ),
-				'exam_hallCapacity_3'            => esc_attr__( 'Students.', 'mjschool' ),
-			)
-		);
-		
-		// STYLES.	
-		wp_enqueue_style( 'datatable',plugins_url( '/assets/css/third-party-css/dataTables.min.css', __FILE__),array(),'','all' );
-		wp_enqueue_style( 'jquery-datatable',plugins_url( '/assets/css/third-party-css/jquery.dataTables.min.css', __FILE__),array(),'','all' );
-		wp_enqueue_style( 'jquery-ui', plugins_url( '/assets/css/third-party-css/jquery-ui.min.css', __FILE__ ) );
-		wp_enqueue_style( 'bootstrap-multiselect', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap-multiselect.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-popup', plugins_url( '/assets/css/mjschool-popup.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-style', plugins_url( '/assets/css/mjschool-style.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-newversion', plugins_url( '/assets/css/mjschool-new-version.css', __FILE__ ) );
-		wp_enqueue_style( 'bootstrap-timepicker', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap-timepicker.min.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-dashboard', plugins_url( '/assets/css/mjschool-dashboard.css', __FILE__ ) );
-		wp_enqueue_style( 'bootstrap', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap.min.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-new-design', plugins_url( '/assets/css/mjschool-smgt-new-design.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-white', plugins_url( '/assets/css/mjschool-white.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-schoolmgt', plugins_url( '/assets/css/mjschool-school-mgt.min.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-poppins-font-family', plugins_url( '/assets/css/mjschool-popping-font.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-responsive-new-design', plugins_url( '/assets/css/mjschool-responsive-new-design.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-frontend-calendar', plugins_url( '/assets/css/mjschool-frontend-calendar.css', __FILE__ ) );
-		wp_enqueue_style( 'font-awesome', plugins_url( '/assets/css/third-party-css/font-awesome.min.css', __FILE__ ) );
-		if ( is_rtl() ) 
-		{
-			wp_enqueue_style( 'bootstrap-rtl', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap.rtl.min.css', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-custome-rtl', plugins_url( '/assets/css/mjschool-custome-rtl.css', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-rtl', plugins_url( '/assets/css/mjschool-new-design-rtl.css', __FILE__ ) );
-		}
-		wp_enqueue_style( 'jquery-validationEngine', plugins_url( '/lib/validationEngine/css/validationEngine.jquery.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-inputs', plugins_url( '/assets/css/mjschool-inputs.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-responsive', plugins_url( '/assets/css/mjschool-school-responsive.css', __FILE__ ) );
-		wp_enqueue_style( 'dataTables-responsive', plugins_url( '/assets/css/third-party-css/dataTables.responsive.css', __FILE__ ) );
-		wp_enqueue_script( 'select2' );
-    	wp_enqueue_style( 'select2' );
-		wp_enqueue_style( 'mdtimepicker', plugins_url( '/assets/css/third-party-css/mdtimepicker.min.css', __FILE__ ) );
-		wp_enqueue_style( 'chart', plugins_url( '/assets/css/third-party-css/chart.min.css', __FILE__ ) );
-		// SCRIPTS
-		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( 'jquery-ui-core' );
-		wp_enqueue_script( 'jquery-ui-accordion' );
-		wp_enqueue_script( 'jquery-ui-datepicker' );
-		wp_enqueue_script( 'jquery-ui-dialog' );
-		wp_enqueue_style( 'wp-jquery-ui-dialog' );
-		wp_enqueue_script( 'datatables', plugins_url( '/assets/js/third-party-js/datatables.min.js', __FILE__), array( 'jquery' ), true);
-		wp_enqueue_script( 'datatable-editor', plugins_url( '/assets/js/third-party-js/dataTables.editor.min.js', __FILE__ ) );
-		wp_enqueue_script( 'jquery-datatable', plugins_url( '/assets/js/third-party-js/jquery.dataTables.min.js', __FILE__), array( 'jquery' ), true);
-		wp_enqueue_script( 'datatable-button', plugins_url( '/assets/js/third-party-js/dataTables.buttons.min.js', __FILE__), '', true);
-		wp_enqueue_script( 'datatable-button-print', plugins_url( 'assets/js/third-party-js/buttons.print.min.js', __FILE__), array( 'jquery' ), '', true );
-		wp_enqueue_script( 'icheckjs', plugins_url( '/assets/js/third-party-js/icheck.min.js', __FILE__), array( 'jquery' ), '', true);
-		$lancode = get_locale();
-		$code    = substr( $lancode, 0, 2 );
-		wp_enqueue_script( 'jquery-validationEngine-' . $code . '', plugins_url( '/lib/validationEngine/js/languages/jquery.validationEngine-' . $code . '.js', __FILE__), array( 'jquery' ) );
-		wp_enqueue_script( 'jquery-validationEngine', plugins_url( '/lib/validationEngine/js/jquery.validationEngine.js', __FILE__), array( 'jquery' ) );
-		wp_enqueue_script( 'material', plugins_url( '/assets/js/third-party-js/material.min.js', __FILE__ ) );
-		wp_enqueue_script( 'chart-custom', plugins_url( '/assets/js/third-party-js/chart.umd.min.js', __FILE__), array( 'jquery' ), '', true);
-		wp_enqueue_script( 'loader', plugins_url( '/assets/js/third-party-js/loader.min.js', __FILE__ ) );
-		wp_enqueue_script( 'popper', plugins_url( '/assets/js/third-party-js/popper.min.js', __FILE__ ) );
-		wp_enqueue_script( 'bootstrap', plugins_url( '/assets/js/third-party-js/bootstrap/bootstrap.min.js', __FILE__ ) );
-		wp_enqueue_script( 'multiselect', plugins_url( '/assets/js/third-party-js/bootstrap/bootstrap-multiselect.min.js', __FILE__), array( 'jquery' ), '', true);
-		wp_enqueue_script( 'timeago', plugins_url( '/assets/js/third-party-js/jquery.timeago.min.js', __FILE__ ) );
-		wp_enqueue_script( 'moment' ); 
-		// wp_enqueue_script( 'mjschool-admission', plugins_url( '/assets/js/admin-js/mjschool-admission.js', __FILE__ ) );
-		wp_enqueue_script( 'fullcalendar', plugins_url( '/assets/js/third-party-js/fullcalendar.min.js', __FILE__), array( 'jquery' ), '', true);
-		wp_enqueue_script( 'mdtimepicker', plugins_url( '/assets/js/third-party-js/mdtimepicker.min.js', __FILE__ ) );
-		wp_enqueue_script( 'calendar-lang', plugins_url( '/assets/js/calendar-lang/' . $code . '.js', __FILE__), array( 'jquery' ), '', true);
-		wp_enqueue_script( 'datatables-buttons-print', plugins_url( '/assets/js/third-party-js/datatables-buttons-print.min.js', __FILE__), array( 'jquery' ), '', true);
-		wp_enqueue_script( 'html5-qrcode', plugins_url( '/lib/html5-qrcode/html5-qrcode.min.js', __FILE__ ) );
-		$document_option = get_option( 'mjschool_upload_document_type' );
-		$school_type = get_option( 'mjschool_custom_class' );
-		$cust_class_room = get_option( 'mjschool_class_room' );
-		$document_type = explode( ', ', $document_option );
-		$document_type_json = $document_type;
-		$document_size = get_option( 'mjschool_upload_document_size' );
-		$datatable_nonce = wp_create_nonce('mjschool_student_list_nonce');
-		$user_access       = mjschool_get_user_role_wise_access_right_array();
-		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
-		$module                    = mjschool_get_module_name_for_custom_field($current_page);
-		$mjschool_role_name = mjschool_get_user_role( get_current_user_id() );
-		$user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
-		$custom_columns = array();
-		if ( ! empty( $user_custom_field ) ) {
-			foreach ( $user_custom_field as $custom_field ) {
-				if ( $custom_field->show_in_table == '1' ) {
-					$custom_columns[] = true; // sortable.
-				}
-			}
-		}
-		$class_name      = mjschool_get_all_class_array();
-		$class_name_list = array_map(
-			function ( $s ) {
-				return trim( $s->class_name ); // Trim each class name.
-			},
-			$class_name
-		);
-		if(isset($_REQUEST['exam_id'])){
-			$exam_data = mjschool_get_exam_by_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['exam_id'])) ) ) );
-		}
-		$current_user_id 		  = get_current_user_id();
-		$student_id                = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['student_id'])) ) );
-		$class_id                  = get_user_meta( $student_id, 'class_name', true );
-		$section_name              = get_user_meta( $student_id, 'class_section', true );
-		$mix_data = array(
-			'select_days'                    => esc_html__('Select Days', 'mjschool'),
-			'select_teacher'                 => esc_html__('Select Teacher', 'mjschool'),
-			'select_all'                     => esc_html__('Select all', 'mjschool'),
-			'select_class'                   => esc_html__('Select Class', 'mjschool'),
-			'select_subject'                   => esc_html__('Select Subject', 'mjschool'),
-			'select_user'                    => esc_html__('Select Users', 'mjschool'),
-			'select_tax'                     => esc_html__('Select Tax', 'mjschool'),
-			'select_book'                    => esc_html__('Select Book', 'mjschool'),
-			'all_selected'                   => esc_html__('All Selected', 'mjschool'),
-			'csv_text'                       => esc_html__('CSV', 'mjschool'),
-			'print_text'                     => esc_html__('PRINT', 'mjschool'),
-			'admission_report_text'          => esc_html__('Admission Report', 'mjschool'),
-			'attendance_report_text'         => esc_html__('Attendance Report', 'mjschool'),
-			'fees_payment_report_text'   	 => esc_html__('Fees Payment Report', 'mjschool'),
-			'leave_report_text'              => esc_html__('Leave Report', 'mjschool'),
-			'guardian_report_text'           => esc_html__('Guardian Report', 'mjschool'),
-			'student_report_text'            => esc_html__('Student Report', 'mjschool'),
-			'class_name_list'                => $class_name_list,
-			'select_fees_type'               => esc_html__('Select Fees Type', 'mjschool'),
-			'expense_amount_label'           => esc_html__( "Expense Amount", "mjschool" ),
-			'expense_entry_label'            => esc_html__( "Expense Entry Label", "mjschool" ),
-			'income_amount_label'            => esc_html__( "Income Amount", "mjschool" ),
-			'income_entry_label'             => esc_html__( "Income Entry Label", "mjschool" ),
-			'audit_trail_report_text'        => esc_html__( "Audit Trail Report", "mjschool" ),
-			'class_section_report_text'      => esc_html__( "Class & Section Report", "mjschool" ),
-			'sibling_report_text'            => esc_html__( "Sibling Report", "mjschool" ),
-			'income_report_text'             => esc_html__( "Income Report", "mjschool" ),
-			'expense_report_text'            => esc_html__( "Expense Report", "mjschool" ),
-			'income_expense_report_text'     => esc_html__( "Income Expense Report", "mjschool" ),
-			'student_attendance_report_text' => esc_html__( "Student Attendance Report", "mjschool" ),
-			'subject_text'                   => esc_html__( "Subject", "mjschool" ),
-			'end_time_must_greater_text'     => esc_html__( "End time must be greater than start time", "mjschool" ),
-			'reply_user_alert'               => esc_html__( 'Please select at least one user to reply', 'mjschool' ),
-			'delete_icon'                    => esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-delete.png" ),
-			'datatable_language'             => mjschool_datatable_multi_language(),
-			'search_placeholder'             => esc_html__( 'Search...', 'mjschool' ),
-			'attachment_text'      			 => esc_html__( 'Attachment', 'mjschool' ),
-			'is_school'                      => ($school_type === 'school'),
-			'is_supportstaff'                => ($mjschool_role_name === 'supportstaff'),
-			'is_teacher'                     => ($mjschool_role_name === 'teacher'),
-			'is_student'                     => ($mjschool_role_name === 'student'),
-			'is_parent'                      => ($mjschool_role_name === 'parent'),
-			'is_university'                  => ($school_type === 'university'),
-			'is_cust_class_room'             => ($cust_class_room === 1),
-			'is_add_access'                  => ($user_access['add'] === '1'),
-			'is_edit_access'                 => ($user_access['edit'] === '1'),
-			'is_delete_access'               => ($user_access['delete'] === '1'),
-			'is_view_access'                 => ($user_access['view'] === '1'),
-			'select_student'                 => esc_html__( 'Select Student', 'mjschool' ),
-			'document_type_json'             => $document_type_json,
-			'document_size'                  => $document_size,
-			'date_format'                    => get_option('mjschool_datepicker_format'),
-			'date_format_for_sorting'        => mjschool_return_date_format_for_shorting(),
-			'datatable_nonce'       		 => $datatable_nonce,
-			'module_columns'        		 => $custom_columns,
-			'current_user_id'        	     => esc_js($current_user_id),
-			'exam_data_id'        		     => isset($exam_data)?esc_js($exam_data->exam_id):null,
-			'calendar_language'              => mjschool_calender_laungage(),
-			'inactive_student_text'          => esc_html__( 'Inactive Students', 'mjschool' ),
-			'student_text'                   => esc_html__( 'Students', 'mjschool' ),
-			'active_student_text'       	 => esc_html__( 'Active Students', 'mjschool' ),
-			'parent_text'    			     => esc_html__( 'Parents', 'mjschool' ),
-			'teacher_text'    			     => esc_html__( 'Teachers', 'mjschool' ),
-			'support_staff_text' 	         => esc_html__( 'Support Staff', 'mjschool' ),
-			'paid_text'      				 => esc_html__( 'Paid', 'mjschool' ),
-			'unpaid_text'        			 => esc_html__( 'Unpaid', 'mjschool' ),
-			'present_text'        			 => esc_html__( 'Present', 'mjschool' ),
-			'absent_text'     			     => esc_html__( 'Absent', 'mjschool' ),
-			'late_text'       			     => esc_html__( 'Late', 'mjschool' ),
-			'cash_text'       			     => esc_html__( 'Cash', 'mjschool' ),
-			'cheque_text'     			     => esc_html__( 'Cheque', 'mjschool' ),
-			'half_day_text'    			     => esc_html__( 'Half Day', 'mjschool' ),
-			'bank_transfer_text'       		 => esc_html__( 'Bank Transfer', 'mjschool' ),
-			'paypal_text'    			     => esc_html__( 'PayPal', 'mjschool' ),
-			'stripe_text'    			     => esc_html__( 'Stripe', 'mjschool' ),
-			'select_document_type_text'      => esc_html__( 'Select Document Type', 'mjschool' ),
-			'one_document_alert_text'        => esc_html__( 'Please select at least one document extension.', 'mjschool' ),
-			'profile_alert_text'             => esc_html__( 'Please select at least one profile extension.', 'mjschool' ),
-			'subject_file_alert_text'        => esc_html__( 'Only pdf,doc,docx,xls,xlsx,ppt,pptx,gif,png,jpg,jpeg formate are allowed.', 'mjschool' ),
-			'not_format_alert_text'          => esc_html__( 'format is not allowed.', 'mjschool' ),
-			'front_doc_alert_text'          => esc_html__( 'Sorry, only JPG, pdf, docs., JPEG, PNG And GIF files are allowed.', 'mjschool' ),
-			'select_child_alert_text'          => esc_html__( 'This child is already selected. Please choose a different child.', 'mjschool' ),
-			'start_end_date_alert_text'          => esc_html__( 'End Date should be greater than the Start Date.', 'mjschool' ),
-		);
-		if(isset($_REQUEST['student_id'])) {
-			$student_id                = intval(mjschool_decrypt_id(sanitize_text_field(wp_unslash($_REQUEST['student_id']))));
-			$class_id                  = get_user_meta( $student_id, 'class_name', true );
-			$section_name              = get_user_meta( $student_id, 'class_section', true );
-			$extra_student_data = array(
-				'student_id'   => esc_js($student_id),
-				'class_id'     => esc_js($class_id),
-				'section_name' => esc_js($section_name),
-			);
-			$mix_data = array_merge($mix_data, $extra_student_data);
-		}
-		// Enqueue js file module-wise.
-		if($current_page === 'account') {
-			wp_enqueue_script('mjschool-account', plugins_url('assets/js/public-js/mjschool-account.js',__FILE__));
-		}
-		if ( $current_page === 'transport'){
-			wp_enqueue_script( 'mjschool-transport', plugins_url( '/assets/js/public-js/mjschool-transport.js', __FILE__ ) );
-			wp_localize_script('mjschool-transport','mjschool_transport_data',$mix_data);
-		}
-		if ( $current_page === 'tax' || $current_page === 'feepayment' || $current_page === 'payment'){
-			wp_enqueue_script( 'mjschool-payment', plugins_url( '/assets/js/public-js/mjschool-payment.js', __FILE__ ) );
-			wp_localize_script('mjschool-payment','mjschool_payment_data',$mix_data);
-		}
-		if ( $current_page === 'subject' || $current_page === 'schedule' || $current_page === 'class' || $current_page === 'class_room'){
-			wp_enqueue_script( 'mjschool-class', plugins_url( '/assets/js/public-js/mjschool-class.js', __FILE__ ) );
-			wp_localize_script('mjschool-class','mjschool_class_data',$mix_data);
-		}
-		if ( $current_page === 'sms_setting' || $current_page === 'custom_field'){
-			wp_enqueue_script( 'mjschool-general-setting', plugins_url( '/assets/js/public-js/mjschool-general-setting.js', __FILE__ ) );
-			wp_localize_script('mjschool-general-setting','mjschool_general_setting_data',$mix_data);
-		}
-		if ( $current_page === 'message' || $current_page === 'notification' || $current_page === 'holiday' || $current_page === 'event'){
-			wp_enqueue_script( 'mjschool-notification', plugins_url( '/assets/js/public-js/mjschool-notification.js', __FILE__ ) );
-			wp_localize_script('mjschool-notification','mjschool_notification_data',$mix_data);
-		}
-		if ( $current_page === 'exam' || $current_page === 'exam_hall' || $current_page === 'result' || $current_page === 'grade' || $current_page === 'migration'){
-			wp_enqueue_script( 'mjschool-student-evaluation', plugins_url( '/assets/js/public-js/mjschool-student-evaluation.js', __FILE__ ) );
-			wp_localize_script('mjschool-student-evaluation','mjschool_student_evaluation_data',$mix_data);
-		}
-		if ( $current_page === 'library'){
-			wp_enqueue_script( 'mjschool-library', plugins_url( '/assets/js/public-js/mjschool-library.js', __FILE__ ) );
-			wp_localize_script('mjschool-library','mjschool_library_data',$mix_data);
-		}
-		if ( $current_page === 'leave'){
-			wp_enqueue_script( 'mjschool-leave', plugins_url( '/assets/js/public-js/mjschool-leave.js', __FILE__ ) );
-			wp_localize_script('mjschool-leave','mjschool_leave_data',$mix_data);
-		}
-		if ( $current_page === 'hostel'){
-			wp_enqueue_script( 'mjschool-hostel', plugins_url( '/assets/js/public-js/mjschool-hostel.js', __FILE__ ) );
-			wp_localize_script('mjschool-hostel','mjschool_hostel_data',$mix_data);
-		}
-		if ( $current_page === 'homework'){
-			wp_enqueue_script('mjschool-homework', plugins_url('/assets/js/public-js/mjschool-homework.js', __FILE__ ));
-			wp_localize_script('mjschool-homework','mjschool_homework_data',$mix_data);
-		}
-		if ( $current_page === 'document'){
-			wp_enqueue_script( 'mjschool-document', plugins_url( '/assets/js/public-js/mjschool-document.js', __FILE__ ) );
-			wp_localize_script('mjschool-document','mjschool_document_data',$mix_data);
-		}
-		if ( $current_page === 'certificate'){
-			wp_enqueue_script( 'mjschool-certificate', plugins_url( '/assets/js/public-js/mjschool-certificate.js', __FILE__ ) );
-			wp_localize_script('mjschool-certificate','mjschool_certificate_data',$mix_data);
-		}
-		if ( $current_page === 'attendance'){
-			wp_enqueue_script( 'mjschool-attendance', plugins_url( '/assets/js/public-js/mjschool-attendance.js', __FILE__ ) );
-			wp_localize_script('mjschool-attendance','mjschool_attendance_data',$mix_data);
-		}
-		if ( $current_page === 'admission'){
-			wp_enqueue_script( 'mjschool-admission', plugins_url( '/assets/js/public-js/mjschool-admission.js', __FILE__ ) );
-			wp_localize_script('mjschool-admission','mjschool_admission_data',$mix_data);
-		}
-		if ( $current_page === 'student' || $current_page === 'teacher' || $current_page === 'supportstaff' || $current_page === 'parent'){
-			wp_enqueue_script( 'mjschool-users', plugins_url( '/assets/js/public-js/mjschool-users.js', __FILE__ ) );
-			wp_localize_script('mjschool-users','mjschool_users_data',$mix_data);
-		}
-		if ( isset( $_REQUEST['dashboard']) && (sanitize_text_field(wp_unslash($_REQUEST['dashboard'])) === 'mjschool_user')){
-			wp_enqueue_script( 'mjschool-admin-dashboard', plugins_url( '/assets/js/public-js/mjschool-admin-dashboard.js', __FILE__ ) );
-			wp_localize_script('mjschool-admin-dashboard','mjschool_dashboard_data',$mix_data);
-		}
-		wp_enqueue_script( 'mjschool-common', plugins_url( '/assets/js/mjschool-common.js', __FILE__ ));	
-		wp_localize_script('mjschool-common','mjschool_common_data',$mix_data);
-		
-	}
+    // Check if we're on the user dashboard
+    if ( ! isset( $_REQUEST['dashboard'] ) ) {
+        return;
+    }
+    
+    $dashboard = sanitize_text_field( wp_unslash( $_REQUEST['dashboard'] ) );
+    if ( 'mjschool_user' !== $dashboard ) {
+        return;
+    }
+    
+    $page_info = mjschool_get_current_page_info();
+    $current_page = $page_info['page'];
+    
+    // Enqueue core dependencies
+    mjschool_enqueue_core_dependencies();
+    
+    // Enqueue CSS
+    mjschool_enqueue_third_party_css();
+    mjschool_enqueue_plugin_css();
+    mjschool_enqueue_rtl_css();
+    
+    // Enqueue JavaScript
+    mjschool_enqueue_third_party_js( $current_page, $page_info['tab'] );
+    mjschool_enqueue_calendar_scripts( 'mjschool' ); // Always load calendar on frontend dashboard
+    
+    // Get localized data with frontend-specific additions
+    $localized_data = mjschool_get_frontend_localized_data( $current_page );
+    
+    // Enqueue page-specific scripts
+    mjschool_enqueue_frontend_page_scripts( $current_page, $localized_data );
+    
+    // Enqueue common scripts
+    mjschool_enqueue_common_js( $localized_data );
 }
+
+/**
+ * Get frontend-specific localized data
+ *
+ * @since 2.0.0
+ * @param string $current_page Current page slug.
+ * @return array Localized data array.
+ */
+function mjschool_get_frontend_localized_data( $current_page ) {
+    $data = mjschool_get_localized_data( $current_page );
+    
+    // Add frontend-specific data
+    $school_type = get_option( 'mjschool_custom_class', 'school' );
+    $cust_class_room = get_option( 'mjschool_class_room', 0 );
+    
+    // Get user role and access rights
+    $current_user_id = get_current_user_id();
+    $mjschool_role_name = '';
+    $user_access = array(
+        'add'    => '0',
+        'edit'   => '0',
+        'delete' => '0',
+        'view'   => '0',
+    );
+    
+    if ( function_exists( 'mjschool_get_user_role' ) ) {
+        $mjschool_role_name = mjschool_get_user_role( $current_user_id );
+    }
+    
+    if ( function_exists( 'mjschool_get_user_role_wise_access_right_array' ) ) {
+        $user_access = mjschool_get_user_role_wise_access_right_array();
+    }
+    
+    // Add role-specific flags
+    $data['is_supportstaff'] = ( 'supportstaff' === $mjschool_role_name );
+    $data['is_teacher'] = ( 'teacher' === $mjschool_role_name );
+    $data['is_student'] = ( 'student' === $mjschool_role_name );
+    $data['is_parent'] = ( 'parent' === $mjschool_role_name );
+    $data['is_cust_class_room'] = ( 1 === absint( $cust_class_room ) );
+    
+    // Override access rights with actual user permissions
+    $data['is_add_access'] = ( '1' === $user_access['add'] );
+    $data['is_edit_access'] = ( '1' === $user_access['edit'] );
+    $data['is_delete_access'] = ( '1' === $user_access['delete'] );
+    $data['is_view_access'] = ( '1' === $user_access['view'] );
+    $data['current_user_id'] = $current_user_id;
+    
+    // Additional frontend alert messages
+    $data['subject_file_alert_text'] = esc_html__( 'Only pdf,doc,docx,xls,xlsx,ppt,pptx,gif,png,jpg,jpeg formate are allowed.', 'mjschool' );
+    $data['not_format_alert_text'] = esc_html__( 'format is not allowed.', 'mjschool' );
+    $data['front_doc_alert_text'] = esc_html__( 'Sorry, only JPG, pdf, docs., JPEG, PNG And GIF files are allowed.', 'mjschool' );
+    
+    return $data;
+}
+
+/**
+ * Enqueue frontend page-specific scripts
+ *
+ * @since 2.0.0
+ * @param string $current_page   Current page slug.
+ * @param array  $localized_data Localized data for scripts.
+ */
+function mjschool_enqueue_frontend_page_scripts( $current_page, $localized_data ) {
+    $version = MJSCHOOL_SCRIPT_VERSION;
+    
+    // Define frontend page to script mappings
+    $page_scripts = array(
+        'account'      => array( 'mjschool-account', '/assets/js/public-js/mjschool-account.js', '' ),
+        'transport'    => array( 'mjschool-transport', '/assets/js/public-js/mjschool-transport.js', 'mjschool_transport_data' ),
+        'tax'          => array( 'mjschool-payment', '/assets/js/public-js/mjschool-payment.js', 'mjschool_payment_data' ),
+        'feepayment'   => array( 'mjschool-payment', '/assets/js/public-js/mjschool-payment.js', 'mjschool_payment_data' ),
+        'payment'      => array( 'mjschool-payment', '/assets/js/public-js/mjschool-payment.js', 'mjschool_payment_data' ),
+        'subject'      => array( 'mjschool-class', '/assets/js/public-js/mjschool-class.js', 'mjschool_class_data' ),
+        'schedule'     => array( 'mjschool-class', '/assets/js/public-js/mjschool-class.js', 'mjschool_class_data' ),
+        'class'        => array( 'mjschool-class', '/assets/js/public-js/mjschool-class.js', 'mjschool_class_data' ),
+        'class_room'   => array( 'mjschool-class', '/assets/js/public-js/mjschool-class.js', 'mjschool_class_data' ),
+        'sms_setting'  => array( 'mjschool-general-setting', '/assets/js/public-js/mjschool-general-setting.js', 'mjschool_general_setting_data' ),
+        'custom_field' => array( 'mjschool-general-setting', '/assets/js/public-js/mjschool-general-setting.js', 'mjschool_general_setting_data' ),
+        'message'      => array( 'mjschool-notification', '/assets/js/public-js/mjschool-notification.js', 'mjschool_notification_data' ),
+        'notification' => array( 'mjschool-notification', '/assets/js/public-js/mjschool-notification.js', 'mjschool_notification_data' ),
+        'holiday'      => array( 'mjschool-notification', '/assets/js/public-js/mjschool-notification.js', 'mjschool_notification_data' ),
+        'event'        => array( 'mjschool-notification', '/assets/js/public-js/mjschool-notification.js', 'mjschool_notification_data' ),
+        'exam'         => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
+        'exam_hall'    => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
+        'result'       => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
+        'grade'        => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
+        'migration'    => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
+        'library'      => array( 'mjschool-library', '/assets/js/public-js/mjschool-library.js', 'mjschool_library_data' ),
+        'leave'        => array( 'mjschool-leave', '/assets/js/public-js/mjschool-leave.js', 'mjschool_leave_data' ),
+        'hostel'       => array( 'mjschool-hostel', '/assets/js/public-js/mjschool-hostel.js', 'mjschool_hostel_data' ),
+        'homework'     => array( 'mjschool-homework', '/assets/js/public-js/mjschool-homework.js', 'mjschool_homework_data' ),
+        'document'     => array( 'mjschool-document', '/assets/js/public-js/mjschool-document.js', 'mjschool_document_data' ),
+        'certificate'  => array( 'mjschool-certificate', '/assets/js/public-js/mjschool-certificate.js', 'mjschool_certificate_data' ),
+        'attendance'   => array( 'mjschool-attendance', '/assets/js/public-js/mjschool-attendance.js', 'mjschool_attendance_data' ),
+        'admission'    => array( 'mjschool-admission', '/assets/js/public-js/mjschool-admission.js', 'mjschool_admission_data' ),
+        'student'      => array( 'mjschool-users', '/assets/js/public-js/mjschool-users.js', 'mjschool_users_data' ),
+        'teacher'      => array( 'mjschool-users', '/assets/js/public-js/mjschool-users.js', 'mjschool_users_data' ),
+        'supportstaff' => array( 'mjschool-users', '/assets/js/public-js/mjschool-users.js', 'mjschool_users_data' ),
+        'parent'       => array( 'mjschool-users', '/assets/js/public-js/mjschool-users.js', 'mjschool_users_data' ),
+    );
+    
+    // Enqueue page-specific script
+    if ( isset( $page_scripts[ $current_page ] ) ) {
+        $script_info = $page_scripts[ $current_page ];
+        wp_enqueue_script( $script_info[0], mjschool_asset_url( $script_info[1] ), array( 'jquery' ), $version, true );
+        
+        if ( ! empty( $script_info[2] ) ) {
+            wp_localize_script( $script_info[0], $script_info[2], $localized_data );
+        }
+    }
+    
+    // Always enqueue dashboard script on frontend
+    wp_enqueue_script( 'mjschool-admin-dashboard', mjschool_asset_url( '/assets/js/public-js/mjschool-admin-dashboard.js' ), array( 'jquery' ), $version, true );
+    wp_localize_script( 'mjschool-admin-dashboard', 'mjschool_dashboard_data', $localized_data );
+}
+
 /**
  * Displays the frontend student registration form and enqueues necessary assets.
  *
@@ -3938,6 +2837,7 @@ function mjschool_registration_form( $class_name, $first_name, $middle_name, $la
 	</div>
 	<?php
 }
+
 /**
  * Handles the complete frontend student registration process.
  *

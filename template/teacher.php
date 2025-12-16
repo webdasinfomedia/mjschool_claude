@@ -144,7 +144,7 @@ if ( isset( $_POST['save_teacher'] ) ) {
 			$module              = 'teacher';
 			$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $result );
 			$result1             = $teacher_obj->mjschool_update_multi_class( sanitize_text_field(wp_unslash($_POST['class_name'])), mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) ) );
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=teacher&tab=teacherlist&message=2' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=teacher&tab=teacherlist&message=2') );
 			die();
 		} else {
 			wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -158,7 +158,7 @@ if ( isset( $_POST['save_teacher'] ) ) {
 			$module             = 'teacher';
 			$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			$result1            = $teacher_obj->mjschool_add_multi_class( sanitize_text_field(wp_unslash($_POST['class_name'])), mjschool_strip_tags_and_stripslashes( sanitize_text_field(wp_unslash($_POST['email'])) ) );
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=teacher&tab=teacherlist&message=1' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=teacher&tab=teacherlist&message=1') );
 			die();
 		} else {
 			?>
@@ -175,7 +175,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
 		$result = mjschool_delete_usedata( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) ) );
 		if ( $result ) {
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=teacher&tab=teacherlist&message=5' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=teacher&tab=teacherlist&message=5') );
 			die();
 		}
 	} else {
@@ -184,13 +184,16 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 }
 // ------------------ MULTIPLE DELETE TEACHER. -------------//
 if ( isset( $_REQUEST['delete_selected'] ) ) {
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bulk_delete_books' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
 			$result = mjschool_delete_usedata( $id );
 		}
 	}
 	if ( $result ) {
-		wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=teacher&tab=teacherlist&message=5' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=teacher&tab=teacherlist&message=5') );
 		die();
 	}
 }
@@ -331,6 +334,7 @@ if ( $message ) {
 				<div class="table-responsive"><!--------- Table responsive. ----------->
 					<!----------- TEACHER LIST FORM START. ---------->
 					<form id="mjschool-common-form" name="mjschool-common-form" method="post">
+						<?php wp_nonce_field( 'bulk_delete_books' ); ?>
 						<table id="front_teacher_list" class="display dataTable mjschool-teacher-datatable" cellspacing="0" width="100%">
 							<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 								<tr>
@@ -386,7 +390,7 @@ if ( $message ) {
 											<?php
 											if ( $role_name === 'supportstaff' || $role_name === 'teacher' ) {
 												?>
-												<a  href="?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&teacher_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>">
+												<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&teacher_id=' . mjschool_encrypt_id( $retrieved_data->ID ) ); ?>">
 													<?php
 													$uid       = $retrieved_data->ID;
 													$umetadata = mjschool_get_user_image( $uid );
@@ -421,7 +425,7 @@ if ( $message ) {
 											<?php
 											if ( $role_name === 'supportstaff' || $role_name === 'teacher' ) {
 												?>
-												<a class="mjschool-color-black" href="?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&teacher_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>"><?php echo esc_html( $retrieved_data->display_name ); ?> </a>
+												<a class="mjschool-color-black" href="<?php echo esc_url( '?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&teacher_id=' . mjschool_encrypt_id( $retrieved_data->ID ) ); ?>"><?php echo esc_html( $retrieved_data->display_name ); ?> </a>
 												<?php
 											} else {
 												?>
@@ -490,7 +494,7 @@ if ( $message ) {
 															<?php
 															if ( ! empty( $custom_field_value ) ) {
 																?>
-																<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																<?php
 															} else {
 																esc_html_e( 'Not Provided', 'mjschool' );
@@ -531,20 +535,20 @@ if ( $message ) {
 															</a>
 															<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																<li class="mjschool-float-left-width-100px">
-																	<a href="?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&teacher_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-eye"> </i><?php esc_html_e( 'View', 'mjschool' ); ?></a>
+																	<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&teacher_id=' . mjschool_encrypt_id( $retrieved_data->ID ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-eye"> </i><?php esc_html_e( 'View', 'mjschool' ); ?></a>
 																</li>
 																<?php
 																if ( $user_access['edit'] === '1' ) {
 																	?>
 																	<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																		<a href="?dashboard=mjschool_user&page=teacher&tab=addteacher&action=edit&teacher_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																		<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=teacher&tab=addteacher&action=edit&teacher_id=' . mjschool_encrypt_id( $retrieved_data->ID ) . '&_wpnonce_action=' . mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																	</li>
 																	<?php
 																}
 																if ( $user_access['delete'] === '1' ) {
 																	?>
 																	<li class="mjschool-float-left-width-100px">
-																		<a href="?dashboard=mjschool_user&page=teacher&tab=teacherlist&action=delete&teacher_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?> </a>
+																		<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=teacher&tab=teacherlist&action=delete&teacher_id=' . mjschool_encrypt_id( $retrieved_data->ID ) . '&_wpnonce_action=' . mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?> </a>
 																	</li>
 																	<?php
 																}
@@ -589,7 +593,7 @@ if ( $message ) {
 		} elseif ( $user_access['add'] === '1' ) {
 			 ?>
 			<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-				<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=teacher&tab=addteacher' ); ?>">
+				<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=teacher&tab=addteacher') ); ?>">
 					<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 				</a>
 				<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -942,7 +946,7 @@ if ( $message ) {
 															<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control mjschool-file-validation file" />
 														</div>
 														<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 p-0">
-															<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $value->document_file ); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+															<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $value->document_file )); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 														</div>
 													</div>
 												</div>
@@ -1046,7 +1050,7 @@ if ( $message ) {
 									if ( ! empty( $signature_file ) ) {
 										?>
 										<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-											<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url() . '/' . $signature_file ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+											<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/' . $signature_file )); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 										</div>
 										<?php
 									}
@@ -1075,7 +1079,7 @@ if ( $message ) {
 				// --------- Get module-wise custom field data. --------------//
 				$custom_field_obj = new Mjschool_Custome_Field();
 				$module           = 'teacher';
-				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>
 				<div class="form-body mjschool-user-form"><!--Mjschool-user-form div.-->
 					<div class="row">
@@ -1116,7 +1120,7 @@ if ( $message ) {
 													<?php
 													if ($user_access['edit'] === '1' ) {
 														?>
-														<a class="mjschool-color-white mjschool-margin-left-2px" href="?dashboard=mjschool_user&page=teacher&tab=addteacher&action=edit&teacher_id=<?php echo esc_attr( mjschool_encrypt_id($teacher_data->ID ) ); ?>&_wpnonce_action_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) );?>">
+														<a class="mjschool-color-white mjschool-margin-left-2px" href="<?php echo esc_url( '?dashboard=mjschool_user&page=teacher&tab=addteacher&action=edit&teacher_id=' . mjschool_encrypt_id( $teacher_data->ID ) . '&_wpnonce_action_action=' . mjschool_get_nonce( 'edit_action' ) ); ?>">
 															<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-edit.png"); ?>">
 														</a>
 														<?php
@@ -1160,7 +1164,7 @@ if ( $message ) {
 						<div class="col-xl-12 col-md-12 col-sm-12">
 							<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 								<li class="<?php if ( $active_tab1 === 'general' ) { ?> active<?php } ?>">
-									<a href="?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&tab1=general&teacher_id=<?php echo esc_attr( wp_unslash($_REQUEST['teacher_id']) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'general' ? 'active' : ''; ?>"> <?php esc_html_e( 'GENERAL', 'mjschool' ); ?></a>
+									<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&tab1=general&teacher_id=' . wp_unslash( $_REQUEST['teacher_id'] ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'general' ? 'active' : ''; ?>"> <?php esc_html_e( 'GENERAL', 'mjschool' ); ?></a>
 								</li>
 								<?php
 								$page1 = 'class';
@@ -1168,7 +1172,7 @@ if ( $message ) {
 								if ( $class === 1 ) {
 									?>
 									<li class="<?php if ( $active_tab1 === 'mjschool-class-list' ) { ?> active<?php } ?>">
-										<a href="?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&tab1=mjschool-class-list&teacher_id=<?php echo esc_attr( wp_unslash($_REQUEST['teacher_id']) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'mjschool-class-list' ? 'active' : ''; ?>"> <?php esc_html_e( 'Class List', 'mjschool' ); ?></a>
+										<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&tab1=mjschool-class-list&teacher_id=' . wp_unslash( $_REQUEST['teacher_id'] ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'mjschool-class-list' ? 'active' : ''; ?>"> <?php esc_html_e( 'Class List', 'mjschool' ); ?></a>
 									</li>
 									<?php
 								}
@@ -1178,7 +1182,7 @@ if ( $message ) {
 									if ( $school_obj->role === 'teacher' || $school_obj->role === 'supportstaff' ) {
 										?>
 										<li class="<?php if ( $active_tab1 === 'schedule' ) { ?> active<?php } ?>">
-											<a href="?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&tab1=schedule&teacher_id=<?php echo esc_attr( $_REQUEST['teacher_id'] ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'schedule' ? 'active' : ''; ?>"> <?php esc_html_e( 'Class Schedule', 'mjschool' ); ?></a>
+											<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&tab1=schedule&teacher_id=' . $_REQUEST['teacher_id'] ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'schedule' ? 'active' : ''; ?>"> <?php esc_html_e( 'Class Schedule', 'mjschool' ); ?></a>
 										</li>
 										<?php
 									}
@@ -1188,7 +1192,7 @@ if ( $message ) {
 								if ( $attendance === 1 ) {
 									?>
 									<li class="<?php if ( $active_tab1 === 'attendance' ) { ?> active<?php } ?>">
-										<a href="?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&tab1=attendance&teacher_id=<?php echo esc_attr( wp_unslash($_REQUEST['teacher_id']) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'attendance' ? 'active' : ''; ?>"> <?php esc_html_e( 'Attendance', 'mjschool' ); ?></a>
+										<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=teacher&tab=view_teacher&action=view_teacher&tab1=attendance&teacher_id=' . wp_unslash( $_REQUEST['teacher_id'] ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'attendance' ? 'active' : ''; ?>"> <?php esc_html_e( 'Attendance', 'mjschool' ); ?></a>
 									</li>
 									<?php
 								}
@@ -1442,7 +1446,7 @@ if ( $message ) {
 														<label class="mjschool-view-page-content-labels">
 															<?php
 															if ( ! empty( $signature_file ) ) {
-																$signature_url = esc_url( content_url() . '/' . ltrim( $signature_file, '/' ) );
+																$signature_url = esc_url( content_url( '/' . ltrim( $signature_file, '/' )) );
 																echo '<a class="btn btn-default" href="' . esc_url( $signature_url ) . '" target="_blank"><i class="fas fa-download"></i> ' . esc_html__( 'Download', 'mjschool' ) . '</a>';
 															} else {
 																echo esc_html__( 'Not Provided', 'mjschool' );
@@ -1467,7 +1471,7 @@ if ( $message ) {
 																<?php
 																if ( ! empty( $value->document_file ) ) {
 																	?>
-																	<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $value->document_file ); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
+																	<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $value->document_file )); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
 																	<?php
 																} else {
 																	esc_html_e( 'Not Provided', 'mjschool' );
@@ -1616,7 +1620,7 @@ if ( $message ) {
 									?>
 									
 									<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-										<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=attendance&tab=teacher_attendance&tab1=teacher_attendences' ); ?>">
+										<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=attendance&tab=teacher_attendance&tab1=teacher_attendences') ); ?>">
 											<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 										</a>
 										<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -1750,7 +1754,7 @@ if ( $message ) {
 																				</a>
 																				<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																					<li class="mjschool-float-left-width-100px">
-																						<a class="mjschool-float-left-width-100px" href="?dashboard=mjschool_user&page=class&tab=class_details&tab1=student_list&class_id=<?php echo esc_attr( mjschool_encrypt_id($retrieved_data->class_id ) ); ?>"><i class="fas fa-list"></i><?php esc_html_e( 'Student List', 'mjschool' ); ?></a>
+																						<a class="mjschool-float-left-width-100px" href="<?php echo esc_url( '?dashboard=mjschool_user&page=class&tab=class_details&tab1=student_list&class_id=' . mjschool_encrypt_id( $retrieved_data->class_id ) ); ?>"><i class="fas fa-list"></i><?php esc_html_e( 'Student List', 'mjschool' ); ?></a>
 																					</li>
 																				</ul>
 																			</li>
@@ -1831,26 +1835,48 @@ if ( $message ) {
 																			}
 																		);
 																		foreach ( $period as $period_data ) {
-																			echo '<div class="btn-group m-b-sm">';
-																			echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" aria-expanded="false" data-toggle="dropdown">
-																			<span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_attr( mjschool_get_single_subject_name( $period_data->subject_id ) );
-																			$start_time_data = explode( ':', $period_data->start_time );
-																			$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
-																			$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
-																			$start_am_pm     = $start_time_data[2];
-																			$end_time_data   = explode( ':', $period_data->end_time );
-																			$end_hour        = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
-																			$end_min         = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
-																			$end_am_pm       = $end_time_data[2];
-																			echo '<span class="time"> ( ' . esc_html( $start_hour ) . ':' . esc_html( $start_min ) . ' ' . esc_html( $start_am_pm ) . ' - ' . esc_html( $end_hour ) . ':' . esc_html( $end_min ) . ' ' . esc_html( $end_am_pm ) . ' ) </span>';
-																			echo '<span>' . esc_html( mjschool_get_class_name( $period_data->class_id ) ) . '</span>';
-																			echo '</span><span class="caret"></span></button>';
-																			echo '<ul role="menu" class="dropdown-menu">
-																				<li><a href="?page=mjschool_route&tab=addroute&action=edit&route_id=' . esc_attr( $period_data->route_id ) . '">' . esc_attr__( 'Edit', 'mjschool' ) . '</a></li>
-																				<li><a href="?page=mjschool_route&tab=route_list&action=delete&route_id=' . esc_attr( $period_data->route_id ) . '">' . esc_attr__( 'Delete', 'mjschool' ) . '</a></li>
-																			</ul>';
-																			echo '</div>';
-																		}
+
+																		echo '<div class="btn-group m-b-sm">';
+
+																		echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" aria-expanded="false" data-toggle="dropdown">
+																			<span class="mjschool-period-box" id="' . esc_attr( $period_data->route_id ) . '">'
+																			. esc_html( mjschool_get_single_subject_name( $period_data->subject_id ) );
+
+																		$start_time_data = explode( ':', $period_data->start_time );
+																		$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
+																		$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
+																		$start_am_pm     = $start_time_data[2];
+
+																		$end_time_data = explode( ':', $period_data->end_time );
+																		$end_hour      = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
+																		$end_min       = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
+																		$end_am_pm     = $end_time_data[2];
+
+																		echo '<span class="time"> ( '
+																			. esc_html( $start_hour ) . ':' . esc_html( $start_min ) . ' ' . esc_html( $start_am_pm )
+																			. ' - '
+																			. esc_html( $end_hour ) . ':' . esc_html( $end_min ) . ' ' . esc_html( $end_am_pm )
+																			. ' ) </span>';
+
+																		echo '<span>' . esc_html( mjschool_get_class_name( $period_data->class_id ) ) . '</span>';
+																		echo '</span><span class="caret"></span></button>';
+
+																		echo '<ul role="menu" class="dropdown-menu">
+																			<li>
+																				<a href="' . esc_url(
+																					'?page=mjschool_route&tab=addroute&action=edit&route_id=' . $period_data->route_id
+																				) . '">' . esc_html__( 'Edit', 'mjschool' ) . '</a>
+																			</li>
+																			<li>
+																				<a href="' . esc_url(
+																					'?page=mjschool_route&tab=route_list&action=delete&route_id=' . $period_data->route_id
+																				) . '">' . esc_html__( 'Delete', 'mjschool' ) . '</a>
+																			</li>
+																		</ul>';
+
+																		echo '</div>';
+																	}
+
 																	} else {
 																		echo '<span class="text-muted">' . esc_html__( 'No Schedule Available', 'mjschool' ) . '</span>';
 																	}
@@ -1870,7 +1896,7 @@ if ( $message ) {
 								if ( $schedule_access['add'] === '1' && ( $role_name === 'supportstaff' || $role_name === 'teacher' ) ) {
 									 ?>
 									<div class="mjschool-no-data-list-div">
-										<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=schedule&tab=addroute' ); ?>">
+										<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=schedule&tab=addroute') ); ?>">
 											<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 										</a>
 										<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">

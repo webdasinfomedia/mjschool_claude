@@ -48,69 +48,6 @@ function mjschool_login_redirect( $redirect_to, $request, $user ) {
 	return $redirect_to;
 }
 /**
- * Retrieves notice board items for a specific student class and section.
- *
- * Fetches up to three notices applicable to all students or matching
- * the given class and section.
- *
- * @since 1.0.0
- *
- * @param int|string $class_name    The class ID.
- * @param int|string $class_section The class section ID.
- *
- * @return WP_Post[] List of notice posts.
- */
-function mjschool_student_notice_board( $class_name, $class_section ) {
-
-	return $notice_list_student = get_posts(array(
-		'post_type' => 'notice',
-		'posts_per_page' => 3,
-		'meta_query' => array(
-			'relation' => 'OR',
-			array(
-				'key' => 'notice_for',
-				'value' => 'all',
-				'compare' => '='
-			),
-			array(
-				'relation' => 'AND',
-				array(
-					'key' => 'smgt_class_id',
-					'value' => $class_name,
-					'compare' => '=',
-				),
-				array(
-					'key' => 'smgt_section_id',
-					'value' => $class_section,
-					'compare' => '=',
-				)
-			),
-			array(
-				'relation' => 'AND',
-				array(
-					'key' => 'notice_for',
-					'value' => 'student',
-					'compare' => '=',
-				),
-				array(
-					'key' => 'smgt_class_id',
-					'value' => $class_name,
-					'compare' => '=',
-				)
-			),
-			array(
-				'relation' => 'AND',
-				array(
-					'key' => 'notice_for',
-					'value' => 'student',
-					'compare' => '=',
-				)
-			)
-		)
-	 ) );
-
-}
-/**
  * Adds custom action links to the plugin row on the plugins page.
  *
  * Includes documentation, video guide, support, and addons links.
@@ -172,7 +109,7 @@ add_filter( 'plugin_row_meta', 'mjschool_custom_plugin_row_meta', 10, 2 );
  *
  * @return WP_Post[] List of notice posts.
  */
-function mjschool_student_notice_dashbord( $class_name, $class_section ) {
+function mjschool_student_notice_dashboard( $class_name, $class_section ) {
 	$arr1          = array( 'all' );
 	$arr2[]        = $class_name;
 	$mjschool_class_id = array_merge( $arr1, $arr2 );
@@ -214,8 +151,7 @@ function mjschool_student_notice_dashbord( $class_name, $class_section ) {
 				)
 			)
 		)
-	 ) );
-
+	) );
 }
 /**
  * Retrieves limited notices for students based on access rights.
@@ -229,7 +165,7 @@ function mjschool_student_notice_dashbord( $class_name, $class_section ) {
  *
  * @return WP_Post[] List of notice posts.
  */
-function mjschool_student_notice_dashbord_with_access_right( $class_name, $class_section ) {
+function mjschool_student_notice_dashboard_with_access_right( $class_name, $class_section ) {
 	$arr1          = array( 'all' );
 	$arr2[]        = $class_name;
 	$mjschool_class_id = array_merge( $arr1, $arr2 );
@@ -385,8 +321,7 @@ function mjschool_parent_notice_board() {
 				)
 			),
 		)
-	 ) );
-
+	) );
 }
 /**
  * Retrieves all parent dashboard notices based on their children's classes.
@@ -469,8 +404,7 @@ function mjschool_parent_notice_dashbord() {
 				)
 			),
 		)
-	 ) );
-
+	) );
 	return $notice_list_parent;
 }
 /**
@@ -482,7 +416,7 @@ function mjschool_parent_notice_dashbord() {
  *
  * @return WP_Post[] List of notice posts.
  */
-function mjschool_parent_notice_dashbord_with_access_right() {
+function mjschool_parent_notice_dashboard_with_access_right() {
 	$parents_child_list = get_user_meta( get_current_user_id(), 'child', true );
 	$class_array        = array();
 	if ( ! empty( $parents_child_list ) ) {
@@ -708,9 +642,7 @@ function mjschool_check_product_key( $domain_name, $licence_key, $email ) {
 			CURLOPT_POSTFIELDS => array( 'pkey' => $licence_key, 'email' => $email, 'domain' => $domain_name),
 		 ) );
 		$response = curl_exec($curl);
-
 		curl_close($curl);
-
 		return mjschool_return_license_response($response);
 	} else {
 		return '3';
@@ -759,19 +691,19 @@ function mjschool_submit_setup_form( $data ) {
 	$result      = mjschool_check_product_key( $domain_name, $licence_key, $email );
 	// var_dump($result); die;
 	if ( $result === '1' ) {
-		$message                 = esc_attr__( 'Please provide correct Envato purchase key.', 'mjschool' );
+		$message   = esc_html__( 'Please provide correct Envato purchase key.', 'mjschool' );
 		$_SESSION['mjschool_verify'] = '1';
 	} elseif ( $result === '2' ) {
-		$message                 = esc_attr__( 'This purchase key is already registered with the different domain.please contact us at sales@mojoomla.com', 'mjschool' );
+		$message                 = esc_html__( 'This purchase key is already registered with the different domain.please contact us at sales@mojoomla.com', 'mjschool' );
 		$_SESSION['mjschool_verify'] = '2';
 	} elseif ( $result === '3' ) {
-		$message                 = esc_attr__( 'There seems to be some problem please try after sometime or contact us on sales@mojoomla.com', 'mjschool' );
+		$message                 = esc_html__( 'There seems to be some problem please try after sometime or contact us on sales@mojoomla.com', 'mjschool' );
 		$_SESSION['mjschool_verify'] = '3';
 	} else {
 		update_option( 'mjschool_domain_name', $domain_name, true );
 		update_option( 'mjschool_licence_key', $licence_key, true );
 		update_option( 'mjschool_setup_email', $email, true );
-		$message                 = esc_attr__( 'License key successfully registered.', 'mjschool' );
+		$message                 = esc_html__( 'License key successfully registered.', 'mjschool' );
 		$_SESSION['mjschool_verify'] = '0';
 	}
 	$result_array = array(
@@ -916,19 +848,19 @@ function mjschool_submit_setup_form_mobileapp( $data ) {
 	$email = isset( $data['mjschool_app_setup_email'] ) ? sanitize_email( wp_unslash( $data['mjschool_app_setup_email'] ) ) : '';
 	$result      = mjschool_check_product_key( $domain_name, $licence_key, $email );
 	if ( $result === '1' ) {
-		$message                     = esc_attr__( 'Please provide correct Envato purchase key.', 'mjschool' );
+		$message                         = esc_html__( 'Please provide correct Envato purchase key.', 'mjschool' );
 		$_SESSION['mjschool_app_verify'] = '1';
 	} elseif ( $result === '2' ) {
-		$message                     = esc_attr__( 'This purchase key is already registered with the different domain.please contact us at sales@mojoomla.com', 'mjschool' );
+		$message                         = esc_html__( 'This purchase key is already registered with the different domain.please contact us at sales@mojoomla.com', 'mjschool' );
 		$_SESSION['mjschool_app_verify'] = '2';
 	} elseif ( $result === '3' ) {
-		$message                     = esc_attr__( 'There seems to be some problem please try after sometime or contact us on sales@mojoomla.com', 'mjschool' );
+		$message                         = esc_html__( 'There seems to be some problem please try after sometime or contact us on sales@mojoomla.com', 'mjschool' );
 		$_SESSION['mjschool_app_verify'] = '3';
 	} else {
 		update_option( 'mjschool_app_domain_name', $domain_name, true );
 		update_option( 'mjschool_app_licence_key', $licence_key, true );
 		update_option( 'mjschool_app_setup_email', $email, true );
-		$message                     = esc_attr__( 'License key successfully registered.', 'mjschool' );
+		$message                         = esc_html__( 'License key successfully registered.', 'mjschool' );
 		$_SESSION['mjschool_app_verify'] = '0';
 	}
 	$result_array = array(
@@ -998,30 +930,30 @@ function mjschool_is_smgt_page() {
 $obj_attend = new mjschool_Attendence_Manage();
 function mjschool_datatable_multi_language() {
 	$datatable_attr = array(
-		'sEmptyTable'     => esc_attr__( 'No data available in table', 'mjschool' ),
-		'sInfo'           => esc_attr__( 'Showing _START_ to _END_ of _TOTAL_ entries', 'mjschool' ),
-		'sInfoEmpty'      => esc_attr__( 'Showing 0 to 0 of 0 entries', 'mjschool' ),
-		'sInfoFiltered'   => esc_attr__( '(filtered from _MAX_ total entries)', 'mjschool' ),
+		'sEmptyTable'     => esc_html__( 'No data available in table', 'mjschool' ),
+		'sInfo'           => esc_html__( 'Showing _START_ to _END_ of _TOTAL_ entries', 'mjschool' ),
+		'sInfoEmpty'      => esc_html__( 'Showing 0 to 0 of 0 entries', 'mjschool' ),
+		'sInfoFiltered'   => esc_html__( '(filtered from _MAX_ total entries)', 'mjschool' ),
 		'sInfoPostFix'    => '',
 		'sInfoThousands'  => ',',
-		'sLengthMenu'     => esc_attr__( ' _MENU_ ', 'mjschool' ),
-		'sLoadingRecords' => esc_attr__( 'Loading...', 'mjschool' ),
-		'sProcessing'     => esc_attr__( 'Processing...', 'mjschool' ),
+		'sLengthMenu'     => esc_html__( ' _MENU_ ', 'mjschool' ),
+		'sLoadingRecords' => esc_html__( 'Loading...', 'mjschool' ),
+		'sProcessing'     => esc_html__( 'Processing...', 'mjschool' ),
 		'sSearch'         => '',
-		'sZeroRecords'    => esc_attr__( 'No matching records found', 'mjschool' ),
-		'Print'           => esc_attr__( 'Print', 'mjschool' ),
+		'sZeroRecords'    => esc_html__( 'No matching records found', 'mjschool' ),
+		'Print'           => esc_html__( 'Print', 'mjschool' ),
 		'oPaginate'       => array(
-			'sFirst'    => esc_attr__( 'First', 'mjschool' ),
-			'sLast'     => esc_attr__( 'Last', 'mjschool' ),
-			'sNext'     => esc_attr__( 'Next', 'mjschool' ),
-			'sPrevious' => esc_attr__( 'Previous', 'mjschool' ),
+			'sFirst'    => esc_html__( 'First', 'mjschool' ),
+			'sLast'     => esc_html__( 'Last', 'mjschool' ),
+			'sNext'     => esc_html__( 'Next', 'mjschool' ),
+			'sPrevious' => esc_html__( 'Previous', 'mjschool' ),
 		),
 		'searchBuilder'   => array(
-			'add' => esc_attr__( 'Add Filter', 'mjschool' ),
+			'add' => esc_html__( 'Add Filter', 'mjschool' ),
 		),
 		'oAria'           => array(
-			'sSortAscending'  => esc_attr__( ': activate to sort column ascending', 'mjschool' ),
-			'sSortDescending' => esc_attr__( ': activate to sort column descending', 'mjschool' ),
+			'sSortAscending'  => esc_html__( ': activate to sort column ascending', 'mjschool' ),
+			'sSortDescending' => esc_html__( ': activate to sort column descending', 'mjschool' ),
 		),
 	);
 	return $data    = $datatable_attr;
@@ -1042,39 +974,39 @@ function mjschool_change_menu_title( $key ) {
 		$key = 'child';
 	}
 	$menu_titlearray = array(
-		'general_settings'  => esc_attr__( 'General Settings', 'mjschool' ),
-		'email_template'    => esc_attr__( 'Email Template', 'mjschool' ),
-		'custom_field'      => esc_attr__( 'Custom Field', 'mjschool' ),
-		'mjschool_setting'  => esc_attr__( 'SMS Setting', 'mjschool' ),
-		'exam_hall'         => esc_attr__( 'Exam Hall', 'mjschool' ),
-		'grade'             => esc_attr__( 'Grade', 'mjschool' ),
-		'supportstaff'      => esc_attr__( 'Supportstaff', 'mjschool' ),
-		'admission'         => esc_attr__( 'Admission', 'mjschool' ),
-		'virtual_classroom' => esc_attr__( 'Virtual Classroom', 'mjschool' ),
-		'teacher'           => esc_attr__( 'Teacher', 'mjschool' ),
-		'student'           => esc_attr__( 'Student', 'mjschool' ),
-		'notification'      => esc_attr__( 'Notification', 'mjschool' ),
-		'child'             => esc_attr__( 'Child', 'mjschool' ),
-		'parent'            => esc_attr__( 'Parent', 'mjschool' ),
-		'subject'           => esc_attr__( 'Subject', 'mjschool' ),
-		'class'             => esc_attr__( 'Class', 'mjschool' ),
-		'schedule'          => esc_attr__( 'Class Routine', 'mjschool' ),
-		'attendance'        => esc_attr__( 'Attendance', 'mjschool' ),
-		'exam'              => esc_attr__( 'Exam', 'mjschool' ),
-		'manage_marks'      => esc_attr__( 'Manage Marks', 'mjschool' ),
-		'migration'         => esc_attr__( 'Migration', 'mjschool' ),
-		'feepayment'        => esc_attr__( 'Fee Payment', 'mjschool' ),
-		'payment'           => esc_attr__( 'Payment', 'mjschool' ),
-		'transport'         => esc_attr__( 'Transport', 'mjschool' ),
-		'hostel'            => esc_attr__( 'Hostel', 'mjschool' ),
-		'notice'            => esc_attr__( 'Notice Board', 'mjschool' ),
-		'event'             => esc_attr__( 'Event', 'mjschool' ),
-		'message'           => esc_attr__( 'Message', 'mjschool' ),
-		'holiday'           => esc_attr__( 'Holiday', 'mjschool' ),
-		'library'           => esc_attr__( 'Library', 'mjschool' ),
-		'account'           => esc_attr__( 'Account', 'mjschool' ),
-		'report'            => esc_attr__( 'Report', 'mjschool' ),
-		'homework'          => esc_attr__( 'Homework', 'mjschool' ),
+		'general_settings'  => esc_html__( 'General Settings', 'mjschool' ),
+		'email_template'    => esc_html__( 'Email Template', 'mjschool' ),
+		'custom_field'      => esc_html__( 'Custom Field', 'mjschool' ),
+		'mjschool_setting'  => esc_html__( 'SMS Setting', 'mjschool' ),
+		'exam_hall'         => esc_html__( 'Exam Hall', 'mjschool' ),
+		'grade'             => esc_html__( 'Grade', 'mjschool' ),
+		'supportstaff'      => esc_html__( 'Supportstaff', 'mjschool' ),
+		'admission'         => esc_html__( 'Admission', 'mjschool' ),
+		'virtual_classroom' => esc_html__( 'Virtual Classroom', 'mjschool' ),
+		'teacher'           => esc_html__( 'Teacher', 'mjschool' ),
+		'student'           => esc_html__( 'Student', 'mjschool' ),
+		'notification'      => esc_html__( 'Notification', 'mjschool' ),
+		'child'             => esc_html__( 'Child', 'mjschool' ),
+		'parent'            => esc_html__( 'Parent', 'mjschool' ),
+		'subject'           => esc_html__( 'Subject', 'mjschool' ),
+		'class'             => esc_html__( 'Class', 'mjschool' ),
+		'schedule'          => esc_html__( 'Class Routine', 'mjschool' ),
+		'attendance'        => esc_html__( 'Attendance', 'mjschool' ),
+		'exam'              => esc_html__( 'Exam', 'mjschool' ),
+		'manage_marks'      => esc_html__( 'Manage Marks', 'mjschool' ),
+		'migration'         => esc_html__( 'Migration', 'mjschool' ),
+		'feepayment'        => esc_html__( 'Fee Payment', 'mjschool' ),
+		'payment'           => esc_html__( 'Payment', 'mjschool' ),
+		'transport'         => esc_html__( 'Transport', 'mjschool' ),
+		'hostel'            => esc_html__( 'Hostel', 'mjschool' ),
+		'notice'            => esc_html__( 'Notice Board', 'mjschool' ),
+		'event'             => esc_html__( 'Event', 'mjschool' ),
+		'message'           => esc_html__( 'Message', 'mjschool' ),
+		'holiday'           => esc_html__( 'Holiday', 'mjschool' ),
+		'library'           => esc_html__( 'Library', 'mjschool' ),
+		'account'           => esc_html__( 'Account', 'mjschool' ),
+		'report'            => esc_html__( 'Report', 'mjschool' ),
+		'homework'          => esc_html__( 'Homework', 'mjschool' ),
 	);
 	return $menu_titlearray[ $key ];
 }
@@ -1437,74 +1369,6 @@ function mjschool_send_replay_message( $data ) {
 	if ( $result ) {
 		return $result;
 	}
-}
-/**
- * Retrieves all replies for a given message thread.
- *
- * @since 1.0.0
- *
- * @param int $tid Message ID.
- *
- * @return array List of reply records.
- */
-function mjschool_get_all_replies( $tid ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_message_replies';
-	$user_id    = intval( $tid );
-	$query      = $wpdb->prepare( "SELECT * FROM $table_name WHERE message_id = %d GROUP BY message_id, sender_id, message_comment ORDER BY id ASC", $user_id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $wpdb->get_results( $query );
-}
-/**
- * Retrieve all message replies for a given message ID (frontend use).
- *
- * @since 1.0.0
- * @param int $id Message ID.
- * @return array List of reply objects.
- */
-function mjschool_get_all_replies_frontend( $id ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_message_replies';
-	$user_id    = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $result = $wpdb->get_results( $wpdb->prepare( "SELECT *  FROM $table_name where message_id = %d", $user_id ) );
-}
-/**
- * Delete a single reply record from the replies table.
- *
- * @since 1.0.0
- * @param int $id Reply ID.
- * @return int|false Number of rows deleted or false on failure.
- */
-function mjschool_delete_reply( $id ) {
-	global $wpdb;
-	$table_name     = $wpdb->prefix . 'mjschool_message_replies';
-	$reply_id['id'] = $id;
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $result = $wpdb->delete( $table_name, $reply_id );
-}
-/**
- * Count total unread messages and replies for the current user.
- *
- * @since 1.0.0
- * @param int $user_id User ID.
- * @return int Total unread message count.
- */
-function mjschool_count_reply_item( $user_id ) {
-	global $wpdb;
-	$tbl_name                 = $wpdb->prefix . 'mjschool_message';
-	$mjschool_message_replies = $wpdb->prefix . 'mjschool_message_replies';
-	$user_id                  = get_current_user_id();
-	$id                       = intval( $user_id );
-	// Query for inbox/sent box messages.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$inbox_sent_box = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $tbl_name WHERE (receiver = %d AND sender != %d) AND post_id = %d AND status = 0", $user_id, $user_id, $id ) );
-	// Query for reply messages.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$reply_msg = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $mjschool_message_replies WHERE receiver_id = %d AND message_id = %d AND (status = 0 OR status IS NULL)", $user_id, $id ) );
-	// Count total messages.
-	$count_total_message = count( $inbox_sent_box ) + count( $reply_msg );
-	return $count_total_message;
 }
 /**
  * Get phone code for a given country from XML file.
@@ -14211,7 +14075,7 @@ function mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( 
  * @return array List of student objects.
  * @since 1.0.0
  */
-function mjschool_student_count_for_dashbord_card( $user_id, $user_role ) {
+function mjschool_student_count_for_dashboard_card( $user_id, $user_role ) {
 	$page        = 'student';
 	$user_access = mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( $page );
 	$school_obj  = new MJSchool_Management( get_current_user_id() );
@@ -14255,7 +14119,7 @@ function mjschool_student_count_for_dashbord_card( $user_id, $user_role ) {
  * @return array List of parent objects.
  * @since 1.0.0
  */
-function mjschool_parent_count_for_dashbord_card( $user_id, $user_role ) {
+function mjschool_parent_count_for_dashboard_card( $user_id, $user_role ) {
 	$parentdata  = array();
 	$page        = 'parent';
 	$school_obj  = new MJSchool_Management( get_current_user_id() );
@@ -14431,9 +14295,9 @@ function mjschool_notice_list_with_user_access_right( $user_role ) {
 		if ( $user_role === 'student' ) {
 			$class_name    = get_user_meta( get_current_user_id(), 'class_name', true );
 			$class_section = get_user_meta( get_current_user_id(), 'class_section', true );
-			$notice_list   = mjschool_student_notice_dashbord_with_access_right( $class_name, $class_section );
+			$notice_list   = mjschool_student_notice_dashboard_with_access_right( $class_name, $class_section );
 		} elseif ( $user_role === 'parent' ) {
-			$notice_list = mjschool_parent_notice_dashbord_with_access_right();
+			$notice_list = mjschool_parent_notice_dashboard_with_access_right();
 		} elseif ( $user_role === 'teacher' ) {
 			$class_name  = get_user_meta( get_current_user_id(), 'class_name', true );
 			$notice_list = mjschool_teacher_notice_board( $class_name );

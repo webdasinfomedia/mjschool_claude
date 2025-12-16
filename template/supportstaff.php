@@ -92,7 +92,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 											<?php
 											if ( $role_name === 'supportstaff' || $role_name === 'teacher' ) {
 												?>
-												<a  href="?dashboard=mjschool_user&page=supportstaff&tab=view_supportstaff&action=view_supportstaff&supportstaff_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>">
+												<a  href="<?php echo esc_url( '?dashboard=mjschool_user&page=supportstaff&tab=view_supportstaff&action=view_supportstaff&supportstaff_id=' . mjschool_encrypt_id( $retrieved_data->ID ) ); ?>">
 												<?php
 											} else {
 												?>
@@ -117,7 +117,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 											<?php
 											if ( $role_name === 'supportstaff' || $role_name === 'teacher' ) {
 												?>
-												<a class="mjschool-color-black" href="?dashboard=mjschool_user&page=supportstaff&tab=view_supportstaff&action=view_supportstaff&supportstaff_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>">
+												<a class="mjschool-color-black" href="<?php echo esc_url( '?dashboard=mjschool_user&page=supportstaff&tab=view_supportstaff&action=view_supportstaff&supportstaff_id=' . mjschool_encrypt_id( $retrieved_data->ID ) ); ?>">
 												<?php
 											} else {
 												?>
@@ -171,7 +171,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 															<?php
 															if ( ! empty( $custom_field_value ) ) {
 																?>
-																<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																<?php
 															} else {
 																esc_html_e( 'N/A', 'mjschool' );
@@ -208,13 +208,13 @@ if ( isset( $_REQUEST['page'] ) ) {
 															</a>
 															<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																<li class="mjschool-float-left-width-100px">
-																	<a href="?dashboard=mjschool_user&page=supportstaff&tab=view_supportstaff&action=view_supportstaff&supportstaff_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-eye"> </i><?php esc_html_e( 'View', 'mjschool' ); ?></a>
+																	<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=supportstaff&tab=view_supportstaff&action=view_supportstaff&supportstaff_id=' . mjschool_encrypt_id( $retrieved_data->ID ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-eye"> </i><?php esc_html_e( 'View', 'mjschool' ); ?></a>
 																</li>
 																<?php
 																if ( $user_access['edit'] === '1' ) {
 																	?>
 																	<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
-																		<a href="?dashboard=mjschool_user&page=supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																		<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . mjschool_encrypt_id( $retrieved_data->ID ) . '&_wpnonce_action=' . mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																	</li>
 																	<?php
 																}
@@ -223,7 +223,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 																if ( $user_access['delete'] === '1' ) {
 																	?>
 																	<li class="mjschool-float-left-width-100px">
-																		<a href="?dashboard=mjschool_user&page=supportstaff&tab=supportstaff_list&action=delete&supportstaff_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"> </i> <?php esc_html_e( 'Delete', 'mjschool' ); ?> </a>
+																		<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=supportstaff&tab=supportstaff_list&action=delete&supportstaff_id=' . mjschool_encrypt_id( $retrieved_data->ID ) . '&_wpnonce_action=' . mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"> </i> <?php esc_html_e( 'Delete', 'mjschool' ); ?> </a>
 																	</li>
 																	<?php
 																}
@@ -275,7 +275,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 												if ($user_access['edit'] === '1' ) {
 													?>
 													<div class="mjschool-view-user-edit-btn">
-														<a class="mjschool-color-white mjschool-margin-left-2px" href="?dashboard=mjschool_user&page=supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=<?php echo esc_attr( mjschool_encrypt_id($staff_data->ID ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) );?>">
+														<a class="mjschool-color-white mjschool-margin-left-2px" href="<?php echo esc_url( '?dashboard=mjschool_user&page=supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . mjschool_encrypt_id( $staff_data->ID ) . '&_wpnonce_action=' . mjschool_get_nonce( 'edit_action' ) ); ?>">
 															<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-edit.png"); ?>">
 														</a>
 													</div>
@@ -487,7 +487,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 																<?php
 																if ( ! empty( $value->document_file ) ) {
 																	?>
-																	<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $value->document_file ); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
+																	<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $value->document_file )); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
 																	<?php
 																} else {
 																	esc_html_e( 'N/A', 'mjschool' );

@@ -67,7 +67,7 @@ if ( isset( $_POST['add_feetype_payment'] ) ) {
 		$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 		if ( $result ) {
 			$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=1' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=1') );
 			die();
 		}
 	}
@@ -122,7 +122,7 @@ if ( $reference ) {
 		$feedata['trasaction_id']  = $trasaction_id;
 		$PaymentSucces             = $mjschool_obj_feespayment->mjschool_add_feespayment_history( $feedata );
 		if ( $PaymentSucces ) {
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success') );
 			die();
 		}
 	}
@@ -138,7 +138,7 @@ if ( isset( $_REQUEST['payment'] ) && sanitize_text_field(wp_unslash($_REQUEST['
 	$feedata['created_by']     = get_current_user_id();
 	$PaymentSucces             = $mjschool_obj_feespayment->mjschool_add_feespayment_history( $feedata );
 	if ( $PaymentSucces ) {
-		wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success') );
 		die();
 	}
 }
@@ -152,7 +152,7 @@ if ( isset( $_REQUEST['pay_id'] ) && isset( $_REQUEST['amt'] ) ) {
 	$feedata['paid_by_date']   = date( 'Y-m-d' );
 	$result                    = $mjschool_obj_fees_payment->mjschool_add_feespayment_history( $feedata );
 	if ( $result ) {
-		wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success' ));
 		die();
 	}
 }
@@ -167,7 +167,7 @@ if ( isset( $_REQUEST['payment_id'] ) && isset( $_REQUEST['payment_request_id'] 
 	$feedata['paid_by_date']   = date( 'Y-m-d' );
 	$result                    = $mjschool_obj_fees_payment->mjschool_add_feespayment_history( $feedata );
 	if ( $result ) {
-		wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success' ));
 		die();
 	}
 }
@@ -197,7 +197,7 @@ if ( isset( $_POST['save_feetype'] ) ) {
 				$module                    = 'fee_pay';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $fees_id );
 				if ( $result ) {
-					wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce='.esc_attr( $nonce ).'&message=5' );
+					wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce='.esc_attr( $nonce ).'&message=5' ));
 					die();
 				}
 			} else {
@@ -209,11 +209,11 @@ if ( isset( $_POST['save_feetype'] ) ) {
 			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce='.esc_attr( $nonce ).'&message=4' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce='.esc_attr( $nonce ).'&message=4' ));
 				die();
 			}
 		} else {
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce='.esc_attr( $nonce ).'&message=6' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce='.esc_attr( $nonce ).'&message=6' ));
 			die();
 		}
 	}
@@ -230,7 +230,7 @@ if ( isset( $_POST['save_recurring_feetype_payment'] ) ) {
 					$result = $mjschool_obj_feespayment->mjschool_add_recurring_feespayment( wp_unslash($_POST) );
 					if ( $result ) {
 						$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
-						wp_safe_redirect(rect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=recurring_feespaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=recurring_feetype_edit' );
+						wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=recurring_feespaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=recurring_feetype_edit' ));
 						die();
 					}
 				} else {
@@ -268,7 +268,7 @@ if ( isset( $_POST['save_feetype_payment'] ) ) {
 					$module                    = 'fee_list';
 					$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $fees_pay_id );
 					if ( $result ) {
-						wp_safe_redirect(rect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=2' );
+						wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=2' ));
 						die();
 					}
 				} else {
@@ -280,7 +280,7 @@ if ( isset( $_POST['save_feetype_payment'] ) ) {
 				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
-					wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=1' );
+					wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=1' ));
 					die();
 				}
 			}
@@ -320,21 +320,21 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		if ( isset( $_REQUEST['fees_id'] ) ) {
 			$result = $mjschool_obj_fees->mjschool_delete_feetype_data( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['fees_id'])) ) );
 			if ( $result ) {
-				wp_safe_redirect(rect( esc_url(home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce='.esc_attr( $nonce ).'&message=7') );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce='.esc_attr( $nonce ).'&message=7') );
 				die();
 			}
 		}
 		if ( isset( $_REQUEST['fees_pay_id'] ) ) {
 			$result = $mjschool_obj_feespayment->mjschool_delete_fee_payment_data( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['fees_pay_id'])) ) );
 			if ( $result ) {
-				wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=3') );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=3') );
 				die();
 			}
 		}
 		if ( isset( $_REQUEST['recurring_fees_id'] ) ) {
 			$result = $mjschool_obj_feespayment->mjschool_delete_recurring_fees( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['recurring_fees_id'])) ) );
 			if ( $result ) {
-				wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=feepayment&tab=recurring_feespaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=fee_del') );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=recurring_feespaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=fee_del') );
 				die();
 			}
 		}
@@ -344,11 +344,14 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 }
 // ----------------- Multiple delete fees type. ----------------------//
 if ( isset( $_REQUEST['delete_selected_feetype'] ) ) {
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bulk_delete_books' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
 		foreach ( $_REQUEST['id'] as $id ) {
 			$result = $mjschool_obj_feespayment->mjschool_delete_feetype_data( sanitize_text_field(wp_unslash($id)) );
-			wp_safe_redirect(rect( esc_url(home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce='.esc_attr( $nonce ).'&message=3') );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce='.esc_attr( $nonce ).'&message=3') );
 			die();
 		}
 	}
@@ -362,11 +365,14 @@ if ( isset( $_REQUEST['delete_selected_feetype'] ) ) {
 }
 // --------------------- Multiple fees Payment delete. --------------------//
 if ( isset( $_REQUEST['delete_selected_feelist'] ) ) {
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bulk_delete_books' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
 		foreach ( $_REQUEST['id'] as $id ) {
 			$result = $mjschool_obj_feespayment->mjschool_delete_fee_payment_data( $id );
-			wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=3') );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=3') );
 			die();
 		}
 	}
@@ -454,41 +460,41 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 				if ( $school_obj->role === 'teacher' || $school_obj->role === 'supportstaff' ) {
 					?>
 					<li class="<?php if ( $active_tab === 'feeslist' ) { ?> active<?php } ?>">
-						<a href="?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'feeslist' ? 'active' : ''; ?>"> <?php esc_html_e( 'Fees Type List', 'mjschool' ); ?></a>
+						<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'feeslist' ? 'active' : ''; ?>"> <?php esc_html_e( 'Fees Type List', 'mjschool' ); ?></a>
 					</li>
 					<?php
 				}
 				if ( $active_tab === 'addfeetype' && $page_action === 'edit' ) {
 					?>
 					<li class="<?php if ( $active_tab === 'addfeetype' ) { ?> active<?php } ?>">
-						<a href="?dashboard=mjschool_user&page=feepayment&tab=addfeetype&action=edit&fees_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['fees_id'])) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addfeetype' ? 'active' : ''; ?>"> <?php esc_html_e( 'Edit Fees Type', 'mjschool' ); ?></a>
+						<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=addfeetype&action=edit&fees_id=' . sanitize_text_field( wp_unslash( $_REQUEST['fees_id'] ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addfeetype' ? 'active' : ''; ?>"> <?php esc_html_e( 'Edit Fees Type', 'mjschool' ); ?></a>
 					</li>
 					<?php
 				} elseif ( $active_tab === 'addfeetype' ) {
 					if ( $user_access['add'] === '1' ) {
 						?>
 						<li class="<?php if ( $active_tab === 'addfeetype' ) { ?> active<?php } ?>">
-							<a href="?dashboard=mjschool_user&page=feepayment&tab=addfeetype" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addfeetype' ? 'active' : ''; ?>"> <?php esc_html_e( 'Add Fees Type', 'mjschool' ); ?></a>
+							<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=addfeetype' ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addfeetype' ? 'active' : ''; ?>"> <?php esc_html_e( 'Add Fees Type', 'mjschool' ); ?></a>
 						</li>
 						<?php
 					}
 				}
 				?>
 				<li class="<?php if ( $active_tab === 'feepaymentlist' ) { ?> active<?php } ?>">
-					<a href="?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'feepaymentlist' ? 'active' : ''; ?>"> <?php esc_html_e( 'Fees Payment', 'mjschool' ); ?></a>
+					<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'feepaymentlist' ? 'active' : ''; ?>"> <?php esc_html_e( 'Fees Payment', 'mjschool' ); ?></a>
 				</li>
 				<?php
 				if ( $active_tab === 'addpaymentfee' && $page_action === 'edit' ) {
 					?>
 					<li class="<?php if ( $active_tab === 'addpaymentfee' ) { ?> active<?php } ?>">
-						<a href="?dashboard=mjschool_user&page=feepayment&tab=addpaymentfee&action=edit&fees_pay_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['fees_pay_id'])) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addpaymentfee' ? 'active' : ''; ?>"> <?php esc_html_e( 'Edit Fees Payment', 'mjschool' ); ?></a>
+						<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=addpaymentfee&action=edit&fees_pay_id=' . sanitize_text_field( wp_unslash( $_REQUEST['fees_pay_id'] ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addpaymentfee' ? 'active' : ''; ?>"> <?php esc_html_e( 'Edit Fees Payment', 'mjschool' ); ?></a>
 					</li>
 					<?php
 				} elseif ( $active_tab === 'addpaymentfee' ) {
 					if ( $user_access['add'] === '1' ) {
 						?>
 						<li class="<?php if ( $active_tab === 'addpaymentfee' ) { ?> active<?php } ?>">
-							<a href="?dashboard=mjschool_user&page=feepayment&tab=addpaymentfee" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addpaymentfee' ? 'active' : ''; ?>"> <?php esc_html_e( 'Add Fees Payment', 'mjschool' ); ?></a>
+							<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=addfeetype' ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addpaymentfee' ? 'active' : ''; ?>"> <?php esc_html_e( 'Add Fees Payment', 'mjschool' ); ?></a>
 						</li>
 						<?php
 					}
@@ -498,14 +504,14 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 					if ( $recurring_option === 'yes' ) {
 						?>
 						<li class="<?php if ( $active_tab === 'recurring_feespaymentlist' ) { ?> active<?php } ?>">
-							<a href="?dashboard=mjschool_user&page=feepayment&tab=recurring_feespaymentlist&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'recurring_feespaymentlist' ? 'active' : ''; ?>"> <?php esc_html_e( 'Recurring Fees Payment List', 'mjschool' ); ?></a>
+							<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=recurring_feespaymentlist&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'recurring_feespaymentlist' ? 'active' : ''; ?>"> <?php esc_html_e( 'Recurring Fees Payment List', 'mjschool' ); ?></a>
 						</li>
 						<?php
 					}
 					if ( $active_tab === 'addrecurringpayment' && $mjschool_action === 'edit' ) {
 						?>
 						<li class="<?php if ( $active_tab === 'addrecurringpayment' ) { ?> active<?php } ?>">
-							<a href="?dashboard=mjschool_user&page=feepayment&tab=addrecurringpayment" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addrecurringpayment' ? 'active' : ''; ?>"> <?php esc_html_e( 'Edit Recurring Fees Payment', 'mjschool' ); ?></a>
+							<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=addrecurringpayment' ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addrecurringpayment' ? 'active' : ''; ?>"> <?php esc_html_e( 'Edit Recurring Fees Payment', 'mjschool' ); ?></a>
 						</li>
 						<?php
 					}
@@ -574,6 +580,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 						<div class="table-responsive"><!--------------- Table responsive. -------------->
 							<!-------------- Feestype list form. -------------->
 							<form id="mjschool-common-form" name="mjschool-common-form" method="post">
+								<?php wp_nonce_field( 'bulk_delete_books' ); ?>
 								<table id="frontend_feetype_list" class="display mjschool-admin-feestype-datatable" cellspacing="0" width="100%">
 									<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 										<tr>
@@ -728,7 +735,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																	<?php
 																	if ( ! empty( $custom_field_value ) ) {
 																		?>
-																		<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+																		<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile">
 																			<button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 																		</a>
 																		<?php
@@ -772,7 +779,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																		if ( $user_access['edit'] === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																				<a href="?dashboard=mjschool_user&page=feepayment&tab=addfeetype&action=edit&fees_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->fees_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px">
+																				<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=addfeetype&action=edit&fees_id=' . mjschool_encrypt_id( $retrieved_data->fees_id ) . '&_wpnonce_action=' . mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px">
 																					<i class="fa fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?>
 																				</a>
 																			</li>
@@ -781,7 +788,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																		if ( $user_access['delete'] === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a href="?dashboard=mjschool_user&page=feepayment&tab=feeslist&action=delete&fees_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->fees_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
+																				<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=feeslist&action=delete&fees_id=' . mjschool_encrypt_id( $retrieved_data->fees_id ) . '&_wpnonce_action=' . mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
 																					<i class="fas fa-trash"></i>
 																					<?php esc_html_e( 'Delete', 'mjschool' ); ?>
 																				</a>
@@ -830,7 +837,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 					if ($user_access['add'] === '1' ) {
 						?>
 						<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-							<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=feepayment&tab=addfeetype' ); ?>">
+							<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=feepayment&tab=addfeetype' )); ?>">
 								<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 								
 							</a>
@@ -985,7 +992,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 						// --------- Get module-wise custom field data. --------------//
 						$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 						$module                    = 'fee_pay';
-						$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+						$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 						?>
 						<div class="form-body mjschool-user-form">
 							<div class="row">
@@ -1068,6 +1075,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 						<div class="table-responsive"><!------------- Table responsive. ------------------>
 							<!------------- FEES PAYMENT LIST FORM. ----------------->
 							<form id="mjschool-common-form" name="mjschool-common-form" method="post">
+								<?php wp_nonce_field( 'bulk_delete_books' ); ?>
 								<table id="paymentt_list_receipt" class="display dataTable mjschool-feespayment-datatable" cellspacing="0" width="100%">
 									<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 										<tr>
@@ -1142,7 +1150,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 												?>
 												<td class="mjschool-user-image mjschool-width-50px-td">
 													
-													<a href="?dashboard=mjschool_user&page=feepayment&tab=view_fesspayment&idtest=<?php echo esc_attr( mjschool_encrypt_id($retrieved_data->fees_pay_id ) ); ?>&view_type=view_payment">
+													<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=view_fesspayment&idtest=' . mjschool_encrypt_id( $retrieved_data->fees_pay_id ) . '&view_type=view_payment' ); ?>">
 														<?php
 														$uid = $retrieved_data->student_id;
 														$umetadata = mjschool_get_user_image($uid);
@@ -1242,7 +1250,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																	<?php
 																	if ( ! empty( $custom_field_value ) ) {
 																		?>
-																		<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+																		<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile">
 																			<button class="btn btn-default view_document" type="button">
 																				<i class="fas fa-download"></i>
 																				<?php esc_html_e( 'Download', 'mjschool' ); ?>
@@ -1283,7 +1291,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																</a>
 																<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																	<li class="mjschool-float-left-width-100px">
-																		<a href="?dashboard=mjschool_user&page=feepayment&tab=view_fesspayment&idtest=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->fees_pay_id ) ); ?>&view_type=view_payment" class="mjschool-float-left-width-100px">
+																		<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=view_fesspayment&idtest=' . mjschool_encrypt_id( $retrieved_data->fees_pay_id ) . '&view_type=view_payment' ); ?>" class="mjschool-float-left-width-100px">
 																			<i class="fa fa-eye"></i>
 																			<?php esc_html_e( 'View Invoice', 'mjschool' ); ?>
 																		</a>
@@ -1292,7 +1300,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																	if ( ! empty( $retrieved_data->fees_paid_amount ) ) {
 																		?>
 																		<li class="mjschool-float-left-width-100px">
-																			<a href="?dashboard=mjschool_user&page=feepayment&tab=view_fessreceipt&idtest=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->fees_pay_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>" class="mjschool-float-left-width-100px">
+																			<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=view_fessreceipt&idtest=' . mjschool_encrypt_id( $retrieved_data->fees_pay_id ) . '&_wpnonce_action=' . mjschool_get_nonce( 'view_action' ) ); ?>" class="mjschool-float-left-width-100px">
 																				<i class="fas fa-eye"></i>
 																				<?php esc_html_e( 'Payment History', 'mjschool' ); ?>
 																			</a>
@@ -1314,7 +1322,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																	if ( $user_access['edit'] === '1' ) {
 																		?>
 																		<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																			<a href="?dashboard=mjschool_user&page=feepayment&tab=addpaymentfee&action=edit&fees_pay_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->fees_pay_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px">
+																			<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=addpaymentfee&action=edit&fees_pay_id=' . mjschool_encrypt_id( $retrieved_data->fees_pay_id ) . '&_wpnonce_action=' . mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px">
 																				<i class="fa fa-edit"> </i>
 																				<?php esc_html_e( 'Edit', 'mjschool' ); ?>
 																			</a>
@@ -1324,7 +1332,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																	if ( $user_access['delete'] === '1' ) {
 																		?>
 																		<li class="mjschool-float-left-width-100px">
-																			<a href="?dashboard=mjschool_user&page=feepayment&tab=examlist&action=delete&fees_pay_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->fees_pay_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
+																			<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=examlist&action=delete&fees_pay_id=' . mjschool_encrypt_id( $retrieved_data->fees_pay_id ) . '&_wpnonce_action=' . mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
 																				<i class="fas fa-trash"></i>
 																				<?php esc_html_e( 'Delete', 'mjschool' ); ?>
 																			</a>
@@ -1375,7 +1383,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 					?>
 					<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
 						
-						<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=feepayment&tab=addpaymentfee' ); ?>">
+						<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=feepayment&tab=addpaymentfee' )); ?>">
 							<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 						</a>
 						<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -1760,7 +1768,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 						// --------- Get module-wise custom field data. --------------//
 						$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 						$module                    = 'fee_list';
-						$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+						$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 						?>
 						<div class="form-body mjschool-user-form mjschool-margin-top-20px mjschool-padding-top-15px-res">
 							<div class="row">
@@ -2326,7 +2334,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																</td>
 																<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_black_2px">
 																	<?php echo esc_html( number_format( $retrive_date->amount, 2, '.', '' ) ); ?>
-																	<a href="<?php echo esc_url( esc_url(home_url( '?dashboard=mjschool_user&page=feepayment&tab=view_fesspayment&idtest=' . esc_attr(sanitize_text_field(wp_unslash($_REQUEST['idtest']))) . '&payment_id=' . urlencode( $payment_id ) . '&view_type=view_receipt&_wpnonce_action=1e4d916199' ) ) ); ?>" class="btn btn-primary btn-sm mjschool_margin_left_10px"> View Receipt </a>
+																	<a href="<?php echo esc_url( home_url( '?dashboard=mjschool_user&page=feepayment&tab=view_fesspayment&idtest=' . esc_attr(sanitize_text_field(wp_unslash($_REQUEST['idtest']))) . '&payment_id=' . urlencode( $payment_id ) . '&view_type=view_receipt&_wpnonce_action=1e4d916199' ) ); ?>" class="btn btn-primary btn-sm mjschool_margin_left_10px"> View Receipt </a>
 																</td>
 															</tr>
 															<?php
@@ -2396,12 +2404,12 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 										<div class="col-md-12 grand_total_main_div total_mjschool-padding-15px mjschool-rtl-float-none">
 											<div class="row mjschool-margin-top-10px-res mjschool-width-50-res col-md-6 col-sm-6 col-xs-6 mjschool-print-button pull-left mjschool-invoice-print-pdf-btn">
 												<div class="col-md-2 mjschool-print-btn-rs mjschool-width-50-res">
-													<a href="?page=mjschool_fees_payment&print=print&payment_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['idtest'])) ); ?>&fee_paymenthistory=<?php echo 'fee_paymenthistory'; ?>" id="exprience_latter" target="_blank" class="btn btn mjschool-save-btn mjschool-invoice-btn-div"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-print.png' ); ?>"> </a>
+													<a href="<?php echo esc_url( '?page=mjschool_fees_payment&print=print&payment_id=' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['idtest'] ) ) ) . '&fee_paymenthistory=fee_paymenthistory' ); ?>" id="exprience_latter" target="_blank" class="btn btn mjschool-save-btn mjschool-invoice-btn-div"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-print.png' ); ?>"> </a>
 												</div>
 												<?php
 												if ( isset( $_REQUEST['web_type'] ) && sanitize_text_field(wp_unslash($_REQUEST['web_type'])) === 'wpschool_app' ) {
 													if ( isset( $_POST['download_app_pdf'] ) ) {
-														$file_path = content_url() . '/uploads/invoice_pdf/fees_payment/' . mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['idtest'])) ) . '.pdf';
+														$file_path = esc_url(content_url( '/uploads/invoice_pdf/fees_payment/' . mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['idtest'])) ) . '.pdf'));
 														if ( file_exists( ABSPATH . str_replace( content_url(), 'wp-content', $file_path ) ) ) {
 															unlink( $file_path ); // Delete the file.
 														}
@@ -2427,7 +2435,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 												} else {
 													?>
 													<div class="col-md-3 mjschool-pdf-btn-rs mjschool-width-50-res">
-														<a href="?page=mjschool_fees_payment&print=pdf&payment_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['idtest'])) ); ?>&fee_paymenthistory=<?php echo 'fee_paymenthistory'; ?>" id="download_pdf" target="_blank" class="btn mjschool-color-white mjschool-invoice-btn-div btn mjschool-save-btn"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-pdf.png' ); ?>"></a>
+														<a href="<?php echo esc_url( '?page=mjschool_fees_payment&print=pdf&payment_id=' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['idtest'] ) ) ) . '&fee_paymenthistory=fee_paymenthistory' ); ?>" id="download_pdf" target="_blank" class="btn mjschool-color-white mjschool-invoice-btn-div btn mjschool-save-btn"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-pdf.png' ); ?>"></a>
 													</div>
 													<?php
 												}
@@ -2637,7 +2645,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 										<div class="col-md-12 grand_total_main_div total_mjschool-padding-15px mjschool-rtl-float-none">
 											<div class="row mjschool-margin-top-10px-res mjschool-width-50-res col-md-6 col-sm-6 col-xs-6 mjschool-print-button pull-left mjschool-invoice-print-pdf-btn">
 												<div class="col-md-2 mjschool-print-btn-rs mjschool-width-50-res">
-													<a href="?page=mjschool_fees_receipt&print=print&payment_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['idtest'])) ); ?>&receipt_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['payment_id'])) ); ?>&fee_paymenthistory=<?php echo 'fee_paymenthistory'; ?>" target="_blank" class="btn btn mjschool-save-btn mjschool-invoice-btn-div">
+													<a href="<?php echo esc_url( '?page=mjschool_fees_receipt&print=print&payment_id=' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['idtest'] ) ) ) . '&receipt_id=' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['payment_id'] ) ) ) . '&fee_paymenthistory=fee_paymenthistory' ); ?>" target="_blank" class="btn btn mjschool-save-btn mjschool-invoice-btn-div">
 														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-print.png' ); ?>">
 													</a>
 												</div>
@@ -2645,7 +2653,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 												// check this.
 												if ( isset( $_REQUEST['web_type'] ) && sanitize_text_field(wp_unslash($_REQUEST['web_type'])) === 'wpschool_app' ) {
 													if ( isset( $_POST['download_app_pdf'] ) ) {
-														$file_path = content_url() . '/uploads/invoice_pdf/fees_payment/' . mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['idtest'])) ) . '.pdf';
+														$file_path = content_url( '/uploads/invoice_pdf/fees_payment/' . mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['idtest'])) ) . '.pdf');
 														if ( file_exists( ABSPATH . str_replace( content_url(), 'wp-content', $file_path ) ) ) {
 															unlink( $file_path ); // Delete the file.
 														}
@@ -2669,7 +2677,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 												} else {
 													?>
 													<div class="col-md-3 mjschool-pdf-btn-rs mjschool-width-50-res">
-														<a href="?page=mjschool_fees_receipt&print=pdf&payment_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['idtest'])) ); ?>&receipt_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['payment_id'])) ); ?>&fee_receipthistory=<?php echo 'fee_receipthistory'; ?>" target="_blank" class="btn mjschool-color-white mjschool-invoice-btn-div btn mjschool-save-btn"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-pdf.png' ); ?>"></a>
+														<a href="<?php echo esc_url( '?page=mjschool_fees_receipt&print=pdf&payment_id=' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['idtest'] ) ) ) . '&receipt_id=' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['payment_id'] ) ) ) . '&fee_receipthistory=fee_receipthistory' ); ?>" target="_blank" class="btn mjschool-color-white mjschool-invoice-btn-div btn mjschool-save-btn"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-pdf.png' ); ?>"></a>
 													</div>
 													<?php
 												}
@@ -2829,7 +2837,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																		if ( $user_access['edit'] === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																				<a href="?dashboard=mjschool_user&page=feepayment&tab=addrecurringpayment&action=edit&recurring_fees_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->recurring_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px">
+																				<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=addrecurringpayment&action=edit&recurring_fees_id=' . esc_attr( mjschool_encrypt_id( $retrieved_data->recurring_id ) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px">
 																					<i class="fa fa-edit"> </i>
 																					<?php esc_html_e( 'Edit', 'mjschool' ); ?>
 																				</a>
@@ -2839,7 +2847,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																		if ( $user_access['delete'] === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a href="?dashboard=mjschool_user&page=feepayment&tab=feespaymentlist&action=delete&recurring_fees_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->recurring_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
+																				<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=feespaymentlist&action=delete&recurring_fees_id=' . esc_attr( mjschool_encrypt_id( $retrieved_data->recurring_id ) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'delete_action' ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
 																					<i class="fas fa-trash"></i>
 																					<?php esc_html_e( 'Delete', 'mjschool' ); ?>
 																				</a>
@@ -3324,7 +3332,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																<?php
 																if ( ! empty( $custom_field_value ) ) {
 																	?>
-																	<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+																	<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile">
 																		<button class="btn btn-default view_document" type="button">
 																			<i class="fas fa-download"></i>
 																			<?php esc_html_e( 'Download', 'mjschool' ); ?>
@@ -3363,7 +3371,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 															</a>
 															<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																<li class="mjschool-float-left-width-100px">
-																	<a href="?dashboard=mjschool_user&page=feepayment&tab=view_fesspayment&idtest=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->fees_pay_id ) ); ?>&payment_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->payment_history_id ) ); ?>&view_type=view_receipt&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>" class="mjschool-float-left-width-100px">
+																	<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=feepayment&tab=view_fesspayment&idtest=' . esc_attr( mjschool_encrypt_id( $retrieved_data->fees_pay_id ) ) . '&payment_id=' . esc_attr( mjschool_encrypt_id( $retrieved_data->payment_history_id ) ) . '&view_type=view_receipt&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'view_action' ) ) ); ?>" class="mjschool-float-left-width-100px">
 																		<i class="fas fa-eye"></i>
 																		<?php esc_html_e( 'View Receipt', 'mjschool' ); ?>
 																	</a>

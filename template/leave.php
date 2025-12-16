@@ -503,7 +503,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 																		if ( ! empty( $custom_field_value ) ) {
 																			 
                                                                             ?>
-                                                                            <a target="" href="<?php echo esc_url(content_url() . '/uploads/school_assets/' . $custom_field_value); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+                                                                            <a target="" href="<?php echo esc_url(content_url( '/uploads/school_assets/' . $custom_field_value)); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
                                                                             <?php  
 																		} else {
 																			esc_html_e( 'N/A', 'mjschool' );
@@ -603,7 +603,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 						} elseif ( $user_access['add'] === '1' ) {
 							 ?>
 							<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-								<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=leave&tab=add_leave' ); ?>">
+								<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=leave&tab=add_leave' )); ?>">
 									<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 								</a>
 								<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -882,7 +882,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 							// --------- Get module-wise custom field data. --------------//
 							$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 							$module                    = 'leave';
-							$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+							$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 							?>
 							<div class="form-body mjschool-user-form">
 								<div class="row">

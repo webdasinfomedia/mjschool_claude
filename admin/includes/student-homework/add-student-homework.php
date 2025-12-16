@@ -271,7 +271,7 @@ if (isset($_REQUEST['action']) && sanitize_text_field(wp_unslash($_REQUEST['acti
             // --------- Get module-wise custom field data. --------------//
             $custom_field_obj = new Mjschool_Custome_Field();
             $module           = 'homework';
-            $custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module($module);
+            $custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback($module);
             ?>
             <?php wp_nonce_field('save_homework_admin_nonce'); ?>
             <div class="form-body mjschool-user-form">

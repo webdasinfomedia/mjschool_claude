@@ -697,7 +697,7 @@ if ( $active_tab === 'addstudent' ) {
 			// --------- Get module-wise custom field data. --------------//
 			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 			$module                    = 'student';
-			$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+			$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 			?>
 			<!------- Save student button. ---------->
 			<div class="form-body mjschool-user-form">

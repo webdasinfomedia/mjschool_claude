@@ -143,6 +143,8 @@ $message = mjschool_get_inbox_message( get_current_user_id(), $limit, $max );
 											<td>
 												<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=message&tab=view_message&from=inbox&id=' . mjschool_encrypt_id( $msg->message_id ) ); ?>" class="mjschool-text-decoration-none mjschool-inbox-tab">
 													<?php
+													$obj_message = new Mjschool_Message();
+													$msg_post_id = $obj_message->mjschool_count_reply_item( $msg->post_id );
 													$subject_char = strlen( $msg->subject );
 													if ( $subject_char <= 10 ) {
 														echo esc_html( $msg->subject );
@@ -151,9 +153,9 @@ $message = mjschool_get_inbox_message( get_current_user_id(), $limit, $max );
 														$subject_body = substr( strip_tags( $msg->subject ), 0, $char_limit ) . '...';
 														echo esc_html( $subject_body );
 													}
-													if ( mjschool_count_reply_item( $msg->post_id ) >= 1 ) {
+													if ( $msg_post_id >= 1 ) {
 														?>
-														<span class="mjschool-inbox-count-number badge badge-success  pull-right ms-1"><?php echo esc_html( mjschool_count_reply_item( $msg->post_id ) ); ?></span>
+														<span class="mjschool-inbox-count-number badge badge-success  pull-right ms-1"><?php echo esc_html( $msg_post_id ); ?></span>
 													<?php } ?>
 												</a>
 												<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $msg->subject ) ) { echo esc_html( $msg->subject ); } else { esc_html_e( 'Subject', 'mjschool' );} ?>"></i>       
@@ -177,7 +179,7 @@ $message = mjschool_get_inbox_message( get_current_user_id(), $limit, $max );
 													$attchment_array = explode( ',', $attchment );
 													foreach ( $attchment_array as $attchment_data ) {
 														?>
-														<a target="blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $attchment_data ); ?>" class="btn btn-default"><i class="fas fa-download"></i> <?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+														<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $attchment_data )); ?>" class="btn btn-default"><i class="fas fa-download"></i> <?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
 														<?php
 													}
 												} else {
@@ -232,6 +234,8 @@ $message = mjschool_get_inbox_message( get_current_user_id(), $limit, $max );
 											<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=message&tab=view_message&from=inbox&id=' . mjschool_encrypt_id( $msg->message_id ) ); ?>" class="mjschool-text-decoration-none"> 
 												<?php echo esc_html( $msg->subject ); ?>
 												<?php
+												$obj_message = new Mjschool_Message();
+												$msg_post_id = $obj_message->mjschool_count_reply_item( $msg->post_id );
 												$subject_char = strlen( $msg->subject );
 												if ( $subject_char <= 10 ) {
 													echo esc_html( $msg->subject );
@@ -240,9 +244,9 @@ $message = mjschool_get_inbox_message( get_current_user_id(), $limit, $max );
 													$subject_body = substr( strip_tags( $msg->subject ), 0, $char_limit ) . '...';
 													echo esc_html( $subject_body );
 												}
-												if ( mjschool_count_reply_item( $msg->post_id ) >= 1 ) {
+												if ( $msg_post_id >= 1 ) {
 													?>
-													<span class="badge badge-success pull-right"><?php echo esc_html( mjschool_count_reply_item( $msg->post_id ) ); ?></span>
+													<span class="badge badge-success pull-right"><?php echo esc_html( $msg_post_id ); ?></span>
 												<?php } ?>
 											</a>
 										</td>
@@ -266,7 +270,7 @@ $message = mjschool_get_inbox_message( get_current_user_id(), $limit, $max );
 												$attchment_array = explode( ',', $attchment );
 												foreach ( $attchment_array as $attchment_data ) {
 													?>
-													<a target="blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $attchment_data ); ?>" class="btn btn-default"><i class="fas fa-eye"></i> <?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+													<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $attchment_data )); ?>" class="btn btn-default"><i class="fas fa-eye"></i> <?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
 													<?php
 												}
 											} else {

@@ -191,7 +191,7 @@ if ( $school_obj->role === 'student' ) {
 	}
 	$class_id            = $school_obj->class_info->class_id;
 	$class_section       = $school_obj->class_info->class_section;
-	$notice_list_student = mjschool_student_notice_dashbord( $class_id, $class_section );
+	$notice_list_student = mjschool_student_notice_dashboard( $class_id, $class_section );
 	if ( ! empty( $notice_list_student ) ) {
 		foreach ( $notice_list_student as $notice ) {
 			$notice_start_date = get_post_meta( $notice->ID, 'start_date', true );
@@ -2793,13 +2793,13 @@ if ( is_super_admin() ) {
 													<p class="percent">
 														<?php
 														$user_id     = get_current_user_id();
-														$studentdata = mjschool_student_count_for_dashbord_card( $user_id, $user_role );
+														$studentdata = mjschool_student_count_for_dashboard_card( $user_id, $user_role );
 														if ( ! empty( $studentdata ) ) {
 															$student_count = count( $studentdata );
 														} else {
 															$student_count = 0;
 														}
-														$parentdata = mjschool_parent_count_for_dashbord_card( $user_id, $user_role );
+														$parentdata = mjschool_parent_count_for_dashboard_card( $user_id, $user_role );
 														if ( ! empty( $parentdata ) ) {
 															$parent_count = count( $parentdata );
 														} else {

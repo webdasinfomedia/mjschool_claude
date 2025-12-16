@@ -28,7 +28,7 @@ if ($active_tab === 'exam_time_table' ) {
 
     // Check nonce for exam time table tab.
     if ( isset( $_GET['tab'] ) ) {
-        if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'mjschool_exam_module_tab' ) ) {
+        if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'mjschool_exam_module_tab' ) ) {
            wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
         }
     }
@@ -52,7 +52,7 @@ if ($active_tab === 'exam_time_table' ) {
                         }
                         ?>
                         <select id="mjschool-exam-id" name="exam_id" class="form-control validate[required] mjschool-width-100px">
-                            <option value=""><?php esc_attr_e( 'Select Exam Name', 'mjschool' ); ?></option>
+                            <option value=""><?php esc_html_e( 'Select Exam Name', 'mjschool' ); ?></option>
                             <?php
                             foreach ($retrieve_class_data as $retrieved_data) {
                                 $cid      = $retrieved_data->class_id;
@@ -81,7 +81,7 @@ if ($active_tab === 'exam_time_table' ) {
         <?php
         // save exam time table.
         if ( isset( $_POST['save_exam_time_table'] ) ) {
-            if (! isset($_POST['security']) || ! wp_verify_nonce($_POST['security'], 'mjschool_exam_time_table_nonce')) {
+            if (! isset($_POST['security']) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'mjschool_exam_time_table_nonce')) {
                 wp_die(esc_html__('Security check failed.', 'mjschool'));
             }
 
@@ -151,7 +151,7 @@ if ($active_tab === 'exam_time_table' ) {
 						<div class="mjschool-exam-table-res mjschool_margin_20px">
 							<form id="exam_form2" name="exam_form2" method="post">
 								<!-------- Exam Form. -------->
-								<input type='hidden' name='subject_data' id="subject_data" value='<?php echo json_encode($subject_data); ?>'>
+								<input type='hidden' name='subject_data' id="subject_data" value='<?php echo esc_attr( wp_json_encode($subject_data) ); ?>'>
 								<input type="hidden" name="class_id" value="<?php echo esc_attr($exam_data->class_id); ?>">
 								<input type="hidden" name="section_id" value="<?php echo esc_attr($exam_data->section_id); ?>">
 								<input type="hidden" name="exam_id" value="<?php echo esc_attr($exam_data->exam_id); ?>">
@@ -177,7 +177,7 @@ if ($active_tab === 'exam_time_table' ) {
 													<input type="hidden" name="subject_id" value="<?php echo esc_attr($retrieved_data->subid); ?>">
 													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><input type="hidden" name="subject_code_<?php echo esc_attr($retrieved_data->subid); ?>" value="<?php echo esc_attr($retrieved_data->subject_code); ?>"><?php echo esc_html( $retrieved_data->subject_code); ?></td>
 													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><input type="hidden" name="subject_name_<?php echo esc_attr($retrieved_data->subid); ?>" value="<?php echo esc_attr($retrieved_data->sub_name); ?>"><?php echo esc_html( $retrieved_data->sub_name); ?></td>
-													<td class="mjschool-exam-hall-receipt-table-value mjschool-exam-time-tbl-validation mjschool_border_right_1px" ><input id="exam_date_<?php echo esc_attr($retrieved_data->subid); ?>" class="datepicker form-control datepicker_icon validate[required] text-input exam_date mjschool-min-width-160 mjschool-date-border-css" placeholder="<?php esc_html_e( 'Select Date', 'mjschool' ); ?>" type="text" name="exam_date_<?php echo esc_attr($retrieved_data->subid); ?>" value="<?php if ( ! empty( $exam_time_table_data->exam_date ) ) { echo esc_attr( mjschool_get_date_in_input_box($exam_time_table_data->exam_date ) ); } ?>" readonly></td>
+													<td class="mjschool-exam-hall-receipt-table-value mjschool-exam-time-tbl-validation mjschool_border_right_1px" ><input id="exam_date_<?php echo esc_attr($retrieved_data->subid); ?>" class="datepicker form-control datepicker_icon validate[required] text-input exam_date mjschool-min-width-160 mjschool-date-border-css" placeholder="<?php esc_attr_e( 'Select Date', 'mjschool' ); ?>" type="text" name="exam_date_<?php echo esc_attr($retrieved_data->subid); ?>" value="<?php if ( ! empty( $exam_time_table_data->exam_date ) ) { echo esc_attr( mjschool_get_date_in_input_box($exam_time_table_data->exam_date ) ); } ?>" readonly></td>
 													<?php
 													if ( ! empty( $exam_time_table_data->start_time ) ) {
 														// ------------ Start time convert. --------------//
@@ -201,10 +201,10 @@ if ($active_tab === 'exam_time_table' ) {
 													}
 													?>
 													<td class="mjschool-exam-hall-receipt-table-value mjschool-exam-time-tbl-validation  mjschool_border_right_1px" >
-														<input type="text" name="start_time_<?php echo esc_attr($retrieved_data->subid); ?>" class="start_time timepicker form-control validate[required] text-input mjschool-date-border-css start_time_<?php echo esc_attr($retrieved_data->subid); ?>" placeholder="<?php esc_html_e( 'Start Time', 'mjschool' ); ?>" value="<?php if ( ! empty( $exam_time_table_data->start_time ) ) { echo esc_attr($start_time); } ?>" />
+														<input type="text" name="start_time_<?php echo esc_attr($retrieved_data->subid); ?>" class="start_time timepicker form-control validate[required] text-input mjschool-date-border-css start_time_<?php echo esc_attr($retrieved_data->subid); ?>" placeholder="<?php esc_attr_e( 'Start Time', 'mjschool' ); ?>" value="<?php if ( ! empty( $exam_time_table_data->start_time ) ) { echo esc_attr($start_time); } ?>" />
 													</td>
 													<td class="mjschool-exam-hall-receipt-table-value mjschool-exam-time-tbl-validation  mjschool_border_right_1px" >
-														<input type="text" name="end_time_<?php echo esc_attr($retrieved_data->subid); ?>" class="end_time timepicker form-control validate[required] text-input mjschool-date-border-css end_time_<?php echo esc_attr($retrieved_data->subid); ?> " placeholder="<?php esc_html_e( 'End Time', 'mjschool' ); ?>" value="<?php if ( ! empty( $exam_time_table_data->end_time ) ) { echo esc_attr($end_time); } ?>" />
+														<input type="text" name="end_time_<?php echo esc_attr($retrieved_data->subid); ?>" class="end_time timepicker form-control validate[required] text-input mjschool-date-border-css end_time_<?php echo esc_attr($retrieved_data->subid); ?> " placeholder="<?php esc_attr_e( 'End Time', 'mjschool' ); ?>" value="<?php if ( ! empty( $exam_time_table_data->end_time ) ) { echo esc_attr($end_time); } ?>" />
 													</td>
 												</tr>
 												<?php

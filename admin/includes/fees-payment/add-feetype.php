@@ -144,7 +144,7 @@ if ( $active_tab === 'addfeetype' ) {
 			// --------- Get Module Wise Custom Field Data. --------------//
 			$custom_field_obj = new Mjschool_Custome_Field();
 			$module           = 'fee_pay';
-			$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+			$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 			?>
 			<div class="form-body mjschool-user-form">
 				<div class="row">

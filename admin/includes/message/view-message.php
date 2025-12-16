@@ -59,7 +59,8 @@ if ( isset( $_POST['replay_message'] ) ) {
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete-reply' ) {
 	$message_id   = sanitize_text_field(wp_unslash($_REQUEST['id']));
 	$message_from = sanitize_text_field(wp_unslash($_REQUEST['from']));
-	$result       = mjschool_delete_reply( sanitize_text_field(wp_unslash($_REQUEST['reply_id'])) );
+	$obj_message  = new Mjschool_Message();
+	$result       = $obj_message->mjschool_delete_reply( sanitize_text_field(wp_unslash($_REQUEST['reply_id'])) );
 	if ( $result ) {
 		wp_redirect( admin_url() . 'admin.php?page=mjschool_message&tab=view_message&action=delete-reply&from=' . $message_from . '&id=' . $message_id . '&message=2' );
 		die();
@@ -171,10 +172,11 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		</div>
 	</div><!-- Mjschool-message-content. -->   
 	<?php
+	$obj_message = new Mjschool_Message();
 	if ( isset( $_REQUEST['from'] ) && sanitize_text_field(wp_unslash($_REQUEST['from'])) === 'inbox' ) {
-		$allreply_data = mjschool_get_all_replies( $message->post_id );
+		$allreply_data = $obj_message->mjschool_get_all_replies( $message->post_id );
 	} else {
-		$allreply_data = mjschool_get_all_replies( $message_id_decrypt );
+		$allreply_data = $obj_message->mjschool_get_all_replies( $message_id_decrypt );
 	}
 	if ( ! empty( $allreply_data ) ) {
 		foreach ( $allreply_data as $reply ) {

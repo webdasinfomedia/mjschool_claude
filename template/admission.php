@@ -690,7 +690,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 																<?php
 																if ( ! empty( $custom_field_value ) ) {
 																	?>
-																	<a target="" href="<?php echo esc_url(content_url() . '/uploads/school_assets/' . $custom_field_value); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																	<a target="" href="<?php echo esc_url(content_url( '/uploads/school_assets/' . $custom_field_value)); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																	<?php
 																} else {
 																	esc_html_e( 'Not Provided', 'mjschool' );
@@ -786,7 +786,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 			if ($user_access['add'] === '1' ) {
 				?>
 				<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-					<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=admission&tab=addadmission' ); ?>">
+					<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=admission&tab=addadmission') ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -844,8 +844,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 															<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-edit.png"); ?>">
 														</a>
 													<?php } ?>
-													<a class="mjschool-color-white mjschool-margin-left-2px show-admission-popup" href="<?php echo esc_url( '?dashboard=mjschool_user&page=mjsmgt_admission&tab=admission_list&action=approve&id=' . esc_attr( $student_data->ID ) ); ?>" 
-student_id="<?php echo esc_attr( $student_data->ID ); ?>">
+													<a class="mjschool-color-white mjschool-margin-left-2px show-admission-popup" href="<?php echo esc_url( '?dashboard=mjschool_user&page=mjsmgt_admission&tab=admission_list&action=approve&id=' . esc_attr( $student_data->ID ) ); ?>" student_id="<?php echo esc_attr( $student_data->ID ); ?>">
 														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-approve.png"); ?>">
 													</a>
 												</div>
@@ -1316,7 +1315,7 @@ student_id="<?php echo esc_attr( $student_data->ID ); ?>">
 																	<?php
 																	if ( ! empty( $father_doc_info[0]->value ) ) {
 																		?>
-																		<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' ) . '$father_doc_info[0]->value;'; ?>" class="mjschool-status-read btn btn-default">
+																		<a download href="<?php print esc_url( content_url( '/uploads/school_assets/') ) . '$father_doc_info[0]->value;'; ?>" class="mjschool-status-read btn btn-default">
 																			<i class="fa fa-download"></i>
 																			<?php
 																			if ( ! empty( $father_doc_info[0]->title ) ) {
@@ -1550,7 +1549,7 @@ student_id="<?php echo esc_attr( $student_data->ID ); ?>">
 																	<?php
 																	if ( ! empty( $mother_doc_info[0]->value ) ) {
 																		?>
-																		<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' ) . '$mother_doc_info[0]->value;'; ?>" class=" btn btn-default" <?php if ( empty( $mother_doc_info[0] ) ) { ?> disabled <?php } ?>><i class="fas fa-download"></i> <?php if ( ! empty( $mother_doc_info[0]->title ) ) { echo esc_url( $mother_doc_info[0]->title ); } else { esc_html_e( ' Download', 'mjschool' ); } ?> </a>
+																		<a download href="<?php print esc_url( content_url( '/uploads/school_assets/' )) . '$mother_doc_info[0]->value;'; ?>" class=" btn btn-default" <?php if ( empty( $mother_doc_info[0] ) ) { ?> disabled <?php } ?>><i class="fas fa-download"></i> <?php if ( ! empty( $mother_doc_info[0]->title ) ) { echo esc_url( $mother_doc_info[0]->title ); } else { esc_html_e( ' Download', 'mjschool' ); } ?> </a>
 																		<?php
 																	} else {
 																		esc_html_e( 'Not Provided', 'mjschool' );
@@ -2480,7 +2479,7 @@ student_id="<?php echo esc_attr( $student_data->ID ); ?>">
 				// --------- Get module-wise custom field data. --------------//
 				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				$module                    = 'admission';
-				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>
 				<div class="form-body mjschool-user-form">
 					<div class="row">

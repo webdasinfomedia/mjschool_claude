@@ -51,7 +51,7 @@ if ( isset( $_POST['edit_meeting'] ) ) {
 	if ( wp_verify_nonce( $nonce, 'edit_meeting_nonce' ) ) {
 		$result = $obj_virtual_classroom->mjschool_create_meeting_in_zoom( wp_unslash($_POST) );
 		if ( $result ) {
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&message=2' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&message=2') );
 			die();
 		}
 	}
@@ -60,7 +60,7 @@ if ( isset( $_POST['edit_meeting'] ) ) {
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	$result = $obj_virtual_classroom->mjschool_delete_meeting_in_zoom( sanitize_text_field(wp_unslash($_REQUEST['meeting_id'])) );
 	if ( $result ) {
-		wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&message=3' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&message=3') );
 		die();
 	}
 }
@@ -171,19 +171,19 @@ if ( $message ) {
 											$i = 0;
 											foreach ( $meeting_list_data as $retrieved_data ) {
 												if ( $retrieved_data->weekday_id === 1 ) {
-													$day = esc_attr__( 'Monday', 'mjschool' );
+													$day = esc_html__( 'Monday', 'mjschool' );
 												} elseif ( $retrieved_data->weekday_id === 2 ) {
-													$day = esc_attr__( 'Tuesday', 'mjschool' );
+													$day = esc_html__( 'Tuesday', 'mjschool' );
 												} elseif ( $retrieved_data->weekday_id === 3 ) {
-													$day = esc_attr__( 'Wednesday', 'mjschool' );
+													$day = esc_html__( 'Wednesday', 'mjschool' );
 												} elseif ( $retrieved_data->weekday_id === 4 ) {
-													$day = esc_attr__( 'Thursday', 'mjschool' );
+													$day = esc_html__( 'Thursday', 'mjschool' );
 												} elseif ( $retrieved_data->weekday_id === 5 ) {
-													$day = esc_attr__( 'Friday', 'mjschool' );
+													$day = esc_html__( 'Friday', 'mjschool' );
 												} elseif ( $retrieved_data->weekday_id === 6 ) {
-													$day = esc_attr__( 'Saturday', 'mjschool' );
+													$day = esc_html__( 'Saturday', 'mjschool' );
 												} elseif ( $retrieved_data->weekday_id === 7 ) {
-													$day = esc_attr__( 'Sunday', 'mjschool' );
+													$day = esc_html__( 'Sunday', 'mjschool' );
 												}
 												$route_data  = mjschool_get_route_by_id( $retrieved_data->route_id );
 												$stime       = explode( ':', $route_data->start_time );
@@ -418,13 +418,13 @@ if ( $message ) {
 																	if ( $school_obj->role === 'teacher' || $school_obj->role === 'supportstaff' ) {
 																		?>
 																		<li class="mjschool-float-left-width-100px">
-																			<a href="" class="mjschool-float-left-width-100px show-popup" meeting_id="<?php echo esc_attr( $retrieved_data->meeting_id ); ?>"><i class="fas fa-eye"></i> <?php esc_html_e( 'View', 'mjschool' ); ?></a>
+																			<a href="#" class="mjschool-float-left-width-100px show-popup" meeting_id="<?php echo esc_attr( $retrieved_data->meeting_id ); ?>"><i class="fas fa-eye"></i> <?php esc_html_e( 'View', 'mjschool' ); ?></a>
 																		</li>
 																		<li class="mjschool-float-left-width-100px">
 																			<a href="<?php echo esc_url( $retrieved_data->meeting_start_link ); ?>" class="mjschool-float-left-width-100px" target="_blank"><i class="fas fa-video-camera" aria-hidden="true"></i> <?php esc_html_e( 'Start Virtual Class', 'mjschool' ); ?> </a>
 																		</li>
 																		<li class="mjschool-float-left-width-100px">
-																			<a href="?dashboard=mjschool_user&page=virtual-classroom&tab=view_past_participle_list&action=view&meeting_uuid=<?php echo esc_attr( $retrieved_data->uuid ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-eye" aria-hidden="true"></i> <?php esc_html_e( 'View Participant List', 'mjschool' ); ?> </a>
+																			<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=virtual-classroom&tab=view_past_participle_list&action=view&meeting_uid=' . $retrieved_data->uid ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-eye" aria-hidden="true"></i> <?php esc_html_e( 'View Participant List', 'mjschool' ); ?> </a>
 																		</li>
 																		<?php
 																	} elseif ( $school_obj->role === 'student' ) {
@@ -437,14 +437,14 @@ if ( $message ) {
 																	if ( $user_access['edit'] === '1' ) {
 																		?>
 																		<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																			<a href="?dashboard=mjschool_user&page=virtual-classroom&tab=edit_meeting&action=edit&meeting_id=<?php echo esc_attr( $retrieved_data->meeting_id ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"></i> <?php esc_html_e( 'Edit', 'mjschool' ); ?> </a>
+																			<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=virtual-classroom&tab=edit_meeting&action=edit&meeting_id=' . $retrieved_data->meeting_id ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"></i> <?php esc_html_e( 'Edit', 'mjschool' ); ?> </a>
 																		</li>
 																		<?php
 																	}
 																	if ( $user_access['delete'] === '1' ) {
 																		?>
 																		<li class="mjschool-float-left-width-100px">
-																			<a href="?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&action=delete&meeting_id=<?php echo esc_attr( $retrieved_data->meeting_id ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
+																			<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&action=delete&meeting_id=' . $retrieved_data->meeting_id ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
 																		</li>
 																		<?php
 																	}
@@ -463,19 +463,19 @@ if ( $message ) {
 									$i = 0;
 									foreach ( $meeting_list_data as $retrieved_data ) {
 										if ( $retrieved_data->weekday_id === 1 ) {
-											$day = esc_attr__( 'Monday', 'mjschool' );
+											$day = esc_html__( 'Monday', 'mjschool' );
 										} elseif ( $retrieved_data->weekday_id === 2 ) {
-											$day = esc_attr__( 'Tuesday', 'mjschool' );
+											$day = esc_html__( 'Tuesday', 'mjschool' );
 										} elseif ( $retrieved_data->weekday_id === 3 ) {
-											$day = esc_attr__( 'Wednesday', 'mjschool' );
+											$day = esc_html__( 'Wednesday', 'mjschool' );
 										} elseif ( $retrieved_data->weekday_id === 4 ) {
-											$day = esc_attr__( 'Thursday', 'mjschool' );
+											$day = esc_html__( 'Thursday', 'mjschool' );
 										} elseif ( $retrieved_data->weekday_id === 5 ) {
-											$day = esc_attr__( 'Friday', 'mjschool' );
+											$day = esc_html__( 'Friday', 'mjschool' );
 										} elseif ( $retrieved_data->weekday_id === 6 ) {
-											$day = esc_attr__( 'Saturday', 'mjschool' );
+											$day = esc_html__( 'Saturday', 'mjschool' );
 										} elseif ( $retrieved_data->weekday_id === 7 ) {
-											$day = esc_attr__( 'Sunday', 'mjschool' );
+											$day = esc_html__( 'Sunday', 'mjschool' );
 										}
 										$route_data  = mjschool_get_route_by_id( $retrieved_data->route_id );
 										$stime       = explode( ':', $route_data->start_time );
@@ -580,7 +580,7 @@ if ( $message ) {
 																		<a href="<?php echo esc_url( $retrieved_data->meeting_start_link ); ?>" class="mjschool-float-left-width-100px" target="_blank"><i class="fas fa-video-camera" aria-hidden="true"></i> <?php esc_html_e( 'Start Virtual Class', 'mjschool' ); ?> </a>
 																	</li>
 																	<li class="mjschool-float-left-width-100px">
-																		<a href="?dashboard=mjschool_user&page=virtual-classroom&tab=view_past_participle_list&action=view&meeting_uuid=<?php echo esc_attr( $retrieved_data->uuid ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-eye" aria-hidden="true"></i> <?php esc_html_e( 'View Participant List', 'mjschool' ); ?> </a>
+																		<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=virtual-classroom&tab=view_past_participle_list&action=view&meeting_uid=' . $retrieved_data->uid ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-eye" aria-hidden="true"></i> <?php esc_html_e( 'View Participant List', 'mjschool' ); ?> </a>
 																	</li>
 																	<?php
 																} elseif ( $school_obj->role === 'student' ) {
@@ -593,14 +593,14 @@ if ( $message ) {
 																if ( $user_access['edit'] === '1' ) {
 																	?>
 																	<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																		<a href="?dashboard=mjschool_user&page=virtual-classroom&tab=edit_meeting&action=edit&meeting_id=<?php echo esc_attr( $retrieved_data->meeting_id ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"></i> <?php esc_html_e( 'Edit', 'mjschool' ); ?> </a>
+																		<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=virtual-classroom&tab=edit_meeting&action=edit&meeting_id=' . $retrieved_data->meeting_id ); ?>"  class="mjschool-float-left-width-100px"><i class="fas fa-edit"></i> <?php esc_html_e( 'Edit', 'mjschool' ); ?> </a>
 																	</li>
 																	<?php
 																}
 																if ( $user_access['delete'] === '1' ) {
 																	?>
 																	<li class="mjschool-float-left-width-100px">
-																		<a href="?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&action=delete&meeting_id=<?php echo esc_attr( $retrieved_data->meeting_id ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
+																		<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&action=delete&meeting_id=' . $retrieved_data->meeting_id ); ?>"  class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
 																	</li>
 																	<?php
 																}
@@ -627,7 +627,7 @@ if ( $message ) {
 			if ($user_access['add'] === '1' ) {
 				?>
 				<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-					<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=schedule&tab=addroute' ); ?>">
+					<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=schedule&tab=addroute') ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">

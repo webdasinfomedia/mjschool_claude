@@ -572,7 +572,7 @@ if ( isset( $_POST['save_profile_pic'] ) ) {
 	$referrer = isset( $_SERVER['HTTP_REFERER'] ) ? sanitize_text_field( wp_unslash( $_POST['HTTP_REFERER'] ) ) : '';
 	if ( $_FILES['profile']['size'] > 0 ) {
 		$mjschool_user_image      = mjschool_load_documets( $_FILES['profile'], 'profile', 'pimg' );
-		$photo_image_url = content_url() . '/uploads/school_assets/' . $mjschool_user_image;
+		$photo_image_url = esc_url(content_url( '/uploads/school_assets/' . $mjschool_user_image));
 	}
 	$returnans = update_user_meta( $mjschool_user->ID, 'mjschool_user_avatar', $photo_image_url );
 	if ( $returnans ) {

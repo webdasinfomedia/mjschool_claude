@@ -215,7 +215,7 @@ if ( isset( $_REQUEST['save_transfer'] ) ) {
 															if ( $latter_access_edit === 1 ) {
 																?>
 																<li>
-																	<a href="<?php echo esc_url( home_url() . '?dashboard=mjschool_user&page=certificate&tab=assign_certificate&action=new&letter_type=' . urlencode( $retrieved_data->certificate_name ) ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-edit.png' ); ?>"><?php esc_html_e( 'Assign', 'mjschool' ); ?>
+																	<a href="<?php echo esc_url( home_url( '?dashboard=mjschool_user&page=certificate&tab=assign_certificate&action=new&letter_type=' . urlencode( $retrieved_data->certificate_name )) ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-edit.png' ); ?>"><?php esc_html_e( 'Assign', 'mjschool' ); ?>
 																	</a>
 																</li>
 																<?php
@@ -269,7 +269,7 @@ if ( isset( $_REQUEST['save_transfer'] ) ) {
 			if ( $user_access_add === '1' ) {
 				?>
 				<div class="mjschool-dashboard-btn mjschool-addgroup-btn">
-					<a href="<?php echo esc_url( home_url() . '?dashboard=mjschool_user&page=certificate&tab=assign_certificate&action=new' ); ?>">
+					<a href="<?php echo esc_url( home_url( '?dashboard=mjschool_user&page=certificate&tab=assign_certificate&action=new' )); ?>">
 						<button type="button" class="mjschool-form-submit-btn">
 							<?php esc_html_e( 'Assign Certificate', 'mjschool' ); ?>
 						</button>
@@ -319,7 +319,7 @@ if ( isset( $_REQUEST['save_transfer'] ) ) {
 																if ( $user_access_edit === '1' ) {
 																	?>
 																	<li>
-																		<a href="<?php echo esc_url( home_url() . '?dashboard=mjschool_user&page=certificate&tab=assign_certificate&action=edit&student_id=' . mjschool_encrypt_id( $retrieved_data->student_id ) . '&acc=' . mjschool_encrypt_id( $retrieved_data->ID ) ); ?>">
+																		<a href="<?php echo esc_url( home_url( '?dashboard=mjschool_user&page=certificate&tab=assign_certificate&action=edit&student_id=' . mjschool_encrypt_id( $retrieved_data->student_id ) . '&acc=' . mjschool_encrypt_id( $retrieved_data->ID ) )); ?>">
 																			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-edit.png' ); ?>">
 																			<?php esc_html_e( 'Edit', 'mjschool' ); ?>
 																		</a>
@@ -365,7 +365,7 @@ if ( isset( $_REQUEST['save_transfer'] ) ) {
 				if ( $user_access_add === '1' ) {
 					?>
 				<div class="mjschool-no-data-list-div mjschool_margin_top_40px">
-					<a href="<?php echo esc_url( home_url() . '?dashboard=mjschool_user&page=certificate&tab=assign_certificate&action=new' ); ?>">
+					<a href="<?php echo esc_url( home_url( '?dashboard=mjschool_user&page=certificate&tab=assign_certificate&action=new' ) ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ); ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">

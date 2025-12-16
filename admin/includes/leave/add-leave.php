@@ -15,10 +15,10 @@ defined( 'ABSPATH' ) || exit;
 <?php
 $leave_id = 0;
 if ( isset( $_REQUEST['leave_id'] ) ) {
-	$leave_id = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['leave_id'])) ) );
+	$leave_id = intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['leave_id'] ) ) ) );
 }
 $edit = 0;
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
+if ( isset( $_REQUEST['action'] ) && 'edit' === sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) ) {
 	$edit   = 1;
 	$result = $mjschool_obj_leave->mjschool_get_single_leave( $leave_id );
 }
@@ -28,7 +28,7 @@ $students = mjschool_get_student_group_by_class();
 <div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res"><!--------- Panel body. ------->
 	<!-- Start Leave form. -->
 	<form name="leave_form" action="" method="post" class="mjschool-form-horizontal" id="leave_form" enctype="multipart/form-data">
-		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; ?>
 		<input id="action" type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 		<input type="hidden" name="leave_id" value="<?php echo esc_attr( $leave_id ); ?>" />
 		<input type="hidden" name="status" value="<?php echo 'Not Approved'; ?>" />
@@ -45,7 +45,7 @@ $students = mjschool_get_student_group_by_class();
 						if ( $edit ) {
 							$student = $result->student_id;
 						} elseif ( isset( $_REQUEST['student_id'] ) ) {
-							$student = sanitize_text_field(wp_unslash($_REQUEST['student_id']));
+							$student = sanitize_text_field( wp_unslash( $_REQUEST['student_id'] ) );
 						} else {
 							$student = '';
 						}
@@ -71,7 +71,7 @@ $students = mjschool_get_student_group_by_class();
 						if ( $edit ) {
 							$category = $result->leave_type;
 						} elseif ( isset( $_REQUEST['leave_type'] ) ) {
-							$category = sanitize_text_field(wp_unslash($_REQUEST['leave_type']));
+							$category = sanitize_text_field( wp_unslash( $_REQUEST['leave_type'] ) );
 						} else {
 							$category = '';
 						}
@@ -99,7 +99,7 @@ $students = mjschool_get_student_group_by_class();
 										if ( $edit ) {
 											$durationval = $result->leave_duration;
 										} elseif ( isset( $_POST['duration'] ) ) {
-											$durationval = sanitize_text_field(wp_unslash($_POST['duration']));
+											$durationval = sanitize_text_field( wp_unslash( $_POST['duration'] ) );
 										}
 										?>
 										<label class="radio-inline">
@@ -113,7 +113,7 @@ $students = mjschool_get_student_group_by_class();
 												<?php
 											} else {
 												?>
-												<input id="full_day" type="radio" value="full_day" class="tog duration" idset="<?php if ( $edit ) { echo esc_attr($result->id ); } ?>" name="leave_duration" <?php checked( 'full_day', $durationval ); ?> checked /><?php esc_html_e( 'Full Day', 'mjschool' ); ?>
+												<input id="full_day" type="radio" value="full_day" class="tog duration" idset="<?php if ( $edit ) { echo esc_attr( $result->id ); } ?>" name="leave_duration" <?php checked( 'full_day', $durationval ); ?> checked /><?php esc_html_e( 'Full Day', 'mjschool' ); ?>
 												<?php
 											}
 											?>
@@ -132,7 +132,7 @@ $students = mjschool_get_student_group_by_class();
 					<div class="form-group input">
 						<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 							<div class="form-field">
-								<textarea id="reason" maxlength="150" class="mjschool-textarea-height-47px form-control validate[required,custom[address_description_validation]]" maxlength="150" name="reason"><?php if ( $edit ) { echo esc_attr( $result->reason ); } elseif ( isset( $_POST['reason'] ) ) { echo esc_attr( sanitize_text_field(wp_unslash($_POST['reason'])) );} ?> </textarea>
+								<textarea id="reason" maxlength="150" class="mjschool-textarea-height-47px form-control validate[required,custom[address_description_validation]]" maxlength="150" name="reason"><?php if ( $edit ) { echo esc_textarea( $result->reason ); } elseif ( isset( $_POST['reason'] ) ) { echo esc_textarea( sanitize_text_field( wp_unslash( $_POST['reason'] ) ) );} ?></textarea>
 								<span class="mjschool-txt-title-label"></span>
 								<label class="text-area address active" for="reason"><?php esc_html_e( 'Reason', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 							</div>
@@ -192,13 +192,13 @@ $students = mjschool_get_student_group_by_class();
 		// --------- Get Module-Wise Custom Field Data. --------------//
 		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 		$module                    = 'leave';
-		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
 		<?php wp_nonce_field( 'save_leave_nonce' ); ?>
 		<div class="form-body mjschool-user-form">
 			<div class="row">
 				<div class="col-sm-6">
-					<input type="submit"  value="<?php if ( $edit ) { esc_html_e( 'Save', 'mjschool' ); } else { esc_html_e( 'Add Leave', 'mjschool' ); } ?>" name="save_leave" class="btn btn-success mjschool-save-btn mjschool-rtl-margin-0px save_leave_validate" />
+					<input type="submit"  value="<?php if ( $edit ) { esc_attr_e( 'Save', 'mjschool' ); } else { esc_attr_e( 'Add Leave', 'mjschool' ); } ?>" name="save_leave" class="btn btn-success mjschool-save-btn mjschool-rtl-margin-0px save_leave_validate" />
 				</div>
 			</div>
 		</div>

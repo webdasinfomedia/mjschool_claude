@@ -169,6 +169,8 @@ class Mjschool_Exam {
 	 */
 	public function mjschool_check_subject_data( $exam_id, $subject_id ) {
 		global $wpdb;
+		$exam_id = intval($exam_id);
+		$subject_id = intval($subject_id);
 		$table_name = $wpdb->prefix . 'mjschool_exam_time_table';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_id= %d and subject_id= %d", $exam_id, $subject_id ) );
@@ -188,6 +190,9 @@ class Mjschool_Exam {
 	 */
 	public function mjschool_check_exam_time_table( $class_id, $exam_id, $sub_id ) {
 		global $wpdb;
+		$exam_id = intval($exam_id);
+		$class_id = intval($class_id);
+		$sub_id = intval($sub_id);
 		$table_name = $wpdb->prefix . 'mjschool_exam_time_table';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id= %d and exam_id= %d and subject_id= %d", $class_id, $exam_id, $sub_id ) );
@@ -205,6 +210,7 @@ class Mjschool_Exam {
 	 */
 	public function mjschool_get_exam_time_table_by_exam( $exam_id ) {
 		global $wpdb;
+		$exam_id = intval($exam_id);
 		$table_name = $wpdb->prefix . 'mjschool_exam_time_table';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_id= %d", $exam_id ) );
@@ -254,6 +260,7 @@ class Mjschool_Exam {
 	 */
 	public function mjschool_get_all_exam_created_by( $user_id ) {
 		global $wpdb;
+		$user_id = intval($user_id);
 		$table_name = $wpdb->prefix . 'mjschool_exam';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_creater_id=%d", $user_id ) );
@@ -271,6 +278,7 @@ class Mjschool_Exam {
 	 */
 	function mjschool_get_all_exam_by_class_id_dashboard( $class_id ) {
 		global $wpdb;
+		$class_id = intval($class_id);
 		$table_name = $wpdb->prefix . 'mjschool_exam';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d and section_id='0' ORDER BY exam_id DESC limit 3", $class_id ) );
@@ -288,6 +296,7 @@ class Mjschool_Exam {
 	 */
 	function mjschool_get_all_exam_by_class_id_and_section_id_array_dashboard( $class_id, $section_id ) {
 		global $wpdb;
+		$class_id = intval($class_id);
 		$table_name = $wpdb->prefix . 'mjschool_exam';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id= %d and section_id= %d ORDER BY exam_id DESC limit 3", $class_id, $section_id ) );
@@ -330,6 +339,7 @@ class Mjschool_Exam {
 	 */
 	function mjschool_get_all_exam_by_class_id_array_dashboard( $class_id ) {
 		global $wpdb;
+		$class_id = intval($class_id);
 		$table_name = $wpdb->prefix . 'mjschool_exam';
 		global $wpdb;
 		// Ensure $class_id is an array and properly sanitized.
@@ -389,6 +399,7 @@ class Mjschool_Exam {
 	 */
 	public function mjschool_exam_data( $exam_id ) {
 		global $wpdb;
+		$exam_id = intval($exam_id);
 		$smgt_exam = $wpdb->prefix . 'mjschool_exam';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $smgt_exam WHERE exam_id=%d", $exam_id ) );
@@ -406,6 +417,7 @@ class Mjschool_Exam {
 	 */
 	public function mjschool_exam_name_by_id( $exam_id ) {
 		global $wpdb;
+		$exam_id = intval($exam_id);
 		$smgt_exam = $wpdb->prefix . 'mjschool_exam';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$result = $wpdb->get_row( $wpdb->prepare( "SELECT exam_name FROM $smgt_exam WHERE exam_id=%d", $exam_id ) );
@@ -517,8 +529,9 @@ class Mjschool_Exam {
 	 */
 	public function mjschool_delete_exam_setting( $id ) {
 		global $wpdb;
+		$id = intval($id);
 		$exam_merge_settings = esc_sql( $wpdb->prefix . 'mjschool_exam_merge_settings' ); // Escaping table name.
-     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $exam_merge_settings where id=%d", $id ) );
 		return $result;
 	}
@@ -534,8 +547,9 @@ class Mjschool_Exam {
 	 */
 	public function mjschool_get_single_merge_exam_setting( $id ) {
 		global $wpdb;
+		$id = intval($id);
 		$exam_merge_settings = esc_sql( $wpdb->prefix . 'mjschool_exam_merge_settings' ); // Escaping table name.
-     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$exam_merge_settings} WHERE id = %d", $id ) );
 		return $result;
 	}

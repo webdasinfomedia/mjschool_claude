@@ -301,12 +301,7 @@ if ( isset( $_REQUEST['save_sub_attendence'] ) ) {
 
     // Redirect safely
     $new_nonce = wp_create_nonce( 'mjschool_student_attendance_tab' );
-    wp_safe_redirect(
-        home_url() .
-        '?dashboard=mjschool_user&page=attendance&tab=student_attendance&_wpnonce=' .
-        esc_attr( $new_nonce ) .
-        '&message=1'
-    );
+    wp_safe_redirect(home_url( '?dashboard=mjschool_user&page=attendance&tab=student_attendance&_wpnonce=' .esc_attr( $new_nonce ) .'&message=1'));
     die();
 }
 /* Export studant attendance. */
@@ -1082,7 +1077,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 			if ($fattendance_1['add'] === '1' ) {
 				?>
 				<div class="mjschool-no-data-list-div">
-					<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=attendance&tab=student_attendance&tab1=subject_attendence' ); ?>">
+					<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=attendance&tab=student_attendance&tab1=subject_attendence') ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -2180,7 +2175,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 				?>
 				
 				<div class="mjschool-no-data-list-div">
-					<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=attendance&tab=teacher_attendance&tab1=teacher_attendences' ); ?>">
+					<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=attendance&tab=teacher_attendance&tab1=teacher_attendences') ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">

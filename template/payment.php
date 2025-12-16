@@ -86,7 +86,7 @@ if ( isset( $_POST['save_payment'] ) ) {
 				$result       = mjschool_update_record( $tablename, $payment_data, $transport_id );
 				if ( $result ) {
 					
-					wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=paymentlist&_wpnonce='.esc_attr( $nonce ).'&message=2' );
+					wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=paymentlist&_wpnonce='.esc_attr( $nonce ).'&message=2') );
 					die();
 				}
 			} else {
@@ -95,7 +95,7 @@ if ( isset( $_POST['save_payment'] ) ) {
 		} else {
 			$result = mjschool_insert_record( $tablename, $payment_data );
 			if ( $result ) {
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=paymentlist&_wpnonce='.esc_attr( $nonce ).'&message=1' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=paymentlist&_wpnonce='.esc_attr( $nonce ).'&message=1') );
 				die();
 			}
 		}
@@ -113,7 +113,7 @@ if ( isset( $_POST['save_income'] ) ) {
 				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				$module                    = 'income';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $income_id );
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=4' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=4') );
 				die();
 			} else {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -124,7 +124,7 @@ if ( isset( $_POST['save_income'] ) ) {
 			$module                    = 'income';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=3' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=3') );
 				die();
 			}
 		}
@@ -142,7 +142,7 @@ if ( isset( $_POST['save_expense'] ) ) {
 				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				$module                    = 'expense';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $expense_id );
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=6' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=6') );
 				die();
 			} else {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -153,7 +153,7 @@ if ( isset( $_POST['save_expense'] ) ) {
 			$module                    = 'expense';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=5' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=5') );
 				die();
 			}
 		}
@@ -166,21 +166,21 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		if ( isset( $_REQUEST['payment_id'] ) ) {
 			$result = mjschool_delete_payment( $tablename, ( intval(wp_unslash($_REQUEST['payment_id'])) ) );
 			if ( $result ) {
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=paymentlist&_wpnonce='.esc_attr( $nonce ).'&message=8' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=paymentlist&_wpnonce='.esc_attr( $nonce ).'&message=8') );
 				die();
 			}
 		}
 		if ( isset( $_REQUEST['income_id'] ) ) {
 			$result = $mjschool_obj_invoice->mjschool_delete_income( mjschool_decrypt_id( intval(wp_unslash($_REQUEST['income_id'])) ) );
 			if ( $result ) {
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=9' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=9') );
 				die();
 			}
 		}
 		if ( isset( $_REQUEST['expense_id'] ) ) {
 			$result = $mjschool_obj_invoice->mjschool_delete_expense( mjschool_decrypt_id( intval(wp_unslash($_REQUEST['expense_id'])) ) );
 			if ( $result ) {
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=7' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=7') );
 				die();
 			}
 		}
@@ -199,7 +199,7 @@ if ( isset( $_POST['delete_selected_payment'] ) ) {
 		foreach ( $_POST['id'] as $id ) {
 			$result = mjschool_delete_payment( $tablename, intval( $id ) );
 		}
-		wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=paymentlist&message=8' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=paymentlist&message=8') );
 		exit;
 	}
 }
@@ -220,7 +220,7 @@ if ( isset( $_POST['delete_selected_income'] ) ) {
 			$result = mjschool_delete_payment( $tablename, intval( $id ) );
 		}
 	}
-	wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=incomelist&message=9' );
+	wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=incomelist&message=9') );
 	exit;
 }
 // ----------------- DELETE EXPENSE MULTIPLE RECORD. ------------//
@@ -234,7 +234,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 		foreach ( $_POST['id'] as $id ) {
 			$result = $mjschool_obj_invoice->mjschool_delete_expense( intval( $id ) );
 		}
-		wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=payment&tab=expenselist&message=7' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=expenselist&message=7') );
 		exit;
 	}
 }
@@ -571,7 +571,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 																	<?php
 																	if ( ! empty( $custom_field_value ) ) {
 																		?>
-																		<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																		<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																		<?php
 																	} else {
 																		esc_html_e( 'N/A', 'mjschool' );
@@ -685,7 +685,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 				if ($user_access['add'] === '1' ) {
 					?>
 					<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-						<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=payment&tab=addincome' ); ?>">
+						<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=payment&tab=addincome') ); ?>">
 							<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 						</a>
 						<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -962,7 +962,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 					// --------- Get module-wise custom field data. --------------//
 					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 					$module                    = 'income';
-					$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+					$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 					?>
 					<hr>
 					<div class="form-body mjschool-user-form mjschool-income-feild">
@@ -1133,7 +1133,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 																		<?php
 																		if ( ! empty( $custom_field_value ) ) {
 																			?>
-																			<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																			<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																			<?php
 																		} else {
 																			esc_html_e( 'N/A', 'mjschool' );
@@ -1232,7 +1232,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 				if ($user_access['add'] === '1' ) {
 					?>
 					<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-						<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=payment&tab=addexpense' ); ?>">
+						<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=payment&tab=addexpense') ); ?>">
 							<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 						</a>
 						<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -1387,7 +1387,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 					// --------- Get module-wise custom field data. --------------//
 					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 					$module                    = 'expense';
-					$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+					$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 					?>
 					<?php wp_nonce_field( 'save_expense_front_nonce' ); ?>
 					<hr>
@@ -1917,7 +1917,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 										<?php
 										if ( isset( $_REQUEST['web_type'] ) && sanitize_text_field(wp_unslash($_REQUEST['web_type'])) === 'wpschool_app' ) {
 											if ( isset( $_POST['download_app_pdf'] ) ) {
-												$file_path = content_url() . '/uploads/invoice_pdf/income/' . mjschool_decrypt_id( intval(wp_unslash($_REQUEST['idtest'])) ) . '.pdf';
+												$file_path = esc_url(content_url( '/uploads/invoice_pdf/income/' . mjschool_decrypt_id( intval(wp_unslash($_REQUEST['idtest'])) ) . '.pdf'));
 												if ( file_exists( ABSPATH . str_replace( content_url(), 'wp-content', $file_path ) ) ) {
 													unlink( $file_path ); // Delete the file.
 												}

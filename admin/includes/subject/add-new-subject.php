@@ -332,7 +332,7 @@ $school_type=get_option( 'mjschool_custom_class' );
 		// --------- Get module-wise custom field data. --------------//
 		$custom_field_obj = new Mjschool_Custome_Field();
 		$module           = 'subject';
-		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
 		<?php wp_nonce_field( 'save_subject_admin_nonce' ); ?>
 		<div class="form-body mjschool-user-form">

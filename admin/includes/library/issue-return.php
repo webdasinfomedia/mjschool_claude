@@ -57,7 +57,7 @@ $library_card_no  = $mjschool_obj_lib->mjschool_get_library_card_for_student( $u
 									<div class="mjschool-view-top2">
 										<div class="row mjschool-view-user-doctor-label">
 											<div class="col-md-12 mjschool-address-student-div">
-												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-location.png"); ?>">&nbsp;&nbsp;<label class="mjschool-address-detail-page"><?php echo esc_html( $user_data->address); ?></label>
+												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-location.png"); ?>">&nbsp;&nbsp;<label class="mjschool-address-detail-page"><?php echo esc_textarea( $user_data->address); ?></label>
 											</div>
 										</div>
 									</div>
@@ -78,7 +78,7 @@ $library_card_no  = $mjschool_obj_lib->mjschool_get_library_card_for_student( $u
 				<div class="col-xl-12 col-md-12 col-sm-12 mjschool-rs-width">
 					<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 						<li class="<?php if ( $active_tab1 === 'general' ) { ?>active<?php } ?>">
-							<a href="admin.php?page=mjschool_library&tab=issue_return&user_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['user_id'])) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'general' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_library&tab=issue_return&user_id='.rawurlencode( sanitize_text_field( wp_unslash( $_REQUEST['user_id'] ) ) ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'general' ? 'active' : ''; ?>">
 								<i class="fas fa-book"> </i> <?php esc_html_e( 'issue & Return Details', 'mjschool' ); ?>
 							</a>
 						</li>
@@ -256,7 +256,7 @@ $library_card_no  = $mjschool_obj_lib->mjschool_get_library_card_for_student( $u
 														$category_data = $mjschool_obj_lib->mjschool_get_period_list();
 														if ( ! empty( $category_data ) ) {
 															foreach ( $category_data as $retrieved_data ) {
-																echo '<option value="' . esc_attr( $retrieved_data->ID ) . '" ' . selected( $period_id, $retrieved_data->ID ) . '>' . esc_html( $retrieved_data->post_title ) . ' ' . esc_attr__( 'Days', 'mjschool' ) . '</option>';
+																echo '<option value="' . esc_attr( $retrieved_data->ID ) . '" ' . selected( $period_id, $retrieved_data->ID ) . '>' . esc_html( $retrieved_data->post_title ) . ' ' . esc_html__( 'Days', 'mjschool' ) . '</option>';
 															}
 														}
 														?>
@@ -299,7 +299,7 @@ $library_card_no  = $mjschool_obj_lib->mjschool_get_library_card_for_student( $u
 										<div class="form-body mjschool-user-form">
 											<div class="row">
 												<div class="col-sm-6">
-													<input type="submit" value="<?php esc_html_e( 'Issue Book', 'mjschool' ); ?>" name="save_issue_book" class="mjschool-save-btn btn btn-success book_for_alert mjschool-rtl-margin-0px" />
+													<input type="submit" value="<?php esc_attr_e( 'Issue Book', 'mjschool' ); ?>" name="save_issue_book" class="mjschool-save-btn btn btn-success book_for_alert mjschool-rtl-margin-0px" />
 												</div>
 											</div>
 										</div>
@@ -361,9 +361,7 @@ $library_card_no  = $mjschool_obj_lib->mjschool_get_library_card_for_student( $u
 															}
 															?>
 															<tr>
-																
 																<td class="mjschool-user-image mjschool-width-50px-td"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-library.png"); ?>" class="img-circle" /></td>
-																
 																<td><?php echo esc_html( stripslashes( mjschool_get_book_name( $retrieved_data->book_id ) ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Book Title', 'mjschool' ); ?>"></i></td>
 																<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->issue_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Issue Date', 'mjschool' ); ?>"></i> </td>
 																<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->end_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Due Return Date', 'mjschool' ); ?>"></i></td>
@@ -406,7 +404,7 @@ $library_card_no  = $mjschool_obj_lib->mjschool_get_library_card_for_student( $u
 																		echo esc_html( $retrieved_data->comment );
 																	}
 																	?>
-																	<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top"  title="<?php if ( $retrieved_data->comment === '' ) { echo 'Comment'; } else { echo esc_html( $retrieved_data->comment ); } ?>"></i>
+																	<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top"  title="<?php if ( $retrieved_data->comment === '' ) { echo 'Comment'; } else { echo esc_attr( $retrieved_data->comment ); } ?>"></i>
 																</td>
 																<td class="action">
 																	<div class="mjschool-user-dropdown">
@@ -442,7 +440,7 @@ $library_card_no  = $mjschool_obj_lib->mjschool_get_library_card_for_student( $u
 									} else {
 										?>
 										<div class="mjschool-calendar-event-new">
-											<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+											<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 										</div>
 										<?php
 									}

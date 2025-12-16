@@ -73,7 +73,7 @@ if ( isset( $_POST['save_event'] ) ) {
 	if ( wp_verify_nonce( $nonce, 'save_event_nonce' ) ) {
 		if ( $_FILES['upload_file']['name'] != '' && $_FILES['upload_file']['size'] > 0 ) {
 			if ( $_FILES['upload_file']['size'] > 0 ) {
-				$file_name = mjschool_load_documets_new( $_FILES['upload_file'], $_FILES['upload_file'], $_POST['upload_file'] );
+				$file_name = mjschool_load_documets_new( $_FILES['upload_file'], $_FILES['upload_file'], sanitize_text_field( wp_unslash( $_POST['upload_file'] ) ) );
 			}
 		} elseif ( isset( $_REQUEST['hidden_upload_file'] ) ) {
 			$file_name = sanitize_text_field( wp_unslash($_REQUEST['hidden_upload_file']));
@@ -139,8 +139,9 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 }
 // --------------- Delete Multiple Events. -----------------//
 if ( isset( $_REQUEST['delete_selected'] ) ) {
-	if ( ! empty( $_REQUEST['id'] ) ) {
-		foreach ( $_REQUEST['id'] as $id ) {
+	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+		$ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+		foreach ( $ids as $id ) {
 			$result = $mjschool_obj_event->mjschool_delete_event( $id );
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_event&tab=eventlist&message=3' ) );
 		}
@@ -289,7 +290,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 																esc_html_e( 'N/A', 'mjschool' );
 															}
 															?>
-															<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $retrieved_data->description ) ) { echo esc_html( $retrieved_data->description ); } else { esc_html_e( 'Description', 'mjschool' );} ?>"></i>
+															<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $retrieved_data->description ) ) { echo esc_attr( $retrieved_data->description ); } else { esc_attr_e( 'Description', 'mjschool' );} ?>"></i>
 														</td>
 														<?php
 														// Custom Field Values.
@@ -365,7 +366,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 																			if ( ! empty( $retrieved_data->event_doc ) ) {
 																				?>
 																				<li class="mjschool-float-left-width-100px">
-																					<a target="blank" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $retrieved_data->event_doc ) ); ?>" class="mjschool-status-read mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>"><i class="fas fa-eye"></i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
+																					<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $retrieved_data->event_doc ) ); ?>" class="mjschool-status-read mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>"><i class="fas fa-eye"></i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
 																				</li>
 																				<?php
 																			}
@@ -433,7 +434,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
                             {
                                 ?>
                                 <div class="mjschool-calendar-event-new"> 
-                                    <img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG)?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+                                    <img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG)?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
                                 </div>		
                                 <?php
                             }

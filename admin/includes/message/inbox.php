@@ -154,6 +154,8 @@ if ( isset( $_GET['tab'] ) ) {
 											<td >
 												<a href="?page=mjschool_message&tab=view_message&from=inbox&id=<?php echo esc_attr( mjschool_encrypt_id( $msg->message_id ) ); ?>" class="mjschool-inbox-tab mjschool-text-decoration-none">
 													<?php
+													$obj_message = new Mjschool_Message();
+													$msg_post_id = $obj_message->mjschool_count_reply_item( $msg->post_id );
 													$subject_char = strlen( $msg->subject );
 													if ( $subject_char <= 10 ) {
 														echo esc_html( $msg->subject );
@@ -162,9 +164,9 @@ if ( isset( $_GET['tab'] ) ) {
 														$subject_body = substr( strip_tags( $msg->subject ), 0, $char_limit ) . '...';
 														echo esc_html( $subject_body );
 													}
-													if ( mjschool_count_reply_item( $msg->post_id ) >= 1 ) {
+													if ( $msg_post_id >= 1 ) {
 														?>
-														<span class="mjschool-inbox-count-number badge badge-success pull-right ms-1"><?php echo esc_attr( mjschool_count_reply_item( $msg->post_id ) ); ?></span>
+														<span class="mjschool-inbox-count-number badge badge-success pull-right ms-1"><?php echo esc_attr( $msg_post_id ); ?></span>
 														<?php
 													}
 													?>
@@ -250,6 +252,8 @@ if ( isset( $_GET['tab'] ) ) {
 										<td class="mjschool-width-100px">
 											<a href="?page=mjschool_message&tab=view_message&from=inbox&id=<?php echo esc_attr( mjschool_encrypt_id( $msg->message_id ) ); ?>" class="mjschool-text-decoration-none">
 												<?php
+												$obj_message = new Mjschool_Message();
+												$msg_post_id = $obj_message->mjschool_count_reply_item( $msg->post_id );
 												$subject_char = strlen( $msg->subject );
 												if ( $subject_char <= 10 ) {
 													echo esc_html( $msg->subject );
@@ -258,9 +262,9 @@ if ( isset( $_GET['tab'] ) ) {
 													$subject_body = substr( strip_tags( $msg->subject ), 0, $char_limit ) . '...';
 													echo esc_html( $subject_body );
 												}
-												if ( mjschool_count_reply_item( $msg->post_id ) >= 1 ) {
+												if ( $msg_post_id >= 1 ) {
 													?>
-													<span class="badge badge-success pull-right"><?php echo esc_html( mjschool_count_reply_item( $msg->post_id ) ); ?></span>
+													<span class="badge badge-success pull-right"><?php echo esc_html( $msg_post_id ); ?></span>
 													<?php
 												}
 												?>
@@ -329,7 +333,7 @@ if ( isset( $_GET['tab'] ) ) {
 	} else {
 		?>
 		<div class="mjschool-calendar-event-new">
-			<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG);?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+			<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG);?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 		</div>
 		<?php
 	}

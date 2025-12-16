@@ -364,7 +364,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
                                                             <?php
                                                             if ( ! empty( $custom_field_value ) ) {
                                                             	?>
-                                                                <a target="" href="<?php echo esc_url(content_url() . '/uploads/school_assets/' . $custom_field_value); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+                                                                <a target="" href="<?php echo esc_url(content_url( '/uploads/school_assets/' . $custom_field_value)); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
                                                             	<?php
                                                             } else {
                                                                 esc_html_e( 'N/A', 'mjschool' );
@@ -410,7 +410,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 															if ( ! empty( $retrieved_data->event_doc ) ) {
 																?>
 																<li class="mjschool-float-left-width-100px">
-																	<a target="blank" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $retrieved_data->event_doc ); ?>" class="mjschool-status-read mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>"><i class="fas fa-eye"></i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
+																	<a target="blank" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $retrieved_data->event_doc )); ?>" class="mjschool-status-read mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>"><i class="fas fa-eye"></i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
 																</li>
 																<?php
 															}
@@ -468,7 +468,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
             if ($user_access['add'] === '1' ) {
             	?>
                 <div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-                    <a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=event&tab=add_event' ); ?>">
+                    <a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=event&tab=add_event') ); ?>">
                         <img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
                     </a>
                     <div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -606,7 +606,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 				// --------- Get module-wise custom field data. --------------//
 				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				$module                    = 'event';
-				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>
 				<!---------- Save btn. -------------->
 				<div class="form-body mjschool-user-form"> <!-- Mjschool-user-form start.-->

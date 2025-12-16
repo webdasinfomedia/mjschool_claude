@@ -159,7 +159,9 @@ $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $mo
 								</td>
 								<td>
 									<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=message&tab=view_message&from=sendbox&id=' . mjschool_encrypt_id( $msg_post->ID ) ); ?>" class="mjschool-text-decoration-none">
-										<?php
+										<?
+										$obj_message = new Mjschool_Message();
+										$msg_post_id = $obj_message->mjschool_count_reply_item( $msg->post_id );
 										$subject_char = strlen( $msg_post->post_title );
 										if ( $subject_char <= 10 ) {
 											echo esc_html( $msg_post->post_title );
@@ -168,9 +170,9 @@ $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $mo
 											$subject_body = substr( strip_tags( $msg_post->post_title ), 0, $char_limit ) . '...';
 											echo esc_html( $subject_body );
 										}
-										if ( mjschool_count_reply_item( $msg_post->ID ) >= 1 ) {
+										if ( $msg_post_id >= 1 ) {
 											?>
-											<span class="badge badge-success pull-right"><?php echo esc_html( mjschool_count_reply_item( $msg_post->ID ) ); ?></span>
+											<span class="badge badge-success pull-right"><?php echo esc_html( $msg_post_id ); ?></span>
 										<?php } ?>
 									</a> 
 									<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $msg_post->post_title ) ) { echo esc_html( $msg_post->post_title ); } else { esc_html_e( 'Subject', 'mjschool' ); } ?>"></i>
@@ -197,7 +199,7 @@ $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $mo
 										$attchment_array = explode( ',', $attchment );
 										foreach ( $attchment_array as $attchment_data ) {
 											?>
-											<a target="blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $attchment_data ); ?>" class="btn btn-default"><i class="fas fa-eye"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a></br>
+											<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $attchment_data )); ?>" class="btn btn-default"><i class="fas fa-eye"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a></br>
 											<?php
 										}
 									} else {
@@ -241,7 +243,7 @@ $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $mo
 													<?php
 													if ( ! empty( $custom_field_value ) ) {
 														?>
-														<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+														<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 														<?php
 													} else {
 														esc_html_e( 'N/A', 'mjschool' );

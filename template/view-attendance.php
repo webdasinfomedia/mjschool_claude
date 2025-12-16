@@ -21,10 +21,10 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 <div class="mjschool-panel-body mjschool-panel-white">
 	<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap" role="tablist">
 		<li class="<?php if ( $active_tab === 'stud_attendance' ) { ?> active<?php } ?>">
-			<a href="?dashboard=mjschool_user&page=view-attendance&tab=stud_attendance&student_id=<?php echo esc_attr( $student_id ); ?>" class="nav-tab2"> <i class="fas fa-align-justify"></i> <?php esc_html_e( 'Attendance', 'mjschool' ); ?></a>
+			<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=view-attendance&tab=stud_attendance&student_id=' . $student_id ); ?>" class="nav-tab2"> <i class="fas fa-align-justify"></i> <?php esc_html_e( 'Attendance', 'mjschool' ); ?></a>
 		</li>
 		<li class="<?php if ( $active_tab === 'sub_attendance' ) { ?> active<?php } ?>">
-			<a href="?dashboard=mjschool_user&page=view-attendance&tab=sub_attendance&student_id=<?php echo esc_attr( $student_id ); ?>" class="nav-tab2 <?php echo esc_attr( $active_tab  ) === 'sub_attendance' ? 'active' : ''; ?>"> <i class="fas fa-align-justify"></i> <?php esc_html_e( 'Subject Wise Attendance', 'mjschool' ); ?></a>
+			<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=view-attendance&tab=sub_attendance&student_id=' . $student_id ); ?>" class="nav-tab2 <?php echo esc_attr( $active_tab  ) === 'sub_attendance' ? 'active' : ''; ?>"> <i class="fas fa-align-justify"></i> <?php esc_html_e( 'Subject Wise Attendance', 'mjschool' ); ?></a>
 		</li>     
 	</ul>
 	<div class="tab-content">

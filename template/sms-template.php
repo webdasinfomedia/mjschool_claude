@@ -78,7 +78,7 @@ if ( isset( $_REQUEST['save_leave_parent_mjschool_template'] ) ) {
 	$changed = 1;
 }
 if ( $changed ) {
-	wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=mjschool_template&message=1' );
+	wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=mjschool_template&message=1') );
 	die();
 }
 ?>

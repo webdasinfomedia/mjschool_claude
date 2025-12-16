@@ -20,9 +20,9 @@
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
-$active_tab1      = isset( $_REQUEST['tab1'] ) ? sanitize_text_field(wp_unslash($_REQUEST['tab1'])) : 'roomlist';
+$active_tab1      = isset( $_REQUEST['tab1'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['tab1'] ) ) : 'roomlist';
 $obj_hostel       = new Mjschool_Hostel();
-$hostel_id        = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ) );
+$hostel_id        = isset( $_REQUEST['hostel_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) ) ) : 0;
 $hostel_data      = $obj_hostel->mjschool_get_hostel_by_id( $hostel_id );
 $custom_field_obj = new Mjschool_Custome_Field();
 $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
@@ -35,14 +35,14 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 				<div class="row">
 					<div class="col-xl-10 col-md-9 col-sm-10">
 						<div class="mjschool-user-profile-header-left mjschool-float-left-width-100px">
-							<img class="mjschool-user-view-profile-image" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/thumb-icon/mjschool-hostel.png")?>">
+							<img class="mjschool-user-view-profile-image" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/thumb-icon/mjschool-hostel.png' ); ?>">
 							<div class="row mjschool-profile-user-name">
 								<div class="mjschool-float-left mjschool-view-top1">
 									<div class="col-xl-12 col-md-12 col-sm-12 mjschool-float-left-width-100px">
 										<label class="mjschool-view-user-name-label"><?php echo esc_html( ucfirst( $hostel_data->hostel_name ) ); ?></label>
 										<div class="mjschool-view-user-edit-btn">
-											<a class="mjschool-color-white mjschool-margin-left-2px" href="?page=mjschool_hostel&tab=add_hostel&action=edit&hostel_id=<?php echo esc_attr( mjschool_encrypt_id( $hostel_data->id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>">
-												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/listpage-icon/mjschool-edit.png")?>">
+											<a class="mjschool-color-white mjschool-margin-left-2px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=add_hostel&action=edit&hostel_id=' . rawurlencode( mjschool_encrypt_id( $hostel_data->id ) ) . '&_wpnonce_action=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>">
+												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-edit.png' ); ?>">
 											</a>
 										</div>
 									</div>
@@ -64,7 +64,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 										<div class="row mjschool-view-user-teacher-label">
 											<div class="col-md-12 mjschool-address-student-div">
 												
-												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-location.png"); ?>">&nbsp;&nbsp;<label class="mjschool-address-detail-page"><?php echo esc_html( $hostel_data->hostel_address); ?></label>
+												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-location.png' ); ?>">&nbsp;&nbsp;<label class="mjschool-address-detail-page"><?php echo esc_html( $hostel_data->hostel_address ); ?></label>
 												
 											</div>
 										</div>
@@ -76,7 +76,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 					<div class="col-xl-2 col-lg-3 col-md-3 col-sm-2 mjschool-add-btn_possition_teacher_res">
 						<div class="mjschool-group-thumbs">
 							
-							<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/dashboard-icon/mjschool-group.png")?>">
+							<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-group.png' ); ?>">
 							
 						</div>
 					</div>
@@ -88,27 +88,30 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 				<div class="col-xl-12 col-md-12 col-sm-12 mjschool-rs-width">
 					<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 						<li class="<?php if ( $active_tab1 === 'roomlist' ) { ?>active<?php } ?>">
-							<a href="admin.php?page=mjschool_hostel&tab=hostel_details&tab1=roomlist&hostel_id=<?php echo esc_attr( mjschool_encrypt_id( $hostel_id ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'roomlist' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=roomlist&hostel_id=' . rawurlencode( mjschool_encrypt_id( $hostel_id ) ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'roomlist' ? 'active' : ''; ?>">
 								<?php esc_html_e( 'Room List', 'mjschool' ); ?>
 							</a>
 						</li>
 						<li class="<?php if ( $active_tab1 === 'bedlist' ) { ?>active<?php } ?>">
-							<a href="admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=<?php echo esc_attr( mjschool_encrypt_id( $hostel_id ) ); ?>"class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'bedlist' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . rawurlencode( mjschool_encrypt_id( $hostel_id ) ) ) ); ?>"class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'bedlist' ? 'active' : ''; ?>">
 								<?php esc_html_e( 'Bed List', 'mjschool' ); ?>
 							</a>
 						</li>
 						<?php
 						if ( $active_tab1 === 'assign_bed' ) {
 							if ( $action === 'view_assign_room' ) {
+								$room_id_param = isset( $_REQUEST['room_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['room_id'] ) ) : '';
 								?>
 								<li class="<?php if ( $active_tab1 === 'assign_bed' ) { ?>active<?php } ?>">
-									<a href="admin.php?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=view_assign_room&hostel_id=<?php echo esc_attr( mjschool_encrypt_id( $hostel_id ) ); ?>&room_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['room_id'])) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'assign_bed' ? 'active' : ''; ?>">
+									<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=view_assign_room&hostel_id=' . rawurlencode( mjschool_encrypt_id( $hostel_id ) ) . '&room_id=' . rawurlencode( $room_id_param ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'assign_bed' ? 'active' : ''; ?>">
 										<?php esc_html_e( 'Assign Bed', 'mjschool' ); ?>
 									</a>
 								</li>
-							<?php } elseif ( $action === 'view_assign_bed' ) { ?>
+							<?php } elseif ( $action === 'view_assign_bed' ) { 
+								$bed_id_param = isset( $_REQUEST['bed_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['bed_id'] ) ) : '';
+								?>
 								<li class="<?php if ( $active_tab1 === 'assign_bed' ) { ?>active<?php } ?>">
-									<a href="admin.php?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=view_assign_bed&hostel_id=<?php echo esc_attr( mjschool_encrypt_id( $hostel_id ) ); ?>&bed_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['bed_id'])) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'assign_bed' ? 'active' : ''; ?>">
+									<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=view_assign_bed&hostel_id=' . rawurlencode( mjschool_encrypt_id( $hostel_id ) ) . '&bed_id=' . rawurlencode( $bed_id_param ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'assign_bed' ? 'active' : ''; ?>">
 										<?php esc_html_e( 'Assign Bed', 'mjschool' ); ?>
 									</a>
 								</li>
@@ -125,7 +128,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 				<div class="row">
 					<div class="col-xl-12 col-md-12 col-sm-12">
 						<?php
-						$room_message = isset( $_REQUEST['room_message'] ) ? sanitize_text_field(wp_unslash($_REQUEST['room_message'])) : '0';
+						$room_message = isset( $_REQUEST['room_message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['room_message'] ) ) : '0';
 						switch ( $room_message ) {
 							case 'insert_success':
 								$message_string = esc_html__( 'Room Added Successfully.', 'mjschool' );
@@ -151,7 +154,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 							</div>
 							<?php
 						}
-						$bed_message = isset( $_REQUEST['bed_message'] ) ? sanitize_text_field(wp_unslash($_REQUEST['bed_message'])) : '0';
+						$bed_message = isset( $_REQUEST['bed_message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['bed_message'] ) ) : '0';
 						switch ( $bed_message ) {
 							case 'insert_success':
 								$message_string = esc_html__( 'Bed Added Successfully.', 'mjschool' );
@@ -186,30 +189,36 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 								<div class="mjschool-guardian-div">
 									<?php
 									if ( isset( $_POST['save_room'] ) ) {
-										$nonce = $_POST['_wpnonce'];
+										$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 										if ( wp_verify_nonce( $nonce, 'save_room_admin_nonce' ) ) {
-											if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( $_GET['_wpnonce_action'], 'edit_action' ) ) {
+											$nonce_action = isset( $_GET['_wpnonce_action'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ) : '';
+											if ( wp_verify_nonce( $nonce_action, 'edit_action' ) ) {
 												if ( $action === 'edit_room' ) {
-													$result = $obj_hostel->mjschool_insert_room( wp_unslash($_POST) );
+													$result = $obj_hostel->mjschool_insert_room( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
 													if ( $result ) {
-														wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&hostel_id=' . mjschool_encrypt_id( $_REQUEST['hostel_id'] ) . '&room_message=edit_success' );
+														$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+														wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&hostel_id=' . rawurlencode( $hostel_id_param ) . '&room_message=edit_success' ) );
 														die();
 													}
 												} else {
 													wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 												}
 											} else {
-												$result = $obj_hostel->mjschool_insert_room( wp_unslash($_POST) );
-												wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&hostel_id=' . mjschool_encrypt_id( $_REQUEST['hostel_id'] ) . '&room_message=insert_success' );
+												$result = $obj_hostel->mjschool_insert_room( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
+												$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+												wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&hostel_id=' . rawurlencode( $hostel_id_param ) . '&room_message=insert_success' ) );
 												die();
 											}
 										}
 									}
 									if ( $action === 'delete_room' ) {
-										if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( $_GET['_wpnonce_action'], 'delete_action' ) ) {
-											$result = $obj_hostel->mjschool_delete_room( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['room_id'])) ) ) );
+										$nonce_action = isset( $_GET['_wpnonce_action'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ) : '';
+										if ( wp_verify_nonce( $nonce_action, 'delete_action' ) ) {
+											$room_id_decrypt = isset( $_REQUEST['room_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['room_id'] ) ) ) ) : 0;
+											$result = $obj_hostel->mjschool_delete_room( $room_id_decrypt );
 											if ( $result ) {
-												wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=delete_success' );
+												$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+												wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&hostel_id=' . rawurlencode( $hostel_id_param ) . '&room_message=delete_success' ) );
 												die();
 											}
 										} else {
@@ -217,20 +226,23 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 										}
 									}
 									if ( isset( $_REQUEST['mjschool-delete-selected-room'] ) ) {
-										if ( ! empty( $_REQUEST['id'] ) ) {
-											foreach ( $_REQUEST['id'] as $id ) {
+										if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+											$ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+											foreach ( $ids as $id ) {
 												$result = $obj_hostel->mjschool_delete_room( $id );
 											}
 										}
 										if ( $result ) {
-											wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=delete_success' );
+											$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+											wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&hostel_id=' . rawurlencode( $hostel_id_param ) . '&room_message=delete_success' ) );
 											die();
 										}
 									}
 									$edit = 0;
 									if ( $action === 'edit_room' ) {
 										$edit      = 1;
-										$room_data = $obj_hostel->mjschool_get_room_by_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['room_id'])) ) ) );
+										$room_id_decrypt = isset( $_REQUEST['room_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['room_id'] ) ) ) ) : 0;
+										$room_data = $obj_hostel->mjschool_get_room_by_id( $room_id_decrypt );
 									}
 									?>
 									<div class="mjschool-popup-bg">
@@ -242,10 +254,10 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 										</div>     
 									</div>
 									<form name="room_form" action="" method="post" class="mjschool-form-horizontal" id="room_form">
-										<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+										<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; ?>
 										<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
-										<input type="hidden" name="room_id" value="<?php if ( $edit ) { echo esc_attr( $room_data->id );} ?>"/>
-										<input type="hidden" name="hostel_id" value="<?php echo esc_attr( $hostel_data->id ); ?>"/> 
+										<input type="hidden" name="room_id" value="<?php if ( $edit ) { echo esc_attr( intval( $room_data->id ) ); } ?>"/>
+										<input type="hidden" name="hostel_id" value="<?php echo esc_attr( intval( $hostel_data->id ) ); ?>"/> 
 										<div class="header">	
 											<h3 class="mjschool-first-header"><?php esc_html_e( 'Add Hostel Room', 'mjschool' ); ?></h3>
 										</div>
@@ -273,7 +285,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 															}
 															foreach ( $activity_category as $retrive_data ) {
 																?>
-																<option value="<?php echo esc_attr( $retrive_data->ID ); ?>" <?php selected( $retrive_data->ID, $room_val ); ?>><?php echo esc_attr( $retrive_data->post_title ); ?> </option>
+																<option value="<?php echo esc_attr( intval( $retrive_data->ID ) ); ?>" <?php selected( $retrive_data->ID, $room_val ); ?>><?php echo esc_html( $retrive_data->post_title ); ?> </option>
 																<?php
 															}
 														}
@@ -286,7 +298,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 												<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool-error-msg-left-margin mjschool-padding-top-15px-res">
 													<div class="form-group input">
 														<div class="col-md-12 form-control">
-															<input id="beds_capacity" class="form-control validate[required,custom[onlyNumberSp],maxSize[2],min[1]] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( $room_data->beds_capacity ); } ?>" name="beds_capacity">
+															<input id="beds_capacity" class="form-control validate[required,custom[onlyNumberSp],maxSize[2],min[1]] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( intval( $room_data->beds_capacity ) ); } ?>" name="beds_capacity">
 															<label  for="Bed Capacity"><?php esc_html_e( 'Number Of Beds', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label> 
 														</div>
 													</div>
@@ -365,7 +377,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 																					}
 																					?>
 																					<label class="mjschool_white_space_margin_10px">
-																						<input type="checkbox" name="mjschool_hostel_room_facilities[<?php echo esc_attr( $category ); ?>][]" value="<?php echo esc_attr( $key ); ?>" <?php echo esc_html( $checked ); ?> /> 
+																						<input type="checkbox" name="mjschool_hostel_room_facilities[<?php echo esc_attr( $category ); ?>][]" value="<?php echo esc_attr( $key ); ?>" <?php echo esc_attr( $checked ); ?> /> 
 																						<?php echo esc_html( $facility ); ?>
 																					</label>
 																					<?php
@@ -395,7 +407,8 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 									<h3 class="mjschool-first-header"><?php esc_html_e( 'Hostel Room List', 'mjschool' ); ?></h3>
 								</div>
 								<?php
-								$retrieve_class_data = $obj_hostel->mjschool_get_room_by_hostel_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ) ) );
+								$hostel_id_decrypt = isset( $_REQUEST['hostel_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) ) ) : 0;
+								$retrieve_class_data = $obj_hostel->mjschool_get_room_by_hostel_id( $hostel_id_decrypt );
 								if ( ! empty( $retrieve_class_data ) ) {
 									?>
 									<div class="mjschool-panel-body">
@@ -449,13 +462,13 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 															?>
 															<tr>
 																<td class="mjschool-checkbox-width-10px">
-																	<input type="checkbox" class="mjschool-sub-chk select-checkbox" name="id[]" value="<?php echo esc_attr( $retrieved_data->id ); ?>">
+																	<input type="checkbox" class="mjschool-sub-chk select-checkbox" name="id[]" value="<?php echo esc_attr( intval( $retrieved_data->id ) ); ?>">
 																</td>
 																
-																<td class="mjschool-user-image mjschool-width-50px-td"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-hostel.png"); ?>" class="img-circle" /></td>
+																<td class="mjschool-user-image mjschool-width-50px-td"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/thumb-icon/mjschool-hostel.png' ); ?>" class="img-circle" /></td>
 																
 																<td>
-																	<?php echo esc_attr( $retrieved_data->room_unique_id ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Room Unique ID', 'mjschool' ); ?>"></i>
+																	<?php echo esc_html( $retrieved_data->room_unique_id ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Room Unique ID', 'mjschool' ); ?>"></i>
 																</td>
 																<td>
 																	<?php
@@ -472,7 +485,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 																<td>
 																	<?php
 																	echo esc_html( $capacity ) . ' ';
-																		esc_attr_e( 'Out Of', 'mjschool' );
+																		esc_html_e( 'Out Of', 'mjschool' );
 																		echo ' ' . esc_html( $retrieved_data->beds_capacity );
 																	?>
 																	<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Remaining No Of Beds', 'mjschool' ); ?>"></i>
@@ -508,7 +521,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 																		esc_html_e( 'N/A', 'mjschool' );
 																	}
 																	?>
-																	<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $facility ) ) { echo esc_html( $facility ); } else { esc_html_e( 'Facilities', 'mjschool' );} ?>"></i>
+																	<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $facility ) ) { echo esc_attr( $facility ); } else { esc_attr_e( 'Facilities', 'mjschool' );} ?>"></i>
 																</td>
 																<td>
 																	<?php
@@ -523,7 +536,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 																		esc_html_e( 'N/A', 'mjschool' );
 																	}
 																	?>
-																	<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $retrieved_data->room_description ) ) { echo esc_html( $retrieved_data->room_description ); } else { esc_html_e( 'Description', 'mjschool' );} ?>"></i>
+																	<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $retrieved_data->room_description ) ) { echo esc_attr( $retrieved_data->room_description ); } else { esc_attr_e( 'Description', 'mjschool' );} ?>"></i>
 																</td>
 																<td>
 																	<?php
@@ -531,7 +544,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 																		esc_html_e( 'No Bed Available In This Room.', 'mjschool' );
 																	} else {
 																		?>
-																		<button class="btn btn-default mjschool-assign-room-btn-design"><a href="?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=view_assign_room&hostel_id=<?php echo esc_attr( mjschool_encrypt_id( $hostel_id ) ); ?>&room_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-bed"></i> <?php esc_html_e( 'Assign Bed', 'mjschool' ); ?></a></button>
+																		<button class="btn btn-default mjschool-assign-room-btn-design"><a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=view_assign_room&hostel_id=' . rawurlencode( mjschool_encrypt_id( $hostel_id ) ) . '&room_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-bed"></i> <?php esc_html_e( 'Assign Bed', 'mjschool' ); ?></a></button>
 																		<?php
 																	}
 																	?>
@@ -542,7 +555,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 																			<li >
 																				<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
 																					
-																					<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/listpage-icon/mjschool-more.png")?>">
+																					<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-more.png' ); ?>">
 																					
 																				</a>
 																				<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
@@ -550,28 +563,28 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 																					if ( $room_cnt >= $bed_capacity ) {
 																						?>
 																						<li class="mjschool-float-left-width-100px">
-																							<a href="?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=view_assign_room&hostel_id=<?php echo esc_attr( mjschool_encrypt_id( $hostel_id ) ); ?>&room_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-list"></i><?php esc_html_e( 'Occupied List', 'mjschool' ); ?></a> 
+																							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=view_assign_room&hostel_id=' . rawurlencode( mjschool_encrypt_id( $hostel_id ) ) . '&room_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-list"></i><?php esc_html_e( 'Occupied List', 'mjschool' ); ?></a> 
 																						</li>
 																						<?php
 																					}
 																					if ( $user_access_add === '1' ) {
 																						?>
 																						<li class="mjschool-float-left-width-100px">
-																							<a href="?page=mjschool_hostel&tab=hostel_details&action=add_bed&tab1=bedlist&hostel_id=<?php echo esc_attr( mjschool_encrypt_id( $hostel_id ) ); ?>&room_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-bed"></i><?php esc_html_e( 'Add Bed', 'mjschool' ); ?></a> 
+																							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&action=add_bed&tab1=bedlist&hostel_id=' . rawurlencode( mjschool_encrypt_id( $hostel_id ) ) . '&room_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-bed"></i><?php esc_html_e( 'Add Bed', 'mjschool' ); ?></a> 
 																						</li>
 																						<?php
 																					}
 																					if ( $user_access_edit === '1' ) {
 																						?>
 																						<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
-																							<a href="?page=mjschool_hostel&tab=hostel_details&action=edit_room&tab1=roomlist&hostel_id=<?php echo esc_attr( mjschool_encrypt_id( $hostel_id ) ); ?>&room_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a> 
+																							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&action=edit_room&tab1=roomlist&hostel_id=' . rawurlencode( mjschool_encrypt_id( $hostel_id ) ) . '&room_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ) . '&_wpnonce_action=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a> 
 																						</li>
 																						<?php
 																					}
 																					if ( $user_access_delete === '1' ) {
 																						?>
 																						<li class="mjschool-float-left-width-100px">
-																							<a href="?page=mjschool_hostel&tab=hostel_details&action=delete_room&tab1=roomlist&hostel_id=<?php echo esc_attr( mjschool_encrypt_id( $hostel_id ) ); ?>&room_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color"  onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a> 
+																							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&action=delete_room&tab1=roomlist&hostel_id=' . rawurlencode( mjschool_encrypt_id( $hostel_id ) ) . '&room_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ) . '&_wpnonce_action=' . rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color"  onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a> 
 																						</li>
 																						<?php
 																					}
@@ -596,7 +609,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 													<?php
 													if ( $user_access_delete === '1' ) {
 														 ?>
-														<button id="mjschool-delete-selected-room" data-toggle="tooltip" title="<?php esc_attr_e( 'Delete Selected','mjschool' );?>" name="mjschool-delete-selected-room" class="delete_selected"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/listpage-icon/mjschool-delete.png"); ?>"></button>
+														<button id="mjschool-delete-selected-room" data-toggle="tooltip" title="<?php esc_attr_e( 'Delete Selected','mjschool' );?>" name="mjschool-delete-selected-room" class="delete_selected"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-delete.png' ); ?>"></button>
 														<?php  
 													}
 													?>
@@ -609,7 +622,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 									?>
 									<div class="mjschool-calendar-event-new"> 
 										
-										<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG)?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+										<img class="mjschool-no-data-img" src="<?php echo esc_url( MJSCHOOL_NODATA_IMG ); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 										
 									</div>		
 									<?php
@@ -623,12 +636,13 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 				if ( $active_tab1 === 'bedlist' ) {
 					// INSERT AND UPDATES BEDS.
 					if ( isset( $_POST['save_bed'] ) ) {
-						$nonce = $_POST['_wpnonce'];
+						$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 						if ( wp_verify_nonce( $nonce, 'save_bed_admin_nonce' ) ) {
 							if ( $action === 'edit_bed' ) {
-								if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( $_GET['_wpnonce_action'], 'edit_action' ) ) {
-									$bed_id  = intval( wp_unslash($_REQUEST['bed_id']) );
-									$room_id = intval( wp_unslash($_REQUEST['room_id']) );
+								$nonce_action = isset( $_GET['_wpnonce_action'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ) : '';
+								if ( wp_verify_nonce( $nonce_action, 'edit_action' ) ) {
+									$bed_id  = isset( $_REQUEST['bed_id'] ) ? intval( wp_unslash( $_REQUEST['bed_id'] ) ) : 0;
+									$room_id = isset( $_REQUEST['room_id'] ) ? intval( wp_unslash( $_REQUEST['room_id'] ) ) : 0;
 									global $wpdb;
 									$table_mjschool_beds = $wpdb->prefix . 'mjschool_beds';
 									// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -638,29 +652,34 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 									$bed          = count( $result_bed );
 									$bed_capacity = mjschool_get_bed_capacity_by_id( $room_id );
 									if ( $bed < $bed_capacity ) {
-										$result = $obj_hostel->mjschool_insert_bed( wp_unslash($_POST) );
+										$result = $obj_hostel->mjschool_insert_bed( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
 										if ( $result ) {
-											wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=edit_success' );
+											$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+											wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . rawurlencode( $hostel_id_param ) . '&bed_message=edit_success' ) );
 											die();
 										}
 									} else {
-										wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=no_capacity' );
+										$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+										wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . rawurlencode( $hostel_id_param ) . '&bed_message=no_capacity' ) );
 										die();
 									}
 								} else {
 									wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 								}
 							} else {
-								$assign_bed       = mjschool_hostel_room_bed_count( sanitize_text_field(wp_unslash($_POST['room_id'])) );
-								$bed_capacity     = mjschool_get_bed_capacity_by_id( sanitize_text_field(wp_unslash($_POST['room_id'])) );
+								$room_id_post     = isset( $_POST['room_id'] ) ? intval( wp_unslash( $_POST['room_id'] ) ) : 0;
+								$assign_bed       = mjschool_hostel_room_bed_count( $room_id_post );
+								$bed_capacity     = mjschool_get_bed_capacity_by_id( $room_id_post );
 								$bed_capacity_int = (int) $bed_capacity;
 								if ( $assign_bed >= $bed_capacity_int ) {
-									wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=no_capacity' );
+									$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+									wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . rawurlencode( $hostel_id_param ) . '&bed_message=no_capacity' ) );
 									die();
 								} else {
-									$result = $obj_hostel->mjschool_insert_bed( wp_unslash($_POST) );
+									$result = $obj_hostel->mjschool_insert_bed( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
 									if ( $result ) {
-										wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=insert_success' );
+										$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+										wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . rawurlencode( $hostel_id_param ) . '&bed_message=insert_success' ) );
 										die();
 									}
 								}
@@ -669,10 +688,13 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 					}
 					// DELETE RECORD BED.
 					if ( $action === 'delete_bed' ) {
-						if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( $_GET['_wpnonce_action'], 'delete_action' ) ) {
-							$result = $obj_hostel->mjschool_delete_bed( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['bed_id'])) ) ) );
+						$nonce_action = isset( $_GET['_wpnonce_action'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ) : '';
+						if ( wp_verify_nonce( $nonce_action, 'delete_action' ) ) {
+							$bed_id_decrypt = isset( $_REQUEST['bed_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['bed_id'] ) ) ) ) : 0;
+							$result = $obj_hostel->mjschool_delete_bed( $bed_id_decrypt );
 							if ( $result ) {
-								wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=delete_success' );
+								$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+								wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . rawurlencode( $hostel_id_param ) . '&bed_message=delete_success' ) );
 								die();
 							}
 						} else {
@@ -681,13 +703,15 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 					}
 					// DELETE MULTIPLE SELECTED BED.
 					if ( isset( $_REQUEST['delete_selected_bed'] ) ) {
-						if ( ! empty( $_REQUEST['id'] ) ) {
-							foreach ( $_REQUEST['id'] as $id ) {
+						if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+							$ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+							foreach ( $ids as $id ) {
 								$result = $obj_hostel->mjschool_delete_bed( $id );
 							}
 						}
 						if ( $result ) {
-							wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=delete_success' );
+							$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+							wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . rawurlencode( $hostel_id_param ) . '&bed_message=delete_success' ) );
 							die();
 						}
 					}
@@ -700,14 +724,15 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 									$edit = 0;
 									if ( $action === 'edit_bed' ) {
 										$edit     = 1;
-										$bed_data = $obj_hostel->mjschool_get_bed_by_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['bed_id'])) ) ) );
+										$bed_id_decrypt = isset( $_REQUEST['bed_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['bed_id'] ) ) ) ) : 0;
+										$bed_data = $obj_hostel->mjschool_get_bed_by_id( $bed_id_decrypt );
 									}
 									?>
 									<div class="mjschool-panel-body"> <!-- start mjschool-panel-body. -->
 										<form name="mjschool-bed-form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-bed-form">
-											<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+											<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; ?>
 											<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
-											<input type="hidden" name="bed_id" value="<?php if ( $edit ) { echo esc_attr( $bed_data->id );} ?>"/> 
+											<input type="hidden" name="bed_id" value="<?php if ( $edit ) { echo esc_attr( intval( $bed_data->id ) ); } ?>"/> 
 											<div class="header">	
 												<h3 class="mjschool-first-header"><?php esc_html_e( 'Add Room Beds', 'mjschool' ); ?></h3>
 											</div>
@@ -726,17 +751,18 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 														<select name="room_id" class="form-control validate[required] mjschool-width-100px" id="room_id">
 															<option value=""><?php esc_html_e( 'Select Room Unique ID', 'mjschool' ); ?></option>
 															<?php
-															$room_data = $obj_hostel->mjschool_get_room_by_hostel_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ) ) );
+															$hostel_id_decrypt = isset( $_REQUEST['hostel_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) ) ) : 0;
+															$room_data = $obj_hostel->mjschool_get_room_by_hostel_id( $hostel_id_decrypt );
 															if ( $edit ) {
 																$roomval = $bed_data->room_id;
 															} elseif ( $action === 'add_bed' ) {
-																$roomval = mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['room_id'])) );
+																$roomval = isset( $_REQUEST['room_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['room_id'] ) ) ) ) : 0;
 															} else {
 																$roomval = '';
 															}
 															foreach ( $room_data as $room ) {
 																?>
-																<option value="<?php echo esc_attr( $room->id ); ?>" <?php selected( $room->id, $roomval ); ?>><?php echo esc_attr( $room->room_unique_id ); ?></option> 
+																<option value="<?php echo esc_attr( intval( $room->id ) ); ?>" <?php selected( $room->id, $roomval ); ?>><?php echo esc_html( $room->room_unique_id ); ?></option> 
 																<?php
 															}
 															?>
@@ -745,8 +771,8 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 													<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool-error-msg-left-margin">
 														<div class="form-group input">
 															<div class="col-md-12 form-control">
-																<input id="bed_charge" class="form-control validate[custom[popup_category_validation]] text-input" maxlength="50" type="number" value="<?php if ( $edit ) { echo esc_attr( $bed_data->bed_charge );} ?>" name="bed_charge">
-																<label  for="bed_charge"><?php esc_html_e( 'Cost', 'mjschool' ); ?> (<?php echo esc_attr( mjschool_get_currency_symbol() ); ?>)</label>
+																<input id="bed_charge" class="form-control validate[custom[popup_category_validation]] text-input" maxlength="50" type="number" value="<?php if ( $edit ) { echo esc_attr( floatval( $bed_data->bed_charge ) ); } ?>" name="bed_charge">
+																<label  for="bed_charge"><?php esc_html_e( 'Cost', 'mjschool' ); ?> (<?php echo esc_html( mjschool_get_currency_symbol() ); ?>)</label>
 															</div>
 														</div>
 													</div>
@@ -767,7 +793,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 											<div class="form-body mjschool-user-form">
 												<div class="row">
 													<div class="col-sm-6">
-														<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Bed', 'mjschool' ); } else { esc_attr_e( 'Add Bed', 'mjschool' );} ?>" name="save_bed" class="btn btn-success mjschool-save-btn" />
+														<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Bed', 'mjschool' ); } else { esc_attr_e( 'Add Bed', 'mjschool' ); } ?>" name="save_bed" class="btn btn-success mjschool-save-btn" />
 													</div>
 												</div>
 											</div>
@@ -787,32 +813,37 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 													<?php
 													$room_id = '';
 													if ( isset( $_REQUEST['filter_room_id'] ) ) {
-														$room_id = sanitize_text_field(wp_unslash($_REQUEST['filter_room_id']));
+														$room_id = intval( wp_unslash( $_REQUEST['filter_room_id'] ) );
 													}
-													$retrieve_class_data = $obj_hostel->mjschool_get_room_by_hostel_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ) ) );
+													$hostel_id_decrypt = isset( $_REQUEST['hostel_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) ) ) : 0;
+													$retrieve_class_data = $obj_hostel->mjschool_get_room_by_hostel_id( $hostel_id_decrypt );
 													foreach ( $retrieve_class_data as $room_data ) {
 														?>
-														<option  value="<?php echo esc_attr( $room_data->id ); ?>" <?php selected( $room_data->id, $room_id ); ?> ><?php echo esc_attr( $room_data->room_unique_id ); ?></option>
+														<option  value="<?php echo esc_attr( intval( $room_data->id ) ); ?>" <?php selected( $room_data->id, $room_id ); ?> ><?php echo esc_html( $room_data->room_unique_id ); ?></option>
 														<?php
 													}
 													?>
 												</select>         
 											</div>
 											<div class="col-md-3">
-												<input type="submit" name="view_bed_list" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
+												<input type="submit" name="view_bed_list" Value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
 											</div>
 										</div>
 									</div>
 								</form>
 								<?php
 								if ( isset( $_POST['view_bed_list'] ) ) {
-									if ( isset($_POST['filter_room_id']) && sanitize_text_field(wp_unslash($_POST['filter_room_id'])) === 'all_room' ) {
-										$retrieve_class_data = $obj_hostel->mjschool_get_bed_by_hostel_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ) ) );
+									$filter_room_id = isset( $_POST['filter_room_id'] ) ? sanitize_text_field( wp_unslash( $_POST['filter_room_id'] ) ) : '';
+									if ( $filter_room_id === 'all_room' ) {
+										$hostel_id_decrypt = isset( $_REQUEST['hostel_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) ) ) : 0;
+										$retrieve_class_data = $obj_hostel->mjschool_get_bed_by_hostel_id( $hostel_id_decrypt );
 									} else {
-										$retrieve_class_data = $obj_hostel->mjschool_get_all_bed_by_room_id( intval( wp_unslash($_REQUEST['filter_room_id']) ) );
+										$filter_room_id_int = isset( $_REQUEST['filter_room_id'] ) ? intval( wp_unslash( $_REQUEST['filter_room_id'] ) ) : 0;
+										$retrieve_class_data = $obj_hostel->mjschool_get_all_bed_by_room_id( $filter_room_id_int );
 									}
 								} else {
-									$retrieve_class_data = $obj_hostel->mjschool_get_bed_by_hostel_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ) ) );
+									$hostel_id_decrypt = isset( $_REQUEST['hostel_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) ) ) : 0;
+									$retrieve_class_data = $obj_hostel->mjschool_get_bed_by_hostel_id( $hostel_id_decrypt );
 								}
 								if ( ! empty( $retrieve_class_data ) ) {
 									?>
@@ -868,17 +899,18 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 															} elseif ( $a === 9 ) {
 																$color_class_css = 'mjschool-class-color9';
 															}
+															$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
 															?>
 															<tr>
 																<td class="mjschool-checkbox-width-10px">
-																	<input type="checkbox" class="mjschool-sub-chk select-checkbox" name="id[]" value="<?php echo esc_attr( $retrieved_data->id ); ?>">
+																	<input type="checkbox" class="mjschool-sub-chk select-checkbox" name="id[]" value="<?php echo esc_attr( intval( $retrieved_data->id ) ); ?>">
 																</td>
 																
-																<td class="mjschool-user-image mjschool-width-50px-td"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-hostel.png"); ?>" class="img-circle" /></td>
+																<td class="mjschool-user-image mjschool-width-50px-td"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/thumb-icon/mjschool-hostel.png' ); ?>" class="img-circle" /></td>
 																
 																<td>
-																	<a href="#" class="mjschool-view-details-popup" id="<?php echo esc_attr( $retrieved_data->id ); ?>" type="beds_view">
-																	<?php echo esc_attr( $retrieved_data->bed_unique_id ); ?></a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Bed Unique ID', 'mjschool' ); ?>"></i>
+																	<a href="#" class="mjschool-view-details-popup" id="<?php echo esc_attr( intval( $retrieved_data->id ) ); ?>" type="beds_view">
+																	<?php echo esc_html( $retrieved_data->bed_unique_id ); ?></a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Bed Unique ID', 'mjschool' ); ?>"></i>
 																</td>
 																<td>
 																	<?php echo esc_html( mjschool_get_room_unique_id_by_id( $retrieved_data->room_id ) ); ?>(<?php echo esc_html( mjschool_get_hostel_name_by_id( $hostel_id ) ); ?>) <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Room Unique ID', 'mjschool' ); ?>"></i>
@@ -929,7 +961,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 																		esc_html_e( 'N/A', 'mjschool' );
 																	}
 																	?>
-																	<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $retrieved_data->bed_description ) ) { echo esc_html( $retrieved_data->bed_description ); } else { esc_html_e( 'Description', 'mjschool' );} ?>"></i>
+																	<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $retrieved_data->bed_description ) ) { echo esc_attr( $retrieved_data->bed_description ); } else { esc_attr_e( 'Description', 'mjschool' );} ?>"></i>
 																</td>
 																
 																<td class="action"> 
@@ -938,19 +970,19 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 																			<li >
 																				<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
 																					
-																					<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/listpage-icon/mjschool-more.png")?>">
+																					<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-more.png' ); ?>">
 																					
 																				</a>
 																				<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																					<li class="mjschool-float-left-width-100px">
-																						<a href="#" class="mjschool-float-left-width-100px mjschool-view-details-popup" id="<?php echo esc_attr( $retrieved_data->id ); ?>" type="beds_view"><i class="fas fa-eye" aria-hidden="true"></i><?php esc_html_e( 'View', 'mjschool' ); ?></a>
+																						<a href="#" class="mjschool-float-left-width-100px mjschool-view-details-popup" id="<?php echo esc_attr( intval( $retrieved_data->id ) ); ?>" type="beds_view"><i class="fas fa-eye" aria-hidden="true"></i><?php esc_html_e( 'View', 'mjschool' ); ?></a>
 																					</li>
 																					<?php
 																					if ( $retrieved_data->bed_status === '0' ) {
 																						if ( $user_access_add === '1' ) {
 																							?>
 																							<li class="mjschool-float-left-width-100px">
-																								<a href="?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=view_assign_bed&hostel_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ); ?>&bed_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-bed"> </i><?php esc_html_e( 'Assign Bed', 'mjschool' ); ?></a> 
+																								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=view_assign_bed&hostel_id=' . rawurlencode( $hostel_id_param ) . '&bed_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-bed"> </i><?php esc_html_e( 'Assign Bed', 'mjschool' ); ?></a> 
 																							</li>
 																							<?php
 																						}
@@ -958,7 +990,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 																					if ( $user_access_edit === '1' ) {
 																						?>
 																						<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
-																							<a href="?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&action=edit_bed&hostel_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ); ?>&bed_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a> 
+																							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&action=edit_bed&hostel_id=' . rawurlencode( $hostel_id_param ) . '&bed_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ) . '&_wpnonce_action=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a> 
 																						</li>
 																						<?php
 																					}
@@ -967,7 +999,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 																					if ( $user_access_delete === '1' ) {
 																						?>
 																						<li class="mjschool-float-left-width-100px">
-																							<a href="?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&action=delete_bed&hostel_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ); ?>&bed_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
+																							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&action=delete_bed&hostel_id=' . rawurlencode( $hostel_id_param ) . '&bed_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ) . '&_wpnonce_action=' . rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
 																						</li>
 																						<?php
 																					}
@@ -992,7 +1024,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 													<?php
 													if ( $user_access_delete === '1' ) {
 														 ?>
-														<button id="delete_selected_bed" data-toggle="tooltip" title="<?php esc_attr_e( 'Delete Selected','mjschool' );?>" name="delete_selected_bed" class="delete_selected"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/listpage-icon/mjschool-delete.png"); ?>"></button>
+														<button id="delete_selected_bed" data-toggle="tooltip" title="<?php esc_attr_e( 'Delete Selected','mjschool' );?>" name="delete_selected_bed" class="delete_selected"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-delete.png' ); ?>"></button>
 														<?php 
 													}
 													?>
@@ -1005,7 +1037,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 									?>
 									<div class="mjschool-calendar-event-new"> 
 										
-										<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG)?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+										<img class="mjschool-no-data-img" src="<?php echo esc_url( MJSCHOOL_NODATA_IMG ); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 										
 									</div>		
 									<?php
@@ -1019,15 +1051,17 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 				if ( $active_tab1 === 'assign_bed' ) {
 					// ASSIGN BEDS.
 					if ( isset( $_POST['assign_room'] ) ) {
-						$nonce = $_POST['_wpnonce'];
+						$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 						if ( wp_verify_nonce( $nonce, 'save_assign_room_admin_nonce' ) ) {
-							$result = $obj_hostel->mjschool_assign_room( wp_unslash($_POST) );
+							$result = $obj_hostel->mjschool_assign_room( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
 							if ( $result ) {
-								if ( isset( $_POST['action'] ) && sanitize_text_field(wp_unslash($_POST['action'])) === 'view_assign_room' ) {
-									wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=roomlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=assign_success' );
+								$action_post = isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '';
+								$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+								if ( $action_post === 'view_assign_room' ) {
+									wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=roomlist&hostel_id=' . rawurlencode( $hostel_id_param ) . '&room_message=assign_success' ) );
 									die();
-								} elseif ( isset( $_POST['action'] ) && sanitize_text_field(wp_unslash($_POST['action'])) === 'view_assign_bed' ) {
-									wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=assign_success' );
+								} elseif ( $action_post === 'view_assign_bed' ) {
+									wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . rawurlencode( $hostel_id_param ) . '&room_message=assign_success' ) );
 									die();
 								}
 							}
@@ -1035,25 +1069,26 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 					}
 					// ASSIGN BED DELETE FLOW.
 					if ( $action === 'delete_assign_bed' ) {
-						$room_id    = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['room_id'])) ) );
-						$bed_id     = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['bed_id'])) ) );
-						$student_id = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['student_id'])) ) );
+						$room_id    = isset( $_REQUEST['room_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['room_id'] ) ) ) ) : 0;
+						$bed_id     = isset( $_REQUEST['bed_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['bed_id'] ) ) ) ) : 0;
+						$student_id = isset( $_REQUEST['student_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['student_id'] ) ) ) ) : 0;
 						$result     = $obj_hostel->mjschool_delete_assigned_bed( $room_id, $bed_id, $student_id );
 						if ( $result ) {
-							wp_redirect( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=roomlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=assign_delete_success' );
+							$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
+							wp_safe_redirect( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=roomlist&hostel_id=' . rawurlencode( $hostel_id_param ) . '&room_message=assign_delete_success' ) );
 							die();
 						}
 					}
 					$bed_data = array();
 					if ( $action === 'view_assign_room' ) {
-						$room_id  = mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['room_id'])) );
+						$room_id  = isset( $_REQUEST['room_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['room_id'] ) ) ) ) : 0;
 						$bed_data = $obj_hostel->mjschool_get_all_bed_by_room_id( $room_id );
 					}
 					if ( $action === 'view_assign_bed' ) {
-						$bed_id     = mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['bed_id'])) );
+						$bed_id     = isset( $_REQUEST['bed_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['bed_id'] ) ) ) ) : 0;
 						$bed_data[] = $obj_hostel->mjschool_get_bed_by_id( $bed_id );
 					}
-					$hostel_id   = intval( wp_unslash($_REQUEST['hostel_id']) );
+					$hostel_id   = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
 					$exlude_id   = mjschool_approve_student_list();
 					$student_all = get_users(
 						array(
@@ -1084,16 +1119,16 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 								$student_data = mjschool_student_assign_bed_data( $data->id );
 								?>
 								<form name="mjschool-bed-form" action="" method="post" class="mjschool-form-horizontal" id="bed_form_new">
-									<input type="hidden" name="room_id_new[]" value="<?php echo esc_attr( $data->room_id ); ?>">
-									<input type="hidden" name="bed_id[]" value="<?php echo esc_attr( $data->id ); ?>">
+									<input type="hidden" name="room_id_new[]" value="<?php echo esc_attr( intval( $data->room_id ) ); ?>">
+									<input type="hidden" name="bed_id[]" value="<?php echo esc_attr( intval( $data->id ) ); ?>">
 									<input type="hidden" name="action" value="<?php echo esc_attr( $action ); ?>">
-									<input type="hidden" name="hostel_id" value="<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ); ?>">
+									<input type="hidden" name="hostel_id" value="<?php echo esc_attr( $hostel_id ); ?>">
 									<div class="form-body mjschool-user-form mt-2" id="mjschool-main-assign-room"> <!--Card Body div-->
 										<div class="row">
 											<div class="col-sm-12 col-md-4 col-lg-4 col-xl-4">
 												<div class="form-group input">
 													<div class="col-md-12 form-control">
-														<input id="bed_unique_id_<?php echo esc_attr( $i ); ?>" class="form-control validate[required]" type="text" value="<?php echo esc_attr( $data->bed_unique_id ); ?>" name="bed_unique_id[]" readonly>
+														<input id="bed_unique_id_<?php echo esc_attr( intval( $i ) ); ?>" class="form-control validate[required]" type="text" value="<?php echo esc_attr( $data->bed_unique_id ); ?>" name="bed_unique_id[]" readonly>
 														<label  for="bed_unique_id"><?php esc_html_e( 'Bed Unique ID', 'mjschool' ); ?><span class="mjschool-require-field"></span></label>
 													</div>
 												</div>
@@ -1106,13 +1141,13 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 											}
 											?>
 											<div class="col-sm-12 col-md-2 col-lg-2 col-xl-2 input">
-												<select name="student_id[]" id="students_list_<?php echo esc_attr( $i ); ?>" data-index="<?php echo esc_attr( $i ); ?>" class="form-control validate[required] select_student student_check <?php echo esc_attr( $new_class_var ); ?> students_list_<?php echo esc_attr( $i ); ?>">
+												<select name="student_id[]" id="students_list_<?php echo esc_attr( intval( $i ) ); ?>" data-index="<?php echo esc_attr( intval( $i ) ); ?>" class="form-control validate[required] select_student student_check <?php echo esc_attr( $new_class_var ); ?> students_list_<?php echo esc_attr( intval( $i ) ); ?>">
 													<?php
 													if ( ! empty( $student_data ) ) {
 														$roll_no  = get_user_meta( $student_data->student_id, 'roll_id', true );
 														$class_id = get_user_meta( $student_data->student_id, 'class_name', true );
 														?>
-														<option value="<?php echo esc_attr( $student_data->student_id ); ?>"><?php echo esc_attr( mjschool_get_display_name( $student_data->student_id ) ) . ' ( ' . esc_attr( $roll_no ) . ' ) ( ' . esc_html( mjschool_get_class_name( $class_id ) ) . ' )'; ?></option>
+														<option value="<?php echo esc_attr( intval( $student_data->student_id ) ); ?>"><?php echo esc_html( mjschool_get_display_name( $student_data->student_id ) ) . ' ( ' . esc_html( $roll_no ) . ' ) ( ' . esc_html( mjschool_get_class_name( $class_id ) ) . ' )'; ?></option>
 														<?php
 													} else {
 														?>
@@ -1122,7 +1157,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 															$roll_no  = get_user_meta( $student, 'roll_id', true );
 															$class_id = get_user_meta( $student, 'class_name', true );
 															?>
-															<option value="<?php echo esc_attr( $student ); ?>"><?php echo esc_attr( mjschool_get_display_name( $student ) ) . ' ( ' . esc_attr( $roll_no ) . ' ) ( ' . esc_html( mjschool_get_class_name( $class_id ) ) . ' )'; ?></option>
+															<option value="<?php echo esc_attr( intval( $student ) ); ?>"><?php echo esc_html( mjschool_get_display_name( $student ) ) . ' ( ' . esc_html( $roll_no ) . ' ) ( ' . esc_html( mjschool_get_class_name( $class_id ) ) . ' )'; ?></option>
 															<?php
 														}
 													}
@@ -1135,7 +1170,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 												<div class="col-sm-12 col-md-2 col-lg-2 col-xl-2">
 													<div class="form-group input">
 														<div class="col-md-12 form-control">
-															<input id="assign_date_<?php echo esc_attr( $i ); ?>"  value="<?php echo esc_attr( mjschool_get_date_in_input_box( $student_data->assign_date ) ); ?>" class="form-control" type="text" name="assign_date[]" readonly>
+															<input id="assign_date_<?php echo esc_attr( intval( $i ) ); ?>"  value="<?php echo esc_attr( mjschool_get_date_in_input_box( $student_data->assign_date ) ); ?>" class="form-control" type="text" name="assign_date[]" readonly>
 														</div>
 													</div>
 												</div>
@@ -1144,8 +1179,8 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 												?>
 												<div class="col-sm-12 col-md-2 col-lg-2 col-xl-2">
 													<div class="form-group input">
-														<div class="col-md-12 col-sm-12 col-xs-12 form-control assigndate_<?php echo esc_attr( $i ); ?>" id="assigndate_<?php echo esc_attr( $i ); ?>" name="assigndate">
-															<input id="assign_date_<?php echo esc_attr( $i ); ?>" placeholder="<?php esc_html_e( 'Enter Date', 'mjschool' ); ?>" class="datepicker form-control text-input mjschool-placeholder-color" type="text" name="assign_date[]" autocomplete="off" value="<?php echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); ?>">
+														<div class="col-md-12 col-sm-12 col-xs-12 form-control assigndate_<?php echo esc_attr( intval( $i ) ); ?>" id="assigndate_<?php echo esc_attr( intval( $i ) ); ?>" name="assigndate">
+															<input id="assign_date_<?php echo esc_attr( intval( $i ) ); ?>" placeholder="<?php esc_attr_e( 'Enter Date', 'mjschool' ); ?>" class="datepicker form-control text-input mjschool-placeholder-color" type="text" name="assign_date[]" autocomplete="off" value="<?php echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); ?>">
 														</div>
 													</div>
 												</div>
@@ -1157,7 +1192,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 													<label class="col-md-2 col-sm-2 col-xs-12 control-label mjschool-occupied col-form-label mjschool-occupied-available-btn" for="available"><?php esc_html_e( 'Occupied', 'mjschool' ); ?></label>
 												</div>
 												<div class="col-md-2 col-sm-2 col-xs-12 input">
-													<a href="?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=delete_assign_bed&hostel_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ); ?>&room_id=<?php echo esc_attr( mjschool_encrypt_id( $data->room_id ) ); ?>&bed_id=<?php echo esc_attr( mjschool_encrypt_id( $data->id ) ); ?>&student_id=<?php echo esc_attr( mjschool_encrypt_id( $student_data->student_id ) ); ?>" class="btn btn-danger delete_btn" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to vacant this bed?', 'mjschool' ); ?>' );"><?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
+													<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_details&tab1=assign_bed&action=delete_assign_bed&hostel_id=' . rawurlencode( $hostel_id ) . '&room_id=' . rawurlencode( mjschool_encrypt_id( $data->room_id ) ) . '&bed_id=' . rawurlencode( mjschool_encrypt_id( $data->id ) ) . '&student_id=' . rawurlencode( mjschool_encrypt_id( $student_data->student_id ) ) ) ); ?>" class="btn btn-danger delete_btn" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to vacant this bed?', 'mjschool' ); ?>' );"><?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
 												</div>
 												<?php
 											} else {
@@ -1178,7 +1213,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 								<div class="form-body mjschool-user-form">
 									<div class="row">
 										<div class="col-sm-6">
-											<input type="submit" id="Assign_bed" value="<?php esc_html_e( 'Assign Bed', 'mjschool' ); ?>" name="assign_room" class="btn btn-success mjschool-save-btn mjschool-assign-room-for-alert" />
+											<input type="submit" id="Assign_bed" value="<?php esc_attr_e( 'Assign Bed', 'mjschool' ); ?>" name="assign_room" class="btn btn-success mjschool-save-btn mjschool-assign-room-for-alert" />
 										</div>
 									</div>
 								</div>

@@ -73,7 +73,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		$result = $mjschool_obj_lib->mjschool_delete_book( mjschool_decrypt_id( intval(wp_unslash($_REQUEST['book_id'])) ) );
 		if ( $result ) {
 			$nonce = wp_create_nonce( 'mjschool_library_tab' );
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=1' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=1' ));
 			die();
 		}
 	} else {
@@ -81,7 +81,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 	}
 }
 if ( isset( $_POST['delete_selected_book'] ) ) {
-	// Verify nonce
+	
 	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bulk_delete_books' ) ) {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
@@ -90,7 +90,7 @@ if ( isset( $_POST['delete_selected_book'] ) ) {
 		foreach ( $_POST['id'] as $id ) {
 			$result = $mjschool_obj_lib->mjschool_delete_book( intval( $id ) );
 		}
-		wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=booklist&message=1' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=booklist&message=1' ));
 		exit;
 	}
 }
@@ -106,7 +106,7 @@ if ( isset( $_POST['save_book'] ) ) {
 				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				$module                    = 'library';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $book_id );
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=4' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=4' ));
 				die();
 			} else {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -117,7 +117,7 @@ if ( isset( $_POST['save_book'] ) ) {
 			$module                    = 'library';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=3' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=3' ));
 				die();
 			}
 		}
@@ -154,7 +154,7 @@ if ( isset( $_POST['save_issue_book'] ) ) {
 							}
 						}
 					}
-					wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=issuelist&_wpnonce='.esc_attr( $nonce ).'&message=5' );
+					wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=issuelist&_wpnonce='.esc_attr( $nonce ).'&message=5' ));
 					die();
 				}
 			} else {
@@ -194,7 +194,7 @@ if ( isset( $_POST['save_issue_book'] ) ) {
 						}
 					}
 				}
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=issuelist&_wpnonce='.esc_attr( $nonce ).'&message=6' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=issuelist&_wpnonce='.esc_attr( $nonce ).'&message=6' ));
 				die();
 			}
 		}
@@ -228,12 +228,12 @@ if ( isset( $_REQUEST['upload_csv_file'] ) ) {
 		$upload_dir = wp_upload_dir();
 		if ( in_array( $file_ext, $extensions ) === false ) {
 			$errors[] = 'this file not allowed, please choose a CSV file.';
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=8' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=8') );
 			die();
 		}
 		if ( $file_size > 2097152 ) {
 			$errors[] = 'File size limit 2 MB';
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=9' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=9') );
 			die();
 		}
 		if ( empty( $errors ) === true ) {
@@ -294,7 +294,7 @@ if ( isset( $_REQUEST['upload_csv_file'] ) ) {
 			}
 		}
 		if ( isset( $success ) ) {
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=7' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=booklist&_wpnonce='.esc_attr( $nonce ).'&message=7') );
 			die();
 		}
 	}
@@ -516,7 +516,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																<?php
 																if ( ! empty( $custom_field_value ) ) {
 																	?>
-																	<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																	<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																	<?php
 																} else {
 																	esc_html_e( 'Not Provided', 'mjschool' );
@@ -607,7 +607,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 					if ( isset($user_access['add']) && $user_access['add'] === '1' ) {
 						?>
 						<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-							<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=library&tab=addbook' ); ?>">
+							<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=library&tab=addbook' )); ?>">
 								<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 							</a>
 							<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -781,7 +781,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 				// --------- Get module-wise custom field data. --------------//
 				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				$module                    = 'library';
-				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>
 				<div class="form-body mjschool-user-form">
 					<div class="row">
@@ -1074,14 +1074,14 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 											}
 										}
 									}
-									wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=issue_return&user_id=' . intval(wp_unslash($_REQUEST['user_id'])) . '&issue_message=issue_success' );
+									wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=issue_return&user_id=' . intval(wp_unslash($_REQUEST['user_id'])) . '&issue_message=issue_success' ));
 									die();
 								}
 							}
 							if ( isset( $_POST['return_book'] ) ) {
 								$result = $mjschool_obj_lib->mjschool_submit_return_book( wp_unslash($_POST) );
 								if ( $result ) {
-									wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=issue_return&user_id=' . intval(wp_unslash($_REQUEST['user_id'])) . '&issue_message=return_success' );
+									wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=issue_return&user_id=' . intval(wp_unslash($_REQUEST['user_id'])) . '&issue_message=return_success' ));
 									die();
 								}
 							}
@@ -1667,13 +1667,13 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 												}
 											}
 										}
-										wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=view_book&book_id=' . mjschool_encrypt_id( $bookid ) . '&issue_message=issue_success' );
+										wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=view_book&book_id=' . mjschool_encrypt_id( $bookid ) . '&issue_message=issue_success' ));
 										die();
 									}
 								}
 								if ( isset( $_POST['return_book'] ) ) {
 									$result = $mjschool_obj_lib->mjschool_submit_return_book( wp_unslash($_POST) );
-									wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=library&tab=view_book&book_id=' . mjschool_encrypt_id( $bookid ) . '&issue_message=return_success' );
+									wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=library&tab=view_book&book_id=' . mjschool_encrypt_id( $bookid ) . '&issue_message=return_success' ));
 									die();
 								}
 								?>

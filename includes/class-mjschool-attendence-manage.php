@@ -63,25 +63,29 @@ class Mjschool_Attendence_Manage
      */
     public function mjschool_insert_student_attendance( $curr_date, $class_id, $user_id, $attend_by, $status, $comment, $attendence_type )
     {
+        // Sanitize parameters at function entry
+        $curr_date       = sanitize_text_field($curr_date);
+        $class_id        = intval($class_id);
+        $user_id         = intval($user_id);
+        $attend_by       = intval($attend_by);
+        $status          = sanitize_text_field($status);
+        $comment         = sanitize_textarea_field($comment);
+        $attendence_type = sanitize_text_field($attendence_type);
+        
         global $wpdb;
         $table_name            = $wpdb->prefix . 'mjschool_attendence';
         $curr_date             = date('Y-m-d', strtotime($curr_date));
         $check_insrt_or_update = $this->mjschool_check_has_attendace($user_id, $class_id, $curr_date);
         if (empty($check_insrt_or_update) ) {
-            // Sanitize inputs.
-            $attend_by       = sanitize_text_field($attend_by);
-            $status          = sanitize_text_field($status);
-            $comment         = sanitize_textarea_field($comment);
-            $attendence_type = sanitize_text_field($attendence_type);
             // Insert sanitized data.
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $savedata = $wpdb->insert(
                 $table_name,
                 array(
                 'attendence_date' => sanitize_text_field($curr_date),
-                'attend_by'       => intval($attend_by),
-                'class_id'        => intval($class_id),
-                'user_id'         => intval($user_id),
+                'attend_by'       => $attend_by,
+                'class_id'        => $class_id,
+                'user_id'         => $user_id,
                 'status'          => $status,
                 'role_name'       => 'student',
                 'comment'         => $comment,
@@ -90,11 +94,6 @@ class Mjschool_Attendence_Manage
                 array( '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s' ) // Define types
             );
         } else {
-            // Sanitize inputs.
-            $attend_by       = sanitize_text_field($attend_by);
-            $status          = sanitize_text_field($status);
-            $comment         = sanitize_textarea_field($comment);
-            $attendence_type = sanitize_text_field($attendence_type);
             // Update sanitized data.
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $savedata = $wpdb->update(
@@ -107,8 +106,8 @@ class Mjschool_Attendence_Manage
                 ),
                 array(
                 'attendence_date' => sanitize_text_field($curr_date),
-                'class_id'        => intval($class_id),
-                'user_id'         => intval($user_id),
+                'class_id'        => $class_id,
+                'user_id'         => $user_id,
                 ),
                 array( '%d', '%s', '%s', '%s' ), // Define types for `set` values.
                 array( '%s', '%d', '%d' )       // Define types for `where` values.
@@ -135,6 +134,17 @@ class Mjschool_Attendence_Manage
      */
     public function mjschool_insert_subject_wise_attendance( $curr_date, $class_id, $user_id, $attend_by, $status, $sub_id, $comment, $attendence_type, $section_id )
     {
+        // Sanitize parameters at function entry
+        $curr_date       = sanitize_text_field($curr_date);
+        $class_id        = intval($class_id);
+        $user_id         = intval($user_id);
+        $attend_by       = intval($attend_by);
+        $status          = sanitize_text_field($status);
+        $sub_id          = intval($sub_id);
+        $comment         = sanitize_textarea_field($comment);
+        $attendence_type = sanitize_text_field($attendence_type);
+        $section_id      = intval($section_id);
+        
         if (empty($sub_id) ) {
             $categories = 'class';
         } else {
@@ -151,23 +161,15 @@ class Mjschool_Attendence_Manage
         $curr_date             = date('Y-m-d', strtotime($curr_date));
         $check_insrt_or_update = $this->mjschool_check_has_subject_attendace($user_id, $class_id, $curr_date, $sub_id, $section_id);
         if (empty($check_insrt_or_update) ) {
-            // Sanitize inputs.
-            $curr_date       = sanitize_text_field($curr_date);
-            $attend_by       = sanitize_text_field($attend_by);
-            $class_id        = intval($class_id);
-            $sub_id          = intval($sub_id);
-            $user_id         = intval($user_id);
-            $status          = sanitize_text_field($status);
-            $comment         = sanitize_textarea_field($comment);
-            $attendence_type = sanitize_text_field($attendence_type);
-            $categories      = sanitize_text_field($categories);
-            $section_id      = intval($section_id);
+            // Sanitize category for insert
+            $categories = sanitize_text_field($categories);
+            
             // Insert sanitized data.
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $savedata = $wpdb->insert(
                 $table_name,
                 array(
-                'attendance_date' => $curr_date,
+                'attendance_date' => sanitize_text_field($curr_date),
                 'attend_by'       => $attend_by,
                 'class_id'        => $class_id,
                 'sub_id'          => $sub_id,
@@ -182,17 +184,9 @@ class Mjschool_Attendence_Manage
                 array( '%s', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%d' ) // Specify data types
             );
         } else {
-            // Sanitize inputs.
-            $curr_date       = sanitize_text_field($curr_date);
-            $attend_by       = intval($attend_by);
-            $class_id        = intval($class_id);
-            $sub_id          = intval($sub_id);
-            $user_id         = intval($user_id);
-            $status          = sanitize_text_field($status);
-            $comment         = sanitize_textarea_field($comment);
-            $attendence_type = sanitize_text_field($attendence_type);
-            $categories      = sanitize_text_field($categories);
-            $section_id      = intval($section_id);
+            // Sanitize category for update
+            $categories = sanitize_text_field($categories);
+            
             // Prepare data for update.
             $attendace_data = array(
             'attend_by'       => $attend_by,
@@ -203,7 +197,7 @@ class Mjschool_Attendence_Manage
             'categories'      => $categories,
             'section_id'      => $section_id,
             'sub_id'          => $sub_id,
-            'attendance_date' => $curr_date,
+            'attendance_date' => sanitize_text_field($curr_date),
             'class_id'        => $class_id,
             'user_id'         => $user_id,
             );
@@ -234,10 +228,24 @@ class Mjschool_Attendence_Manage
      */
     public function mjschool_check_has_attendace( $user_id, $class_id, $attendace_date )
     {
+        // Sanitize parameters at function entry
+        $user_id        = intval($user_id);
+        $class_id       = intval($class_id);
+        $attendace_date = sanitize_text_field($attendace_date);
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
+        
+        // Use prepared statement to prevent SQL injection
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        return $results = $wpdb->get_row("SELECT * FROM $table_name WHERE attendence_date='$attendace_date' and class_id=$class_id and user_id =" . $user_id);
+        return $results = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM $table_name WHERE attendence_date = %s AND class_id = %d AND user_id = %d",
+                $attendace_date,
+                $class_id,
+                $user_id
+            )
+        );
     }
 	 /**
      * Check if a subject-wise attendance record exists for a user.
@@ -254,6 +262,13 @@ class Mjschool_Attendence_Manage
      */
     public function mjschool_check_has_subject_attendace( $user_id, $class_id, $attendace_date, $sub_id, $section_id )
     {
+        // Sanitize parameters at function entry
+        $user_id        = intval($user_id);
+        $class_id       = intval($class_id);
+        $attendace_date = sanitize_text_field($attendace_date);
+        $sub_id         = intval($sub_id);
+        $section_id     = intval($section_id);
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_sub_attendance';
         if (! empty($class_id) && ! empty($sub_id) && ! empty($section_id) ) {
@@ -264,17 +279,17 @@ class Mjschool_Attendence_Manage
         } elseif (! empty($class_id) && empty($sub_id) && ! empty($section_id) ) {
          // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $results = $wpdb->get_row(
-                $wpdb->prepare( "SELECT * FROM $table_name WHERE attendance_date = %s AND class_id = %d AND section_id = %d AND user_id = %d AND sub_id =%d", $attendace_date, $class_id, $section_id, $user_id, $sub_id, )
+                $wpdb->prepare( "SELECT * FROM $table_name WHERE attendance_date = %s AND class_id = %d AND section_id = %d AND user_id = %d AND sub_id = %d", $attendace_date, $class_id, $section_id, $user_id, $sub_id, )
             );
         } elseif (! empty($class_id) && ! empty($sub_id) && empty($section_id) ) {
          // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $results = $wpdb->get_row(
-                $wpdb->prepare( "SELECT * FROM $table_name WHERE attendance_date = %s AND class_id = %d AND sub_id = %d AND user_id = %d AND section_id =%d", $attendace_date, $class_id, $sub_id, $user_id, $section_id, )
+                $wpdb->prepare( "SELECT * FROM $table_name WHERE attendance_date = %s AND class_id = %d AND sub_id = %d AND user_id = %d AND section_id = %d", $attendace_date, $class_id, $sub_id, $user_id, $section_id, )
             );
         } else {
          // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $results = $wpdb->get_row(
-                $wpdb->prepare( "SELECT * FROM $table_name WHERE attendance_date = %s AND class_id = %d AND user_id = %d AND section_id =%d AND sub_id =%d", $attendace_date, $class_id, $user_id, $section_id, $sub_id )
+                $wpdb->prepare( "SELECT * FROM $table_name WHERE attendance_date = %s AND class_id = %d AND user_id = %d AND section_id = %d AND sub_id = %d", $attendace_date, $class_id, $user_id, $section_id, $sub_id )
             );
         }
         return $results;
@@ -299,6 +314,13 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_insert_teacher_attendance( $curr_date, $user_id, $attend_by, $status, $comment )
     {
+        // Sanitize parameters at function entry
+        $curr_date  = sanitize_text_field($curr_date);
+        $user_id    = intval($user_id);
+        $attend_by  = intval($attend_by);
+        $status     = sanitize_text_field($status);
+        $comment    = sanitize_textarea_field($comment);
+        
         $class_id = 0;
         global $wpdb;
         $table_name            = $wpdb->prefix . 'mjschool_attendence';
@@ -309,14 +331,15 @@ class Mjschool_Attendence_Manage
             $savedata = $wpdb->insert(
                 $table_name,
                 array(
-                'attendence_date' => $curr_date,
+                'attendence_date' => sanitize_text_field($curr_date),
                 'attend_by'       => $attend_by,
                 'class_id'        => $class_id,
                 'user_id'         => $user_id,
                 'status'          => $status,
                 'role_name'       => 'teacher',
                 'comment'         => $comment,
-                )
+                ),
+                array( '%s', '%d', '%d', '%d', '%s', '%s', '%s' ) // Define data types
             );
         } else {
          // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -328,12 +351,15 @@ class Mjschool_Attendence_Manage
                 'comment'   => $comment,
                 ),
                 array(
-                'attendence_date' => $curr_date,
+                'attendence_date' => sanitize_text_field($curr_date),
                 'class_id'        => $class_id,
                 'user_id'         => $user_id,
-                )
+                ),
+                array( '%d', '%s', '%s' ), // Define types for `set` values.
+                array( '%s', '%d', '%d' )  // Define types for `where` values.
             );
         }
+        return $savedata;
     }
 	/**
 	 * Save or update daily student attendance for a specific class.
@@ -356,12 +382,24 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_save_attendence( $curr_date, $class_id, $attendence, $attend_by, $status )
     {
+        // Sanitize parameters at function entry
+        $curr_date  = sanitize_text_field($curr_date);
+        $class_id   = intval($class_id);
+        $attend_by  = intval($attend_by);
+        $status     = sanitize_text_field($status);
+        
+        // Ensure $attendence is an array and sanitize its values
+        if (!is_array($attendence)) {
+            $attendence = array();
+        }
+        $attendence = array_map('intval', $attendence);
+        
         global $wpdb;
         $role       = 'student';
         $table_name = $wpdb->prefix . 'mjschool_attendence';
         $exlude_id  = mjschool_approve_student_list();
         $students = get_users(array( 'meta_key' => 'class_name', 'meta_value' => $class_id, 'role' => 'student', 'exclude' => $exlude_id ));
-        if ($status == 'Present' ) {
+        if ($status === 'Present' ) {
             $new_status = 'Absent';
         } else {
             $new_status = 'Present';
@@ -371,11 +409,11 @@ class Mjschool_Attendence_Manage
         $record_status          = '';
         $curr_date              = date('Y-m-d');
         foreach ( $check_today_attendence as $today_data ) {
-            if ($today_data['class_id'] == $class_id && $today_data['attendence_date'] == $curr_date ) {
+            if ($today_data['class_id'] === $class_id && $today_data['attendence_date'] === $curr_date ) {
                 $record_status = 'update';
             }
         }
-        if ($record_status == 'update' ) {
+        if ($record_status === 'update' ) {
             return $savedata = $this->mjschool_update_attendence($students, $curr_date, $class_id, $attendence, $attend_by, $status, $table_name);
         } else {
             foreach ( $students as $stud ) {
@@ -386,8 +424,8 @@ class Mjschool_Attendence_Manage
                         $table_name,
                         array(
                         'attendence_date' => sanitize_text_field($curr_date),
-                        'attend_by'       => intval($attend_by),
-                        'class_id'        => intval($class_id),
+                        'attend_by'       => $attend_by,
+                        'class_id'        => $class_id,
                         'user_id'         => intval($stud->ID),
                         'status'          => sanitize_text_field($status),
                         'role_name'       => sanitize_text_field($role),
@@ -401,8 +439,8 @@ class Mjschool_Attendence_Manage
                         $table_name,
                         array(
                         'attendence_date' => sanitize_text_field($curr_date),
-                        'attend_by'       => sanitize_text_field($attend_by),
-                        'class_id'        => intval($class_id),
+                        'attend_by'       => $attend_by,
+                        'class_id'        => $class_id,
                         'user_id'         => intval($stud->ID),
                         'status'          => sanitize_text_field($new_status),
                         'role_name'       => sanitize_text_field($role),
@@ -411,10 +449,11 @@ class Mjschool_Attendence_Manage
                     );
                 }
             }
-            if ($savedata ) {
+            if (isset($savedata) && $savedata ) {
                 return $savedata;
             }
         }
+        return false;
     }
 	/**
 	 * Update existing student attendance records for a class on a specific date.
@@ -438,12 +477,26 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_update_attendence( $students, $curr_date, $class_id, $attendence, $attend_by, $status, $table_name )
     {
+        // Sanitize parameters at function entry
+        $curr_date  = sanitize_text_field($curr_date);
+        $class_id   = intval($class_id);
+        $attend_by  = intval($attend_by);
+        $status     = sanitize_text_field($status);
+        
+        // Ensure $attendence is an array and sanitize its values
+        if (!is_array($attendence)) {
+            $attendence = array();
+        }
+        $attendence = array_map('intval', $attendence);
+        
         global $wpdb;
-        if ($status == 'Present' ) {
+        if ($status === 'Present' ) {
             $new_status = 'Absent';
         } else {
             $new_status = 'Present';
         }
+        
+        $result = false;
         foreach ( $students as $stud ) {
             if (in_array($stud->ID, $attendence) ) {
                 // Sanitize and update data.
@@ -451,12 +504,12 @@ class Mjschool_Attendence_Manage
                 $result = $wpdb->update(
                     $table_name,
                     array(
-                    'attend_by' => intval($attend_by),
+                    'attend_by' => $attend_by,
                     'status'    => sanitize_text_field($status),
                     ),
                     array(
                     'attendence_date' => sanitize_text_field($curr_date),
-                    'class_id'        => intval($class_id),
+                    'class_id'        => $class_id,
                     'user_id'         => intval($stud->ID),
                     ),
                     array( '%d', '%s' ), // Define data types for update values.
@@ -468,12 +521,12 @@ class Mjschool_Attendence_Manage
                 $result = $wpdb->update(
                     $table_name,
                     array(
-                    'attend_by' => sanitize_text_field($attend_by),
+                    'attend_by' => $attend_by,
                     'status'    => sanitize_text_field($new_status),
                     ),
                     array(
                     'attendence_date' => sanitize_text_field($curr_date),
-                    'class_id'        => intval($class_id),
+                    'class_id'        => $class_id,
                     'user_id'         => intval($stud->ID),
                     ),
                     array( '%d', '%s' ), // Define data types for update values.
@@ -503,10 +556,21 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_save_teacher_attendence( $curr_date, $attendence, $attend_by, $status )
     {
+        // Sanitize parameters at function entry
+        $curr_date  = sanitize_text_field($curr_date);
+        $attend_by  = intval($attend_by);
+        $status     = sanitize_text_field($status);
+        
+        // Ensure $attendence is an array and sanitize its values
+        if (!is_array($attendence)) {
+            $attendence = array();
+        }
+        $attendence = array_map('intval', $attendence);
+        
         $role = 'teacher';
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
-        if ($status == 'Present' ) {
+        if ($status === 'Present' ) {
             $new_status = 'Absent';
         } else {
             $new_status = 'Present';
@@ -516,11 +580,11 @@ class Mjschool_Attendence_Manage
         $record_status          = '';
         $curr_date              = $curr_date;
         foreach ( $check_today_attendence as $today_data ) {
-            if ($today_data['attendence_date'] == $curr_date ) {
+            if ($today_data['attendence_date'] === $curr_date ) {
                 $record_status = 'update';
             }
         }
-        if ($record_status == 'update' ) {
+        if ($record_status === 'update' ) {
             return $savedata = $this->mjschool_update_teacher_attendence($curr_date, $attendence, $attend_by, $status, $table_name);
         } else {
             foreach ( mjschool_get_users_data('teacher') as $stud ) {
@@ -530,30 +594,33 @@ class Mjschool_Attendence_Manage
                     $result = $wpdb->insert(
                         $table_name,
                         array(
-                        'attendence_date' => $curr_date,
+                        'attendence_date' => sanitize_text_field($curr_date),
                         'attend_by'       => $attend_by,
-                        'user_id'         => $stud->ID,
-                        'status'          => $status,
-                        'role_name'       => $role,
-                        'class_id'        => $class_id,
-                        )
+                        'user_id'         => intval($stud->ID),
+                        'status'          => sanitize_text_field($status),
+                        'role_name'       => sanitize_text_field($role),
+                        'class_id'        => intval($class_id),
+                        ),
+                        array( '%s', '%d', '%d', '%s', '%s', '%d' ) // Define data types
                     );
                 } else {
+                    $class_id = get_user_meta($stud->ID, 'class_name', true);
                  	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
                     $result = $wpdb->insert(
                         $table_name,
                         array(
-                        'attendence_date' => $curr_date,
+                        'attendence_date' => sanitize_text_field($curr_date),
                         'attend_by'       => $attend_by,
-                        'user_id'         => $stud->ID,
-                        'status'          => $new_status,
-                        'role_name'       => $role,
-                        'class_id'        => $class_id,
-                        )
+                        'user_id'         => intval($stud->ID),
+                        'status'          => sanitize_text_field($new_status),
+                        'role_name'       => sanitize_text_field($role),
+                        'class_id'        => intval($class_id),
+                        ),
+                        array( '%s', '%d', '%d', '%s', '%s', '%d' ) // Define data types
                     );
                 }
             }
-            return $result;
+            return isset($result) ? $result : false;
         }
     }
 	/**
@@ -576,21 +643,31 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_update_teacher_attendence( $curr_date, $attendence, $attend_by, $status, $table_name )
     {
+        // Sanitize parameters at function entry
+        $curr_date  = sanitize_text_field($curr_date);
+        $attend_by  = intval($attend_by);
+        $status     = sanitize_text_field($status);
+        
+        // Ensure $attendence is an array and sanitize its values
+        if (!is_array($attendence)) {
+            $attendence = array();
+        }
+        $attendence = array_map('intval', $attendence);
+        
         global $wpdb;
-        if ($status == 'Present' ) {
+        if ($status === 'Present' ) {
             $new_status = 'Absent';
         } else {
             $new_status = 'Present';
         }
+        
+        $result = false;
         foreach ( mjschool_get_users_data('teacher') as $stud ) {
-            // Sanitize inputs.
-            $attend_by  = intval($attend_by);
-            $status     = sanitize_text_field($status);
-            $new_status = sanitize_text_field($new_status);
-            $curr_date  = sanitize_text_field($curr_date);
-            $user_id    = intval($stud->ID);  // Ensure ID is an integer.
+            // Sanitize user ID
+            $user_id = intval($stud->ID);
+            
             // Prepare and execute the update query with placeholders.
-            if (in_array($user_id, $attendance) ) {
+            if (in_array($user_id, $attendence) ) {
              	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
                 $result = $wpdb->update(
                     $table_name,
@@ -611,7 +688,7 @@ class Mjschool_Attendence_Manage
                     $table_name,
                     array(
                     'attend_by' => $attend_by,
-                    'status'    => $new_status,
+                    'status'    => sanitize_text_field($new_status),
                     ),
                     array(
                     'attendence_date' => $curr_date,
@@ -626,12 +703,14 @@ class Mjschool_Attendence_Manage
     }
     public function mjschool_show_today_attendence( $class_id, $role )
     {
+        // Sanitize parameters at function entry
+        $class_id = intval($class_id);
+        $role     = sanitize_text_field($role);
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
         $curr_date  = date('Y-m-d');
         $curr_date  = sanitize_text_field($curr_date); // Sanitize input.
-        $class_id   = intval($class_id); // Ensure class ID is an integer.
-        $role       = sanitize_text_field($role); // Sanitize input.
         // Use prepared statement to securely query the database.
         $query = $wpdb->prepare( "SELECT * FROM $table_name WHERE attendence_date = %s AND class_id = %d AND role_name = %s", $curr_date, $class_id, $role );
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -654,11 +733,13 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_show_today_teacher_attendence( $role )
     {
+        // Sanitize parameter at function entry
+        $role = sanitize_text_field($role);
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
         $curr_date  = date('Y-m-d');
         $curr_date  = sanitize_text_field($curr_date); // Sanitize input.
-        $role       = sanitize_text_field($role); // Sanitize input.
         // Use prepared statement to securely query the database.
         $query = $wpdb->prepare( "SELECT * FROM $table_name WHERE attendence_date = %s AND role_name = %s", $curr_date, $role );
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -683,12 +764,14 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_get_attendence( $userid, $class_id, $date )
     {
+        // Sanitize parameters at function entry
+        $userid   = intval($userid);
+        $class_id = intval($class_id);
+        $date     = sanitize_text_field($date);
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
-        $curr_date  = $date;
-        $curr_date  = sanitize_text_field($curr_date); // Sanitize input.
-        $class_id   = intval($class_id); // Ensure class ID is an integer.
-        $userid     = intval($userid); // Ensure user ID is an integer.
+        $curr_date  = sanitize_text_field($date);
         // Use prepared statement to securely query the database.
         $query = $wpdb->prepare( "SELECT * FROM $table_name WHERE attendence_date = %s AND class_id = %d AND user_id = %d AND status = %s", $curr_date, $class_id, $userid, 'Present' );
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -713,7 +796,7 @@ class Mjschool_Attendence_Manage
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name"));
+        $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name WHERE 1=1"));
         return $result;
     }
 	/**
@@ -732,7 +815,7 @@ class Mjschool_Attendence_Manage
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_sub_attendance';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name"));
+        $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name WHERE 1=1"));
         return $result;
     }
 	/**
@@ -751,10 +834,13 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_get_students( $uid )
     {
+        // Sanitize parameter at function entry
+        $uid = intval($uid);
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_sub_attendance';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result = $wpdb->get_results($wpdb->prepare("SELECT status FROM $table_name where user_id=%d and role_name=%s", intval($uid), 'student'));
+        $result = $wpdb->get_results($wpdb->prepare("SELECT status FROM $table_name where user_id=%d and role_name=%s", $uid, 'student'));
         return $result;
     }
 	/**
@@ -775,11 +861,16 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_check_attendence( $userid, $class_id, $date )
     {
+        // Sanitize parameters at function entry
+        $userid   = intval($userid);
+        $class_id = intval($class_id);
+        $date     = sanitize_text_field($date);
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
         $curr_date  = date('Y-m-d', strtotime($date));
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE attendence_date=%s and class_id=%d and user_id=%d", $date, $class_id, $userid));
+        $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE attendence_date=%s and class_id=%d and user_id=%d", sanitize_text_field($curr_date), $class_id, $userid));
         return $result;
     }
 	/**
@@ -801,11 +892,17 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_check_sub_attendence( $userid, $class_id, $date, $sub_id )
     {
+        // Sanitize parameters at function entry
+        $userid   = intval($userid);
+        $class_id = intval($class_id);
+        $date     = sanitize_text_field($date);
+        $sub_id   = intval($sub_id);
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_sub_attendance';
         $curr_date  = date('Y-m-d', strtotime($date));
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE attendance_date = %s AND class_id = %d AND sub_id = %d AND user_id = %d", $curr_date, $class_id, $sub_id, $userid));
+        $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE attendance_date = %s AND class_id = %d AND sub_id = %d AND user_id = %d", sanitize_text_field($curr_date), $class_id, $sub_id, $userid));
         return $result;
     }
 	/**
@@ -825,9 +922,13 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_get_teacher_attendence( $userid, $date )
     {
+        // Sanitize parameters at function entry
+        $userid = intval($userid);
+        $date   = sanitize_text_field($date);
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
-        $curr_date  = $date;
+        $curr_date  = sanitize_text_field($date);
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_var($wpdb->prepare("SELECT * FROM $table_name WHERE attendence_date = %s AND user_id = %d AND status = %s", $curr_date, $userid, 'Present'));
         if ($result ) {
@@ -854,7 +955,7 @@ class Mjschool_Attendence_Manage
         $table_name = $wpdb->prefix . 'mjschool_attendence';
         $curr_date  = date('Y-m-d');
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        return $result = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table_name WHERE attendence_date = %s AND status = %s", $curr_date, 'Present'));
+        return $result = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table_name WHERE attendence_date = %s AND status = %s", sanitize_text_field($curr_date), 'Present'));
     }
 	/**
 	 * Retrieve all attendance records for a specific user (used primarily for teachers).
@@ -871,6 +972,9 @@ class Mjschool_Attendence_Manage
 	 */
     public function mjschool_get_all_user_teacher_attendence( $user_id )
     {
+        // Sanitize parameter at function entry
+        $user_id = intval($user_id);
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context

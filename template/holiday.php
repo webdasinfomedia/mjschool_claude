@@ -165,7 +165,7 @@ if ( isset( $_POST['save_holiday'] ) ) {
 					$json              = json_encode( $notification_data );
 					mjschool_send_push_notification( $json );
 					// End Send Push Notification.//
-					wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=holiday&tab=holidaylist&message=1' );
+					wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=holiday&tab=holidaylist&message=1') );
 					die();
 				}
 			}
@@ -362,7 +362,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																<?php
 																if ( ! empty( $custom_field_value ) ) {
 																	?>
-																	<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																	<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																	<?php
 																} else {
 																	esc_html_e( 'N/A', 'mjschool' );
@@ -560,7 +560,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 				// --------- Get module-wise custom field data. --------------//
 				$custom_field_obj = new Mjschool_Custome_Field();
 				$module           = 'holiday';
-				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>
 				<div class="form-body mjschool-user-form">
 					<div class="row">

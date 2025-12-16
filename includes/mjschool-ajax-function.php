@@ -368,8 +368,8 @@ function mjschool_load_membership_payment_report() {
 			'12' => esc_html__( 'December', 'mjschool' ),
 		);
 		$result             = array();
-		$dataPoints_payment = array();
-		array_push( $dataPoints_payment, array( esc_html__( 'Month', 'mjschool' ), esc_html__( 'Payment', 'mjschool' ) ) );
+		$data_points_payment = array();
+		array_push( $data_points_payment, array( esc_html__( 'Month', 'mjschool' ), esc_html__( 'Payment', 'mjschool' ) ) );
 		$payment_array = array();
 		foreach ( $month as $key => $value ) {
 			$q = $wpdb->prepare( "SELECT * FROM $table_name WHERE YEAR(paid_by_date) = %d AND MONTH(paid_by_date) = %d", $year_val, $key );
@@ -381,11 +381,11 @@ function mjschool_load_membership_payment_report() {
 			}
 			$payment_amount  = $amount;
 			$payment_array[] = $payment_amount;
-			array_push( $dataPoints_payment, array( $value, $payment_amount ) );
+			array_push( $data_points_payment, array( $value, $payment_amount ) );
 		}
 	} else {
 		$select_month       = isset($_REQUEST['month_val']) ? sanitize_text_field( wp_unslash($_REQUEST['month_val']) ) : '';
-		$dataPoints_payment = array();
+		$data_points_payment = array();
 		if ( $month_val === '2' ) {
 			$max_d = '29';
 		} elseif ( $month_val === '4' || $month_val === '6' || $month_val === '9' || $month_val === '11' ) {
@@ -408,7 +408,7 @@ function mjschool_load_membership_payment_report() {
 			$month_val[ $i ] = $value;
 			++$i;
 		}
-		array_push( $dataPoints_payment, array( esc_html__( 'Day', 'mjschool' ), esc_html__( 'Payment', 'mjschool' ) ) );
+		array_push( $data_points_payment, array( esc_html__( 'Day', 'mjschool' ), esc_html__( 'Payment', 'mjschool' ) ) );
 		foreach ( $month_val as $key => $value ) {
 			// GET INCOME EXPENCE DATA.
 			$q = $wpdb->prepare( "SELECT * FROM $table_name WHERE YEAR(paid_by_date) = %d AND MONTH(paid_by_date) = %d AND DAY(paid_by_date) = %d", $year_val, $select_month, $value );
@@ -420,11 +420,11 @@ function mjschool_load_membership_payment_report() {
 			}
 			$payment_amount  = $amount;
 			$payment_array[] = $payment_amount;
-			array_push( $dataPoints_payment, array( $value, $payment_amount ) );
+			array_push( $data_points_payment, array( $value, $payment_amount ) );
 		}
 	}
 	$payment_filtered = array_filter( $payment_array );
-	$new_array    = $dataPoints_payment;
+	$new_array    = $data_points_payment;
 	if ( ! empty( $payment_filtered ) ) {
 		$labels = array_column( $new_array, 0 );
 		$values = array_column( $new_array, 1 );
@@ -651,54 +651,54 @@ function mjschool_payment_dashboard_report_content() {
 		$end_date     = $response[1];
 		$cash_payment = mjschool_get_payment_paid_data_by_date_method( 'Cash', $start_date, $end_date );
 		if ( ! empty( $cash_payment ) ) {
-			$cashAmount = 0;
+			$cash_amount = 0;
 			foreach ( $cash_payment as $cash ) {
-				$cashAmount += $cash->amount;
+				$cash_amount += $cash->amount;
 			}
 		} else {
-			$cashAmount = 0;
+			$cash_amount = 0;
 		}
-		$Cheque_payment = mjschool_get_payment_paid_data_by_date_method( 'Cheque', $start_date, $end_date );
-		if ( ! empty( $Cheque_payment ) ) {
-			$chequeAmount = 0;
-			foreach ( $Cheque_payment as $cheque ) {
-				$chequeAmount += $cheque->amount;
+		$cheque_payment = mjschool_get_payment_paid_data_by_date_method( 'Cheque', $start_date, $end_date );
+		if ( ! empty( $cheque_payment ) ) {
+			$cheque_amount = 0;
+			foreach ( $cheque_payment as $cheque ) {
+				$cheque_amount += $cheque->amount;
 			}
 		} else {
-			$chequeAmount = 0;
+			$cheque_amount = 0;
 		}
 		$bank_payment = mjschool_get_payment_paid_data_by_date_method( 'Bank Transfer', $start_date, $end_date );
 		if ( ! empty( $bank_payment ) ) {
-			$bankAmount = 0;
+			$bank_amount = 0;
 			foreach ( $bank_payment as $bank ) {
-				$bankAmount += $bank->amount;
+				$bank_amount += $bank->amount;
 			}
 		} else {
-			$bankAmount = 0;
+			$bank_amount = 0;
 		}
 		$paypal_payment = mjschool_get_payment_paid_data_by_date_method( 'PayPal', $start_date, $end_date );
 		if ( ! empty( $paypal_payment ) ) {
-			$paypalAmount = 0;
+			$paypal_amount = 0;
 			foreach ( $paypal_payment as $paypal ) {
-				$paypalAmount += $paypal->amount;
+				$paypal_amount += $paypal->amount;
 			}
 		} else {
-			$paypalAmount = 0;
+			$paypal_amount = 0;
 		}
 		$stripe_payment = mjschool_get_payment_paid_data_by_date_method( 'Stripe', $start_date, $end_date );
 		if ( ! empty( $stripe_payment ) ) {
-			$stripeAmount = 0;
+			$stripe_amount = 0;
 			foreach ( $stripe_payment as $stripe ) {
-				$stripeAmount += $stripe->amount;
+				$stripe_amount += $stripe->amount;
 			}
 		} else {
-			$stripeAmount = 0;
+			$stripe_amount = 0;
 		}
 		?>
-	<canvas id="chartJSContainerpayment" width="300" height="250" data-cash="<?php echo esc_js($cashAmount); ?>" data-cheque="<?php echo esc_js($chequeAmount); ?>" data-bank="<?php echo esc_js($bankAmount); ?>" data-paypal="<?php echo esc_js($paypalAmount); ?>" data-stripe="<?php echo esc_js($stripeAmount); ?>" data-symbol="<?php echo esc_js(html_entity_decode(mjschool_get_currency_symbol(get_option('mjschool_currency_code')))); ?>"></canvas>
+	<canvas id="chartJSContainerpayment" width="300" height="250" data-cash="<?php echo esc_js($cash_amount); ?>" data-cheque="<?php echo esc_js($cheque_amount); ?>" data-bank="<?php echo esc_js($bank_amount); ?>" data-paypal="<?php echo esc_js($paypal_amount); ?>" data-stripe="<?php echo esc_js($stripe_amount); ?>" data-symbol="<?php echo esc_js(html_entity_decode(mjschool_get_currency_symbol(get_option('mjschool_currency_code')))); ?>"></canvas>
 	<p class="percent">
 		<?php
-		$Total_amount    = $cashAmount + $chequeAmount + $bankAmount + $paypalAmount + $stripeAmount;
+		$Total_amount    = $cash_amount + $cheque_amount + $bank_amount + $paypal_amount + $stripe_amount;
 		$currency_symbol = html_entity_decode( mjschool_get_currency_symbol( get_option( 'mjschool_currency_code' ) ) );
 		echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $Total_amount, 2, '.', '' ) ) );
 		?>
@@ -1422,9 +1422,9 @@ function mjschool_teacher_attendance_graph_report_data() {
 		'colors'         => array( '#5840bb', '#f25656' ),
 	);
 	
-	$GoogleCharts = new GoogleCharts();
+	$google_charts = new GoogleCharts();
 	if ( ! empty( $report_2 ) ) {
-		$chart = $GoogleCharts->load( 'column', 'mjschool-chart-div-last-month' )->get( $chart_array, $options );
+		$chart = $google_charts->load( 'column', 'mjschool-chart-div-last-month' )->get( $chart_array, $options );
 	} else {
 		 ?>
 		<div class="mjschool-calendar-event-new">
@@ -1615,13 +1615,13 @@ function mjschool_student_attendance_graph_report_data() {
 		'colors'         => array( '#5840bb', '#f25656' ),
 	);
 	
-	$GoogleCharts = new GoogleCharts();
+	$google_charts = new GoogleCharts();
 	if ( ! empty( $report_2 ) ) {
-		$chart = $GoogleCharts->load( 'column', 'mjschool-chart-div-last-month' )->get( $chart_array, $options );
+		$chart = $google_charts->load( 'column', 'mjschool-chart-div-last-month' )->get( $chart_array, $options );
 	} else {
 		 ?>
 		<div class="mjschool-calendar-event-new">
-			<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+			<img class="mjschool-no-data-img" src="<?php echo esc_url( MJSCHOOL_NODATA_IMG ); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
 		</div>
 		<?php 
 	}
@@ -2304,7 +2304,7 @@ function mjschool_ajax_result() {
 							}
 						}
 
-					?>
+						?>
 						<div class="mt-2 accordion-item">
 							<h4 class="accordion-header" id="heading_<?php echo esc_attr($i); ?>">
 								<button class="accordion-button mjschool-student-result-collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_<?php echo esc_attr($i); ?>" aria-expanded="true" aria-controls="heading_<?php echo esc_attr($i); ?>">
@@ -2524,7 +2524,7 @@ function mjschool_ajax_result() {
 								</div><!-- End view_result. -->
 							</div><!-- End accordion-collapse. -->
 						</div><!-- End accordion-item. -->
-					<?php
+						<?php
 						$i++;
 					} // <!-- ALL EXAM LOOP ENDS. -->
 					?>
@@ -4172,7 +4172,7 @@ function mjschool_student_view_library_history() {
 										<?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->actual_return_date ) ); ?>
 									</td>
 									<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >
-										<?php echo esc_html( get_the_title( $retrieved_data->period ) ) . esc_attr__( ' Days', 'mjschool' ); ?>
+										<?php echo esc_html( get_the_title( $retrieved_data->period ) ) . esc_html__( ' Days', 'mjschool' ); ?>
 									</td>
 									<?php
 									$date1 = date_create( date( 'Y-m-d' ) );
@@ -4182,11 +4182,11 @@ function mjschool_student_view_library_history() {
 									<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >
 										<?php
 										if ( $retrieved_data->actual_return_date === '' && $date1 < $date2 ) {
-											echo esc_attr__( '0 Days', 'mjschool' );
+											echo esc_html__( '0 Days', 'mjschool' );
 										} elseif ( $date2 > $date3 && $retrieved_data->actual_return_date != '' ) {
-											echo esc_attr__( '0 Days', 'mjschool' );
+											echo esc_html__( '0 Days', 'mjschool' );
 										} elseif ( $date1 > $date2 ) {
-											echo esc_html( $diff->format( '%a' ) ) . esc_attr__( ' Days', 'mjschool' );
+											echo esc_html( $diff->format( '%a' ) ) . esc_html__( ' Days', 'mjschool' );
 										}
 										?>
 									</td>
@@ -4623,7 +4623,7 @@ function mjschool_load_class_section() {
 	$class_id = sanitize_text_field( wp_unslash($_POST['class_id']) );
 	global $wpdb;
 	$retrieve_data = mjschool_get_class_sections( sanitize_text_field(wp_unslash($_POST['class_id'])) );
-	$defaultmsg    = esc_attr__( 'All Section', 'mjschool' );
+	$defaultmsg    = esc_html__( 'All Section', 'mjschool' );
 	echo "<option value=''>" . esc_html( $defaultmsg ) . '</option>';
 	foreach ( $retrieve_data as $section ) {
 		echo "<option value='" . esc_attr( $section->id ) . "'>" . esc_html( $section->section_name ) . '</option>';
@@ -4650,7 +4650,7 @@ function mjschool_load_student_with_status() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$defaultmsg = esc_attr__( 'All Student', 'mjschool' );
+	$defaultmsg = esc_html__( 'All Student', 'mjschool' );
 	echo "<option value=''>" . esc_html( $defaultmsg ) . '</option>';
 	die();
 }
@@ -4678,7 +4678,7 @@ function mjschool_load_class_section_add_student() {
 	$class_id = sanitize_text_field( wp_unslash($_POST['class_id']) );
 	global $wpdb;
 	$retrieve_data = mjschool_get_class_sections( sanitize_text_field(wp_unslash($_POST['class_id'])) );
-	$defaultmsg    = esc_attr__( 'Select Section', 'mjschool' );
+	$defaultmsg    = esc_html__( 'Select Section', 'mjschool' );
 	echo "<option value=''>" . esc_html( $defaultmsg ) . '</option>';
 	foreach ( $retrieve_data as $section ) {
 		echo "<option value='" . esc_attr( $section->id ) . "'>" . esc_html( $section->section_name ) . '</option>';
@@ -4726,7 +4726,7 @@ function mjschool_load_section_subject() {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE section_id = %d", $section_id ) );
 	}
-	$defaultmsg = esc_attr__( 'Select subject', 'mjschool' );
+	$defaultmsg = esc_html__( 'Select subject', 'mjschool' );
 	echo "<option value=''>" . esc_html( $defaultmsg ) . '</option>';
 	foreach ( $retrieve_subject as $retrieved_data ) {
 		echo '<option value=' . esc_attr( $retrieved_data->subid ) . '> ' . esc_html( $retrieved_data->sub_name ) . '-' . esc_html( $retrieved_data->subject_code ) . '</option>';
@@ -4797,7 +4797,7 @@ function mjschool_notification_user_list() {
 	$return_results['section'] = '';
 	$user_list                 = array();
 	global $wpdb;
-	$defaultmsg         = esc_attr__( 'All', 'mjschool' );
+	$defaultmsg         = esc_html__( 'All', 'mjschool' );
 	$html_class_section = "<option value='All'>" . esc_html( $defaultmsg ) . '</option>';
 	if ( $class_list != '' ) {
 		$retrieve_data = mjschool_get_class_sections( $class_list );
@@ -4829,7 +4829,7 @@ function mjschool_notification_user_list() {
 	$return_results['section'] = $html_class_section;
 	$return_results['users']   = '';
 	$user_string               = '<select name="selected_users" id="mjschool-notification-selected-users" class="mjschool-line-height-30px form-control mjschool-max-width-100px">';
-	$user_string              .= '<option value="All">' . esc_attr__( 'All', 'mjschool' ) . '</option>';
+	$user_string              .= '<option value="All">' . esc_html__( 'All', 'mjschool' ) . '</option>';
 	if ( ! empty( $user_data_list ) ) {
 		foreach ( $user_data_list as $retrive_data ) {
 			$user_string .= "<option value='" . esc_attr( $retrive_data ) . "'>" . esc_html( mjschool_student_display_name_with_roll( $retrive_data ) ) . '</option>';
@@ -4901,7 +4901,7 @@ function mjschool_document_user_list() {
 	$return_results['section'] = $html_class_section;
 	$return_results['users']   = '';
 	$user_string               = '<select name="selected_users" id="mjschool-notification-selected-users" class="mjschool-line-height-30px form-control mjschool-max-width-100px">';
-	$user_string              .= '<option value="all student">' . esc_attr__( 'All Student', 'mjschool' ) . '</option>';
+	$user_string              .= '<option value="all student">' . esc_html__( 'All Student', 'mjschool' ) . '</option>';
 	if ( ! empty( $user_data_list ) ) {
 		foreach ( $user_data_list as $retrive_data ) {
 			$user_string .= "<option value='" . esc_attr( $retrive_data ) . "'>" . esc_html( mjschool_student_display_name_with_roll( $retrive_data ) ) . '</option>';
@@ -5002,7 +5002,7 @@ function mjschool_sender_user_list() {
 	$return_results['section'] = '';
 	$user_list                 = array();
 	global $wpdb;
-	$defaultmsg         = esc_attr__( 'All Section', 'mjschool' );
+	$defaultmsg         = esc_html__( 'All Section', 'mjschool' );
 	$html_class_section = "<option value=''>" . $defaultmsg . '</option>';
 	if ( $class_list != '' ) {
 		$retrieve_data = mjschool_get_class_sections( $class_list );
@@ -6243,7 +6243,7 @@ function mjschool_add_or_remove_category_callback() {
 								<div class="col-md-11 mjschool-width-80px mjschool-mt-7px">
 									<?php
 									echo esc_html( $retrieved_data->post_title );
-									echo esc_attr__( 'Days', 'mjschool' );
+									echo esc_html__( 'Days', 'mjschool' );
 									?>
 								</div>
 								<div class="row col-md-1 mjschool-rs-popup-width-20px" id="<?php echo esc_attr( $retrieved_data->ID ); ?>">
@@ -6822,7 +6822,7 @@ function mjschool_view_all_message() {
 			}
 			$row[8] = '<td>' . $view_attchment . '</td>';
 		} else {
-			$row[8] = '<td>' . esc_attr__( 'No Attachment', 'mjschool' ) . '</td>';
+			$row[8] = '<td>' . esc_html__( 'No Attachment', 'mjschool' ) . '</td>';
 		}
 		$created_date = $content_post->post_date_gmt;
 		$row[9]       = '<td>' . mjschool_convert_date_time( $created_date ) . ' <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="' . esc_html__( 'Date & Time', 'mjschool' ) . '"></i></td>';
@@ -6836,7 +6836,7 @@ function mjschool_view_all_message() {
 						</a>
 						<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 							<li class="mjschool-float-left-width-100px">
-								<a href="?page=mjschool_message&tab=view_all_message&action=delete_users_message&users_message_id=' . $aRow['message_id'] . '" class="mjschool-float-left-width-100px mjschool_light_orange_color" onclick="return confirm(language_translate2.delete_record_alert)"><i class="fas fa-trash"></i>' . esc_attr__( 'Delete', 'mjschool' ) . '</a>
+								<a href="?page=mjschool_message&tab=view_all_message&action=delete_users_message&users_message_id=' . $aRow['message_id'] . '" class="mjschool-float-left-width-100px mjschool_light_orange_color" onclick="return confirm(language_translate2.delete_record_alert)"><i class="fas fa-trash"></i>' . esc_html__( 'Delete', 'mjschool' ) . '</a>
 							</li>
 						</ul>
 					</li>
@@ -7321,7 +7321,7 @@ function mjschool_parent_import_data() {
 						<strong><?php esc_html_e( 'Instruction for Profile image :', 'mjschool' ); ?></strong><br>
 						1)
 						<?php esc_html_e( 'Add ', 'mjschool' ); ?><strong><?php esc_html_e( 'user_profile', 'mjschool' ); ?></strong><?php esc_html_e( ' folder in ', 'mjschool' ); ?><strong><?php esc_html_e( '/wp-content/uploads/', 'mjschool' ); ?></strong><?php esc_html_e( ' Path', 'mjschool' ); ?><br>
-						2 )
+						2)
 						<?php esc_html_e( 'Upload the User Profile photo in ', 'mjschool' ); ?><strong><?php esc_html_e( 'user_profile', 'mjschool' ); ?></strong><?php esc_html_e( ' folder', 'mjschool' ); ?><br>
 						3)
 						<?php esc_html_e( 'Add your image path in ', 'mjschool' ); ?><strong><?php esc_html_e( 'user_profile', 'mjschool' ); ?></strong><?php esc_html_e( ' column in CSV. for example : ', 'mjschool' ); ?><strong><?php esc_html_e( 'user_profile/image.png', 'mjschool' ); ?></strong>
@@ -7666,9 +7666,9 @@ function mjschool_update_cetogory_popup_value() {
 	$result        = wp_update_post( $edited_post );
 	 
 	if ($model === 'mjschool_bookperiod' ) {
-		$row1 = '<div class="col-md-10 mjschool-width-70px">' . get_the_title($cat_id) . '' . esc_attr__( 'Days', 'mjschool' ) . '</div>';
+		$row1 = '<div class="col-md-10 mjschool-width-70px">' . get_the_title($cat_id) . '' . esc_html__( 'Days', 'mjschool' ) . '</div>';
 		$row1 .= '<div class="row col-md-2 mjschool-padding-left-0-res mjschool-width-30px" id=' . $cat_id . '><div class="col-md-6 mjschool-width-50-res mjschool-padding-left-0"><a href="#" class="btn-delete-cat_new" model="' . $model . '" id="' . $cat_id . '"><img src="' . $dlt_image . '"></a></div><div class="col-md-6 mjschool-edit-btn-padding-left-25px-res mjschool-width-50-res mjschool-padding-right-0"><a class="mjschool-btn-edit-cat_popup" model="' . $model . '" href="#" id="' . $cat_id . '"><img src="' . $edit_image . '" class="mjschool_height_width_40px"></a></div></div>';
-		$option = "<option value='$cat_id'>" . sanitize_text_field(wp_unslash($_REQUEST['category_name'])) . '' . esc_attr__( 'Days', 'mjschool' ) . '' . "</option>";
+		$option = "<option value='$cat_id'>" . sanitize_text_field(wp_unslash($_REQUEST['category_name'])) . '' . esc_html__( 'Days', 'mjschool' ) . '' . "</option>";
 	} else {
 		$row1 = '<div class="col-md-10 mjschool-width-70px">' . get_the_title($cat_id) . '</div>';
 		$row1 .= '<div class="row col-md-2 mjschool-padding-left-0-res mjschool-width-30px" id=' . $cat_id . '><div class="col-md-6 mjschool-width-50-res mjschool-padding-left-0"><a href="#" class="btn-delete-cat_new" model="' . $model . '" id="' . $cat_id . '"><img src="' . $dlt_image . '"></a></div><div class="col-md-6 mjschool-edit-btn-padding-left-25px-res mjschool-width-50-res mjschool-padding-right-0"><a class="mjschool-btn-edit-cat_popup" model="' . $model . '" href="#" id="' . $cat_id . '"><img src="' . $edit_image . '"></a></div></div>';

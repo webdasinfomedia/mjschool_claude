@@ -391,8 +391,8 @@ if ( $access ) {
 													?>
 													<div class="col-xl-4 col-lg-4">
 														<p class="user-info">
-															<a target="blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>"><button class="btn btn-default view_document" type="button"> <i class="fas fa-eye"></i> <?php esc_html_e( 'View', 'mjschool' ); ?></button></a>
-															<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+															<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>"><button class="btn btn-default view_document" type="button"> <i class="fas fa-eye"></i> <?php esc_html_e( 'View', 'mjschool' ); ?></button></a>
+															<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 														</p>
 													</div>		
 													<?php

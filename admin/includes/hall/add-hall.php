@@ -35,7 +35,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 				<div class="col-md-6">
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
-							<input id="hall_name" class="form-control validate[required,custom[popup_category_validation]] text-input" maxlength="50" type="text" value="<?php if ( $edit ) { echo esc_attr( stripslashes( $hall_data->hall_name ) ); } ?>" name="hall_name">
+							<input id="hall_name" class="form-control validate[required,custom[popup_category_validation]] text-input" maxlength="50" type="text" value="<?php if ( $edit ) { echo esc_attr( wp_unslash( $hall_data->hall_name ) ); } ?>" name="hall_name">
 							<label for="hall_name"><?php esc_html_e( 'Hall Name', 'mjschool' ); ?><span class="required">*</span></label>
 						</div>
 					</div>
@@ -61,7 +61,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 					<div class="form-group input">
 						<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 							<div class="form-field">
-								<textarea name="description" id="description" maxlength="150" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]"><?php if ( $edit ) { echo esc_textarea( stripslashes( $hall_data->description ) ); } ?></textarea>
+								<textarea name="description" id="description" maxlength="150" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]"><?php if ( $edit ) { echo esc_textarea( wp_unslash( $hall_data->description ) ); } ?></textarea>
 								<span class="mjschool-txt-title-label"></span>
 								<label for="description" class="text-area address active"><?php esc_html_e( 'Description', 'mjschool' ); ?></label>
 							</div>
@@ -74,12 +74,12 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		// --------- Get Module-Wise Custom Field Data. --------------//
 		$custom_field_obj = new Mjschool_Custome_Field();
 		$module           = 'examhall';
-		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
 		<div class="form-body mjschool-user-form">
 			<div class="row">
 				<div class="col-sm-6">        	
-					<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Hall', 'mjschool' ); } else { esc_html_e( 'Add Hall', 'mjschool' ); } ?>" name="save_hall" class="mjschool-save-btn" />
+					<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Hall', 'mjschool' ); } else { esc_attr_e( 'Add Hall', 'mjschool' ); } ?>" name="save_hall" class="mjschool-save-btn" />
 				</div>
 			</div>
 		</div>

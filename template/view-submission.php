@@ -67,7 +67,7 @@ defined( 'ABSPATH' ) || exit;
 							<td><?php echo esc_html( $retrieved_data->title ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Title', 'mjschool' ); ?>"></i></td>
 							<td><?php echo esc_html( mjschool_get_class_name( $retrieved_data->class_name ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class', 'mjschool' ); ?>"></i></td>
 							<td>
-								<a  href="?page=mjschool_student&tab=view_student&action=view_student&student_id=<?php echo esc_attr( $retrieved_data->student_id ); ?>"><?php echo esc_html( mjschool_student_display_name_with_roll( $retrieved_data->student_id ) ); ?></a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i>
+								<a  href="<?php echo esc_url( '?page=mjschool_student&tab=view_student&action=view_student&student_id=' . $retrieved_data->student_id ); ?>"><?php echo esc_html( mjschool_student_display_name_with_roll( $retrieved_data->student_id ) ); ?></a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i>
 							</td>
 							<td><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Subject', 'mjschool' ); ?>"></i></td>
 							<?php
@@ -111,14 +111,14 @@ defined( 'ABSPATH' ) || exit;
 												if ( $retrieved_data->status === 1 && $school_obj->role === 'teacher' ) {
 													?>
 													<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-														<a href="?dashboard=mjschool_user&page=homework&tab=view_student_homework&stud_homework_id=<?php echo esc_attr( $retrieved_data->stu_homework_id ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-eye"> </i><?php esc_html_e( 'Submitted Homework', 'mjschool' ); ?></a>
+														<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=homework&tab=view_student_homework&stud_homework_id=' . $retrieved_data->stu_homework_id ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-eye"> </i><?php esc_html_e( 'Submitted Homework', 'mjschool' ); ?></a>
 													</li>
 													<?php
 												}
 												if ( $retrieved_data->status === 1 ) {
 													?>
 													<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-														<a download href="<?php print esc_url( content_url() . '/uploads/homework_file/' . $retrieved_data->file ); ?>" class="mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->stu_homework_id ); ?>"><i class="fas fa-eye"> </i><?php esc_html_e( ' Uploaded Homework', 'mjschool' ); ?></a></td>
+														<a download href="<?php print esc_url( content_url( '/uploads/homework_file/' . $retrieved_data->file) ); ?>" class="mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->stu_homework_id ); ?>"><i class="fas fa-eye"> </i><?php esc_html_e( ' Uploaded Homework', 'mjschool' ); ?></a></td>
 													</li>
 													<?php
 												}

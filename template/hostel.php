@@ -91,7 +91,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'delete_action' ) ) {
 		$result = $obj_hostel->mjschool_delete_hostel( intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) ) ) );
 		if ( $result ) {
-			wp_safe_redirect( esc_url( home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_list&message=3' ) );
+			wp_safe_redirect(  home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_list&message=3') );
 			die();
 		}
 	} else {
@@ -335,7 +335,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 															<?php
 															if ( ! empty( $custom_field_value ) ) {
 																?>
-																<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button">
+																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button">
 																<i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																<?php
 															} else {
@@ -610,7 +610,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 										if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
 											$result = $obj_hostel->mjschool_insert_room( wp_unslash($_POST) );
 											if ( $result ) {
-												wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&hostel_id=' . mjschool_encrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ) . '&room_message=edit_success' );
+												wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&hostel_id=' . mjschool_encrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ) . '&room_message=edit_success' ));
 												die();
 											}
 										} else {
@@ -618,7 +618,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 										}
 									} else {
 										$result = $obj_hostel->mjschool_insert_room( wp_unslash($_POST) );
-										wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&hostel_id=' . mjschool_encrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ) . '&room_message=insert_success' );
+										wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&hostel_id=' . mjschool_encrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ) . '&room_message=insert_success' ));
 										die();
 									}
 								}
@@ -627,7 +627,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 								if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
 									$result = $obj_hostel->mjschool_delete_room( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['room_id'])) ) ) );
 									if ( $result ) {
-										wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=delete_success') );
+										wp_safe_redirect( esc_url(home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=delete_success') ));
 										die();
 									}
 								} else {
@@ -641,7 +641,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 									}
 								}
 								if ( $result ) {
-									wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=delete_success' );
+									wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=delete_success' ));
 									die();
 								}
 							}
@@ -813,7 +813,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 													// --------- Get module-wise custom field data. --------------//
 													$custom_field_obj = new Mjschool_Custome_Field();
 													$module           = 'hostel';
-													$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+													$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 													?>
 													<div class="form-body mjschool-user-form">
 														<div class="row">
@@ -1047,11 +1047,11 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 											if ( $bed < $bed_capacity ) {
 												$result = $obj_hostel->mjschool_insert_bed( wp_unslash($_POST) );
 												if ( $result ) {
-													wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=edit_success') );
+													wp_safe_redirect( esc_url(home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=edit_success') ));
 													die();
 												}
 											} else {
-												wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=no_capacity') );
+												wp_safe_redirect( esc_url(home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=no_capacity') ));
 												die();
 											}
 										} else {
@@ -1062,12 +1062,12 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 										$bed_capacity     = mjschool_get_bed_capacity_by_id( intval(wp_unslash($_POST['room_id'])) );
 										$bed_capacity_int = (int) $bed_capacity;
 										if ( $assign_bed >= $bed_capacity_int ) {
-											wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=no_capacity') );
+											wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=no_capacity') );
 											die();
 										} else {
 											$result = $obj_hostel->mjschool_insert_bed( wp_unslash($_POST) );
 											if ( $result ) {
-												wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=insert_success') );
+												wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=insert_success') );
 												die();
 											}
 										}
@@ -1079,7 +1079,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 								if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
 									$result = $obj_hostel->mjschool_delete_bed( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['bed_id'])) ) ) );
 									if ( $result ) {
-										wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=delete_success') );
+										wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=delete_success') );
 										die();
 									}
 								} else {
@@ -1094,7 +1094,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 									}
 								}
 								if ( $result ) {
-									wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=delete_success') );
+									wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&bed_message=delete_success') );
 									die();
 								}
 							}
@@ -1364,10 +1364,10 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 									$result = $obj_hostel->mjschool_assign_room( wp_unslash($_POST) );
 									if ( $result ) {
 										if ( isset( $_POST['action'] ) && sanitize_text_field(wp_unslash($_POST['action'])) === 'view_assign_room' ) {
-											wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=roomlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=assign_success') );
+											wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=roomlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=assign_success') );
 											die();
 										} elseif ( isset( $_POST['action'] ) && sanitize_text_field(wp_unslash($_POST['action'])) === 'view_assign_bed' ) {
-											wp_safe_redirect( esc_url(home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=assign_success') );
+											wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=bedlist&hostel_id=' . sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) . '&room_message=assign_success') );
 											die();
 										}
 									}
@@ -1381,7 +1381,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 									$student_id = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['student_id'])) ) );
 									$result     = $obj_hostel->mjschool_delete_assigned_bed( $room_id, $bed_id, $student_id );
 									if ( $result ) {
-										wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=roomlist&hostel_id=' . $_REQUEST['hostel_id'] . '&room_message=assign_delete_success' );
+										wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_details&tab1=roomlist&hostel_id=' . $_REQUEST['hostel_id'] . '&room_message=assign_delete_success' ));
 										die();
 									}
 								} else {

@@ -87,6 +87,8 @@ class Mjschool_Fees
     public function mjschool_is_duplicat_fees( $fee_type_id, $class_id )
     {
         global $wpdb;
+        $fee_type_id = intval($fee_type_id);
+        $class_id = intval($class_id);
         $table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_mjschool_fees where fees_title_id =%d, AND class_id =%d", $fee_type_id, $class_id));
@@ -176,6 +178,7 @@ class Mjschool_Fees
     public function mjschool_get_own_fees( $user_id )
     {
         global $wpdb;
+        $user_id = intval($user_id);
         $table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_mjschool_fees where created_by=%d", $user_id));
@@ -194,6 +197,7 @@ class Mjschool_Fees
     public function mjschool_get_single_feetype_data( $fees_id )
     {
         global $wpdb;
+        $fees_id = intval($fees_id);
         $table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_mjschool_fees where fees_id =%d", $fees_id));
@@ -212,6 +216,7 @@ class Mjschool_Fees
     public function mjschool_get_single_feetype_data_amount( $fees_id )
     {
         global $wpdb;
+        $fees_id = intval($fees_id);
         $table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_row($wpdb->prepare("SELECT fees_amount FROM $table_mjschool_fees where fees_id =%d", $fees_id));
@@ -232,6 +237,7 @@ class Mjschool_Fees
     public function mjschool_delete_feetype_data( $fees_id )
     {
         global $wpdb;
+        $fees_id = intval($fees_id);
         $table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $fee_type = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_mjschool_fees where fees_id=%d", $fees_id));

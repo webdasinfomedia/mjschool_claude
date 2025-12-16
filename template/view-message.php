@@ -84,9 +84,10 @@ if ( isset( $_POST['replay_message'] ) ) {
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete-reply' ) {
 	$message_id   = sanitize_text_field(wp_unslash($_REQUEST['id']));
 	$message_from = sanitize_text_field(wp_unslash($_REQUEST['from']));
-	$result       = mjschool_delete_reply( sanitize_text_field(wp_unslash($_REQUEST['reply_id'])) );
+	$obj_message  = new Mjschool_Message();
+	$result       = $obj_message->mjschool_delete_reply( sanitize_text_field(wp_unslash($_REQUEST['reply_id'])) );
 	if ( $result ) {
-		wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=message&tab=view_message&action=delete-reply&from=' . $message_from . '&id=' . $message_id . '&message=2' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=message&tab=view_message&action=delete-reply&from=' . $message_from . '&id=' . $message_id . '&message=2') );
 		die();
 	}
 }
@@ -156,7 +157,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 					$attchment_array = explode( ',', $attchment );
 					foreach ( $attchment_array as $attchment_data ) {
 						?>
-						<a target="blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $attchment_data ); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+						<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $attchment_data )); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
 						<?php
 					}
 				}
@@ -170,7 +171,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 					$attchment_array = explode( ',', $attchment );
 					foreach ( $attchment_array as $attchment_data ) {
 						?>
-						<a target="blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $attchment_data ); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+						<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $attchment_data )); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
 						<?php
 					}
 				}
@@ -182,17 +183,18 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 			<?php
 			if ( $user_access['delete'] === '1' ) {
 				?>
-				<a class="btn mjschool-save-btn mjschool-msg-delete-btn" href="?dashboard=mjschool_user&page=message&tab=view_message&id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['id'])) ); ?>&delete=1" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash m-r-xs"></i><?php esc_html_e( 'Delete', 'mjschool' ); ?></a> 
+				<a class="btn mjschool-save-btn mjschool-msg-delete-btn" href="<?php echo esc_url( '?dashboard=mjschool_user&page=message&tab=view_message&id=' . sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) . '&delete=1' ); ?>" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash m-r-xs"></i><?php esc_html_e( 'Delete', 'mjschool' ); ?></a> 
 				<?php
 			}
 			?>
 		</div>
 	</div>
 	<?php
+	$obj_message = new Mjschool_Message();
 	if ( isset( $_REQUEST['from'] ) && sanitize_text_field(wp_unslash($_REQUEST['from'])) === 'inbox' ) {
-		$allreply_data = mjschool_get_all_replies_frontend( $message->post_id );
+		$allreply_data = $obj_message->mjschool_get_all_replies_frontend( $message->post_id );
 	} else {
-		$allreply_data = mjschool_get_all_replies_frontend( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['id'])) ) );
+		$allreply_data = $obj_message->mjschool_get_all_replies_frontend( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['id'])) ) );
 	}
 	if ( ! empty( $allreply_data ) ) {
 		foreach ( $allreply_data as $reply ) {
@@ -208,7 +210,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 							$reply_attchment_array = explode( ',', $reply_attchment );
 							foreach ( $reply_attchment_array as $attchment_data1 ) {
 								?>
-								<a target="blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $attchment_data1 ); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+								<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $attchment_data1 )); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
 								<?php
 							}
 						}
@@ -229,7 +231,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 								if ( $user_access['delete'] === '1' ) {
 									?>
 									<span class="comment-delete">
-									<a href="?dashboard=mjschool_user&page=message&tab=view_message&action=delete-reply&from=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['from'])) ); ?>&id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['id'])) ); ?>&reply_id=<?php echo esc_attr( $reply->id ); ?>" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><?php esc_html_e( 'Delete', 'mjschool' ); ?></a></span> 
+									<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=message&tab=view_message&action=delete-reply&from=' . sanitize_text_field( wp_unslash( $_REQUEST['from'] ) ) . '&id=' . sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) . '&reply_id=' . $reply->id ); ?>" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><?php esc_html_e( 'Delete', 'mjschool' ); ?></a></span> 
 									<?php
 								}
 							}

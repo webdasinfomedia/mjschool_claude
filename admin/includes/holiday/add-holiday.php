@@ -48,7 +48,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
 							<input id="holiday_description" class="form-control validate[custom[description_validation]]" maxlength="1000" type="text" value="<?php if ( $edit ) { echo esc_attr( $holiday_data->description );} ?>" name="description">
-							<label  for="holiday_description"><?php esc_attr_e( 'Description', 'mjschool' ); ?></label>
+							<label  for="holiday_description"><?php esc_html_e( 'Description', 'mjschool' ); ?></label>
 						</div>
 					</div>
 				</div>
@@ -56,7 +56,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
 							<input id="date" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $holiday_data->date ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="date" readonly>
-							<label class="date_label" for="date"><?php esc_attr_e( 'Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
+							<label class="date_label" for="date"><?php esc_html_e( 'Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						</div>
 					</div>
 				</div>
@@ -65,7 +65,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
 							<input id="end_date_new" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $holiday_data->end_date ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="end_date" readonly>
-							<label class="date_label" for="end_date_new"><?php esc_attr_e( 'End Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
+							<label class="date_label" for="end_date_new"><?php esc_html_e( 'End Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						</div>
 					</div>
 				</div>
@@ -122,7 +122,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 		// --------- Get Module-Wise Custom Field Data. --------------//
 		$custom_field_obj = new Mjschool_Custome_Field();
 		$module           = 'holiday';
-		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
 		<div class="form-body mjschool-user-form">
 			<div class="row">

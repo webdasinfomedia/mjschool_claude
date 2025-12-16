@@ -16,7 +16,7 @@
  * - Manage contribution marks for combined class and exam scores.
  * - Validate total and passing marks to ensure logical score limits.
  * - Option to send notifications via email or SMS to students and parents.
- * - Supports custom fields for the “exam” module.
+ * - Supports custom fields for the "exam" module.
  * - Responsive, RTL-compatible layout with translation-ready labels.
  *
  * @package    Mjschool
@@ -194,7 +194,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 					<div class="form-group input">
 						<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 							<div class="form-field">
-								<textarea name="exam_comment" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150" id="exam_comment"><?php if ( $edit ) { echo esc_html( $exam_data->exam_comment ); } ?> </textarea>
+								<textarea name="exam_comment" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150" id="exam_comment"><?php if ( $edit ) { echo esc_textarea( $exam_data->exam_comment ); } ?> </textarea>
 								<span class="mjschool-txt-title-label"></span>
 								<label class="text-area address active" for="exam_comment"><?php esc_html_e( 'Exam Comment', 'mjschool' ); ?></label>
 							</div>
@@ -219,7 +219,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 								if ( ! empty( $doc_data[0]->value ) ) {
 									?>
 									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-										<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>" record_id="<?php echo esc_attr( $exam_data->exam_id ); ?>">
+										<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>" record_id="<?php echo esc_attr( $exam_data->exam_id ); ?>">
 											<i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?>
 										</a>
 									</div>
@@ -342,9 +342,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 								</div>
 							</div>
 							<div class="col-md-1 col-2 col-sm-3 col-xs-12">
-								
 								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-add-new-plus-btn.png"); ?>" onclick="mjschool_add_more_contributions()" class="mjschool-rtl-margin-top-15px mjschool-add-certificate" id="add_more_sibling">
-								
 							</div>
 						</div>
 					</div>
@@ -377,9 +375,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 							</div>
 						</div>
 						<div class="col-md-1 col-2 col-sm-3 col-xs-12">
-							
 							<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-add-new-plus-btn.png"); ?>" onclick="mjschool_add_more_contributions()" class="mjschool-rtl-margin-top-15px mjschool-add-certificate" id="add_more_sibling">
-							
 						</div>
 					</div>
 				</div>
@@ -439,7 +435,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 		// --------- Get Module Wise Custom Field Data. --------------//
 		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 		$module                    = 'exam';
-		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
 		<div class="form-body mjschool-user-form">
 			<div class="row">

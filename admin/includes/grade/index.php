@@ -102,17 +102,17 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 				$mark_upto    = sanitize_text_field( wp_unslash($_POST['mark_upto']));
 				if ( $mark_upto < $mark_from ) {
 					$gradedata = array(
-						'grade_name'    => sanitize_textarea_field( stripslashes( $_POST['grade_name'] ) ),
+						'grade_name'    => sanitize_textarea_field( wp_unslash( $_POST['grade_name'] ) ),
 						'grade_point'   => sanitize_text_field( wp_unslash($_POST['grade_point']) ),
 						'mark_from'     => sanitize_text_field( wp_unslash($_POST['mark_from']) ),
 						'mark_upto'     => sanitize_text_field( wp_unslash($_POST['mark_upto']) ),
-						'grade_comment' => sanitize_textarea_field( stripslashes( $_POST['grade_comment'] ) ),
+						'grade_comment' => sanitize_textarea_field( wp_unslash( $_POST['grade_comment'] ) ),
 						'creater_id'    => get_current_user_id(),
 						'created_date'  => $created_date,
 					);
 					// table name without prefix.
 					$tablename = 'mjschool_grade';
-					if ( $_REQUEST['action'] === 'edit' ) {
+					if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) {
 						if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_GET['_wpnonce'])), 'edit_action' ) ) {
 							$gid      = intval( mjschool_decrypt_id( wp_unslash($_REQUEST['grade_id']) ) );
 							$grade_id = array( 'grade_id' => intval( mjschool_decrypt_id( wp_unslash($_REQUEST['grade_id']) ) ) );
@@ -122,7 +122,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 							$module                    = 'grade';
 							$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $gid );
 							if ( $result ) {
-								wp_redirect( admin_url() . 'admin.php?page=mjschool_grade&tab=gradelist&message=2' );
+								wp_safe_redirect( admin_url( 'admin.php?page=mjschool_grade&tab=gradelist&message=2' ) );
 								die();
 							}
 						} else {
@@ -138,7 +138,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 							$module                    = 'grade';
 							$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $last_insert_id );
 							if ( $result ) {
-								wp_redirect( admin_url() . 'admin.php?page=mjschool_grade&tab=gradelist&message=1' );
+								wp_safe_redirect( admin_url( 'admin.php?page=mjschool_grade&tab=gradelist&message=1' ) );
 								die();
 							}
 						} else {
@@ -161,15 +161,16 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 			}
 		}
 		if ( isset( $_REQUEST['delete_selected'] ) ) {
-			if ( ! empty( $_REQUEST['id'] ) ) {
-				foreach ( $_REQUEST['id'] as $id ) {
-					$result = mjschool_delete_grade( $tablename, intval( $id ) );
-					wp_redirect( admin_url() . 'admin.php?page=mjschool_grade&tab=gradelist&message=3' );
+			if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+				$ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+				foreach ( $ids as $id ) {
+					$result = mjschool_delete_grade( $tablename, $id );
+					wp_safe_redirect( admin_url( 'admin.php?page=mjschool_grade&tab=gradelist&message=3' ) );
 					die();
 				}
 			}
 			if ( $result ) {
-				wp_redirect( admin_url() . 'admin.php?page=mjschool_grade&tab=gradelist&message=3' );
+				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_grade&tab=gradelist&message=3' ) );
 				die();
 			}
 		}
@@ -178,7 +179,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 			if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_GET['_wpnonce'])), 'delete_action' ) ) {
 				$result = mjschool_delete_grade( $tablename, intval( mjschool_decrypt_id( wp_unslash($_REQUEST['grade_id']) ) ) );
 				if ( $result ) {
-					wp_redirect( admin_url() . 'admin.php?page=mjschool_grade&tab=gradelist&message=3' );
+					wp_safe_redirect( admin_url( 'admin.php?page=mjschool_grade&tab=gradelist&message=3' ) );
 					die();
 				}
 			} else {
@@ -276,7 +277,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 															esc_html_e( 'N/A', 'mjschool' );
 														}
 														?>
-														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php if ( ! empty( $comment ) ) { echo esc_html( $comment ); } else { esc_html_e( 'Comment', 'mjschool' ); } ?>"></i>
+														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php if ( ! empty( $comment ) ) { echo esc_attr( $comment ); } else { esc_attr_e( 'Comment', 'mjschool' ); } ?>"></i>
 													</td>
 													<?php
 													// Custom Field Values.
@@ -305,7 +306,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 																		<?php
 																		if ( ! empty( $custom_field_value ) ) {
 																			?>
-																			<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+																			<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
 																				<button class="btn btn-default view_document" type="button">
 																					<i class="fas fa-download"></i>
 																					<?php esc_html_e( 'Download', 'mjschool' ); ?>
@@ -354,14 +355,14 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 																		if ( $user_access_edit === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																				<a href="?page=mjschool_grade&tab=addgrade&action=edit&grade_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->grade_id ) ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_grade&tab=addgrade&action=edit&grade_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->grade_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																			</li>
 																			<?php
 																		}
 																		if ( $user_access_delete === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a href="?page=mjschool_grade&tab=gradelist&action=delete&grade_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->grade_id ) ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_grade&tab=gradelist&action=delete&grade_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->grade_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
 																					<i class="fas fa-trash"></i><?php esc_html_e( 'Delete', 'mjschool' ); ?>
 																				</a>
 																			</li>
@@ -406,10 +407,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					} elseif ( $user_access_add === '1' ) {
 						?>
 						<div class="mjschool-no-data-list-div">
-							<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_grade&tab=addgrade' ); ?>">
-								
-								<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
-								
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_grade&tab=addgrade' ) ); ?>">
+								<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ); ?>">
 							</a>
 							<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
 								<label class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?></label>
@@ -420,7 +419,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 						?>
 						<div class="mjschool-calendar-event-new">
 							
-							<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+							<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 							
 						</div>
 						<?php

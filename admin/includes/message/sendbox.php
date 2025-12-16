@@ -167,6 +167,8 @@ if ( isset( $_GET['tab'] ) ) {
 									<td >
 										<a href="?page=mjschool_message&tab=view_message&from=sendbox&id=<?php echo esc_attr( mjschool_encrypt_id( $msg_post->ID ) ); ?>" class="mjschool-text-decoration-none">
 											<?php
+											$obj_message = new Mjschool_Message();
+											$msg_post_id = $obj_message->mjschool_count_reply_item( $msg->post_id );
 											$subject_char = strlen( $msg_post->post_title );
 											if ( $subject_char <= 10 ) {
 												echo esc_html( $msg_post->post_title );
@@ -175,9 +177,9 @@ if ( isset( $_GET['tab'] ) ) {
 												$subject_body = substr( strip_tags( $msg_post->post_title ), 0, $char_limit ) . '...';
 												echo esc_html( $subject_body );
 											}
-											if ( mjschool_count_reply_item( $msg_post->ID ) >= 1 ) {
+											if ( $msg_post_id >= 1 ) {
 												?>
-												<span class="badge badge-success pull-right"><?php echo esc_html( mjschool_count_reply_item( $msg_post->ID ) ); ?></span>
+												<span class="badge badge-success pull-right"><?php echo esc_html( $msg_post_id ); ?></span>
 												<?php
 											}
 											?>
@@ -314,7 +316,7 @@ if ( isset( $_GET['tab'] ) ) {
 	} else {
 		?>
 		<div class="mjschool-calendar-event-new">
-			<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+			<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 		</div>
 		<?php
 	}

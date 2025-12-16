@@ -61,7 +61,7 @@ if ( isset( $_POST['subject'] ) ) {
 			$file_ext   = strtolower( array_pop( $value ) );
 			$extensions = array( 'pdf' );
 			if ( in_array( $file_ext, $extensions ) === false ) {
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=subject&message=3' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=subject&message=3') );
 				die();
 			}
 			if ( $_FILES['subject_syllabus']['size'] > 0 ) {
@@ -102,7 +102,7 @@ if ( isset( $_POST['subject'] ) ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 				$result_sub = mjschool_get_subject_by_class_and_code($class_id, $subject_code);
 					if ( $result_sub->subid != wp_unslash($_REQUEST['subject_id']) ) {
-						wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=subject&tab=addsubject&action=edit&subject_id=' . $sub_id . '&message=5' );
+						wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=subject&tab=addsubject&action=edit&subject_id=' . $sub_id . '&message=5') );
 						die();
 					}
 				}
@@ -211,8 +211,8 @@ if ( isset( $_POST['subject'] ) ) {
 								$device_token[] = get_user_meta( $teacher_id, 'token_id', true );
 							}
 							/* Send Push Notification. */
-							$title             = esc_attr__( 'New Notification For Assign Subject', 'mjschool' );
-							$text              = esc_attr__( 'New subject', 'mjschool' ) . ' ' . sanitize_text_field( wp_unslash($_POST['subject_name']) ) . ' ' . esc_attr__( 'has been assigned to you.', 'mjschool' );
+							$title             = esc_html__( 'New Notification For Assign Subject', 'mjschool' );
+							$text              = esc_html__( 'New subject', 'mjschool' ) . ' ' . sanitize_text_field( wp_unslash($_POST['subject_name']) ) . ' ' . esc_html__( 'has been assigned to you.', 'mjschool' );
 							$notification_data = array(
 								'registration_ids' => $device_token,
 								'data'             => array(
@@ -256,11 +256,14 @@ if ( isset( $_POST['subject'] ) ) {
 
 // --------------- MULTIPLE SELECTED SUBJECT DELETE. -----------------//
 if ( isset( $_REQUEST['delete_selected'] ) ) {
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bulk_delete_books' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $subject_id ) {
 			$tablename = 'mjschool_subject';
 			$result    = mjschool_delete_subject( $tablename, $subject_id );
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=subject&message=4' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=subject&message=4') );
 			die();
 		}
 	}
@@ -272,7 +275,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
 		$result = mjschool_delete_subject( $tablename, mjschool_decrypt_id( wp_unslash($_REQUEST['subject_id']) ) );
 		if ( $result ) {
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=subject&message=4' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=subject&message=4') );
 			die();
 		}
 	} else {
@@ -405,6 +408,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 				<div class="table-responsive"><!---------------- Table responsive. ------------------>
 					<!----------- Subject list form start. ---------->
 					<form id="mjschool-common-form" name="mjschool-common-form" method="post">
+						<?php wp_nonce_field( 'bulk_delete_books' ); ?>
 						<table id="mjschool-subject-list-frontend" class="display dataTable dataTable1" cellspacing="0" width="100%">
 							<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 								<tr>
@@ -617,7 +621,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 															<?php
 															if ( ! empty( $custom_field_value ) ) {
 																?>
-																<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																<?php
 															} else {
 																esc_html_e( 'Not Provided', 'mjschool' );
@@ -658,13 +662,13 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 															<?php
 															if ( $user_access['edit'] === '1' ) {
 																?>
-																<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu"> <a href="?dashboard=mjschool_user&page=subject&tab=addsubject&action=edit&subject_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->subid ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a> </li>
+																<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu"> <a href="<?php echo esc_url( '?dashboard=mjschool_user&page=subject&tab=addsubject&action=edit&subject_id=' . mjschool_encrypt_id( $retrieved_data->subid ) . '&_wpnonce_action=' . mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a> </li>
 																<?php
 															}
 															if ( $user_access['delete'] === '1' ) {
 																?>
 																<li class="mjschool-float-left-width-100px">
-																	<a href="?dashboard=mjschool_user&page=subject&tab=Subject&action=delete&subject_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->subid ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"> <i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?> </a>
+																	<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=subject&tab=Subject&action=delete&subject_id=' . mjschool_encrypt_id( $retrieved_data->subid ) . '&_wpnonce_action=' . mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"> <i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?> </a>
 																</li>
 																<?php
 															}
@@ -708,7 +712,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 			if ($user_access['add'] === '1' ) {
 				?>
 				<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-					<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=subject&tab=addsubject' ); ?>">
+					<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=subject&tab=addsubject') ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -838,7 +842,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 										if ( ! empty( $syllabus ) ) {
 											?>
 											<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $syllabus ); ?>" record_id="<?php echo esc_attr( $subject->subject ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $syllabus )); ?>" record_id="<?php echo esc_attr( $subject->subject ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 											</div>
 											<?php
 										}
@@ -1066,7 +1070,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 				// --------- Get module-wise custom field data. --------------//
 				$custom_field_obj = new Mjschool_Custome_Field();
 				$module           = 'subject';
-				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>
 				<?php wp_nonce_field( 'add_subject_front_nonce' ); ?>
 				<div class="form-body mjschool-user-form mjschool-padding-top-15px-res">

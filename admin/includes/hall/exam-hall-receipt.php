@@ -48,7 +48,7 @@ if ( isset( $_GET['tab'] ) ) {
 							if ( $retrieved_data->section_id != 0 ) {
 								$section_name = mjschool_get_section_name( $retrieved_data->section_id );
 							} else {
-								$section_name = esc_attr__( 'No Section', 'mjschool' );
+								$section_name = esc_html__( 'No Section', 'mjschool' );
 							}
 							?>
 							<option value="<?php echo esc_attr( $retrieved_data->exam_id ); ?>" <?php selected( $retrieved_data->exam_id, $exam_id ); ?>><?php echo esc_html( $retrieved_data->exam_name ) . '( ' . esc_html( mjschool_get_class_section_name_wise( $cid, $retrieved_data->section_id ) ) . ' )'; ?></option>
@@ -58,7 +58,7 @@ if ( isset( $_GET['tab'] ) ) {
 					</select>                  
 				</div>
 				<div class="form-group col-md-3">
-					<input type="button" value="<?php esc_html_e( 'Search Exam', 'mjschool' ); ?>" name="search_exam" id="search_exam" class="btn btn-info search_exam mjschool-save-btn"/>
+					<input type="button" value="<?php esc_attr_e( 'Search Exam', 'mjschool' ); ?>" name="search_exam" id="search_exam" class="btn btn-info search_exam mjschool-save-btn"/>
 				</div>
 			</div>
 		</div><!-------- Form Body. -------->

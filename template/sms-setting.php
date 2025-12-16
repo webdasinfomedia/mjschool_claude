@@ -64,7 +64,7 @@ if ( isset( $_REQUEST['save_mjschool_setting'] ) ) {
 		$result                                        = update_option( 'mjschool_msg91_mjschool_service', $custm_mjschool_service );
 	}
 	update_option( 'mjschool_service', sanitize_text_field(wp_unslash($_REQUEST['select_serveice'])) );
-	wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=mjschool-setting&tab=mjschool_setting&message=1' );
+	wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=mjschool-setting&tab=mjschool_setting&message=1') );
 	die();
 }
 ?>

@@ -399,7 +399,7 @@ if ( isset( $_REQUEST['subject_id'] ) ) {
 					if (get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 						?>
 						<a href="#" class="mjschool-view-video-popup youtube-icon" link="<?php echo 'https://www.youtube.com/embed/CZQzPhCPIr4?si=Hg16bHUL2gzi9xLA'; ?>" title="Marksheet Generation">
-							<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_html_e( 'YouTube', 'mjschool' ); ?>">
+							<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_attr_e( 'YouTube', 'mjschool' ); ?>">
 						</a>
 						<?php
 					}

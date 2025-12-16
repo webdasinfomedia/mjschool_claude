@@ -253,9 +253,9 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 						<?php
 						if ( isset( $_POST['save_issue_book'] ) ) {
 							if( isset( $_POST['library_card'] ) ){
-								$exits = $mjschool_obj_lib->mjschool_exits_library_card_no_submit(sanitize_text_field(wp_unslash($_POST['library_card'])),sanitize_text_field(wp_unslash($_POST['student_id'])));
+								$exits = $mjschool_obj_lib->mjschool_exits_library_card_no_submit( sanitize_text_field( wp_unslash( $_POST['library_card'] ) ),sanitize_text_field( wp_unslash ( $_POST['student_id'] ) ) );
 								if ( $exits > 0){
-									wp_redirect( admin_url() . 'admin.php?page=mjschool_library&tab=view_book&book_id=' . sanitize_text_field(wp_unslash($_GET['book_id'])) . '&issue_message=exits_no' );
+									wp_safe_redirect( admin_url( 'admin.php?page=mjschool_library&tab=view_book&book_id=' . rawurlencode( sanitize_text_field( wp_unslash( $_GET['book_id'] ) ) ) . '&issue_message=exits_no' ) );
 								}	
 								else{
 									$result = $mjschool_obj_lib->mjschool_add_issue_book( wp_unslash($_POST) );
@@ -284,13 +284,13 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 										}
 									}
 								}
-								wp_redirect( admin_url() . 'admin.php?page=mjschool_library&tab=view_book&book_id=' . sanitize_text_field(wp_unslash($_GET['book_id'])) . '&issue_message=issue_success' );
+								wp_safe_redirect( admin_url( 'admin.php?page=mjschool_library&tab=view_book&book_id=' . rawurlencode( sanitize_text_field( wp_unslash( $_GET['book_id'] ) ) ) . '&issue_message=issue_success' ) );
 								die();
 							}
 						}
 						if ( isset( $_POST['return_book'] ) ) {
 							$result = $mjschool_obj_lib->mjschool_submit_return_book( wp_unslash($_POST) );
-							wp_redirect( admin_url() . 'admin.php?page=mjschool_library&tab=view_book&book_id=' . sanitize_text_field(wp_unslash($_GET['book_id'])) . '&issue_message=return_success' );
+							wp_safe_redirect( admin_url( 'admin.php?page=mjschool_library&tab=view_book&book_id=' . rawurlencode( sanitize_text_field( wp_unslash( $_GET['book_id'] ) ) ) . '&issue_message=return_success' ) );
 							die();
 						}
 						?>
@@ -333,7 +333,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 													$category_data = $mjschool_obj_lib->mjschool_get_period_list();
 													if ( ! empty( $category_data ) ) {
 														foreach ( $category_data as $retrieved_data ) {
-															echo '<option value="' . esc_attr( $retrieved_data->ID ) . '" ' . selected( $period_id, $retrieved_data->ID ) . '>' . esc_html( $retrieved_data->post_title ) . ' ' . esc_attr__( 'Days', 'mjschool' ) . '</option>';
+															echo '<option value="' . esc_attr( $retrieved_data->ID ) . '" ' . selected( $period_id, $retrieved_data->ID ) . '>' . esc_html( $retrieved_data->post_title ) . ' ' . esc_html__( 'Days', 'mjschool' ) . '</option>';
 														}
 													}
 													?>
@@ -376,7 +376,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 									<div class="form-body mjschool-user-form">
 										<div class="row">
 											<div class="col-sm-6">
-												<input type="submit" value="<?php esc_html_e( 'Issue Book', 'mjschool' ); ?>" name="save_issue_book" class="mjschool-save-btn btn btn-success book_for_alert mjschool-rtl-margin-0px" />
+												<input type="submit" value="<?php esc_attr_e( 'Issue Book', 'mjschool' ); ?>" name="save_issue_book" class="mjschool-save-btn btn btn-success book_for_alert mjschool-rtl-margin-0px" />
 											</div>
 										</div>
 									</div>
@@ -453,7 +453,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 																if ( $retrieved_data->comment === '' ) {
 																	esc_html_e( 'Not Provided', 'mjschool' );
 																} else {
-																	echo esc_attr( $retrieved_data->comment );
+																	echo esc_html( $retrieved_data->comment );
 																}
 																?>
 																<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( $retrieved_data->comment === '' ) { echo 'Comment'; } else { echo esc_html( $retrieved_data->comment ); } ?>"></i>
@@ -492,7 +492,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 								} else {
 									?>
 									<div class="mjschool-calendar-event-new">
-										<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+										<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 									</div>
 									<?php
 								}

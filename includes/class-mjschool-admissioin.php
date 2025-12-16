@@ -38,7 +38,7 @@ class Mjschool_admission
         if (! is_user_logged_in() ) {
             wp_die(esc_html('Security check failed! You are not logged in.', 'mjschool'), 'Error', array( 'response' => 403 ));
         }
-        if (! isset($data['security']) || ! wp_verify_nonce($data['security'], 'mjschool_nonce') ) {
+        if (! isset($data['security']) || ! wp_verify_nonce(sanitize_text_field(wp_unslash($data['security'])), 'mjschool_nonce') ) {
             wp_die(esc_html('Security check failed! Invalid security token.', 'mjschool'), 'Error', array( 'response' => 403 ));
         }
         // Get current user ID and role.
@@ -72,30 +72,31 @@ class Mjschool_admission
         'display_name'  => $firstname . ' ' . $middlename . ' ' . $lastname,
         );
         if ($data['password'] != '' ) {
-            $userdata['user_pass'] = mjschool_password_validation($data['password']);
+            $userdata['user_pass'] = mjschool_password_validation(sanitize_text_field($data['password']));
         } else {
             $userdata['user_pass'] = wp_generate_password();
         }
         if (isset($data['mjschool_user_avatar']) && $data['mjschool_user_avatar'] != '' ) {
-            $photo = $data['mjschool_user_avatar'];
+            $photo = sanitize_text_field($data['mjschool_user_avatar']);
         } else {
             $photo = '';
         }
         // Add Sibling details.
         $sibling_value = array();
-        if (! empty($data['siblingsclass']) ) {
+        if (! empty($data['siblingsclass']) && is_array($data['siblingsclass']) ) {
             foreach ( $data['siblingsclass'] as $key => $value ) {
                 $sibling_value[] = array(
-                'siblingsclass'   => $value,
-                'siblingssection' => $data['siblingssection'][ $key ],
-                'siblingsstudent' => $data['siblingsstudent'][ $key ],
+                'siblingsclass'   => sanitize_text_field($value),
+                'siblingssection' => isset($data['siblingssection'][ $key ]) ? sanitize_text_field($data['siblingssection'][ $key ]) : '',
+                'siblingsstudent' => isset($data['siblingsstudent'][ $key ]) ? intval($data['siblingsstudent'][ $key ]) : 0,
                 );
             }
         }
         $admission_fees_amount = '';
-        if (get_option('mjschool_admission_fees') == 'yes' ) {
-            $admission_fees_amount = $data['admission_fees_amount'];
-            $admission_fees_id     = $data['admission_fees_id'];
+        $admission_fees_id = 0;
+        if (get_option('mjschool_admission_fees') === 'yes' ) {
+            $admission_fees_amount = isset($data['admission_fees_amount']) ? floatval($data['admission_fees_amount']) : 0;
+            $admission_fees_id     = isset($data['admission_fees_id']) ? intval($data['admission_fees_id']) : 0;
         }
         $parent_status = null;
         if(! empty($data['father_email']) || ! empty($data['mother_email']) ) {
@@ -105,7 +106,7 @@ class Mjschool_admission
         // Initialize the base metadata.
         $usermetadata = array(
         'admission_no'           => sanitize_textarea_field($data['admission_no']),
-        'admission_date'         => mjschool_get_format_for_db($data['admission_date']),
+        'admission_date'         => mjschool_get_format_for_db(sanitize_text_field($data['admission_date'])),
         'admission_fees'         => $admission_fees_amount,
         'role'                   => sanitize_textarea_field($data['role']),
         'status'                 => sanitize_textarea_field($data['status']),
@@ -119,7 +120,7 @@ class Mjschool_admission
         'zip_code'               => sanitize_text_field($data['zip_code']),
         'preschool_name'         => sanitize_text_field($data['preschool_name']),
         'phone_code'             => sanitize_textarea_field($data['phone_code']),
-        'mobile_number'          => sanitize_text_field(wp_unslash($_POST['mobile_number'])),
+        'mobile_number'          => isset($_POST['mobile_number']) ? sanitize_text_field(wp_unslash($_POST['mobile_number'])) : '',
         'alternet_mobile_number' => sanitize_text_field($data['alternet_mobile_number']),
         'sibling_information'    => json_encode($sibling_value),
         'parent_status'          => $parent_status,
@@ -177,22 +178,24 @@ class Mjschool_admission
         }
         // Merge metadata arrays.
         $usermetadata = array_merge($usermetadata, $father_metadata, $mother_metadata);
-        if ($data['action'] == 'edit' ) {
-            mjschool_append_audit_log('' . esc_html('Addmission Updated', 'mjschool') . '', $data['user_id'], get_current_user_id(), 'edit', sanitize_text_field(wp_unslash($_REQUEST['page'])));
-            $userdata['ID'] = intval($data['user_id']);
+        if (isset($data['action']) && $data['action'] === 'edit' ) {
+            $user_id_for_edit = isset($data['user_id']) ? intval($data['user_id']) : 0;
+            mjschool_append_audit_log('' . esc_html('Addmission Updated', 'mjschool') . '', $user_id_for_edit, get_current_user_id(), 'edit', isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '');
+            $userdata['ID'] = $user_id_for_edit;
             $user_id        = wp_update_user($userdata);
             foreach ( $usermetadata as $key => $val ) {
                 $returnans = update_user_meta($user_id, $key, $val, '');
             }
         } else {
-            mjschool_append_audit_log('' . esc_html('Addmission Added', 'mjschool') . '', $data['user_id'], get_current_user_id(), 'insert', sanitize_text_field(wp_unslash($_REQUEST['page'])));
+            $user_id_for_log = isset($data['user_id']) ? intval($data['user_id']) : 0;
+            mjschool_append_audit_log('' . esc_html('Addmission Added', 'mjschool') . '', $user_id_for_log, get_current_user_id(), 'insert', isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '');
             $user_id = wp_insert_user($userdata);
             $user    = new WP_User($user_id);
             $user->set_role($role);
             foreach ( $usermetadata as $key => $val ) {
                 $returnans = add_user_meta($user_id, $key, $val, true);
             }
-            if (get_option('mjschool_admission_fees') == 'yes' ) {
+            if (get_option('mjschool_admission_fees') === 'yes' ) {
                 $generated = mjschool_generate_admission_fees_invoice($admission_fees_amount, $user_id, $admission_fees_id, 0, 0, 'Admission Fees');
             }
         }
@@ -232,8 +235,10 @@ class Mjschool_admission
      */
     public function mjschool_add_parent( $student_id, $role_parents )
     {
+        $student_id = intval($student_id);
+        $role_parents = sanitize_text_field($role_parents);
         $student_data = get_user_meta($student_id);
-        if ($student_data['parent_status'][0] == 'Both' ) {
+        if (isset($student_data['parent_status'][0]) && $student_data['parent_status'][0] === 'Both' ) {
             if (( ! empty($student_data['father_first_name'][0]) ) || ( ! empty($student_data['mother_first_name'][0]) ) ) {
                 // ------------------ Father data insert. ------------------//
                 $fatherdata = array(
@@ -266,10 +271,10 @@ class Mjschool_admission
                 // ---------- Mail for add parents. ----------//
                 if ($father_id ) {
                     $string                    = array();
-                    $string['{{user_name}}']   = $student_data['father_first_name'][0] . ' ' . $student_data['father_middle_name'][0] . ' ' . $student_data['father_last_name'][0];
+                    $string['{{user_name}}']   = sanitize_text_field($student_data['father_first_name'][0]) . ' ' . sanitize_text_field($student_data['father_middle_name'][0]) . ' ' . sanitize_text_field($student_data['father_last_name'][0]);
                     $string['{{school_name}}'] = get_option('mjschool_name');
                     $string['{{role}}']        = $role_parents;
-                    $string['{{login_link}}']  = site_url() . '/index.php/mjschool-login-page';
+                    $string['{{login_link}}']  = esc_url(site_url() . '/index.php/mjschool-login-page');
                     $string['{{username}}']    = $fatherdata['user_login'];
                     $string['{{Password}}']    = $fatherdata['user_pass'];
                     $MsgContent                = get_option('mjschool_add_user_mail_content');
@@ -279,8 +284,8 @@ class Mjschool_admission
                     $email                     = $fatherdata['user_email'];
                     mjschool_send_mail($email, $MsgSubject, $message);
                 }
-                $returnval = update_user_meta($father_id, 'first_name', $student_data['father_first_name'][0]);
-                $returnval = update_user_meta($father_id, 'last_name', $student_data['father_last_name'][0]);
+                $returnval = update_user_meta($father_id, 'first_name', sanitize_text_field($student_data['father_first_name'][0]));
+                $returnval = update_user_meta($father_id, 'last_name', sanitize_text_field($student_data['father_last_name'][0]));
                 // ------------ Mother data insert. ------------------//
                 $motherdata = array(
                  'user_login'    => sanitize_email($student_data['mother_email'][0]),
@@ -312,10 +317,10 @@ class Mjschool_admission
                 // ---------- Mail for add parents. ----------//
                 if ($mother_id ) {
                     $string                    = array();
-                    $string['{{user_name}}']   = $student_data['mother_first_name'][0] . ' ' . $student_data['mother_middle_name'][0] . ' ' . $student_data['mother_last_name'][0];
+                    $string['{{user_name}}']   = sanitize_text_field($student_data['mother_first_name'][0]) . ' ' . sanitize_text_field($student_data['mother_middle_name'][0]) . ' ' . sanitize_text_field($student_data['mother_last_name'][0]);
                     $string['{{school_name}}'] = get_option('mjschool_name');
                     $string['{{role}}']        = $role_parents;
-                    $string['{{login_link}}']  = site_url() . '/index.php/mjschool-login-page';
+                    $string['{{login_link}}']  = esc_url(site_url() . '/index.php/mjschool-login-page');
                     $string['{{username}}']    = $motherdata['user_login'];
                     $string['{{Password}}']    = $motherdata['user_pass'];
                     $MsgContent                = get_option('mjschool_add_user_mail_content');
@@ -325,8 +330,8 @@ class Mjschool_admission
                     $email                     = $motherdata['user_email'];
                     mjschool_send_mail($email, $MsgSubject, $message);
                 }
-                $returnval = update_user_meta($mother_id, 'first_name', $student_data['mother_first_name'][0]);
-                $returnval = update_user_meta($mother_id, 'last_name', $student_data['mother_last_name'][0]);
+                $returnval = update_user_meta($mother_id, 'first_name', sanitize_text_field($student_data['mother_first_name'][0]));
+                $returnval = update_user_meta($mother_id, 'last_name', sanitize_text_field($student_data['mother_last_name'][0]));
                 $parant_id = array( $father_id, $mother_id );
                 $returnval = add_user_meta($student_id, 'parent_id', $parant_id);
                 $child_id  = array( $student_id );
@@ -334,10 +339,10 @@ class Mjschool_admission
                 $returnval = add_user_meta($mother_id, 'child', $child_id);
                 return $returnval;
             }
-        } elseif ($student_data['parent_status'][0] == 'Father' ) {
+        } elseif (isset($student_data['parent_status'][0]) && $student_data['parent_status'][0] === 'Father' ) {
             if (( ! empty($student_data['father_email'][0]) ) and ( ! empty($student_data['father_first_name'][0]) ) ) {
                 if (email_exists($student_data['father_email'][0]) ) {
-                    $user      = get_user_by('email', $student_data['father_email'][0]);
+                    $user      = get_user_by('email', sanitize_email($student_data['father_email'][0]));
                     $user_id   = $user->ID;
                     $parant_id = array( $user_id );
                     $returnval = add_user_meta($student_id, 'parent_id', $parant_id);
@@ -375,10 +380,10 @@ class Mjschool_admission
                     // ---------- Mail for add parents. ----------//
                     if ($user_id ) {
                         $string                    = array();
-                        $string['{{user_name}}']   = $student_data['father_first_name'][0] . ' ' . $student_data['father_middle_name'][0] . ' ' . $student_data['father_last_name'][0];
+                        $string['{{user_name}}']   = sanitize_text_field($student_data['father_first_name'][0]) . ' ' . sanitize_text_field($student_data['father_middle_name'][0]) . ' ' . sanitize_text_field($student_data['father_last_name'][0]);
                         $string['{{school_name}}'] = get_option('mjschool_name');
                         $string['{{role}}']        = $role_parents;
-                        $string['{{login_link}}']  = site_url() . '/index.php/mjschool-login-page';
+                        $string['{{login_link}}']  = esc_url(site_url() . '/index.php/mjschool-login-page');
                         $string['{{username}}']    = $userdata['user_login'];
                         $string['{{Password}}']    = $userdata['user_pass'];
                         $MsgContent                = get_option('mjschool_add_user_mail_content');
@@ -388,8 +393,8 @@ class Mjschool_admission
                         $email                     = $userdata['user_email'];
                         mjschool_send_mail($email, $MsgSubject, $message);
                     }
-                    $returnval = update_user_meta($user_id, 'first_name', $student_data['father_first_name'][0]);
-                    $returnval = update_user_meta($user_id, 'last_name', $student_data['father_last_name'][0]);
+                    $returnval = update_user_meta($user_id, 'first_name', sanitize_text_field($student_data['father_first_name'][0]));
+                    $returnval = update_user_meta($user_id, 'last_name', sanitize_text_field($student_data['father_last_name'][0]));
                     $parant_id = array( $user_id );
                     $returnval = add_user_meta($student_id, 'parent_id', $parant_id);
                     $child_id  = array( $student_id );
@@ -397,10 +402,10 @@ class Mjschool_admission
                 }
                 return $returnval;
             }
-        } elseif ($student_data['parent_status'][0] == 'Mother' ) {
+        } elseif (isset($student_data['parent_status'][0]) && $student_data['parent_status'][0] === 'Mother' ) {
             if (( ! empty($student_data['mother_email'][0]) ) and ( ! empty($student_data['mother_first_name'][0]) ) ) {
                 if (email_exists($student_data['mother_email'][0]) ) {
-                    $user      = get_user_by('email', $student_data['mother_email'][0]);
+                    $user      = get_user_by('email', sanitize_email($student_data['mother_email'][0]));
                     $user_id   = $user->ID;
                     $parant_id = array( $user_id );
                     $returnval = add_user_meta($student_id, 'parent_id', $parant_id);
@@ -420,7 +425,7 @@ class Mjschool_admission
                     $usermetadata = array(
                     'middle_name'   => sanitize_text_field($student_data['mother_middle_name'][0]),
                     'gender'        => sanitize_text_field($student_data['mother_gender'][0]),
-                    'birth_date'    => $student_data['mother_birth_date'][0],
+                    'birth_date'    => sanitize_text_field($student_data['mother_birth_date'][0]),
                     'address'       => sanitize_text_field($student_data['mother_address'][0]),
                     'city'          => sanitize_text_field($student_data['mother_city_name'][0]),
                     'state'         => sanitize_text_field($student_data['mother_state_name'][0]),
@@ -438,10 +443,10 @@ class Mjschool_admission
                     // ---------- Mail for add parents. ----------//
                     if ($user_id ) {
                         $string                    = array();
-                        $string['{{user_name}}']   = $student_data['mother_first_name'][0] . ' ' . $student_data['mother_middle_name'][0] . ' ' . $student_data['mother_last_name'][0];
+                        $string['{{user_name}}']   = sanitize_text_field($student_data['mother_first_name'][0]) . ' ' . sanitize_text_field($student_data['mother_middle_name'][0]) . ' ' . sanitize_text_field($student_data['mother_last_name'][0]);
                         $string['{{school_name}}'] = get_option('mjschool_name');
                         $string['{{role}}']        = $role_parents;
-                        $string['{{login_link}}']  = site_url() . '/index.php/mjschool-login-page';
+                        $string['{{login_link}}']  = esc_url(site_url() . '/index.php/mjschool-login-page');
                         $string['{{username}}']    = $userdata['user_login'];
                         $string['{{Password}}']    = $userdata['user_pass'];
                         $MsgContent                = get_option('mjschool_add_user_mail_content');
@@ -451,8 +456,8 @@ class Mjschool_admission
                         $email                     = $userdata['user_email'];
                         mjschool_send_mail($email, $MsgSubject, $message);
                     }
-                    $returnval = update_user_meta($user_id, 'first_name', $student_data['mother_first_name'][0]);
-                    $returnval = update_user_meta($user_id, 'last_name', $student_data['mother_last_name'][0]);
+                    $returnval = update_user_meta($user_id, 'first_name', sanitize_text_field($student_data['mother_first_name'][0]));
+                    $returnval = update_user_meta($user_id, 'last_name', sanitize_text_field($student_data['mother_last_name'][0]));
                     $parant_id = array( $user_id );
                     $returnval = add_user_meta($student_id, 'parent_id', $parant_id);
                     $child_id  = array( $student_id );

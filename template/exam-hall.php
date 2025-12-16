@@ -380,7 +380,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 															<?php
 															if ( ! empty( $custom_field_value ) ) {
 																?>
-																<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																<?php
 															} else {
 																esc_html_e( 'N/A', 'mjschool' );
@@ -479,7 +479,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 			if ($user_access['add'] === '1' ) {
 				?>
 				<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-					<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=exam_hall&tab=addhall' ); ?>">
+					<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=exam_hall&tab=addhall') ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -552,7 +552,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 				// --------- Get module-wise custom field data. --------------//
 				$custom_field_obj = new Mjschool_Custome_Field();
 				$module           = 'examhall';
-				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>
 				<div class="form-body mjschool-user-form">
 					<div class="row">

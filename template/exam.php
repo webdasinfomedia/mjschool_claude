@@ -650,7 +650,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 															<?php
 															if ( ! empty( $custom_field_value ) ) {
 																?>
-																<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile">
 																	<button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?> </button>
 																</a>
 																<?php
@@ -699,7 +699,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 																	if ( isset( $_REQUEST['web_type'] ) && sanitize_text_field(wp_unslash($_REQUEST['web_type'])) === 'wpschool_app' ) {
 																		$pdf_name = get_current_user_id() . '_' . $retrieved_data->exam_id;
 																		if ( isset( $_POST['download_app_pdf'] ) ) {
-																			$file_path = content_url() . '/uploads/exam_receipt/' . $pdf_name . '.pdf';
+																			$file_path = esc_url(content_url( '/uploads/exam_receipt/' . $pdf_name . '.pdf'));
 																			if ( file_exists( ABSPATH . str_replace( content_url(), 'wp-content', $file_path ) ) ) {
 																				unlink( $file_path ); // Delete the file.
 																			}
@@ -727,9 +727,9 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 																if ( $count > 0 ) {
 																	if ( isset( $_REQUEST['web_type'] ) && sanitize_text_field(wp_unslash($_REQUEST['web_type'])) === 'wpschool_app' ) {
 																		$pdf_name  = get_current_user_id() . '_' . $retrieved_data->exam_id;
-																		$file_path = content_url() . '/uploads/result/' . $pdf_name . '.pdf';
+																		$file_path = esc_url(content_url( '/uploads/result/' . $pdf_name . '.pdf'));
 																		if ( isset( $_POST['download_app_pdf'] ) ) {
-																			$file_path = content_url() . '/uploads/result/' . $pdf_name . '.pdf';
+																			$file_path = esc_url(content_url( '/uploads/result/' . $pdf_name . '.pdf'));
 																			if ( file_exists( ABSPATH . str_replace( content_url(), 'wp-content', $file_path ) ) ) {
 																				unlink( $file_path ); // Delete the file.
 																			}
@@ -773,7 +773,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 															if ( ! empty( $doc_data[0]->value ) ) {
 																?>
 																<li class="mjschool-float-left-width-100px">
-																	<a target="blank" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $doc_data[0]->value ); ?>" class="mjschool-status-read mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>">
+																	<a target="blank" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value )); ?>" class="mjschool-status-read mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>">
 																		<i class="fa fa-eye"></i>
 																		<?php esc_html_e( 'View Syllabus', 'mjschool' ); ?>
 																	</a>
@@ -840,7 +840,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 			if ($user_access['add'] === '1' ) {
 				?>
 				<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-					<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=exam&tab=addexam' ); ?>">
+					<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=exam&tab=addexam') ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -1048,7 +1048,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 										if ( ! empty( $doc_data[0]->value ) ) {
 											?>
 											<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $doc_data[0]->value ); ?>" record_id="<?php echo esc_attr( $exam_data->exam_id ); ?>">
+												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value )); ?>" record_id="<?php echo esc_attr( $exam_data->exam_id ); ?>">
 													<i class="fas fa-download"></i>
 													<?php esc_html_e( 'Download', 'mjschool' ); ?>
 												</a>
@@ -1251,7 +1251,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 				// --------- Get module-wise custom field data. --------------//
 				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				$module                    = 'exam';
-				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>
 				<div class="form-body mjschool-user-form">
 					<div class="row">

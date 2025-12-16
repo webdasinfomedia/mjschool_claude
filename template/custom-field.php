@@ -252,7 +252,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 				if ($user_access['add'] === '1' ) {
 					?>
 					<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-						<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=custome-field&tab=add_custome_field' ); ?>">
+						<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=custome-field&tab=add_custome_field') ); ?>">
 							<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 						</a>
 						<div class="col-md-12 dashboard_btn mjschool-margin-top-20px">

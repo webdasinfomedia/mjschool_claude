@@ -16,7 +16,7 @@
  * - Supports role-based display logic for user images and details.
  * - Ensures secure output using WordPress escaping and nonce handling.
  *
- * @package    Mjschool
+ * @package      Mjschool
  * @subpackage Mjschool/admin/includes/library
  * @since      1.0.0
  */
@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
 
 // Check nonce for issue-return list tab.
 if ( isset( $_GET['tab'] ) ) {
-	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'mjschool_library_tab' ) ) {
+	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'mjschool_library_tab' ) ) {
 		wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 	}
 }
@@ -85,25 +85,24 @@ if ( $active_tab === 'issuelist' ) {
 										<td class="mjschool-user-image mjschool-width-50px-td">
 											<a href="#">
 												<?php
-												$uid       = $retrieved_data->ID;
+												$uid                = $retrieved_data->ID;
 												$mjschool_role_name = mjschool_get_user_role( $uid );
-												$umetadata = mjschool_get_user_image( $uid );
-												
-												if (empty($umetadata ) ) {
-													if ($mjschool_role_name === "student") {
-														echo '<img src=' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . ' class="img-circle" />';
-													} elseif ($mjschool_role_name === "teacher") {
-														echo '<img src=' . esc_url( get_option( 'mjschool_teacher_thumb_new' ) ) . ' class="img-circle" />';
+												$umetadata          = mjschool_get_user_image( $uid );
+
+												if ( empty( $umetadata ) ) {
+													if ($mjschool_role_name === 'student' ) {
+														echo '<img src="' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . '" class="img-circle" />';
+													} elseif ( $mjschool_role_name === 'teacher' ) {
+														echo '<img src="' . esc_url( get_option( 'mjschool_teacher_thumb_new' ) ) . '" class="img-circle" />';
 													}
 												} else {
-													echo '<img src=' . esc_url($umetadata) . ' class="img-circle" />';
+													echo '<img src="' . esc_url( $umetadata ) . '" class="img-circle" />';
 												}
-												
 												?>
 											</a>
 										</td>
 										<td class="name">
-											<a class="mjschool-color-black" href="admin.php?page=mjschool_library&tab=issue_return&user_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>"><?php echo esc_html( $retrieved_data->display_name ); ?></a>
+											<a class="mjschool-color-black" href="<?php echo esc_url( admin_url('admin.php?page=mjschool_library&tab=issue_return&user_id='. rawurlencode( mjschool_encrypt_id( $retrieved_data->ID ) ) ) ); ?>"><?php echo esc_html( $retrieved_data->display_name ); ?></a>
 											<br>
 											<label class="mjschool-list-page-email"><?php echo esc_html( $retrieved_data->user_email ); ?></label>
 										</td>
@@ -138,14 +137,14 @@ if ( $active_tab === 'issuelist' ) {
 										</td>
 										<td class="action">
 											<div class="mjschool-user-dropdown">
-												<ul  class="mjschool_ul_style">
-													<li >
-														<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
-															<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-more.png"); ?>">
+												<ul class="mjschool_ul_style">
+													<li>
+														<a href="#" data-bs-toggle="dropdown" aria-expanded="false">
+															<img src="<?php echo esc_url( trailingslashit( MJSCHOOL_PLUGIN_URL ) . 'assets/images/listpage-icon/mjschool-more.png' ); ?>">
 														</a>
 														<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 															<li class="mjschool-float-left-width-100px">
-																<a href="?page=mjschool_library&tab=issue_return&user_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->ID ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-book"> </i><?php esc_html_e( 'Issue & Return', 'mjschool' ); ?> </a>
+																<a href="<?php echo esc_url( admin_url('admin.php?page=mjschool_library&tab=issue_return&user_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->ID ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-book"> </i><?php esc_html_e( 'Issue & Return', 'mjschool' ); ?> </a>
 															</li>
 														</ul>
 													</li>
@@ -166,7 +165,7 @@ if ( $active_tab === 'issuelist' ) {
 	} else {
 		?>
 		<div class="mjschool-calendar-event-new">
-			<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+			<img class="mjschool-no-data-img" src="<?php echo esc_url( MJSCHOOL_NODATA_IMG ); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 		</div>
 		<?php
 	}

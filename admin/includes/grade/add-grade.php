@@ -68,7 +68,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 					<div class="form-group input">
 						<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 							<div class="form-field">
-								<textarea name="grade_comment" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150" id="grade_comment"><?php if ( $edit ) { echo esc_attr( $grade_data->grade_comment ); } ?></textarea>
+								<textarea name="grade_comment" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150" id="grade_comment"><?php if ( $edit ) { echo esc_textarea( $grade_data->grade_comment ); } ?></textarea>
 								<span class="mjschool-txt-title-label"></span><label for="grade_comment" class="text-area address active"><?php esc_html_e( 'Comment', 'mjschool' ); ?></label>
 							</div>
 						</div>
@@ -80,12 +80,12 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 		// --------- Get Module-Wise Custom Field Data. --------------//
 		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 		$module                    = 'grade';
-		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
 		<div class="form-body mjschool-user-form">
 			<div class="row">
 				<div class="col-sm-6">
-					<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Grade', 'mjschool' ); } else { esc_html_e( 'Add Grade', 'mjschool' ); } ?>" name="save_grade" class="btn btn-success mjschool-save-btn" />
+					<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Grade', 'mjschool' ); } else { esc_attr_e( 'Add Grade', 'mjschool' ); } ?>" name="save_grade" class="btn btn-success mjschool-save-btn" />
 				</div>
 			</div>
 		</div>

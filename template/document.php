@@ -376,7 +376,7 @@ $mjschool_obj_document     = new Mjschool_Document();
 															<?php
 															if ( ! empty( $custom_field_value ) ) {
 																?>
-																<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																<?php
 															} else {
 																esc_html_e( 'N/A', 'mjschool' );
@@ -414,7 +414,7 @@ $mjschool_obj_document     = new Mjschool_Document();
 															if ( ! empty( $doc_data[0]->value ) ) {
 																?>
 																<li class="mjschool-float-left-width-100px">
-																	<a target="blank" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $doc_data[0]->value ); ?>" class="mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->homework_id ); ?>"><i class="fa fa-eye"> </i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
+																	<a target="blank" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value )); ?>" class="mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->homework_id ); ?>"><i class="fa fa-eye"> </i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
 																</li>
 																<?php
 															}
@@ -466,7 +466,7 @@ $mjschool_obj_document     = new Mjschool_Document();
 			if ($user_access_add === '1' ) {
 				?>
 				<div class="mjschool-no-data-list-div">
-					<a href="<?php echo esc_url(home_url() . '/?dashboard=mjschool_user&page=document&tab=add_document' ); ?>">
+					<a href="<?php echo esc_url(home_url( '/?dashboard=mjschool_user&page=document&tab=add_document') ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px mjschool-document-img" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -661,7 +661,7 @@ $mjschool_obj_document     = new Mjschool_Document();
 										if ( ! empty( $doc_data[0]->value ) ) {
 											?>
 											<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $doc_data[0]->value ); ?>" record_id="<?php echo esc_attr( $result->document_id ); ?>"> <i class="fa fa-download"></i>&nbsp;&nbsp;<?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value )); ?>" record_id="<?php echo esc_attr( $result->document_id ); ?>"> <i class="fa fa-download"></i>&nbsp;&nbsp;<?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 											</div>
 											<?php
 										}
@@ -710,7 +710,7 @@ $mjschool_obj_document     = new Mjschool_Document();
 				// --------- Get module-wise custom field data.--------------//
 				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				$module                    = 'document';
-				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>
 				<!---------- save btn. -------------->
 				<div class="form-body mjschool-user-form"> <!-- Mjschool-user-form start.-->

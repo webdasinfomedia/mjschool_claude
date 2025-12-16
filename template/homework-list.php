@@ -59,8 +59,8 @@ $mjschool_role_name      = mjschool_get_user_role( get_current_user_id() );
 							<?php
 							if ( ! empty( $doc_data[0]->value ) ) {
 								?>
-								<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $doc_data[0]->value ); ?>"  class="mjschool-status-read btn btn-default" record_id="<?php echo esc_attr( $retrieved_data->homework_id ); ?>"><i class="fas fa-download"></i><?php esc_html_e( 'Download Document', 'mjschool' ); ?></a>
-								<a target="blank" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $doc_data[0]->value ); ?>" class="mjschool-status-read btn btn-default" record_id="<?php echo esc_attr( $retrieved_data->homework_id ); ?>"><i class="fas fa-eye"></i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
+								<a download href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value )); ?>"  class="mjschool-status-read btn btn-default" record_id="<?php echo esc_attr( $retrieved_data->homework_id ); ?>"><i class="fas fa-download"></i><?php esc_html_e( 'Download Document', 'mjschool' ); ?></a>
+								<a target="blank" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value )); ?>" class="mjschool-status-read btn btn-default" record_id="<?php echo esc_attr( $retrieved_data->homework_id ); ?>"><i class="fas fa-eye"></i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
 								<?php
 							}
 							?>

@@ -800,7 +800,7 @@ if ( isset( $_REQUEST['upload_parent_csv_file'] ) ) {
 							} else {
 								?>
 								<div class="mjschool-calendar-event-new">
-									<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+									<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 								</div>
 								<?php
 							}

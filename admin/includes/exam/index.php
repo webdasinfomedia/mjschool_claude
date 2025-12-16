@@ -6,23 +6,12 @@
  * within the Mjschool plugin. It provides role-based access control, secure form handling, 
  * and dynamic user interface components for managing exams effectively.
  *
- * Key Features:
- * - Displays exam lists with sorting, filtering, and pagination via DataTables.
- * - Allows administrators and authorized users to add, edit, or delete exams.
- * - Implements WordPress nonces and sanitization for secure data operations.
- * - Provides client-side validation using the jQuery Validation Engine.
- * - Supports multi-language compatibility and responsive design.
- * - Dynamically integrates custom fields for exams from the admin settings.
- * - Handles bulk deletion and conditional role-based access restrictions.
- * - Uses jQuery datepickers and time validation for exam scheduling.
- *
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/exam
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
 $school_type=get_option( 'mjschool_custom_class' );
-// -------- Check browser javascript.. ----------//
 mjschool_browser_javascript_check();
 $mjschool_role = mjschool_get_user_role( get_current_user_id() );
 if ( $mjschool_role === 'administrator' ) {
@@ -67,16 +56,14 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 $module                    = 'exam';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
-<!-- POP up code. -->
-<!-- End POP-UP Code. -->
 <?php
 $tablename = 'mjschool_exam';
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_GET['_wpnonce']) ), 'delete_action' ) ) {
-		$result = mjschool_delete_exam( $tablename, mjschool_decrypt_id( wp_unslash($_REQUEST['exam_id']) ) );
+		$result = mjschool_delete_exam( $tablename, mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) );
 		if ( $result ) {
 			$nonce = wp_create_nonce( 'mjschool_exam_module_tab' );
-			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce='. $nonce .'&message=3' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=3' ) );
 			die();
 		}
 	} else {
@@ -84,14 +71,15 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 	}
 }
 if ( isset( $_REQUEST['delete_selected'] ) ) {
-	if ( ! empty( $_REQUEST['id'] ) ) {
-		foreach ( $_REQUEST['id'] as $id ) {
+	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+		$ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+		foreach ( $ids as $id ) {
 			$result = mjschool_delete_exam( $tablename, $id );
 		}
 	}
 	$nonce = wp_create_nonce( 'mjschool_exam_module_tab' );
 	if ( $result ) {
-		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce='. $nonce .'&message=3' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=3' ) );
 		die();
 	}
 }
@@ -99,7 +87,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 if ( isset( $_POST['save_exam'] ) ) {
 	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	$custribution_data = '';
-	$custributions     = sanitize_text_field( wp_unslash($_POST['contributions_section_option']) );
+	$custributions     = isset( $_POST['contributions_section_option'] ) ? sanitize_text_field( wp_unslash($_POST['contributions_section_option']) ) : '';
 	if ( isset( $_POST['contributions_section_option'] ) && ( sanitize_text_field( wp_unslash($_POST['contributions_section_option']) ) === 'yes' ) ) {
 		$custribution_data = mjschool_get_costribution_data_jason( wp_unslash($_POST) );
 	}
@@ -107,7 +95,6 @@ if ( isset( $_POST['save_exam'] ) ) {
     if ( isset( $_POST['university_subjects']) && is_array($_POST['university_subjects'] ) ) {
         foreach ($_POST['university_subjects'] as $subid => $info) {
             $enabled = !empty($info['enabled']);
-            // Only include if at least one subject exists; you can choose to skip disabled ones if desired.
 			if ( $enabled === 'yes' )
 			{
 				$subject_data_array[] = [
@@ -121,34 +108,34 @@ if ( isset( $_POST['save_exam'] ) ) {
     }
 	$subject_data_json = wp_json_encode($subject_data_array);
 	if ( wp_verify_nonce( $nonce, 'save_exam_admin_nonce' ) ) {
-
 		$nonce = wp_create_nonce( 'mjschool_exam_module_tab' );
 		$created_date = date( 'Y-m-d H:i:s' );
 		$examdata     = array(
-			'exam_name'          => sanitize_text_field( stripslashes( $_POST['exam_name'] ) ),
+			'exam_name'          => sanitize_text_field( wp_unslash( $_POST['exam_name'] ) ),
 			'class_id'           => sanitize_text_field( wp_unslash($_POST['class_id']) ),
-			'section_id'         => sanitize_text_field( wp_unslash($_POST['class_section']) ),
+			'section_id'         => isset( $_POST['class_section'] ) ? sanitize_text_field( wp_unslash($_POST['class_section']) ) : '',
 			'exam_term'          => sanitize_text_field( wp_unslash($_POST['exam_term']) ),
-			'passing_mark'       => sanitize_text_field( wp_unslash($_POST['passing_mark']) ),
-			'total_mark'         => sanitize_text_field( wp_unslash($_POST['total_mark']) ),
+			'passing_mark'       => isset( $_POST['passing_mark'] ) ? sanitize_text_field( wp_unslash($_POST['passing_mark']) ) : '',
+			'total_mark'         => isset( $_POST['total_mark'] ) ? sanitize_text_field( wp_unslash($_POST['total_mark']) ) : '',
 			'exam_start_date'    => date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash($_POST['exam_start_date']) ) ) ),
 			'exam_end_date'      => date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash($_POST['exam_end_date'] ) ) ) ),
-			'exam_comment'       => sanitize_textarea_field( stripslashes( $_POST['exam_comment'] ) ),
+			'exam_comment'       => sanitize_textarea_field( wp_unslash( $_POST['exam_comment'] ) ),
 			'exam_creater_id'    => get_current_user_id(),
 			'contributions'      => $custributions,
 			'subject_data'		 => $subject_data_json,
 			'contributions_data' => $custribution_data,
 			'created_date'       => $created_date,
 		);
-		if ( $_POST['passing_mark'] >= $_POST['total_mark'] && $school_type === 'school' ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce='. $nonce .'&message=6' ) );
+		$passing_mark = isset( $_POST['passing_mark'] ) ? intval( $_POST['passing_mark'] ) : 0;
+		$total_mark = isset( $_POST['total_mark'] ) ? intval( $_POST['total_mark'] ) : 0;
+		if ( $passing_mark >= $total_mark && $school_type === 'school' ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=6' ) );
 			die();
 		} else {
-			// table name without prefix.
 			$tablename = 'mjschool_exam';
 			if ( isset( $_REQUEST['action'] ) && 'edit' === sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) ) {
-				if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'edit_action' ) ) {
-					$exam = $_REQUEST['exam_name'];
+				if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'edit_action' ) ) {
+					$exam = sanitize_text_field( wp_unslash( $_REQUEST['exam_name'] ) );
 					if ( isset( $_FILES['exam_syllabus'] ) && ! empty( $_FILES['exam_syllabus'] ) && $_FILES['exam_syllabus']['size'] != 0 ) {
 						if ( $_FILES['exam_syllabus']['size'] > 0 ) {
 							$upload_docs1 = mjschool_load_documets_new( $_FILES['exam_syllabus'], $_FILES['exam_syllabus'], sanitize_text_field( wp_unslash($_POST['document_name']) ) );
@@ -159,26 +146,25 @@ if ( isset( $_POST['save_exam'] ) ) {
 					$document_data = array();
 					if ( ! empty( $upload_docs1 ) ) {
 						$document_data[] = array(
-							'title' => sanitize_text_field( wp_unslash($_POST['document_name']) ),
+							'title' => isset( $_POST['document_name'] ) ? sanitize_text_field( wp_unslash($_POST['document_name']) ) : '',
 							'value' => $upload_docs1,
 						);
 					} else {
 						$document_data[] = '';
 					}
-					$exam_id                   = intval( mjschool_decrypt_id( wp_unslash($_REQUEST['exam_id']) ) );
-					$grade_id                  = array( 'exam_id' => intval( mjschool_decrypt_id( wp_unslash($_REQUEST['exam_id']) ) ) );
+					$exam_id                   = intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) );
+					$grade_id                  = array( 'exam_id' => intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) ) );
 					$modified_date_date        = date( 'Y-m-d H:i:s' );
 					$examdata['modified_date'] = $modified_date_date;
-					$examdata['exam_syllabus'] = json_encode( $document_data );
+					$examdata['exam_syllabus'] = wp_json_encode( $document_data );
 					$result                    = mjschool_update_record( $tablename, $examdata, $grade_id );
-					// UPDATE CUSTOM FIELD DATA.
 					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 					$module                    = 'exam';
 					$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $exam_id );
 					$exam                      = $examdata['exam_name'];
 					mjschool_append_audit_log( '' . esc_html__( 'Exam Updated', 'mjschool' ) . '( ' . $exam . ' )' . '', mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ), get_current_user_id(), 'edit', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
 					if ( $result ) {
-						wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce='. $nonce .'&message=2' ) );
+						wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=2' ) );
 						die();
 					}
 				} else {
@@ -187,7 +173,7 @@ if ( isset( $_POST['save_exam'] ) ) {
 			} else {
 				if ( isset( $_FILES['exam_syllabus'] ) && ! empty( $_FILES['exam_syllabus'] ) && $_FILES['exam_syllabus']['size'] != 0 ) {
 					if ( $_FILES['exam_syllabus']['size'] > 0 ) {
-						$upload_docs1 = mjschool_load_documets_new( $_FILES['exam_syllabus'], $_FILES['exam_syllabus'], sanitize_text_field( wp_unslash($_POST['document_name']) ) );
+						$upload_docs1 = mjschool_load_documets_new( $_FILES['exam_syllabus'], $_FILES['exam_syllabus'], isset( $_POST['document_name'] ) ? sanitize_text_field( wp_unslash($_POST['document_name']) ) : '' );
 					}
 				} else {
 					$upload_docs1 = '';
@@ -195,13 +181,13 @@ if ( isset( $_POST['save_exam'] ) ) {
 				$document_data = array();
 				if ( ! empty( $upload_docs1 ) ) {
 					$document_data[] = array(
-						'title' => sanitize_text_field( wp_unslash($_POST['document_name']) ),
+						'title' => isset( $_POST['document_name'] ) ? sanitize_text_field( wp_unslash($_POST['document_name']) ) : '',
 						'value' => $upload_docs1,
 					);
 				} else {
 					$document_data[] = '';
 				}
-				$examdata['exam_syllabus'] = json_encode( $document_data );
+				$examdata['exam_syllabus'] = wp_json_encode( $document_data );
 				global $wpdb;
 				$result         = mjschool_insert_record( $tablename, $examdata );
 				$last_insert_id = $wpdb->insert_id;
@@ -211,12 +197,12 @@ if ( isset( $_POST['save_exam'] ) ) {
 				$exam_name                 = $examdata['exam_name'];
 				mjschool_append_audit_log( '' . esc_html__( 'Exam Added', 'mjschool' ) . '( ' . $exam_name . ' )' . '', $result, get_current_user_id(), 'insert', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
 				if ( $result ) {
-					
-					if (empty($_POST['class_section'] ) ) {
+					$class_section = isset( $_POST['class_section'] ) ? sanitize_text_field( wp_unslash($_POST['class_section']) ) : '';
+					if ( empty( $class_section ) ) {
 						$class_id = sanitize_text_field( wp_unslash($_POST['class_id']) );
 						$studentdata = mjschool_get_student_name_with_class($class_id);
 					} else {
-						$studentdata = mjschool_get_student_name_with_class_and_section(sanitize_text_field( wp_unslash($_POST['class_id']) ), sanitize_text_field( wp_unslash($_POST['class_section'] ) ));
+						$studentdata = mjschool_get_student_name_with_class_and_section(sanitize_text_field( wp_unslash($_POST['class_id']) ), $class_section );
 					}
 					
 					if ( ! empty( $studentdata ) ) {
@@ -228,12 +214,13 @@ if ( isset( $_POST['save_exam'] ) ) {
 								$mjschool_add_exam_mailcontent = get_option( 'mjschool_add_exam_mailcontent' );
 								$mjschool_add_exam_mail_title  = get_option( 'mjschool_add_exam_mail_title' );
 								$parent                        = get_user_meta( $student_id, 'parent_id', true );
-								if ( sanitize_text_field( wp_unslash($_POST['exam_start_date']) ) === sanitize_text_field( wp_unslash($_POST['exam_end_date']) ) ) {
-									$start_end_date = mjschool_get_date_in_input_box( $_POST['exam_start_date'] );
+								$exam_start_date_san = sanitize_text_field( wp_unslash($_POST['exam_start_date']) );
+								$exam_end_date_san = sanitize_text_field( wp_unslash($_POST['exam_end_date']) );
+								if ( $exam_start_date_san === $exam_end_date_san ) {
+									$start_end_date = mjschool_get_date_in_input_box( $exam_start_date_san );
 								} else {
-									$start_end_date = mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash($_POST['exam_start_date']) ) ) . ' ' . esc_html__( 'TO', 'mjschool' ) . ' ' . mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash($_POST['exam_end_date']) ) );
+									$start_end_date = mjschool_get_date_in_input_box( $exam_start_date_san ) . ' ' . esc_html__( 'TO', 'mjschool' ) . ' ' . mjschool_get_date_in_input_box( $exam_end_date_san );
 								}
-								// ADD EXAM MAIL SEND TO PARENT.
 								if ( ! empty( $parent ) ) {
 									foreach ( $parent as $p ) {
 										$user_info                            = get_userdata( $p );
@@ -241,10 +228,10 @@ if ( isset( $_POST['save_exam'] ) ) {
 										$searchArr                            = array();
 										$parerntdata                          = get_user_by( 'email', $email_to );
 										$searchArr['{{user_name}}']           = $parerntdata->display_name;
-										$searchArr['{{exam_name}}']           = sanitize_textarea_field( stripslashes( $_POST['exam_name'] ) );
+										$searchArr['{{exam_name}}']           = sanitize_textarea_field( wp_unslash( $_POST['exam_name'] ) );
 										$searchArr['{{exam_start_end_date}}'] = $start_end_date;
 										if ( ! empty( $_POST['exam_comment'] ) ) {
-											$comment = sanitize_textarea_field( stripslashes( $_POST['exam_comment']) );
+											$comment = sanitize_textarea_field( wp_unslash( $_POST['exam_comment']) );
 										} else {
 											$comment = 'N/A';
 										}
@@ -259,13 +246,12 @@ if ( isset( $_POST['save_exam'] ) ) {
 										$mail = mjschool_send_mail_for_homework( $email_to, $mjschool_add_exam_mail_title, $message, $attechment );
 									}
 								}
-								// ADD EXAM MAIL SEND TO STUDENT.
 								$string                            = array();
 								$string['{{user_name}}']           = $student_name;
-								$string['{{exam_name}}']           = sanitize_textarea_field( stripslashes( $_POST['exam_name'] ) );
+								$string['{{exam_name}}']           = sanitize_textarea_field( wp_unslash( $_POST['exam_name'] ) );
 								$string['{{exam_start_end_date}}'] = $start_end_date;
 								if ( ! empty( $_POST['exam_comment'] ) ) {
-									$comment = sanitize_textarea_field( stripslashes( $_POST['exam_comment'] ) );
+									$comment = sanitize_textarea_field( wp_unslash( $_POST['exam_comment'] ) );
 								} else {
 									$comment = 'N/A';
 								}
@@ -279,10 +265,10 @@ if ( isset( $_POST['save_exam'] ) ) {
 								}
 								$mail = mjschool_send_mail_for_homework( $student_email, $mjschool_add_exam_mail_title, $message, $attechment );
 							}
-							if ( isset( $_POST['smgt_enable_exam_mjschool_student'] ) && ( sanitize_text_field( wp_unslash($_POST['smgt_enable_exam_mjschool_student'])) === 1 ) ) {
+							if ( isset( $_POST['smgt_enable_exam_mjschool_student'] ) && ( intval( $_POST['smgt_enable_exam_mjschool_student'] ) === 1 ) ) {
 								$SMSArr                    = array();
 								$SMSCon                    = get_option( 'mjschool_exam_student_mjschool_content' );
-								$SMSArr['{{exam_name}}']   = sanitize_textarea_field( stripslashes( $_POST['exam_name'] ) );
+								$SMSArr['{{exam_name}}']   = sanitize_textarea_field( wp_unslash( $_POST['exam_name'] ) );
 								$SMSArr['{{date}}']        = $start_end_date;
 								$SMSArr['{{school_name}}'] = get_option( 'mjschool_name' );
 								$message_content           = mjschool_string_replacement( $SMSArr, $SMSCon );
@@ -296,7 +282,7 @@ if ( isset( $_POST['save_exam'] ) ) {
 										$SMSArr                     = array();
 										$SMSCon                     = get_option( 'mjschool_exam_parent_mjschool_content' );
 										$SMSArr['{{student_name}}'] = $student_name;
-										$SMSArr['{{exam_name}}']    = sanitize_textarea_field( stripslashes( $_POST['exam_name'] ) );
+										$SMSArr['{{exam_name}}']    = sanitize_textarea_field( wp_unslash( $_POST['exam_name'] ) );
 										$SMSArr['{{date}}']         = $start_end_date;
 										$SMSArr['{{school_name}}']  = get_option( 'mjschool_name' );
 										$message_content            = mjschool_string_replacement( $SMSArr, $SMSCon );
@@ -307,7 +293,7 @@ if ( isset( $_POST['save_exam'] ) ) {
 							}
 						}
 					}
-					wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce='. $nonce .'&message=1') );
+					wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=1') );
 					die();
 				}
 			}
@@ -320,28 +306,27 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 	$class_id          = sanitize_text_field( wp_unslash($_POST['class_id']) );
 	$section_id        = sanitize_text_field( wp_unslash($_POST['section_id']) );
 	$exam_id           = sanitize_text_field( wp_unslash($_POST['exam_id']) );
-	if ( isset( $_POST['section_id'] ) && wp_unslash($_POST['section_id']) != 0 ) {
+	if ( isset( $_POST['section_id'] ) && intval( $_POST['section_id'] ) != 0 ) {
 		$subject_data = $mjschool_obj_exam->mjschool_get_subject_by_section_id( $class_id, $section_id );
-	} else // ----- Section ID Empty. ---------//
-	{
+	} else {
 		$subject_data = $mjschool_obj_exam->mjschool_get_subject_by_class_id( $class_id );
 	}
 	$nonce = wp_create_nonce( 'mjschool_exam_module_tab' );
 	if ( ! empty( $subject_data ) ) {
 		foreach ( $subject_data as $subject ) {
 			if ( isset( $_POST[ 'subject_name_' . $subject->subid ] ) ) {
-				$save_data = $mjschool_obj_exam->mjschool_insert_sub_wise_time_table( $class_id, $exam_id, $subject->subid, wp_unslash($_POST[ 'exam_date_' . $subject->subid ]), wp_unslash($_POST[ 'start_time_' . $subject->subid ]), wp_unslash($_POST[ 'end_time_' . $subject->subid ]) );
+				$save_data = $mjschool_obj_exam->mjschool_insert_sub_wise_time_table( $class_id, $exam_id, $subject->subid, sanitize_text_field( wp_unslash($_POST[ 'exam_date_' . $subject->subid ]) ), sanitize_text_field( wp_unslash($_POST[ 'start_time_' . $subject->subid ]) ), sanitize_text_field( wp_unslash($_POST[ 'end_time_' . $subject->subid ]) ) );
 			}
 		}
 		if ( $save_data ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=exam_time_table&_wpnonce='. $nonce .'&message=5' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=exam_time_table&_wpnonce=' . rawurlencode( $nonce ) . '&message=5' ) );
 			die();
 		}
 	}
 }
 $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'examlist';
 ?>
-<div class="mjschool-page-inner"> <!-------  page inner. -------->
+<div class="mjschool-page-inner">
 	<div class="mjschool_grade_page mjschool-main-list-margin-5px">
 		<?php
 		$message = isset( $_REQUEST['message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message'] ) ) : '0';
@@ -372,12 +357,12 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 				<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 			</div>
 		<?php } ?>
-		<div class="mjschool-panel-white"> <!------- Panel white.  -------->
-			<div class="mjschool-panel-body"> <!-------- Panel Body. --------->
+		<div class="mjschool-panel-white">
+			<div class="mjschool-panel-body">
 				<?php $nonce = wp_create_nonce( 'mjschool_exam_module_tab' ); ?>
 				<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 					<li class="<?php if ( $active_tab === 'examlist' ) { ?> active<?php } ?>">
-						<a href="<?php echo esc_url('?page=mjschool_exam&tab=examlist&_wpnonce='. $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'examlist' ? 'active' : ''; ?>">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'examlist' ? 'active' : ''; ?>">
 							<?php esc_html_e( 'Exam List', 'mjschool' ); ?>
 						</a>
 					</li>
@@ -389,8 +374,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					if ( $active_tab === 'addexam' ) {
 						if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'edit' ) {
 							?>
-							<li class="<?php if ( $active_tab === 'addexam' || $_REQUEST['action'] === 'edit' ) { ?> active<?php } ?>">
-								<a href="#" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addexam' ? 'nav-tab-active' : ''; ?>">
+							<li class="<?php if ( $active_tab === 'addexam' || $mjschool_action === 'edit' ) { ?> active<?php } ?>">
+								<a href="#" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'addexam' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Edit Exam', 'mjschool' ); ?>
 								</a>
 							</li>
@@ -398,7 +383,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 						} else {
 							?>
 							<li class="<?php if ( $active_tab === 'addexam' ) { ?> active<?php } ?>">
-								<a href="#" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addexam' ? 'nav-tab-active' : ''; ?>">
+								<a href="#" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'addexam' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Add Exam', 'mjschool' ); ?>
 								</a>
 							</li>
@@ -407,7 +392,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					}
 					?>
 					<li class="<?php if ( $active_tab === 'exam_time_table' ) { ?> active<?php } ?>">
-						<a href="<?php echo esc_url('?page=mjschool_exam&tab=exam_time_table&_wpnonce='. $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'exam_time_table' ? 'active' : ''; ?>">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=exam_time_table&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'exam_time_table' ? 'active' : ''; ?>">
 							<?php esc_html_e( 'Exam Time Table', 'mjschool' ); ?>
 						</a>
 					</li>
@@ -415,7 +400,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					if ( $mjschool_action === 'view' ) {
 						?>
 						<li class="<?php if ( $active_tab === 'viewexam' ) { ?> active<?php } ?>">
-							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=viewexam&action=view&exam_id='.rawurlencode( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ).'&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'viewexam' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=viewexam&action=view&exam_id=' . rawurlencode( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) . '&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'viewexam' ? 'active' : ''; ?>">
 								<?php esc_html_e( 'View Exam Time Table', 'mjschool' ); ?>
 							</a>
 						</li>
@@ -424,16 +409,12 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					?>
 				</ul>
 				<?php
-				// Exam List datatable.
 				if ( $active_tab === 'examlist' ) {
-
-					// Check nonce for examlist tab.
 					if ( isset( $_GET['tab'] ) ) {
-						if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'mjschool_exam_module_tab' ) ) {
+						if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'mjschool_exam_module_tab' ) ) {
 							wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 						}
 					}
-
 					?>
 					<div class="mjschool-popup-bg">
 						<div class="mjschool-overlay-content">
@@ -445,20 +426,17 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					</div>
 					<?php
 					if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
-						
 						?>
-						<a href="#" class="mjschool-view-video-popup youtube-icon" link="<?php echo 'https://www.youtube.com/embed/AqXYwh_8o04?si=w1NY42aZWl8eOvtd'; ?>" title="<?php esc_attr_e( 'Conduct School Examination', 'mjschool' ); ?>">
-							<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_html_e( 'YouTube', 'mjschool' ); ?>">
+						<a href="#" class="mjschool-view-video-popup youtube-icon" link="<?php echo esc_url( 'https://www.youtube.com/embed/AqXYwh_8o04?si=w1NY42aZWl8eOvtd' ); ?>" title="<?php esc_attr_e( 'Conduct School Examination', 'mjschool' ); ?>">
+							<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_attr_e( 'YouTube', 'mjschool' ); ?>">
 						</a>
 						<?php
-						
 					}
 					$retrieve_class_data = mjschool_get_all_data( $tablename );
 					if ( ! empty( $retrieve_class_data ) ) {
 						?>
 						<div>
-							<div class="table-responsive"><!-------- Table Responsive. --------->
-								<!-------- Exam List Form. --------->
+							<div class="table-responsive">
 								<form id="mjschool-common-form" name="mjschool-common-form" method="post">
 									<table id="exam_list" class="display" cellspacing="0" width="100%">
 										<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
@@ -490,39 +468,15 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 											$i = 0;
 											foreach ( $retrieve_class_data as $retrieved_data ) {
 												$exam_id = mjschool_encrypt_id( $retrieved_data->exam_id );
-												if ( $i === 10 ) {
-													$i = 0;
-												}
-												if ( $i === 0 ) {
-													$color_class_css = 'mjschool-class-color0';
-												} elseif ( $i === 1 ) {
-													$color_class_css = 'mjschool-class-color1';
-												} elseif ( $i === 2 ) {
-													$color_class_css = 'mjschool-class-color2';
-												} elseif ( $i === 3 ) {
-													$color_class_css = 'mjschool-class-color3';
-												} elseif ( $i === 4 ) {
-													$color_class_css = 'mjschool-class-color4';
-												} elseif ( $i === 5 ) {
-													$color_class_css = 'mjschool-class-color5';
-												} elseif ( $i === 6 ) {
-													$color_class_css = 'mjschool-class-color6';
-												} elseif ( $i === 7 ) {
-													$color_class_css = 'mjschool-class-color7';
-												} elseif ( $i === 8 ) {
-													$color_class_css = 'mjschool-class-color8';
-												} elseif ( $i === 9 ) {
-													$color_class_css = 'mjschool-class-color9';
-												}
+												if ( $i === 10 ) { $i = 0; }
+												$color_class_css = 'mjschool-class-color' . $i;
 												?>
 												<tr>
 													<td class="mjschool-checkbox-width-10px"><input type="checkbox" class="mjschool-sub-chk select-checkbox" name="id[]" value="<?php echo esc_attr( $retrieved_data->exam_id ); ?>"></td>
 													<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription mjschool-padding-left-0">
 														<a href="#" class="mjschool-color-black mjschool-view-details-popup" id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>" type="Exam_view">
 															<p class="mjschool-prescription-tag mjschool-padding-15px mjschool-margin-bottom-0px <?php echo esc_attr( $color_class_css ); ?>">
-																
 																<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-exam-hall.png"); ?>" class="mjschool-massage-image">
-																
 															</p>
 														</a>
 													</td>
@@ -567,7 +521,6 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php if ( ! empty( $comment ) ) { echo esc_attr( $comment ); } else { esc_attr_e( 'Exam Comment', 'mjschool' ); } ?>"></i>
 													</td>
 													<?php
-													// Custom Field Values.
 													if ( ! empty( $user_custom_field ) ) {
 														foreach ( $user_custom_field as $custom_field ) {
 															if ( $custom_field->show_in_table === '1' ) {
@@ -577,46 +530,21 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 																$custom_field_value = $mjschool_custom_field_obj->mjschool_get_single_custom_field_meta_value( $module, $module_record_id, $custom_field_id );
 																if ( $custom_field->field_type === 'date' ) {
 																	?>
-																	<td>
-																		<?php
-																		if ( ! empty( $custom_field_value ) ) {
-																			echo esc_html( mjschool_get_date_in_input_box( $custom_field_value ) );
-																		} else {
-																			esc_html_e( 'N/A', 'mjschool' );
-																		}
-																		?>
-																	</td>
+																	<td><?php if ( ! empty( $custom_field_value ) ) { echo esc_html( mjschool_get_date_in_input_box( $custom_field_value ) ); } else { esc_html_e( 'N/A', 'mjschool' ); } ?></td>
 																	<?php
 																} elseif ( $custom_field->field_type === 'file' ) {
 																	?>
 																	<td>
-																		<?php
-																		if ( ! empty( $custom_field_value ) ) {
-																			?>
+																		<?php if ( ! empty( $custom_field_value ) ) { ?>
 																			<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
-																				<button class="btn btn-default view_document" type="button">
-																					<i class="fas fa-download"></i>
-																					<?php esc_html_e( 'Download', 'mjschool' ); ?>
-																				</button>
+																				<button class="btn btn-default view_document" type="button"><i class="fas fa-download"></i><?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 																			</a>
-																			<?php
-																		} else {
-																			esc_html_e( 'N/A', 'mjschool' );
-																		}
-																		?>
+																		<?php } else { esc_html_e( 'N/A', 'mjschool' ); } ?>
 																	</td>
 																	<?php
 																} else {
 																	?>
-																	<td>
-																		<?php
-																		if ( ! empty( $custom_field_value ) ) {
-																			echo esc_html( $custom_field_value );
-																		} else {
-																			esc_html_e( 'N/A', 'mjschool' );
-																		}
-																		?>
-																	</td>
+																	<td><?php if ( ! empty( $custom_field_value ) ) { echo esc_html( $custom_field_value ); } else { esc_html_e( 'N/A', 'mjschool' ); } ?></td>
 																	<?php
 																}
 															}
@@ -625,65 +553,43 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 													?>
 													<td class="action">
 														<div class="mjschool-user-dropdown">
-															<ul  class="mjschool_ul_style">
-																<?php
-																if ( ! empty( $retrieved_data->exam_syllabus ) ) {
-																	$doc_data = json_decode( $retrieved_data->exam_syllabus );
-																}
-																?>
+															<ul class="mjschool_ul_style">
+																<?php if ( ! empty( $retrieved_data->exam_syllabus ) ) { $doc_data = json_decode( $retrieved_data->exam_syllabus ); } ?>
 																<li>
-																	<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
+																	<a href="#" data-bs-toggle="dropdown" aria-expanded="false">
 																		<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-more.png"); ?>">
 																	</a>
 																	<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																		<li class="mjschool-float-left-width-100px">
-																			<a href="#" class="mjschool-float-left-width-100px mjschool-view-details-popup" id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>" type="Exam_view"><i class="fa fa-eye" aria-hidden="true"></i>
-																				<?php esc_html_e( 'View Exam Detail', 'mjschool' ); ?>
-																			</a>
+																			<a href="#" class="mjschool-float-left-width-100px mjschool-view-details-popup" id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>" type="Exam_view"><i class="fa fa-eye" aria-hidden="true"></i><?php esc_html_e( 'View Exam Detail', 'mjschool' ); ?></a>
 																		</li>
 																		<li class="mjschool-float-left-width-100px">
-																			<a href="<?php echo esc_url( '?page=mjschool_exam&tab=viewexam&action=view&exam_id='. $exam_id.'&_wpnonce='. $nonce ); ?>" class="mjschool-float-left-width-100px">
+																			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=viewexam&action=view&exam_id=' . rawurlencode( $exam_id ) . '&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-float-left-width-100px">
 																				<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-timetable-icon.png"); ?>" class="mjschool_height_15px">&nbsp;&nbsp;<?php esc_html_e( 'Time Table Detail', 'mjschool' ); ?>
 																			</a>
 																		</li>
-																		<?php
-																		if ( ! empty( $doc_data[0]->value ) ) {
-																			?>
+																		<?php if ( ! empty( $doc_data[0]->value ) ) { ?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a target="blank" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>" class="mjschool-status-read mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>"><i class="fa fa-eye"></i>
-																					<?php esc_html_e( 'View Syllabus', 'mjschool' ); ?>
-																				</a>
+																				<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>" class="mjschool-status-read mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>"><i class="fa fa-eye"></i><?php esc_html_e( 'View Syllabus', 'mjschool' ); ?></a>
 																			</li>
-																			<?php
-																		}
-																		if ( $user_access_edit === '1' ) {
-																			?>
+																		<?php } ?>
+																		<?php if ( $user_access_edit === '1' ) { ?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																				<a href="<?php echo esc_url( '?page=mjschool_exam&tab=addexam&action=edit&exam_id='. $exam_id .'&_wpnonce='. mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"></i>
-																					<?php esc_html_e( 'Edit', 'mjschool' ); ?>
-																				</a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=addexam&action=edit&exam_id=' . rawurlencode( $exam_id ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																			</li>
-																			<?php
-																		}
-																		if ( $user_access_delete === '1' ) {
-																			?>
+																		<?php } ?>
+																		<?php if ( $user_access_delete === '1' ) { ?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a href="<?php echo esc_url( '?page=mjschool_exam&tab=examlist&action=delete&exam_id='. $exam_id .'&_wpnonce='. mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i>
-																					<?php esc_html_e( 'Delete', 'mjschool' ); ?>
-																				</a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&action=delete&exam_id=' . rawurlencode( $exam_id ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i><?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
 																			</li>
-																			<?php
-																		}
-																		?>
+																		<?php } ?>
 																	</ul>
 																</li>
 															</ul>
 														</div>
 													</td>
 												</tr>
-												<?php
-												++$i;
-											}
+												<?php ++$i; }
 											?>
 										</tbody>
 									</table>
@@ -692,62 +598,48 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 											<input type="checkbox" name="id[]" class="mjschool-sub-chk select_all mjchool_margin_top_0px" value="<?php echo esc_attr( $retrieved_data->exam_id ); ?>" >
 											<label for="checkbox" class="mjschool-margin-right-5px"><?php esc_html_e( 'Select All', 'mjschool' ); ?></label>
 										</button>
-										<?php
-										if ( $user_access_delete === '1' ) {
-											 ?>
+										<?php if ( $user_access_delete === '1' ) { ?>
 											<button data-toggle="tooltip" id="delete_selected" title="<?php esc_attr_e( 'Delete Selected', 'mjschool' ); ?>" name="delete_selected" class="delete_selected"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-delete.png"); ?>"></button>
-											<?php 
-										}
-										?>
+										<?php } ?>
 									</div>
-								</form><!-------- Exam List Form. --------->
-							</div><!-------- Table Responsive. --------->
+								</form>
+							</div>
 						</div>
 						<?php
 					} elseif ( $user_access_add === '1' ) {
 						?>
 						<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
 							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=addexam' ) ); ?>">
-								
-								<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
-								
+								<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ); ?>">
 							</a>
 							<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
-								<label class="mjschool-no-data-list-label">
-									<?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?>
-								</label>
+								<label class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?></label>
 							</div>
 						</div>
 						<?php
 					} else {
-						
 						?>
 						<div class="mjschool-calendar-event-new">
-							<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+							<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 						</div>
 						<?php
-						
 					}
 				}
-				// ---------- View Exam Tab.  ---------------//
 				if ( $active_tab === 'viewexam' ) {
-
-					// Check nonce for viewexam tab.
 					if ( isset( $_GET['tab'] ) ) {
-						if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'mjschool_exam_module_tab' ) ) {
+						if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'mjschool_exam_module_tab' ) ) {
 							wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 						}
 					}
-
-					if ( $_REQUEST['action'] === 'view' ) {
-						$exam_data         = mjschool_get_exam_by_id( mjschool_decrypt_id( wp_unslash($_REQUEST['exam_id']) ) );
+					if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'view' ) {
+						$exam_data         = mjschool_get_exam_by_id( mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) );
 						$start_date        = $exam_data->exam_start_date;
 						$end_date          = $exam_data->exam_end_date;
 						$mjschool_obj_exam = new Mjschool_exam();
-						$exam_time_table   = $mjschool_obj_exam->mjschool_get_exam_time_table_by_exam( mjschool_decrypt_id( wp_unslash($_REQUEST['exam_id']) ) );
+						$exam_time_table   = $mjschool_obj_exam->mjschool_get_exam_time_table_by_exam( mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) );
 					}
 					?>
-					<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-25px-res"> <!--------- Panel body. ----------->
+					<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-25px-res">
 						<div class="form-group">
 							<div class="col-md-12 mjschool-rtl-padding-left-right-0px-for-btn">
 								<div class="mjschool-exam-table-res mjschool-view-exam-timetable-div">
@@ -762,29 +654,12 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 												<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head" ><?php esc_html_e( 'End Date', 'mjschool' ); ?></th>
 											</tr>
 										</thead>
-										<tfoot></tfoot>
 										<tbody>
 											<tr>
 												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( $exam_data->exam_name ); ?></td>
 												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_class_name( $exam_data->class_id ) ); ?></td>
-												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >
-													<?php
-													if ( $exam_data->section_id != 0 ) {
-														echo esc_html( mjschool_get_section_name( $exam_data->section_id ) );
-													} else {
-														esc_html_e( 'No Section', 'mjschool' );
-													}
-													?>
-												</td>
-												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >
-													<?php
-													if ( ! empty( get_the_title( $exam_data->exam_term ) ) ) {
-														echo esc_html( get_the_title( $exam_data->exam_term ) );
-													} else {
-														esc_html_e( 'N/A', 'mjschool' );
-													}
-													?>
-												</td>
+												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php if ( $exam_data->section_id != 0 ) { echo esc_html( mjschool_get_section_name( $exam_data->section_id ) ); } else { esc_html_e( 'No Section', 'mjschool' ); } ?></td>
+												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php if ( ! empty( get_the_title( $exam_data->exam_term ) ) ) { echo esc_html( get_the_title( $exam_data->exam_term ) ); } else { esc_html_e( 'N/A', 'mjschool' ); } ?></td>
 												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_date_in_input_box( $start_date ) ); ?></td>
 												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_date_in_input_box( $end_date ) ); ?></td>
 											</tr>
@@ -810,32 +685,26 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 										</thead>
 										<tbody>
 											<?php
-											if ( ! empty( $exam_time_table ) ) {
-												foreach ( $exam_time_table as $retrieved_data ) {
-													?>
-													<tr>
-														<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px mjschool_border_1px_white" ><?php echo esc_html( mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
-														<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
-														<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?></td>
-														<?php
-														$start_time_data = explode( ':', $retrieved_data->start_time );
-														$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
-														$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
-														$start_am_pm     = $start_time_data[2];
-														$start_time      = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
-														$end_time_data   = explode( ':', $retrieved_data->end_time );
-														$end_hour        = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
-														$end_min         = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
-														$end_am_pm       = $end_time_data[2];
-														$end_time        = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
-														?>
-														<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( $start_time ); ?></td>
-														<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( $end_time ); ?></td>
-													</tr>
-													<?php
-												}
-											}
-											?>
+											foreach ( $exam_time_table as $retrieved_data ) {
+												$start_time_data = explode( ':', $retrieved_data->start_time );
+												$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
+												$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
+												$start_am_pm     = $start_time_data[2];
+												$start_time      = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
+												$end_time_data   = explode( ':', $retrieved_data->end_time );
+												$end_hour        = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
+												$end_min         = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
+												$end_am_pm       = $end_time_data[2];
+												$end_time        = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
+												?>
+												<tr>
+													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px mjschool_border_1px_white" ><?php echo esc_html( mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
+													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
+													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?></td>
+													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( $start_time ); ?></td>
+													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( $end_time ); ?></td>
+												</tr>
+											<?php } ?>
 										</tbody>
 									</table>
 								</div>
@@ -847,20 +716,13 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 								<p><?php esc_html_e( 'No Any Time Table', 'mjschool' ); ?></p>
 								<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 							</div>
-							<?php
-						}
-						?>
-					</div><!--------- Panel body. ----------->
-					<?php
-				}
-				if ( $active_tab === 'addexam' ) {
-					require_once MJSCHOOL_ADMIN_DIR . '/exam/add-exam.php';
-				}
-				if ( $active_tab === 'exam_time_table' ) {
-					require_once MJSCHOOL_ADMIN_DIR . '/exam/exam-time-table.php';
-				}
+						<?php } ?>
+					</div>
+				<?php }
+				if ( $active_tab === 'addexam' ) { require_once MJSCHOOL_ADMIN_DIR . '/exam/add-exam.php'; }
+				if ( $active_tab === 'exam_time_table' ) { require_once MJSCHOOL_ADMIN_DIR . '/exam/exam-time-table.php'; }
 				?>
-			</div> <!-------- Panel Body. --------->
-		</div><!------- Panel white.  -------->
+			</div>
+		</div>
 	</div>
-</div> <!-------  page inner. -------->
+</div>

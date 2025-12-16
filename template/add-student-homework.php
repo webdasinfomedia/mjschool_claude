@@ -142,7 +142,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 					if ( ! empty( $doc_data[0]->value ) ) {
 						?>
 						<div class="col-lg-1 col-md-1 col-sm-1 col-xs-12 mjschool-download-icon">
-							<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . sanitize_file_name( $doc_data[0]->value ) ); ?>" record_id="<?php echo esc_attr( $classdata->homework_id ); ?>">
+							<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . sanitize_file_name( $doc_data[0]->value ) )); ?>" record_id="<?php echo esc_attr( $classdata->homework_id ); ?>">
 							<i class="fas fa-download" id="mjschool-download-icon"></i></a>
 						</div>
 						<?php
@@ -260,7 +260,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 		// --------- Get module wise custom field data. --------------//
 		$custom_field_obj = new Mjschool_Custome_Field();
 		$module           = 'homework';
-		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
 		<div class="form-body mjschool-user-form">
 			<div class="row">

@@ -42,7 +42,7 @@ class Mjschool_Document
     {
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_document';
-        if ($data['document_for'] == 'student' ) {
+        if ($data['document_for'] === 'student' ) {
             $documentdata['class_id']   = sanitize_text_field($data['class_id']);
             $documentdata['section_id'] = sanitize_text_field($data['class_section']);
         } else {
@@ -51,11 +51,11 @@ class Mjschool_Document
         }
         $documentdata['student_id']       = sanitize_text_field($data['selected_users']);
         $documentdata['document_for']     = sanitize_text_field($data['document_for']);
-        $documentdata['document_content'] = json_encode($document_data);
+        $documentdata['document_content'] = wp_json_encode( array_map('sanitize_text_field', (array) $document_data));
         $documentdata['description']      = sanitize_textarea_field($data['description']);
         $documentdata['createdby']        = get_current_user_id();
         $documentdata['created_date']     = date('Y-m-d');
-        if ($data['action'] == 'edit' ) {
+        if ($data['action'] === 'edit' ) {
             mjschool_append_audit_log('' . esc_html__('Update Document Detail', 'mjschool') . '', null, get_current_user_id(), 'edit', sanitize_text_field(wp_unslash($_REQUEST['page'])));
             $whereid['document_id'] = intval($data['document_id']);
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -121,6 +121,7 @@ class Mjschool_Document
     public function mjschool_get_single_document( $id )
     {
         global $wpdb;
+        $id = intval($id);
         $table_name = $wpdb->prefix . 'mjschool_document';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name where document_id=%d", $id));
@@ -141,6 +142,7 @@ class Mjschool_Document
      */
     public function mjschool_delete_document( $id )
     {
+        $id = intval($id);
         mjschool_append_audit_log('' . esc_html__('Delete Document Detail', 'mjschool') . '', null, get_current_user_id(), 'delete', sanitize_text_field(wp_unslash($_REQUEST['page'])));
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_document';
@@ -166,8 +168,8 @@ class Mjschool_Document
         global $wpdb;
         $table_exprience_letter             = $wpdb->prefix . 'mjschool_certificate';
         $str_rplc                           = str_replace('../wp-content', content_url(), stripslashes($data['lett_content']));
-        $letter_data['student_id']          = $data['student_id'];
-        $letter_data['certificate_type']    = $data['certificate_type'];
+        $letter_data['student_id']       = intval($data['student_id']);
+        $letter_data['certificate_type'] = sanitize_text_field($data['certificate_type']);
         $letter_data['certificate_content'] = $str_rplc;
         $letter_data['created_by']          = get_current_user_id();
         $letter_data['created_at']          = date('Y-m-d H:i:s');
@@ -196,6 +198,7 @@ class Mjschool_Document
      */
     function mjschool_view_experience_letter_student( $emp_id )
     {
+        $emp_id = intval($emp_id);
         global $wpdb;
         $table_exprience_letter = $wpdb->prefix . 'mjschool_certificate';
         $sql                    = $wpdb->prepare("SELECT * FROM $table_exprience_letter where student_id=%d", intval($emp_id));

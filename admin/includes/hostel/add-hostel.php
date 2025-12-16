@@ -21,22 +21,22 @@
 defined( 'ABSPATH' ) || exit;
 $obj_hostel = new Mjschool_Hostel();
 $edit       = 0;
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
+if ( isset( $_REQUEST['action'] ) && 'edit' === sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) ) {
 	$edit        = 1;
-	$hostel_id   = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hostel_id'])) ) );
+	$hostel_id   = intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) ) );
 	$hostel_data = $obj_hostel->mjschool_get_hostel_by_id( $hostel_id );
 }
 ?>
 <div class="mjschool-panel-body"><!-- start mjschool-panel-body. -->
 	<form name="hostel_form" action="" method="post" class="mjschool-form-horizontal" id="hostel_form" enctype="multipart/form-data">
-		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; ?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 		<input type="hidden" name="hostel_id" value="<?php if ( $edit ) { echo esc_attr( $hostel_id );} ?>"/> 
-		<div class="header">	
+		<div class="header">    
 			<h3 class="mjschool-first-header"><?php esc_html_e( 'Hostel Information', 'mjschool' ); ?></h3>
 		</div>
-		<div class="form-body mjschool-user-form"> <!--Card Body div.-->   
-			<div class="row"><!--Row Div.--> 
+		<div class="form-body mjschool-user-form"> <!--Card Body div.-->  
+			<div class="row"><!--Row Div.-->
 				<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
@@ -57,7 +57,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
 							<input id="hostel_address" class="form-control validate[custom[popup_category_validation]] text-input" maxlength="250" type="text" value="<?php if ( $edit ) { echo esc_attr( $hostel_data->hostel_address );} ?>" name="hostel_address">
-							<label  for="hostel_type"><?php esc_html_e( 'Hostel Address', 'mjschool' ); ?></label>
+							<label  for="hostel_address"><?php esc_html_e( 'Hostel Address', 'mjschool' ); ?></label>
 						</div>
 					</div>
 				</div>
@@ -74,7 +74,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 					<div class="form-group input">
 						<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 							<div class="form-field">
-								<textarea name="Description" id="Description" maxlength="150" class="mjschool-textarea-height-47px form-control validate[custom[description_validation]]"> <?php if ( $edit ) { echo esc_attr( $hostel_data->Description );} ?></textarea>
+								<textarea name="Description" id="Description" maxlength="150" class="mjschool-textarea-height-47px form-control validate[custom[description_validation]]"><?php if ( $edit ) { echo esc_textarea( $hostel_data->Description );} ?></textarea>
 								<span class="mjschool-txt-title-label"></span>
 								<label class="text-area address active" for="Description"><?php esc_html_e( 'Description', 'mjschool' ); ?></label>
 							</div>
@@ -87,7 +87,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		// Get Module-Wise Custom Field Data.
 		$custom_field_obj = new Mjschool_Custome_Field();
 		$module           = 'hostel';
-		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
 		<div class="form-body mjschool-user-form">
 			<div class="row">

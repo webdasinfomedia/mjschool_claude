@@ -113,7 +113,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 					if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 						 ?>
 						<a href="#" class="mjschool-view-video-popup youtube-icon" link="<?php echo esc_url("https://www.youtube.com/embed/wJ7D1I8zOao?si=PbzhjGNMS-cVdTFr"); ?>" title="<?php esc_attr_e( 'Zoom Meeting Setup', 'mjschool' ); ?>">
-							<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_html_e( 'YouTube', 'mjschool' ); ?>">
+							<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_attr_e( 'YouTube', 'mjschool' ); ?>">
 						</a>
 						<?php  
 					}
@@ -302,7 +302,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 					} else {
 						?>
 						<div class="mjschool-calendar-event-new">
-							<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+							<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 						</div>
 						<?php  
 					}

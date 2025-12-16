@@ -379,7 +379,7 @@ if ($active_tab === 'addpaymentfee' ) {
             // --------- Get Module Wise Custom Field Data. --------------//
             $mjschool_custom_field_obj = new Mjschool_Custome_Field();
             $module                    = 'fee_list';
-            $custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module($module);
+            $custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback($module);
             ?>
             <div class="form-body mjschool-user-form mjschool-padding-top-15px-res">
                 <div class="row">

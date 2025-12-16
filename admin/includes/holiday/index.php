@@ -38,19 +38,19 @@ if ( $mjschool_role == 'administrator' ) {
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
-			if ( 'holiday' === $user_access['page_link'] && ( $_REQUEST['action'] === 'edit' ) ) {
+			if ( 'holiday' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) ) {
 				if ( $user_access_edit === '0' ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
-			if ( 'holiday' === $user_access['page_link'] && ( $_REQUEST['action'] === 'delete' ) ) {
+			if ( 'holiday' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'delete' ) ) {
 				if ( $user_access_delete === '0' ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
-			if ( 'holiday' === $user_access['page_link'] && ( $_REQUEST['action'] === 'insert' ) ) {
+			if ( 'holiday' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'insert' ) ) {
 				if ( $user_access_add === '0' ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
@@ -64,19 +64,19 @@ $module            = 'holiday';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 
 $tablename = 'mjschool_holiday';
-if ( isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'delete' ) {
-	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( $_GET['_wpnonce_action'], 'delete_action' ) ) {
-		$result = mjschool_delete_holiday( $tablename, sanitize_text_field( intval( mjschool_decrypt_id( $_REQUEST['holiday_id'] ) ) ) );
+if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'delete' ) {
+	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'delete_action' ) ) {
+		$result = mjschool_delete_holiday( $tablename, intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['holiday_id'] ) ) ) ) );
 		if ( $result ) {
-			wp_redirect( admin_url() . 'admin.php?page=mjschool_holiday&tab=holidaylist&message=3' );
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_holiday&tab=holidaylist&message=3' ) );
 			die();
 		}
 	} else {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
 }
-if ( isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'approve' ) {
-	$holiday_data = mjschool_get_holiday_by_id( intval( $_REQUEST['holiday_id'] ) );
+if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'approve' ) {
+	$holiday_data = mjschool_get_holiday_by_id( intval( sanitize_text_field( wp_unslash( $_REQUEST['holiday_id'] ) ) ) );
 	$tablename    = 'mjschool_holiday';
 	$haliday_data = array(
 		'holiday_title' => $holiday_data->holiday_title,
@@ -87,67 +87,68 @@ if ( isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'approve' ) {
 		'created_date'  => $holiday_data->created_date,
 		'status'        => 0,
 	);
-	$holiday_id   = array( 'holiday_id' => sanitize_text_field( intval( $_REQUEST['holiday_id'] ) ) );
+	$holiday_id   = array( 'holiday_id' => intval( sanitize_text_field( wp_unslash( $_REQUEST['holiday_id'] ) ) ) );
 	$result       = mjschool_update_record( $tablename, $haliday_data, $holiday_id );
 	if ( $result ) {
-		wp_redirect( admin_url() . 'admin.php?page=mjschool_holiday&tab=holidaylist&message=4' );
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_holiday&tab=holidaylist&message=4' ) );
 		die();
 	}
 }
 if ( isset( $_REQUEST['delete_selected'] ) ) {
-	if ( ! empty( $_REQUEST['id'] ) ) {
-		foreach ( $_REQUEST['id'] as $id ) {
+	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+		$ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+		foreach ( $ids as $id ) {
 			$result = mjschool_delete_holiday( $tablename, $id );
-			wp_redirect( admin_url() . 'admin.php?page=mjschool_holiday&tab=holidaylist&message=3' );
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_holiday&tab=holidaylist&message=3' ) );
 			die();
 		}
 	}
 	if ( $result ) {
-		wp_redirect( admin_url() . 'admin.php?page=mjschool_holiday&tab=holidaylist&message=3' );
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_holiday&tab=holidaylist&message=3' ) );
 		die();
 	}
 }
 if ( isset( $_POST['save_holiday'] ) ) {
-	$nonce = $_POST['_wpnonce'];
+	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	if ( wp_verify_nonce( $nonce, 'save_holiday_admin_nonce' ) ) {
-		$start_date = date( 'Y-m-d', strtotime( $_REQUEST['date'] ) );
-		$end_date   = date( 'Y-m-d', strtotime( $_REQUEST['end_date'] ) );
+		$start_date = date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_REQUEST['date'] ) ) ) );
+		$end_date   = date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_REQUEST['end_date'] ) ) ) );
 		if ( $start_date > $end_date ) {
-			echo '<script type="text/javascript">alert( "' . esc_attr__( 'End Date should be greater than the Start Date', 'mjschool' ) . '");</script>';
+			echo '<script type="text/javascript">alert( "' . esc_js( __( 'End Date should be greater than the Start Date', 'mjschool' ) ) . '");</script>';
 		} else {
 			$haliday_data = array(
-				'holiday_title' => sanitize_textarea_field( stripslashes( $_POST['holiday_title'] ) ),
-				'description'   => sanitize_textarea_field( stripslashes( $_POST['description'] ) ),
-				'date'          => date( 'Y-m-d', strtotime( $_POST['date'] ) ),
-				'end_date'      => date( 'Y-m-d', strtotime( $_POST['end_date'] ) ),
+				'holiday_title' => sanitize_textarea_field( wp_unslash( $_POST['holiday_title'] ) ),
+				'description'   => sanitize_textarea_field( wp_unslash( $_POST['description'] ) ),
+				'date'          => date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['date'] ) ) ) ),
+				'end_date'      => date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) ) ),
 				'created_by'    => get_current_user_id(),
 				'created_date'  => date( 'Y-m-d H:i:s' ),
-				'status'        => $_POST['status'],
+				'status'        => intval( $_POST['status'] ),
 			);
 			// table name without prefix.
 			$tablename = 'mjschool_holiday';
-			if ( $_REQUEST['action'] === 'edit' ) {
-				if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( $_GET['_wpnonce_action'], 'edit_action' ) ) {
-					$holiday_ids         = array( 'holiday_id' => intval( $_REQUEST['holiday_id'] ) );
-					$holiday_id          = $_REQUEST['holiday_id'];
+			if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) {
+				if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'edit_action' ) ) {
+					$holiday_ids         = array( 'holiday_id' => intval( sanitize_text_field( wp_unslash( $_REQUEST['holiday_id'] ) ) ) );
+					$holiday_id          = intval( sanitize_text_field( wp_unslash( $_REQUEST['holiday_id'] ) ) );
 					$result              = mjschool_update_record( $tablename, $haliday_data, $holiday_ids );
 					$custom_field_obj    = new Mjschool_Custome_Field();
 					$module              = 'holiday';
 					$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $holiday_id );
 					if ( $result ) {
-						wp_redirect( admin_url() . 'admin.php?page=mjschool_holiday&tab=holidaylist&message=2' );
+						wp_safe_redirect( admin_url( 'admin.php?page=mjschool_holiday&tab=holidaylist&message=2' ) );
 						die();
 					}
 				} else {
 					wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 				}
 			} else {
-				$startdate = strtotime( $_POST['date'] );
-				$enddate   = strtotime( $_POST['end_date'] );
+				$startdate = strtotime( sanitize_text_field( wp_unslash( $_POST['date'] ) ) );
+				$enddate   = strtotime( sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) );
 				if ( $startdate === $enddate ) {
-					$date = $_POST['date'];
+					$date = sanitize_text_field( wp_unslash( $_POST['date'] ) );
 				} else {
-					$date = $_POST['date'] . ' To ' . $_POST['end_date'];
+					$date = sanitize_text_field( wp_unslash( $_POST['date'] ) ) . ' To ' . sanitize_text_field( wp_unslash( $_POST['end_date'] ) );
 				}
 				$AllUsr       = mjschool_get_all_user_in_plugin();
 				$device_token = array();
@@ -161,20 +162,20 @@ if ( isset( $_POST['save_holiday'] ) ) {
 				$module             = 'holiday';
 				$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
-					if ( isset( $_POST['mjschool_enable_holiday_mail'] ) && $_POST['mjschool_enable_holiday_mail'] === 1 ) {
+					if ( isset( $_POST['mjschool_enable_holiday_mail'] ) && intval( $_POST['mjschool_enable_holiday_mail'] ) === 1 ) {
 						foreach ( $to as $email ) {
-							$Search['{{holiday_title}}'] = mjschool_strip_tags_and_stripslashes( sanitize_text_field( $_POST['holiday_title'] ) );
+							$Search['{{holiday_title}}'] = mjschool_strip_tags_and_stripslashes( sanitize_text_field( wp_unslash( $_POST['holiday_title'] ) ) );
 							$Search['{{holiday_date}}']  = $date;
 							$Search['{{school_name}}']   = get_option( 'mjschool_name' );
 							$message                     = mjschool_string_replacement( $Search, get_option( 'mjschool_holiday_mailcontent' ) );
 							mjschool_send_mail( $email, get_option( 'mjschool_holiday_mailsubject' ), $message );
 						}
 					}
-					if ( isset( $_POST['mjschool_enable_holiday_sms'] ) === 1 ) {
+					if ( isset( $_POST['mjschool_enable_holiday_sms'] ) && intval( $_POST['mjschool_enable_holiday_sms'] ) === 1 ) {
 						foreach ( $AllUsr as $key => $usr ) {
 							$SMSCon                     = get_option( 'mjschool_holiday_mjschool_content' );
 							$SMSArr['{{student_name}}'] = $usr->display_name;
-							$SMSArr['{{title}}']        = mjschool_strip_tags_and_stripslashes( sanitize_text_field( $_POST['holiday_title'] ) );
+							$SMSArr['{{title}}']        = mjschool_strip_tags_and_stripslashes( sanitize_text_field( wp_unslash( $_POST['holiday_title'] ) ) );
 							$SMSArr['{{school_name}}']  = get_option( 'mjschool_name' );
 							$message_content            = mjschool_string_replacement( $SMSArr, $SMSCon );
 							$type                       = 'Holiday';
@@ -182,31 +183,31 @@ if ( isset( $_POST['save_holiday'] ) ) {
 						}
 					}
 					// Send Push Notification.
-					$title             = esc_attr__( 'Holiday Announcement.', 'mjschool' );
+					$title             = esc_html__( 'Holiday Announcement.', 'mjschool' );
 					$notification_data = array(
 						'registration_ids' => $device_token,
 						'data'             => array(
 							'title' => $title,
-							'body'  => mjschool_strip_tags_and_stripslashes( $_POST['holiday_title'] ),
+							'body'  => mjschool_strip_tags_and_stripslashes( sanitize_text_field( wp_unslash( $_POST['holiday_title'] ) ) ),
 							'type'  => 'holiday',
 						),
 					);
 					$json              = json_encode( $notification_data );
 					mjschool_send_push_notification( $json );
 					// End Send Push Notification.
-					wp_redirect( admin_url() . 'admin.php?page=mjschool_holiday&tab=holidaylist&message=1' );
+					wp_safe_redirect( admin_url( 'admin.php?page=mjschool_holiday&tab=holidaylist&message=1' ) );
 					die();
 				}
 			}
 		}
 	}
 }
-$active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'holidaylist';
+$active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'holidaylist';
 ?>
 <div class="mjschool-page-inner"><!-- mjschool-page-inner. -->
 	<div class="mjschool-main-list-margin-15px"><!-- mjschool-main-list-margin-15px. -->
 		<?php
-		$message = isset( $_REQUEST['message'] ) ? $_REQUEST['message'] : '0';
+		$message = isset( $_REQUEST['message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message'] ) ) : '0';
 		switch ( $message ) {
 			case '1':
 				$message_string = esc_html__( 'Holiday Added Successfully.', 'mjschool' );
@@ -323,7 +324,7 @@ $active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'holidaylist';
 																esc_html_e( 'N/A', 'mjschool' );
 															}
 															?>
-															<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $retrieved_data->description ) ) { echo esc_html( $retrieved_data->description ); } else { esc_html_e( 'Description', 'mjschool' ); } ?>"></i>
+															<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $retrieved_data->description ) ) { echo esc_attr( $retrieved_data->description ); } else { esc_attr_e( 'Description', 'mjschool' ); } ?>"></i>
 														</td>
 														<td>
 															<?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Holiday Start Date', 'mjschool' ); ?>"></i>
@@ -372,7 +373,7 @@ $active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'holidaylist';
 																			<?php
 																			if ( ! empty( $custom_field_value ) ) {
 																				?>
-																				<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+																				<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
 																					<button class="btn btn-default view_document" type="button"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 																				</a>
 																				<?php
@@ -414,14 +415,14 @@ $active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'holidaylist';
 																				if ( $retrieved_data->status === 1 ) {
 																					?>
 																					<li class="mjschool-float-left-width-100px">
-																						<a href="?page=mjschool_holiday&tab=holidaylist&action=approve&holiday_id=<?php echo esc_attr( $retrieved_data->holiday_id ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-thumbs-up"> </i><?php esc_html_e( 'Approve', 'mjschool' ); ?></a>
+																						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_holiday&tab=holidaylist&action=approve&holiday_id=' . intval( $retrieved_data->holiday_id ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-thumbs-up"> </i><?php esc_html_e( 'Approve', 'mjschool' ); ?></a>
 																					</li>
 																					<?php
 																				}
 																				if ( $user_access_edit === '1' ) {
 																					?>
 																					<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
-																						<a href="?page=mjschool_holiday&tab=addholiday&action=edit&holiday_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->holiday_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_holiday&tab=addholiday&action=edit&holiday_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->holiday_id ) ) . '&_wpnonce_action=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																					</li>
 																					<?php
 																				}
@@ -430,7 +431,7 @@ $active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'holidaylist';
 																				if ( $user_access_delete === '1' ) {
 																					?>
 																					<li class="mjschool-float-left-width-100px">
-																						<a href="?page=mjschool_holiday&tab=holidaylist&action=delete&holiday_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->holiday_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i><?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
+																						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_holiday&tab=holidaylist&action=delete&holiday_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->holiday_id ) ) . '&_wpnonce_action=' . rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i><?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
 																					</li>
 																					<?php
 																				}
@@ -468,9 +469,9 @@ $active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'holidaylist';
 						} elseif ( $user_access_add === '1' ) {
 							?>
 							<div class="mjschool-no-data-list-div">
-								<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_holiday&tab=addholiday' ); ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_holiday&tab=addholiday' ) ); ?>">
 									
-									<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
+									<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ); ?>">
 									
 								</a>
 								<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -482,7 +483,7 @@ $active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'holidaylist';
 							?>
 							<div class="mjschool-calendar-event-new"> 
 								
-								<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG)?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+								<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG)?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 								
 							</div>		
 							<?php

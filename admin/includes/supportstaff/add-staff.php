@@ -384,7 +384,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 		// --------- Get module-wise custom field data. --------------//
 		$custom_field_obj = new Mjschool_Custome_Field();
 		$module           = 'supportstaff';
-		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
 		<div class="form-body mjschool-user-form"><!-- User form. -->
 			<div class="row"><!-- Row. -->

@@ -71,7 +71,7 @@ if ( isset( $_POST['save_parent'] ) ) {
 			if ( $_FILES['upload_user_avatar_image']['size'] > 0 ) {
 				$member_image = mjschool_load_documets( $_FILES['upload_user_avatar_image'], 'upload_user_avatar_image', 'pimg' );
 			}
-			$photo = content_url() . '/uploads/school_assets/' . $member_image;
+			$photo = esc_url(content_url( '/uploads/school_assets/' . $member_image));
 		} else {
 			if ( isset( $_REQUEST['hidden_upload_user_avatar_image'] ) ) {
 				$member_image = sanitize_text_field(wp_unslash($_REQUEST['hidden_upload_user_avatar_image']));
@@ -128,7 +128,7 @@ if ( isset( $_POST['save_parent'] ) ) {
 				$module                    = 'parent';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
-					wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=parent&tab=parentlist&message=1' );
+					wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=parent&tab=parentlist&message=1') );
 					die();
 				}
 			} else {
@@ -141,11 +141,11 @@ if ( isset( $_POST['save_parent'] ) ) {
 			$module                    = 'parent';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=parent&tab=parentlist&message=2' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=parent&tab=parentlist&message=2' ));
 				die();
 			}
 		} else {
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=parent&tab=parentlist&message=3' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=parent&tab=parentlist&message=3' ));
 			die();
 		}
 	}
@@ -175,7 +175,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		}
 		$result = mjschool_delete_usedata( $parent_id );
 		if ( $result ) {
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=parent&tab=parentlist&message=4' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=parent&tab=parentlist&message=4' ));
 			die();
 		}
 	} else {
@@ -207,7 +207,7 @@ if ( isset( $_POST['delete_selected'] ) ) {
 			}
 			$result = mjschool_delete_usedata( $id );
 		}
-		wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=parent&tab=parentlist&message=4' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=parent&tab=parentlist&message=4') );
 		exit;
 	}
 }
@@ -415,7 +415,7 @@ if ( $message ) {
 																	<?php
 																	if ( ! empty( $custom_field_value ) ) {
 																		?>
-																		<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																		<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																		<?php
 																	} else {
 																		esc_html_e( 'Not Provided', 'mjschool' );
@@ -508,7 +508,7 @@ if ( $message ) {
 			} elseif ( $user_access['add'] === '1' ) {
 				 ?>
 				<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-					<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=parent&tab=addparent' ); ?>">
+					<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=parent&tab=addparent') ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px parent_img" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -890,7 +890,7 @@ if ( $message ) {
 																<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control mjschool-file-validation file" />
 															</div>
 															<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 p-0">
-																<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $value->document_file ); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+																<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $value->document_file )); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 															</div>
 														</div>
 													</div>
@@ -986,7 +986,7 @@ if ( $message ) {
 					// --------- Get module-wise custom field data. --------------//
 					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 					$module                    = 'parent';
-					$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+					$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 					?>
 					<div class="form-body mjschool-user-form"><!-- User form. -->
 						<div class="row">
@@ -1262,7 +1262,7 @@ if ( $message ) {
 																<?php
 																if ( ! empty( $value->document_file ) ) {
 																	?>
-																	<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $value->document_file ); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
+																	<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $value->document_file )); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
 																	<?php
 																} else {
 																	esc_html_e( 'Not Provided', 'mjschool' );

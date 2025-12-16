@@ -56,7 +56,7 @@ if ( isset( $_POST['save_transport'] ) ) {
 			if ( $_FILES['upload_user_avatar_image']['size'] > 0 ) {
 				$member_image = mjschool_load_documets( $_FILES['upload_user_avatar_image'], 'upload_user_avatar_image', 'pimg' );
 			}
-			$photo = content_url() . '/uploads/school_assets/' . $member_image;
+			$photo = esc_url(content_url( '/uploads/school_assets/' . $member_image));
 		} else {
 			if ( isset( $_REQUEST['hidden_upload_user_avatar_image'] ) ) {
 				$member_image = sanitize_text_field(wp_unslash($_REQUEST['hidden_upload_user_avatar_image']));
@@ -81,7 +81,7 @@ if ( isset( $_POST['save_transport'] ) ) {
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
 				$transport_id            = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['transport_id'])) ) );
 				$result                  = mjschool_update_record( $tablename, $route_data, $transport_id );
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=transport&tab=transport_list&message=2' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=transport&tab=transport_list&message=2') );
 				die();
 			} else {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -120,20 +120,23 @@ if ( isset( $_POST['save_transport'] ) ) {
 				$json              = json_encode( $notification_data );
 				$message           = mjschool_send_push_notification( $json );
 				/* Send Push Notification. */
-				wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=transport&tab=transport_list&message=1' );
+				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=transport&tab=transport_list&message=1') );
 				die();
 			}
 		}
 	}
 }
 if ( isset( $_REQUEST['delete_selected'] ) ) {
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bulk_delete_books' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
 			$result = mjschool_delete_transport( $tablename, $id );
 		}
 	}
 	if ( $result ) {
-		wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=transport&tab=transport_list&message=3' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=transport&tab=transport_list&message=3') );
 		die();
 	}
 }
@@ -143,7 +146,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
 		$result = mjschool_delete_transport( $tablename, intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['transport_id'])) ) ) );
 		if ( $result ) {
-			wp_safe_redirect( home_url() . '?dashboard=mjschool_user&page=transport&tab=transport_list&message=3' );
+			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=transport&tab=transport_list&message=3') );
 			die();
 		}
 	} else {
@@ -214,6 +217,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 			<div class="mjschool-panel-body">
 				<div class="table-responsive">
 					<form id="mjschool-common-form" name="mjschool-common-form" method="post">
+						<?php wp_nonce_field( 'bulk_delete_books' ); ?>
 						<table id="frontend_transport_list" class="display dataTable mjschool-transport-datatable" cellspacing="0" width="100%">
 							<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 								<tr>
@@ -318,7 +322,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 															<?php
 															if ( ! empty( $custom_field_value ) ) {
 																?>
-																<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																<?php
 															} else {
 																esc_html_e( 'N/A', 'mjschool' );
@@ -358,14 +362,14 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 															if ( $user_access['edit'] === '1' ) {
 																?>
 																<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																	<a href="?dashboard=mjschool_user&page=transport&tab=addtransport&action=edit&transport_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->transport_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																	<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=transport&tab=addtransport&action=edit&transport_id=' . mjschool_encrypt_id( $retrieved_data->transport_id ) . '&_wpnonce_action=' . mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																</li>
 																<?php
 															}
 															if ( $user_access['delete'] === '1' ) {
 																?>
 																<li class="mjschool-float-left-width-100px">
-																	<a href="?dashboard=mjschool_user&page=transport&tab=transport&action=delete&transport_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->transport_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
+																	<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=transport&tab=transport&action=delete&transport_id=' . mjschool_encrypt_id( $retrieved_data->transport_id ) . '&_wpnonce_action=' . mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
 																</li>
 																<?php
 															}
@@ -407,7 +411,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 			if ($user_access['add'] === '1' ) {
 				?>
 				<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-					<a href="<?php echo esc_url(home_url() . '?dashboard=mjschool_user&page=transport&tab=addtransport' ); ?>">
+					<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=transport&tab=addtransport') ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -556,7 +560,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 					// --------- Get module-wise custom field data. --------------//
 					$custom_field_obj = new Mjschool_Custome_Field();
 					$module           = 'transport';
-					$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
+					$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 					?>
 					<div class="form-body mjschool-user-form">
 						<div class="row">

@@ -44,19 +44,20 @@ if ( $mjschool_role === 'administrator' ) {
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
-			if ( 'message' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
+			$action = sanitize_text_field( wp_unslash( $_REQUEST['action'] ) );
+			if ( 'message' === $user_access['page_link'] && ( $action === 'edit' ) ) {
 				if ( $user_access_edit === '0' ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
-			if ( 'message' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
+			if ( 'message' === $user_access['page_link'] && ( $action === 'delete' ) ) {
 				if ( $user_access_delete === '0' ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
-			if ( 'message' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
+			if ( 'message' === $user_access['page_link'] && ( $action === 'insert' ) ) {
 				if ( $user_access_add === '0' ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
@@ -66,27 +67,27 @@ if ( $mjschool_role === 'administrator' ) {
 	}
 }
 if ( isset( $_POST['save_message'] ) ) {
-	$created_date                     = date( 'Y-m-d H:i:s' );
-	$subject                          = sanitize_text_field( wp_unslash($_POST['subject']) );
-	$message_body                     = sanitize_textarea_field( wp_unslash($_POST['message_body']) );
-	$created_date                     = date( 'Y-m-d H:i:s' );
+	// Verify nonce for message form submission.
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'mjschool_save_message' ) ) {
+		wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+	}
+	$created_date                     = current_time( 'Y-m-d H:i:s' );
+	$subject                          = isset( $_POST['subject'] ) ? sanitize_text_field( wp_unslash( $_POST['subject'] ) ) : '';
+	$message_body                     = isset( $_POST['message_body'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) ) : '';
 	$tablename                        = 'mjschool_message';
-	$mjschool_service_enable = isset( $_REQUEST['mjschool_service_enable'] ) ? sanitize_text_field(wp_unslash($_REQUEST['mjschool_service_enable'])) : 0;
-	if ( isset( $_POST['mjschool_message_mail_service_enable'] ) == 1 ) {
-		$mjschool_role                      = sanitize_text_field(wp_unslash($_POST['receiver']));
+	$mjschool_service_enable          = isset( $_REQUEST['mjschool_service_enable'] ) ? intval( wp_unslash( $_REQUEST['mjschool_service_enable'] ) ) : 0;
+	if ( ! empty( $_POST['mjschool_message_mail_service_enable'] ) && intval( wp_unslash( $_POST['mjschool_message_mail_service_enable'] ) ) === 1 ) {
+		$mjschool_role             = isset( $_POST['receiver'] ) ? sanitize_text_field( wp_unslash( $_POST['receiver'] ) ) : '';
 		$MailBody                  = get_option( 'mjschool_message_received_mailcontent' );
 		$SchoolName                = get_option( 'mjschool_name' );
 		$SubArr['{{school_name}}'] = $SchoolName;
 		$SubArr['{{from_mail}}']   = mjschool_get_display_name( get_current_user_id() );
 		$MailSub                   = mjschool_string_replacement( $SubArr, get_option( 'mjschool_message_received_mailsubject' ) );
 	}
-	if ( isset( $_REQUEST['class_id'] ) ) {
-		$class_id = sanitize_text_field(wp_unslash($_REQUEST['class_id']));
-	}
-	$mjschool_role     = isset( $_REQUEST['receiver'] ) ? sanitize_text_field(wp_unslash($_REQUEST['receiver'])) : '';
-	$class_id          = isset( $_REQUEST['class_id'] ) ? sanitize_text_field(wp_unslash($_REQUEST['class_id'])) : '';
-	$class_section     = isset( $_REQUEST['class_section'] ) ? sanitize_text_field(wp_unslash($_REQUEST['class_section'])) : '';
-	$selected_users    = isset( $_REQUEST['selected_users'] ) ? sanitize_text_field(wp_unslash($_REQUEST['selected_users'])) : array();
+	$mjschool_role     = isset( $_REQUEST['receiver'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['receiver'] ) ) : '';
+	$class_id          = isset( $_REQUEST['class_id'] ) ? intval( wp_unslash( $_REQUEST['class_id'] ) ) : '';
+	$class_section     = isset( $_REQUEST['class_section'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) ) : '';
+	$selected_users    = isset( $_REQUEST['selected_users'] ) && is_array( $_REQUEST['selected_users'] ) ? array_map( 'intval', wp_unslash( $_REQUEST['selected_users'] ) ) : array();
 	$selected_users    = array_unique( $selected_users );
 	$upload_docs_array = array();
 	if ( ! empty( $_FILES['message_attachment']['name'] ) ) {
@@ -94,18 +95,18 @@ if ( isset( $_POST['save_message'] ) ) {
 		for ( $a = 0; $a < $count_array; $a++ ) {
 			foreach ( $_FILES['message_attachment'] as $image_key => $image_val ) {
 				$document_array[ $a ] = array(
-					'name'     => $_FILES['message_attachment']['name'][ $a ],
-					'type'     => $_FILES['message_attachment']['type'][ $a ],
-					'tmp_name' => $_FILES['message_attachment']['tmp_name'][ $a ],
-					'error'    => $_FILES['message_attachment']['error'][ $a ],
-					'size'     => $_FILES['message_attachment']['size'][ $a ],
+					'name'     => sanitize_file_name( $_FILES['message_attachment']['name'][ $a ] ),
+					'type'     => sanitize_mime_type( $_FILES['message_attachment']['type'][ $a ] ),
+					'tmp_name' => sanitize_text_field( $_FILES['message_attachment']['tmp_name'][ $a ] ),
+					'error'    => intval( $_FILES['message_attachment']['error'][ $a ] ),
+					'size'     => intval( $_FILES['message_attachment']['size'][ $a ] ),
 				);
 			}
 		}
 		foreach ( $document_array as $key => $value ) {
 			$get_file_name = $document_array[ $key ]['name'];
 			if ( ! empty( $value['name'] ) ) {
-				$upload_docs_array[] = mjschool_load_documets_new( $value, $value, sanitize_text_field(wp_unslash($_POST['subject'])) );
+				$upload_docs_array[] = mjschool_load_documets_new( $value, $value, $subject );
 			}
 		}
 	}
@@ -128,7 +129,7 @@ if ( isset( $_POST['save_message'] ) ) {
 		$module                    = 'message';
 		$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $post_id );
 		$result                    = add_post_meta( $post_id, 'message_for', $mjschool_role );
-		$result                    = add_post_meta( $post_id, 'smgt_class_id', intval( wp_unslash($_REQUEST['class_id']) ) );
+		$result                    = add_post_meta( $post_id, 'smgt_class_id', $class_id );
 		$result                    = add_post_meta( $post_id, 'message_attachment', $attachment );
 		$m                         = 0;
 		$reci_number               = array();
@@ -139,8 +140,8 @@ if ( isset( $_POST['save_message'] ) ) {
 			$device_token[] = get_user_meta( $user_id, 'token_id', true );
 		}
 		// Start Send Push Notification.
-		$title             = esc_attr__( 'You have received new message', 'mjschool' ) . ' ' . sanitize_text_field( wp_unslash( $_POST['subject'] ) );
-		$text              = sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) );
+		$title             = esc_html__( 'You have received new message', 'mjschool' ) . ' ' . $subject;
+		$text              = $message_body;
 		$notification_data = array(
 			'registration_ids' => $device_token,
 			'data'             => array(
@@ -149,11 +150,11 @@ if ( isset( $_POST['save_message'] ) ) {
 				'type'  => 'Message',
 			),
 		);
-		$json    = json_encode( $notification_data );
+		$json    = wp_json_encode( $notification_data );
 		$message = mjschool_send_push_notification( $json );
 		// End Send Push Notification.
 		foreach ( $selected_users as $user_id ) {
-			$message_content          = sanitize_text_field(wp_unslash($_POST['mjschool_template']));
+			$message_content          = isset( $_POST['mjschool_template'] ) ? sanitize_text_field( wp_unslash( $_POST['mjschool_template'] ) ) : '';
 			$current_mjschool_service = get_option( 'mjschool_service' );
 			// Send SMS Notification.
 			if ( $mjschool_service_enable ) {
@@ -176,7 +177,7 @@ if ( isset( $_POST['save_message'] ) ) {
 			$headers .= 'From: ' . get_option( 'mjschool_name' ) . ' <noreplay@gmail.com>' . "\r\n";
 			$headers .= "MIME-Version: 1.0\r\n";
 			$headers .= "Content-Type: text/plain; charset=iso-8859-1\r\n";
-			if ( isset( $_POST['mjschool_message_mail_service_enable'] ) === 1 ) {
+			if ( ! empty( $_POST['mjschool_message_mail_service_enable'] ) && intval( wp_unslash( $_POST['mjschool_message_mail_service_enable'] ) ) === 1 ) {
 				$MesArr['{{receiver_name}}']   = mjschool_get_display_name( $user_id );
 				$MesArr['{{message_content}}'] = $message_body;
 				$MesArr['{{school_name}}']     = $SchoolName;
@@ -195,23 +196,24 @@ if ( isset( $_POST['save_message'] ) ) {
 			++$m;
 		}
 	} else {
-		$user_list          = array();
-		$class_list         = $class_id;
-		$query_data['role'] = $mjschool_role;
-		$exlude_id          = mjschool_approve_student_list();
-		$multi_class_id     = sanitize_text_field(wp_unslash($_POST['multi_class_id']));
+		$user_list                = array();
+		$class_list               = $class_id;
+		$query_data['role']       = $mjschool_role;
+		$exlude_id                = mjschool_approve_student_list();
+		$multi_class_id           = isset( $_POST['multi_class_id'] ) && is_array( $_POST['multi_class_id'] ) ? array_map( 'intval', wp_unslash( $_POST['multi_class_id'] ) ) : array();
+		$class_selection_type     = isset( $_POST['class_selection_type'] ) ? sanitize_text_field( wp_unslash( $_POST['class_selection_type'] ) ) : '';
 		if ( $mjschool_role === 'student' ) {
-			if ( isset($_POST['class_selection_type']) && sanitize_text_field(wp_unslash($_POST['class_selection_type'])) === 'single' ) { 
+			if ( $class_selection_type === 'single' ) { 
 				$query_data['exclude'] = $exlude_id;
-				if ($class_section) {
+				if ( $class_section ) {
 					$query_data['meta_key'] = 'class_section';
 					$query_data['meta_value'] = $class_section;
 					$query_data['meta_query'] = array(
-						array( 'key' => 'class_name', 'value' => intval($class_list), 'compare' => '=' )
+						array( 'key' => 'class_name', 'value' => intval( $class_list ), 'compare' => '=' )
 					);
-				} elseif ($class_list != '' ) {
+				} elseif ( $class_list != '' ) {
 					$query_data['meta_key'] = 'class_name';
-					$query_data['meta_value'] = intval($class_list);
+					$query_data['meta_value'] = intval( $class_list );
 				}
 			} else {
 				$query_data['exclude'] = $exlude_id;
@@ -223,7 +225,7 @@ if ( isset( $_POST['save_message'] ) ) {
 			$results = get_users( $query_data );
 		}
 		if ( $mjschool_role === 'teacher' ) {
-			if ( isset($_POST['class_selection_type']) && sanitize_text_field(wp_unslash($_POST['class_selection_type'])) === 'single' ) {
+			if ( $class_selection_type === 'single' ) {
 				if ( $class_list != '' ) {
 					global $wpdb;
 					$table_mjschool_teacher_class = $wpdb->prefix . 'mjschool_teacher_class';
@@ -258,20 +260,20 @@ if ( isset( $_POST['save_message'] ) ) {
 			$results = get_users( $query_data );
 		}
 		if ( $mjschool_role === 'parent' ) {
-			if ( isset($_POST['class_selection_type']) && sanitize_text_field(wp_unslash($_POST['class_selection_type'])) === 'single' ) {
+			if ( $class_selection_type === 'single' ) {
 				if ( $class_list === '' ) {
 					$results = get_users( $query_data );
 				} else {
 					$query_data['role'] = 'student';
 					
 					$query_data['exclude'] = $exlude_id;
-					if ($class_section) {
+					if ( $class_section ) {
 						$query_data['meta_key'] = 'class_section';
 						$query_data['meta_value'] = $class_section;
 						$query_data['meta_query'] = array(
 							array( 'key' => 'class_name', 'value' => $class_list, 'compare' => '=' )
 						);
-					} elseif ($class_list != '' ) {
+					} elseif ( $class_list != '' ) {
 						$query_data['meta_key'] = 'class_name';
 						$query_data['meta_value'] = $class_list;
 					}
@@ -324,8 +326,8 @@ if ( isset( $_POST['save_message'] ) ) {
 			$module                    = 'message';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $post_id );
 			$result                    = add_post_meta( $post_id, 'message_for', $mjschool_role );
-			if ( isset($_POST['class_selection_type']) && sanitize_text_field(wp_unslash($_POST['class_selection_type'])) === 'single' ) {
-				$result = add_post_meta( $post_id, 'smgt_class_id', sanitize_text_field(wp_unslash($_REQUEST['class_id'])) );
+			if ( $class_selection_type === 'single' ) {
+				$result = add_post_meta( $post_id, 'smgt_class_id', $class_id );
 			} else {
 				$result = add_post_meta( $post_id, 'smgt_class_id', implode( ',', $multi_class_id ) );
 			}
@@ -337,7 +339,7 @@ if ( isset( $_POST['save_message'] ) ) {
 			}
 			$device_token = array();
 			foreach ( $user_data_list as $user_id ) {
-				$message_content = sanitize_text_field(wp_unslash($_POST['mjschool_template']));
+				$message_content = isset( $_POST['mjschool_template'] ) ? sanitize_text_field( wp_unslash( $_POST['mjschool_template'] ) ) : '';
 				$type            = 'Message';
 				// Send SMS Notification.
 				if ( $mjschool_service_enable ) {
@@ -358,7 +360,7 @@ if ( isset( $_POST['save_message'] ) ) {
 				$headers .= 'From: ' . get_option( 'mjschool_name' ) . ' <noreplay@gmail.com>' . "\r\n";
 				$headers .= "MIME-Version: 1.0\r\n";
 				$headers .= "Content-Type: text/plain; charset=iso-8859-1\r\n";
-				if ( isset( $_POST['mjschool_message_mail_service_enable'] ) === 1 ) {
+				if ( ! empty( $_POST['mjschool_message_mail_service_enable'] ) && intval( wp_unslash( $_POST['mjschool_message_mail_service_enable'] ) ) === 1 ) {
 					$to                            = $user_info->user_email;
 					$MesArr['{{receiver_name}}']   = mjschool_get_display_name( $user_id );
 					$MesArr['{{message_content}}'] = $message_body;
@@ -376,8 +378,8 @@ if ( isset( $_POST['save_message'] ) ) {
 				}
 			}
 			// Start Send Push Notification.
-			$title             = esc_attr__( 'You have received new message', 'mjschool' ) . ' ' . sanitize_text_field( wp_unslash( $_POST['subject'] ) );
-			$text              = sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) );
+			$title             = esc_html__( 'You have received new message', 'mjschool' ) . ' ' . $subject;
+			$text              = $message_body;
 			$notification_data = array(
 				'registration_ids' => $device_token,
 				'data'             => array(
@@ -386,23 +388,23 @@ if ( isset( $_POST['save_message'] ) ) {
 					'type'  => 'Message',
 				),
 			);
-			$json    = json_encode( $notification_data );
+			$json    = wp_json_encode( $notification_data );
 			$message = mjschool_send_push_notification( $json );
 			// End Send Push Notification.
 		}
 	}
 }
 if ( isset( $result ) ) {
-	$nonce = wp_create_nonce( 'mjschool_message_tab' ); 
-	wp_redirect( admin_url() . 'admin.php?page=mjschool_message&tab=sentbox&_wpnonce='.esc_attr( $nonce ).'&message=1' );
-	die();
+	$nonce = wp_create_nonce( 'mjschool_message_tab' );
+	wp_safe_redirect( admin_url( 'admin.php?page=mjschool_message&tab=sentbox&_wpnonce=' . $nonce . '&message=1' ) );
+	exit;
 }
 ?>
-<?php $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'])) : 'inbox'; ?>
+<?php $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'inbox'; ?>
 <div class="mjschool-page-inner"><!--Mjschool-page-inner. -->
 	<div class="mjschool-main-list-margin-15px"><!--Mjschool-main-list-margin-15px.-->
 		<?php
-		$message = isset( $_REQUEST['message'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message'])) : '0';
+		$message = isset( $_REQUEST['message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message'] ) ) : '0';
 		switch ( $message ) {
 			case '1':
 				$message_string = esc_html__( 'Message Sent Successfully!', 'mjschool' );
@@ -427,30 +429,33 @@ if ( isset( $result ) ) {
 			}
 			?>
 			<div class="col-md-12 mjschool-custom-padding-0"><!-- Start Col-md-12 Mjschool-custom-padding-0.-->
-				<?php $nonce = wp_create_nonce( 'mjschool_message_tab' ); ?>
+				<?php
+				$nonce       = wp_create_nonce( 'mjschool_message_tab' );
+				$current_tab = isset( $_REQUEST['tab'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['tab'] ) ) : '';
+				?>
 				<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per list-unstyled mjschool-mailbox-nav">
-					<li <?php if ( ! isset( $_REQUEST['tab'] ) || ( sanitize_text_field(wp_unslash($_REQUEST['tab'])) === 'inbox' ) ) { ?> class="active"<?php } ?>>
-						<a href="?page=mjschool_message&tab=inbox&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-inbox-tab"><i class="fas fa-inbox"></i> <?php esc_html_e( 'Inbox', 'mjschool' ); ?><span class="mjschool-inbox-count-number badge badge-success  pull-right ms-1"><?php echo esc_html( mjschool_count_unread_message( get_current_user_id() ) ); ?></span></a>
+					<li <?php if ( ! isset( $_REQUEST['tab'] ) || ( $current_tab === 'inbox' ) ) { ?> class="active"<?php } ?>>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message&tab=inbox&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-inbox-tab"><i class="fas fa-inbox"></i> <?php esc_html_e( 'Inbox', 'mjschool' ); ?><span class="mjschool-inbox-count-number badge badge-success  pull-right ms-1"><?php echo esc_html( mjschool_count_unread_message( get_current_user_id() ) ); ?></span></a>
 					</li>
-					<li <?php if ( isset( $_REQUEST['tab'] ) && sanitize_text_field(wp_unslash($_REQUEST['tab'])) === 'sentbox' ) { ?> class="active"<?php } ?>>
-						<a href="?page=mjschool_message&tab=sentbox&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab"><i class="fass fa-sign-out-alt"></i><?php esc_html_e( 'Sent', 'mjschool' ); ?></a>
+					<li <?php if ( $current_tab === 'sentbox' ) { ?> class="active"<?php } ?>>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message&tab=sentbox&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab"><i class="fass fa-sign-out-alt"></i><?php esc_html_e( 'Sent', 'mjschool' ); ?></a>
 					</li>
-					<li <?php if ( isset( $_REQUEST['tab'] ) && sanitize_text_field(wp_unslash($_REQUEST['tab'])) === 'compose' ) { ?> class="active"<?php } ?>>
-						<a href="?page=mjschool_message&tab=compose&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab"><?php esc_html_e( 'Compose', 'mjschool' ); ?></a>
+					<li <?php if ( $current_tab === 'compose' ) { ?> class="active"<?php } ?>>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message&tab=compose&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab"><?php esc_html_e( 'Compose', 'mjschool' ); ?></a>
 					</li>	   
 				</ul>
 			</div><!-- End Col-md-12 Mjschool-custom-padding-0.-->
 			<?php
-			if ( isset( $_REQUEST['tab'] ) && sanitize_text_field(wp_unslash($_REQUEST['tab'])) === 'sentbox' ) {
+			if ( $current_tab === 'sentbox' ) {
 				require_once MJSCHOOL_ADMIN_DIR . '/message/sendbox.php';
 			}
-			if ( ! isset( $_REQUEST['tab'] ) || ( sanitize_text_field(wp_unslash($_REQUEST['tab'])) === 'inbox' ) ) {
+			if ( ! isset( $_REQUEST['tab'] ) || ( $current_tab === 'inbox' ) ) {
 				require_once MJSCHOOL_ADMIN_DIR . '/message/inbox.php';
 			}
-			if ( isset( $_REQUEST['tab'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['tab'])) === 'compose' ) ) {
+			if ( $current_tab === 'compose' ) {
 				require_once MJSCHOOL_ADMIN_DIR . '/message/compose-email.php';
 			}
-			if ( isset( $_REQUEST['tab'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['tab'])) === 'view_message' ) ) {
+			if ( $current_tab === 'view_message' ) {
 				require_once MJSCHOOL_ADMIN_DIR . '/message/view-message.php';
 			}
 			?>

@@ -1,22 +1,6 @@
 <?php
 /**
- * Message Management Interface.
- *
- * Provides the backend admin interface for creating, editing, and sending messages
- * to students, teachers, parents, and support staff within the MJSchool plugin.
- * This file supports both single and multiple class message distribution, along with
- * optional email and SMS notifications.
- *
- * Key Features:
- * - Allows sending messages to multiple user roles and classes.
- * - Supports single and multiple class selection with dynamic user filtering.
- * - Enables file attachments and message templates.
- * - Provides options to send notifications via email and SMS.
- * - Integrates with WordPress i18n functions for full localization support.
- * - Includes validation rules using the jQuery ValidationEngine.
- * - Uses WordPress sanitization and escaping functions for secure data handling.
- * - Dynamically loads class sections and user lists based on selected roles.
- * - Supports custom fields for the “message” module.
+ * Message Management Interface - Compose Email.
  *
  * @package    MJSchool
  * @subpackage MJSchool/admin/includes/message
@@ -26,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 
 // Check nonce for send message tab.
 if ( isset( $_GET['tab'] ) ) {
-	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'mjschool_message_tab' ) ) {
+	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'mjschool_message_tab' ) ) {
 		wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 	}
 }
@@ -37,14 +21,17 @@ $school_type = get_option( 'mjschool_custom_class' );
 	<h2>
 		<?php
 		$edit = 0;
-		if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
-			echo esc_html( esc_attr__( 'Edit Message', 'mjschool' ) );
+		if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) {
+			echo esc_html__( 'Edit Message', 'mjschool' );
 			$edit = 1;
 		}
 		?>
 	</h2>
 	<form name="class_form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-message-form" enctype="multipart/form-data"><!-- form div -->
-		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+		<?php 
+		wp_nonce_field( 'mjschool_save_message', '_wpnonce' );
+		$mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; 
+		?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 		<div class="form-body mjschool-user-form"><!--User form. -->
 			<div class="row"><!--Row. -->
@@ -91,20 +78,16 @@ $school_type = get_option( 'mjschool_custom_class' );
 						<?php } ?>
 					</select>
 				</div>
-				<?php if ( $school_type === 'school' ) {?>
+				<?php if ( $school_type === 'school' ) { ?>
 					<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 input class_section_id">
 						<label class="ml-1 mjschool-custom-top-label top" for="class_section_id"><?php esc_html_e( 'Class Section', 'mjschool' ); ?></label>
 						<?php
-						if ( isset( $_POST['class_section'] ) ) {
-							$sectionval = sanitize_text_field(wp_unslash($_POST['class_section']));
-						} else {
-							$sectionval = '';
-						}
+						$sectionval = isset( $_POST['class_section'] ) ? intval( wp_unslash( $_POST['class_section'] ) ) : '';
 						?>
 						<select name="class_section" class="form-control mjschool-min-width-100px" id="class_section_id">
 							<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 							<?php
-							if ( $edit ) {
+							if ( $edit && isset( $user_info->class_name ) ) {
 								foreach ( mjschool_get_class_sections( $user_info->class_name ) as $sectiondata ) {
 									?>
 									<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
@@ -114,14 +97,15 @@ $school_type = get_option( 'mjschool_custom_class' );
 							?>
 						</select>
 					</div>
-				<?php }?>
+				<?php } ?>
 				<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool-single-class-div mjschool-support-staff-user-div input">
 					<div id="messahe_test"></div>
 					<div class="col-sm-12 mjschool-multiple-select mjschool-rtl-padding-left-right-0px">
 						<span class="user_display_block">
-							<select name="selected_users[]" id="selected_users" class="form-control mjschool-min-width-250px validate[required]" multiple="multiple"><?php
+							<select name="selected_users[]" id="selected_users" class="form-control mjschool-min-width-250px validate[required]" multiple="multiple">
+								<?php
 								$student_list = mjschool_get_all_student_list();
-								foreach ( $student_list  as $retrive_data ) {
+								foreach ( $student_list as $retrive_data ) {
 									echo '<option value="' . esc_attr( $retrive_data->ID ) . '">' . esc_html( $retrive_data->display_name ) . '</option>';
 								}
 								?>
@@ -136,7 +120,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
 							<input id="subject" class="form-control validate[required,custom[description_validation]] text-input" maxlength="100" type="text" name="subject">
-							<label  for="subject"><?php esc_html_e( 'Subject', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
+							<label for="subject"><?php esc_html_e( 'Subject', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						</div>
 					</div>
 				</div>
@@ -146,7 +130,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 							<div class="form-field">
 								<textarea name="message_body" id="message_body" maxlength="1000" class="mjschool-textarea-height-60px form-control validate[required,custom[description_validation]] text-input"></textarea>
 								<span class="mjschool-txt-title-label"></span>
-								<label class="text-area address active" for="subject"><?php esc_html_e( 'Message Comment', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
+								<label class="text-area address active" for="message_body"><?php esc_html_e( 'Message Comment', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 							</div>
 						</div>
 					</div>
@@ -164,7 +148,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 							</div>
 						</div>
 						<div class="col-md-2 col-sm-2 col-xs-12">
-							<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-add-new-plus-btn.png"); ?>" onclick="mjschool_add_new_attachment()" class="mjschool-rtl-margin-top-15px mjschool-more-attachment mjschool-add-certificate mjschool-float-right" id="add_more_sibling">
+							<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-add-new-plus-btn.png' ); ?>" onclick="mjschool_add_new_attachment()" class="mjschool-rtl-margin-top-15px mjschool-more-attachment mjschool-add-certificate mjschool-float-right" id="add_more_sibling">
 						</div>
 					</div>
 				</div>
@@ -174,7 +158,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 							<div class="row mjschool-padding-radio">
 								<div>
 									<label class="mjschool-custom-top-label mjschool-label-position-rtl" for="mjschool_message_mail_service_enable"><?php esc_html_e( 'Send Mail', 'mjschool' ); ?></label>
-									<input id="mjschool_message_mail_service_enable" type="checkbox" value="1" name="smgt_message_mail_service_enable">
+									<input id="mjschool_message_mail_service_enable" type="checkbox" value="1" name="mjschool_message_mail_service_enable">
 									<span> <?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 								</div>
 							</div>
@@ -214,7 +198,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 		<div class="form-body mjschool-user-form"><!--User form. -->
 			<div class="row"><!--Row. -->
 				<div class="col-sm-6">
-					<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Message', 'mjschool' ); } else { esc_html_e( 'Send Message', 'mjschool' ); }?>" name="save_message" class="btn btn-success mjschool-save-message-selected-user mjschool-save-btn mjschool-rtl-margin-0px" />
+					<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Message', 'mjschool' ); } else { esc_attr_e( 'Send Message', 'mjschool' ); } ?>" name="save_message" class="btn btn-success mjschool-save-message-selected-user mjschool-save-btn mjschool-rtl-margin-0px" />
 				</div>
 			</div><!--Row. -->
 		</div><!--User form. -->

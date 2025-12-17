@@ -138,7 +138,7 @@ if ( isset( $_POST['save_issue_book'] ) ) {
 							$smgt_issue_book_mail_service_enable = sanitize_text_field(wp_unslash($_POST['mjschool_issue_book_mail_service_enable']));
 							if ( $smgt_issue_book_mail_service_enable ) {
 								$search['{{student_name}}'] = mjschool_get_teacher( sanitize_text_field(wp_unslash($_POST['student_id'])) );
-								$search['{{book_name}}']    = mjschool_get_book_name( $book_id );
+								$search['{{book_name}}']    = $mjschool_obj_lib->mjschool_get_book_name( $book_id );
 								$search['{{issue_date}}']   = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['issue_date'])) );
 								$search['{{return_date}}']  = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['return_date'])) );
 								$search['{{school_name}}']  = get_option( 'mjschool_name' );
@@ -178,7 +178,7 @@ if ( isset( $_POST['save_issue_book'] ) ) {
 						$smgt_issue_book_mail_service_enable = sanitize_text_field(wp_unslash($_POST['mjschool_issue_book_mail_service_enable']));
 						if ( $smgt_issue_book_mail_service_enable ) {
 							$search['{{student_name}}'] = mjschool_get_teacher( sanitize_text_field(wp_unslash($_POST['student_id'])) );
-							$search['{{book_name}}']    = mjschool_get_book_name( $book_id );
+							$search['{{book_name}}']    = $mjschool_obj_lib->mjschool_get_book_name( $book_id );
 							$search['{{issue_date}}']   = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['issue_date'])) );
 							$search['{{return_date}}']  = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['return_date'])) );
 							$search['{{school_name}}']  = get_option( 'mjschool_name' );
@@ -1058,7 +1058,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 											$smgt_issue_book_mail_service_enable = sanitize_text_field(wp_unslash($_POST['mjschool_issue_book_mail_service_enable']));
 											if ( $smgt_issue_book_mail_service_enable ) {
 												$search['{{student_name}}'] = mjschool_get_teacher( sanitize_text_field(wp_unslash($_POST['student_id'])) );
-												$search['{{book_name}}']    = mjschool_get_book_name( $book_id );
+												$search['{{book_name}}']    = $mjschool_obj_lib->mjschool_get_book_name( $book_id );
 												$search['{{issue_date}}']   = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['issue_date'])) );
 												$search['{{return_date}}']  = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['return_date'])) );
 												$search['{{school_name}}']  = get_option( 'mjschool_name' );
@@ -1310,7 +1310,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																	?>
 																	<tr>
 																		<td class="mjschool-user-image mjschool-width-50px-td"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-library.png"); ?>" class="img-circle" /></td>
-																		<td><?php echo esc_html( stripslashes( mjschool_get_book_name( $retrieved_data->book_id ) ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Book Title', 'mjschool' ); ?>"></i></td>
+																		<td><?php echo esc_html( stripslashes( $mjschool_obj_lib->mjschool_get_book_name( $retrieved_data->book_id ) ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Book Title', 'mjschool' ); ?>"></i></td>
 																		<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->issue_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Issue Date', 'mjschool' ); ?>"></i> </td>
 																		<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->end_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Due Return Date', 'mjschool' ); ?>"></i></td>
 																		<td>
@@ -1651,7 +1651,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 												$smgt_issue_book_mail_service_enable = sanitize_text_field(wp_unslash($_POST['mjschool_issue_book_mail_service_enable']));
 												if ( $smgt_issue_book_mail_service_enable ) {
 													$search['{{student_name}}'] = mjschool_get_teacher( sanitize_text_field(wp_unslash($_POST['student_id'])) );
-													$search['{{book_name}}']    = mjschool_get_book_name( $book_id );
+													$search['{{book_name}}']    = $mjschool_obj_lib->mjschool_get_book_name( $book_id );
 													$search['{{issue_date}}']   = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['issue_date'])) );
 													$search['{{return_date}}']  = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['return_date'])) );
 													$search['{{school_name}}']  = get_option( 'mjschool_name' );

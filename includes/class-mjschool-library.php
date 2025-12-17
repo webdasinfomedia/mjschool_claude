@@ -321,7 +321,7 @@ class Mjschool_Library {
 			$device_token      = array();
 			$device_token[]    = get_user_meta( sanitize_textarea_field(wp_unslash($_POST['student_id'])), 'token_id', true );
 			$title             = esc_attr__( 'New Notification For Book Issue', 'mjschool' );
-			$text              = esc_attr__( 'New book', 'mjschool' ) . ' ' . mjschool_get_book_name( $book ) . ' ' . esc_attr__( 'has been issue to you.', 'mjschool' );
+			$text              = esc_attr__( 'New book', 'mjschool' ) . ' ' . $this->mjschool_get_book_name( $book ) . ' ' . esc_attr__( 'has been issue to you.', 'mjschool' );
 			$notification_data = array(
 				'registration_ids' => $device_token,
 				'data'             => array(
@@ -615,5 +615,100 @@ class Mjschool_Library {
 		$table_name = $wpdb->prefix . 'mjschool_library_book';
 
 		$result = $wpdb->insert( $table_mjschool_library_book, $bookdata );
+	}
+
+	/**
+	 * Get book name by book ID.
+	 *
+	 * @since 1.0.0
+	 * @param int $id Book ID.
+	 * @return string Book name or 'N/A'.
+	 */
+	public function mjschool_get_book_name( $id ) {
+		global $wpdb;
+		$table_book = $wpdb->prefix . 'mjschool_library_book';
+		$book_id    = intval( $id );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_book where id=%d", $book_id ) );
+		if ( ! empty( $result ) ) {
+			return $result->book_name;
+		} else {
+			return 'N/A';
+		}
+	}
+
+	/**
+	 * Get ISBN number of a book.
+	 *
+	 * @since 1.0.0
+	 * @param int $id Book ID.
+	 * @return string ISBN value.
+	 */
+	public function mjschool_get_ISBN( $id ) {
+		global $wpdb;
+		$table_book = $wpdb->prefix . 'mjschool_library_book';
+		$book_id    = intval( $id );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_book where id=%d", $book_id ) );
+		return $result->ISBN;
+	}
+
+	/**
+	 * Get book number from library table.
+	 *
+	 * @since 1.0.0
+	 * @param int $id Book ID.
+	 * @return string Book number.
+	 */
+	public function mjschool_get_book_number( $id ) {
+		global $wpdb;
+		$table_book = $wpdb->prefix . 'mjschool_library_book';
+		$book_id    = intval( $id );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_book where id=%d", $book_id ) );
+		return $result->book_number;
+	}
+	
+	/**
+	 * Get payment report for frontend filters.
+	 *
+	 * @since 1.0.0
+	 * @param int|string $class_id Class ID or 'all_class'.
+	 * @param int $fee_term Fee term ID.
+	 * @param string $payment_status Status (paid/unpaid/partial).
+	 * @param string $sdate Start date.
+	 * @param string $edate End date.
+	 * @param int $section_id Section ID.
+	 * @return array List of filtered payment records.
+	 */
+	public function mjschool_get_payment_report_front( $class_id, $fee_term, $payment_status, $sdate, $edate, $section_id ) {
+		global $wpdb;
+		// Sanitize inputs.
+		$start_date            = date( 'Y-m-d', strtotime( sanitize_text_field( $sdate ) ) );
+		$end_date              = date( 'Y-m-d', strtotime( sanitize_text_field( $edate ) ) );
+		$class_id              = ( $class_id === 'all_class' ) ? 0 : intval( $class_id );
+		$fee_term              = intval( $fee_term );
+		$payment_status        = sanitize_text_field( $payment_status );
+		$mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
+		$sql                   = "SELECT * FROM $mjschool_fees_payment WHERE paid_by_date BETWEEN %s AND %s";
+		$params                = array( $start_date, $end_date );
+		// Optional filters.
+		if ( $class_id > 0 ) {
+			$sql     .= ' AND class_id = %d';
+			$params[] = $class_id;
+		}
+		if ( $fee_term > 0 ) {
+			$sql     .= ' AND FIND_IN_SET(%d, fees_id)';
+			$params[] = $fee_term;
+		}
+		if ( ! empty( $payment_status ) ) {
+			$sql     .= ' AND payment_status = %s';
+			$params[] = $payment_status;
+		}
+		// Prepare and execute.
+		$prepared_sql = $wpdb->prepare( $sql, ...$params );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_results( $prepared_sql );
+		return $result;
 	}
 }

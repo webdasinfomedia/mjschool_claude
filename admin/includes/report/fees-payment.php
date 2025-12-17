@@ -232,7 +232,8 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 	</div>
 	<!--- Panel body. --->
 	<div class="clearfix"> </div>
-	<?php
+	<?
+	$obj_library = new MjSchool_Library();
 	if ( isset( $_POST['report_4'] ) ) {
 		if ( $_POST['class_id'] != ' ' && $_POST['fees_id'] != ' ' && $_POST['sdate'] != ' ' && $_POST['edate'] != ' ' ) {
 			$class_id   = $_POST['class_id'];
@@ -245,7 +246,7 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 			$sdate          = sanitize_text_field( $_POST['sdate'] );
 			$edate          = sanitize_text_field( $_POST['edate'] );
 			$student_status = sanitize_text_field( $_POST['status'] );
-			$feereport      = mjschool_get_payment_report_front( $class_id, $fee_term, $payment_status, $sdate, $edate, $section_id );
+			$feereport      = $obj_library->mjschool_get_payment_report_front( $class_id, $fee_term, $payment_status, $sdate, $edate, $section_id );
             
             if ($student_status === "active") {
                 $students = get_users(array(

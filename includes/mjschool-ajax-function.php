@@ -4131,6 +4131,7 @@ function mjschool_student_view_library_history() {
 	$student_id = sanitize_text_field( wp_unslash($_REQUEST['student_id']) );
 	$booklist   = mjschool_get_student_library_book_list( $student_id );
 	$student    = get_userdata( $student_id );
+	$mjschool_obj_lib = new Mjschool_Library();
 	?>
 	<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
 		<a href="javascript:void(0);" class="mjschool-event-close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
@@ -4160,7 +4161,7 @@ function mjschool_student_view_library_history() {
 								?>
 								<tr class="mjschool_border_1px_white">
 									<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >
-										<?php echo esc_html( stripslashes( mjschool_get_book_name( $retrieved_data->book_id ) ) ); ?>
+										<?php echo esc_html( stripslashes( $mjschool_obj_lib->mjschool_get_book_name( $retrieved_data->book_id ) ) ); ?>
 									</td>
 									<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >
 										<?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->issue_date ) ); ?>

@@ -413,7 +413,7 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 	?>
 	<a href="#" class="mjschool-view-video-popup youtube-icon" link="<?php echo esc_url( 'https://www.youtube.com/embed/TaO7Xh4SmXY?si=v4zQa-CmiEE0h151' ); ?>" title="<?php esc_attr_e( 'Student Attendance', 'mjschool' ); ?>">
 		
-		<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_attr_e( 'YouTube', 'mjschool' ); ?>">
+		<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_html_e( 'YouTube', 'mjschool' ); ?>">
 		
 	</a>
 	<?php

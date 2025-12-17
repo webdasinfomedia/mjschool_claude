@@ -14,7 +14,7 @@
  * - Integrates client-side validation using jQuery ValidationEngine.
  * - Ensures fully translatable text strings with WordPress internationalization functions.
  *
- * @package    MJSchool
+ * @package      MJSchool
  * @subpackage MJSchool/admin/includes/mark
  * @since      1.0.0
  */
@@ -23,7 +23,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 
 // Check nonce for export marks tab.
 if ( isset( $_GET['tab'] ) ) {
-	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'mjschool_exam_result_tab' ) ) {
+	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'mjschool_exam_result_tab' ) ) {
 		wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 	}
 }
@@ -33,13 +33,16 @@ if ( isset( $_GET['tab'] ) ) {
 	<form method="post" id="export_mark_table">
 		<div class="form-body mjschool-user-form"><!--------- Form body. ------->
 			<div class="row">
-				<?php if ( $school_type === 'university' ) 
-				{?>
-					<div class="col-md-6 input">	
+				<?php
+				if ( 'university' === $school_type ) {
+					?>
+					<div class="col-md-6 input">
 					<?php
-				}else{?>
-				<div class="col-md-3 input">
-					<?php } ?>
+				} else { ?>
+					<div class="col-md-3 input">
+					<?php
+					}
+					?>
 					<label class="ml-1 mjschool-custom-top-label top" for="mjschool-class-list"><?php esc_html_e( 'Select Class', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 					<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control validate[required] class_id_exam text-input">
 						<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
@@ -58,15 +61,17 @@ if ( isset( $_GET['tab'] ) ) {
 						<?php
 						$class_section = '';
 						if ( isset( $_REQUEST['class_section'] ) ) {
-							$class_section = sanitize_text_field(wp_unslash($_REQUEST['class_section']));
+							$class_section = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) );
 						}
 						?>
 						<select name="class_section" class="mjschool-line-height-30px form-control mjschool-section-id-exam" id="class_section">
 							<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 							<?php
 							if ( isset( $_REQUEST['class_section'] ) ) {
-								$class_section = sanitize_text_field(wp_unslash($_REQUEST['class_section']));
-								foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+								$class_section = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) );
+								// Sanitize class_id for use in function argument.
+								$class_id_sanitized = intval( sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) );
+								foreach ( mjschool_get_class_sections( $class_id_sanitized ) as $sectiondata ) {
 									?>
 									<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 									<?php

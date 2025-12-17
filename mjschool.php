@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       MJ School
  * Plugin URI:        https://mojoomla.com/wordpress-plugins/mj-school
- * Description:       Streamline your school's operations with the School Management System Plugin for WordPress. From student enrollment and attendance to schedules, assignments, exams, and fees — this all-in-one plugin simplifies school management. Enhance communication between staff, students, and parents, ensuring smooth and efficient operations.
+ * Description:       Streamline your school's operations with the School Management System Plugin for WordPress. From student enrollment and attendance to schedules, assignments, exams, and fees — this all-in-one plugin simplifies school management. Enhance communication between staff, students, and parents, ensuring smooth and efficient operations(16-12-2025).
  * Version:           2.0.1
  * Requires at least: 5.8
  * Requires PHP:      7.4

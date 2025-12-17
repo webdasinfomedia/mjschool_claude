@@ -2,27 +2,16 @@
 /**
  * Admin Migration Page — Class Promotion Management.
  *
- * This file manages the student migration process from one class to another
- * based on exam results and passing marks. It provides an admin-side interface
- * to promote students who have passed and handle class updates accordingly.
- *
- * Key Features:
- * - Allows administrators and authorized users to migrate students between classes.
- * - Supports migration with or without exam evaluation.
- * - Includes nonce verification for security during form submission.
- * - Displays user-friendly success and error messages.
- * - Provides input validation using jQuery Validation Engine.
- * - Handles access control for role-based permissions.
- * - Uses WordPress best practices for sanitization, escaping, and redirection.
- *
  * @package    MJSchool
  * @subpackage MJSchool/admin/includes/migration
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
+
 // -------- Check Browser Javascript. ----------//
 mjschool_browser_javascript_check();
 $mjschool_role = mjschool_get_user_role( get_current_user_id() );
+
 if ( $mjschool_role === 'administrator' ) {
 	$user_access_view = 1;
 } else {
@@ -35,37 +24,37 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-?>
-<?php
+
 // This is Class at admin side.
 if ( isset( $_REQUEST['migration'] ) ) {
-	$nonce = $_POST['_wpnonce'];
-	if ( wp_verify_nonce( $nonce, 'save_migration_admin_nonce' ) ) {
-		if ( ! empty( $_REQUEST['exam_id'] ) ) {
-			$current_class = sanitize_text_field( wp_unslash($_REQUEST['current_class']) );
-			$next_class    = sanitize_text_field( wp_unslash($_REQUEST['next_class']) );
-			if ( $current_class != $next_class ) {
-				$exam_id       = sanitize_text_field( wp_unslash($_REQUEST['exam_id']) );
-				$passing_marks = sanitize_text_field( wp_unslash($_REQUEST['passing_marks']) );
-				$student_fail  = mjschool_fail_student_list( $current_class, $next_class, $exam_id, $passing_marks );
-				$update        = mjschool_migration( $current_class, $next_class, $exam_id, $student_fail, $passing_marks );
-				wp_redirect( admin_url() . 'admin.php?page=mjschool_Migration&message=1' );
-				die();
-			} else {
-				wp_redirect( admin_url() . 'admin.php?page=mjschool_Migration&message=2' );
-				die();
-			}
+	// Verify nonce.
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'save_migration_admin_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+	}
+	
+	$current_class = isset( $_REQUEST['current_class'] ) ? intval( wp_unslash( $_REQUEST['current_class'] ) ) : 0;
+	$next_class    = isset( $_REQUEST['next_class'] ) ? intval( wp_unslash( $_REQUEST['next_class'] ) ) : 0;
+	
+	if ( ! empty( $_REQUEST['exam_id'] ) ) {
+		if ( $current_class !== $next_class ) {
+			$exam_id       = intval( wp_unslash( $_REQUEST['exam_id'] ) );
+			$passing_marks = isset( $_REQUEST['passing_marks'] ) ? intval( wp_unslash( $_REQUEST['passing_marks'] ) ) : 0;
+			$student_fail  = mjschool_fail_student_list( $current_class, $next_class, $exam_id, $passing_marks );
+			$update        = mjschool_migration( $current_class, $next_class, $exam_id, $student_fail, $passing_marks );
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_Migration&message=1' ) );
+			exit;
 		} else {
-			$current_class = sanitize_text_field( wp_unslash($_REQUEST['current_class']) );
-			$next_class    = sanitize_text_field( wp_unslash($_REQUEST['next_class']) );
-			if ( $current_class != $next_class ) {
-				$update = mjschool_migration_without_exam( $current_class, $next_class );
-				wp_redirect( admin_url() . 'admin.php?page=mjschool_Migration&message=1' );
-				die();
-			} else {
-				wp_redirect( admin_url() . 'admin.php?page=mjschool_Migration&message=2' );
-				die();
-			}
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_Migration&message=2' ) );
+			exit;
+		}
+	} else {
+		if ( $current_class !== $next_class ) {
+			$update = mjschool_migration_without_exam( $current_class, $next_class );
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_Migration&message=1' ) );
+			exit;
+		} else {
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_Migration&message=2' ) );
+			exit;
 		}
 	}
 }
@@ -73,24 +62,35 @@ if ( isset( $_REQUEST['migration'] ) ) {
 <div class="mjschool-page-inner mjschool-min-h-1631-px"><!--------- Page Inner. ------->
 	<div class="mjschool-marks-list mjschool-main-list-margin-5px">
 		<?php
-		$log_url = admin_url() . 'admin.php?page=mjschool_report&tab=migration_report';
-		$message = isset( $_REQUEST['message'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message'])) : '0';
+		$log_url = admin_url( 'admin.php?page=mjschool_report&tab=migration_report' );
+		$message = isset( $_REQUEST['message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message'] ) ) : '0';
+		$message_string = '';
 		switch ( $message ) {
 			case '1':
-				$message_string = esc_html__( 'Migration Completed Successfully.', 'mjschool' ) . ' <a href="' . $log_url . '">Go to View Log</a>';
+				$message_string = sprintf(
+					/* translators: %s: URL to view migration log */
+					esc_html__( 'Migration Completed Successfully. %s', 'mjschool' ),
+					'<a href="' . esc_url( $log_url ) . '">' . esc_html__( 'Go to View Log', 'mjschool' ) . '</a>'
+				);
 				break;
-			case '2';
+			case '2':
 				$message_string = esc_html__( 'Current Class and Next Class can not be same.', 'mjschool' );
 				break;
 		}
-		if ( $message ) {
+		if ( $message && ! empty( $message_string ) ) {
 			?>
 			<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
 				<p>
 					<?php
-					// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-					echo $message_string;
-					// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
+					// Safe output - HTML is constructed safely above with proper escaping.
+					echo wp_kses(
+						$message_string,
+						array(
+							'a' => array(
+								'href' => array(),
+							),
+						)
+					);
 					?>
 				</p>
 				<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
@@ -99,12 +99,11 @@ if ( isset( $_REQUEST['migration'] ) ) {
 		}
 		?>
 		<div class="mjschool-panel-white"><!--------- Panel White. ------->
-			<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-25px-res"> <!--------- Panel body. ------->
-				<?php
-				$tablename = 'mjschool_marks';
-				?>
-				<div class="mjschool-panel-body"> <!--------- Panel body. ------->
+			<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-25px-res"><!--------- Panel body. ------->
+				<?php $tablename = 'mjschool_marks'; ?>
+				<div class="mjschool-panel-body"><!--------- Panel body. ------->
 					<form method="post" id="migration_index_table">
+						<?php wp_nonce_field( 'save_migration_admin_nonce' ); ?>
 						<div class="header">
 							<h3 class="mjschool-first-header"><?php esc_html_e( 'Migration Information', 'mjschool' ); ?></h3>
 						</div>
@@ -149,12 +148,11 @@ if ( isset( $_REQUEST['migration'] ) ) {
 										?>
 									</select>
 								</div>
-								<?php wp_nonce_field( 'save_migration_admin_nonce' ); ?>
 								<div id="mjschool-migration-passing-mark" class="mjschool-passing-mark-display-none col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool-error-msg-left-margin">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
 											<input id="mjschool-passing-marks" type="number" name="passing_marks" value="" class="form-control validate[required,min[0],maxSize[5]]">
-											<label  for="mjschool-passing-marks"><?php esc_html_e( 'Passing Marks', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
+											<label for="mjschool-passing-marks"><?php esc_html_e( 'Passing Marks', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 										</div>
 									</div>
 								</div>
@@ -163,13 +161,13 @@ if ( isset( $_REQUEST['migration'] ) ) {
 						<div class="form-body mjschool-user-form">
 							<div class="row">
 								<div class="form-group col-md-6 mjschool-button-possition-padding">
-									<input type="submit" value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" name="migration" class="btn btn-info mjschool-save-btn" />
+									<input type="submit" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" name="migration" class="btn btn-info mjschool-save-btn" />
 								</div>
 							</div>
 						</div>
 					</form>
 				</div><!--------- Panel body. ------->
-				<div class="clearfix"> </div>
+				<div class="clearfix"></div>
 			</div><!--------- Panel body. ------->
 		</div><!--------- Panel White. ------->
 	</div>

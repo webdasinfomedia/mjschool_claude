@@ -24,7 +24,7 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 	?>
 	<a href="#" class="mjschool-view-video-popup youtube-icon" link="<?php echo esc_url( 'https://www.youtube.com/embed/Ed5SkDCKiu4?si=4rsfAczrulo_l8if' ); ?>" title="<?php esc_attr_e( 'Student Attendance With QR Code', 'mjschool' ); ?>">
 		
-		<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_attr_e( 'YouTube', 'mjschool' ); ?>">
+		<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_html_e( 'YouTube', 'mjschool' ); ?>">
 		
 	</a>
 	<?php

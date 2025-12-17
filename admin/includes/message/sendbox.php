@@ -2,22 +2,6 @@
 /**
  * Sentbox Management Interface.
  *
- * Renders and manages the "Sentbox" view within the MJSchool Message Management module.
- * This file displays all messages sent by the logged-in user, allowing administrators,
- * teachers, and other authorized roles to view, filter, and delete sent messages.
- *
- * Key Features:
- * - Displays sent messages in a dynamic, sortable, and searchable DataTable.
- * - Supports bulk selection and deletion of sent messages with security checks.
- * - Integrates WordPress nonce verification to prevent unauthorized actions.
- * - Automatically logs message deletion actions for audit trail tracking.
- * - Fetches and displays related metadata such as recipients, classes, subjects,
- *   message descriptions, attachments, and timestamps.
- * - Handles user-defined custom fields with conditional column rendering.
- * - Includes file attachment download support and date formatting utilities.
- * - Provides fallback UI when no records are found with contextual "Add Record" prompts.
- * - Ensures full localization using WordPress i18n functions for all UI text.
- *
  * @package    MJSchool
  * @subpackage MJSchool/admin/includes/message
  * @since      1.0.0
@@ -26,31 +10,35 @@ defined( 'ABSPATH' ) || exit;
 
 // Check nonce for sendbox tab.
 if ( isset( $_GET['tab'] ) ) {
-	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'mjschool_message_tab' ) ) {
+	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'mjschool_message_tab' ) ) {
 		wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 	}
 }
 ?>
 <div class="mjschool-mailbox-content mjschool-custom-padding-0"><!-- Mjschool-mailbox-content. -->
 	<?php
-	$offset = 0;
-	if ( isset( $_REQUEST['pg'] ) ) {
-		$offset = intval(wp_unslash($_REQUEST['pg']));
-	}
+	$offset = isset( $_REQUEST['pg'] ) ? intval( wp_unslash( $_REQUEST['pg'] ) ) : 0;
 	$max = 0;
-	if ( isset( $_REQUEST['delete_selected'] ) ) {
-		if ( ! empty( $_REQUEST['id'] ) ) {
-			mjschool_append_audit_log( '' . esc_html__( 'Message Deleted', 'mjschool' ) . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
-			foreach ( $_REQUEST['id'] as $id ) {
-				$result = wp_delete_post( intval(wp_unslash($id)) );
+	
+	if ( isset( $_REQUEST['delete_selected'] ) && ! empty( $_REQUEST['delete_selected'] ) ) {
+		// Verify nonce for delete action.
+		if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'mjschool_delete_sentbox' ) ) {
+			wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+		}
+		if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+			$page_name = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+			mjschool_append_audit_log( esc_html__( 'Message Deleted', 'mjschool' ), get_current_user_id(), get_current_user_id(), 'delete', $page_name );
+			$ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+			foreach ( $ids as $id ) {
+				$result = wp_delete_post( intval( $id ) );
 				if ( $result ) {
-					$nonce = wp_create_nonce( 'mjschool_message_tab' ); 
-					wp_redirect( admin_url() . 'admin.php?page=mjschool_message&tab=sentbox&_wpnonce='.esc_attr( $nonce ).'&message=2' );
-					die();
+					$nonce = wp_create_nonce( 'mjschool_message_tab' );
+					wp_safe_redirect( admin_url( 'admin.php?page=mjschool_message&tab=sentbox&_wpnonce=' . $nonce . '&message=2' ) );
+					exit;
 				}
 			}
 		}
-	}
+	}	
 	$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 	$module                    = 'message';
 	$user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
@@ -58,6 +46,7 @@ if ( isset( $_GET['tab'] ) ) {
 	if ( ! empty( $message_data ) ) {
 		?>
 		<form name="wcwm_report" action="" method="post"><!-- Form-div. -->
+			<?php wp_nonce_field( 'mjschool_delete_sentbox', '_wpnonce' ); ?>
 			<div class="table-responsive" id="sentbox_table"><!-- Table-responsive. -->
 				<table id="sent_list" class="table">
 					<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
@@ -90,27 +79,13 @@ if ( isset( $_GET['tab'] ) ) {
 							if ( $i === 10 ) {
 								$i = 0;
 							}
-							if ( $i === 0 ) {
-								$color_class_css = 'mjschool-class-color0';
-							} elseif ( $i === 1 ) {
-								$color_class_css = 'mjschool-class-color1';
-							} elseif ( $i === 2 ) {
-								$color_class_css = 'mjschool-class-color2';
-							} elseif ( $i === 3 ) {
-								$color_class_css = 'mjschool-class-color3';
-							} elseif ( $i === 4 ) {
-								$color_class_css = 'mjschool-class-color4';
-							} elseif ( $i === 5 ) {
-								$color_class_css = 'mjschool-class-color5';
-							} elseif ( $i === 6 ) {
-								$color_class_css = 'mjschool-class-color6';
-							} elseif ( $i === 7 ) {
-								$color_class_css = 'mjschool-class-color7';
-							} elseif ( $i === 8 ) {
-								$color_class_css = 'mjschool-class-color8';
-							} elseif ( $i === 9 ) {
-								$color_class_css = 'mjschool-class-color9';
-							}
+							$color_classes = array(
+								'mjschool-class-color0', 'mjschool-class-color1', 'mjschool-class-color2',
+								'mjschool-class-color3', 'mjschool-class-color4', 'mjschool-class-color5',
+								'mjschool-class-color6', 'mjschool-class-color7', 'mjschool-class-color8',
+								'mjschool-class-color9'
+							);
+							$color_class_css = $color_classes[ $i ];
 							if ( $msg_post->post_author === get_current_user_id() ) {
 								?>
 								<tr>
@@ -119,21 +94,20 @@ if ( isset( $_GET['tab'] ) ) {
 									</td>
 									<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription mjschool-padding-left-0">
 										<p class="mjschool-prescription-tag mjschool-padding-15px mjschool-margin-bottom-0px <?php echo esc_attr( $color_class_css ); ?>">
-											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-sendbox.png"); ?>" height="30px" width="30px" class="mjschool-massage-image">
+											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/icons/white-icons/mjschool-sendbox.png' ); ?>" height="30px" width="30px" class="mjschool-massage-image">
 										</p>
 									</td>
 									<td>
-										<a href="?page=mjschool_message&tab=view_message&from=sendbox&id=<?php echo esc_attr( mjschool_encrypt_id( $msg_post->ID ) ); ?>" class="mjschool-text-decoration-none">
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message&tab=view_message&from=sendbox&id=' . rawurlencode( mjschool_encrypt_id( $msg_post->ID ) ) ) ); ?>" class="mjschool-text-decoration-none">
 											<span>
 												<?php
 												$check_message_single_or_multiple = mjschool_send_message_check_single_user_or_multiple( $msg_post->ID );
 												if ( $check_message_single_or_multiple === 1 ) {
 													global $wpdb;
 													$tbl_name = $wpdb->prefix . 'mjschool_message';
-													$post_id  = $msg_post->ID;
-													// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-													$get_single_user = $wpdb->get_row( "SELECT * FROM $tbl_name where post_id = $post_id" );
-													$mjschool_role            = mjschool_get_display_name( $get_single_user->receiver );
+													// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+													$get_single_user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $tbl_name WHERE post_id = %d", $msg_post->ID ) );
+													$mjschool_role   = mjschool_get_display_name( $get_single_user->receiver );
 													echo esc_html( $mjschool_role );
 												} else {
 													$mjschool_role = get_post_meta( $msg_post->ID, 'message_for', true );
@@ -144,14 +118,14 @@ if ( isset( $_GET['tab'] ) ) {
 										</a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Message For', 'mjschool' ); ?>"></i>
 									</td>
 									<td>
-										<a href="?page=mjschool_message&tab=view_message&from=sendbox&id=<?php echo esc_attr( mjschool_encrypt_id( $msg_post->ID ) ); ?>" class="mjschool-text-decoration-none">
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message&tab=view_message&from=sendbox&id=' . rawurlencode( mjschool_encrypt_id( $msg_post->ID ) ) ) ); ?>" class="mjschool-text-decoration-none">
 											<span>
 												<?php
-												if ( get_post_meta( $msg_post->ID, 'smgt_class_id', true ) === '' or get_post_meta( $msg_post->ID, 'smgt_class_id', true ) === 'all' ) {
+												$smgt_class_id = get_post_meta( $msg_post->ID, 'smgt_class_id', true );
+												if ( $smgt_class_id === '' || $smgt_class_id === 'all' ) {
 													esc_html_e( 'All', 'mjschool' );
-												} elseif ( get_post_meta( $msg_post->ID, 'smgt_class_id', true ) != '' ) {
-													$mjschool_class_id    = get_post_meta( $msg_post->ID, 'smgt_class_id', true );
-													$class_id_array   = explode( ',', $mjschool_class_id );
+												} elseif ( $smgt_class_id != '' ) {
+													$class_id_array   = explode( ',', $smgt_class_id );
 													$class_name_array = array();
 													foreach ( $class_id_array as $data ) {
 														$class_name_array[] = mjschool_get_class_name( $data );
@@ -164,17 +138,16 @@ if ( isset( $_GET['tab'] ) ) {
 											</span>
 										</a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class', 'mjschool' ); ?>"></i>
 									</td>
-									<td >
-										<a href="?page=mjschool_message&tab=view_message&from=sendbox&id=<?php echo esc_attr( mjschool_encrypt_id( $msg_post->ID ) ); ?>" class="mjschool-text-decoration-none">
+									<td>
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message&tab=view_message&from=sendbox&id=' . rawurlencode( mjschool_encrypt_id( $msg_post->ID ) ) ) ); ?>" class="mjschool-text-decoration-none">
 											<?php
 											$obj_message = new Mjschool_Message();
-											$msg_post_id = $obj_message->mjschool_count_reply_item( $msg->post_id );
+											$msg_post_id = $obj_message->mjschool_count_reply_item( $msg_post->ID );
 											$subject_char = strlen( $msg_post->post_title );
 											if ( $subject_char <= 10 ) {
 												echo esc_html( $msg_post->post_title );
 											} else {
-												$char_limit   = 10;
-												$subject_body = substr( strip_tags( $msg_post->post_title ), 0, $char_limit ) . '...';
+												$subject_body = substr( wp_strip_all_tags( $msg_post->post_title ), 0, 10 ) . '...';
 												echo esc_html( $subject_body );
 											}
 											if ( $msg_post_id >= 1 ) {
@@ -183,21 +156,20 @@ if ( isset( $_GET['tab'] ) ) {
 												<?php
 											}
 											?>
-										</a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $msg_post->post_title ) ) { echo esc_html( $msg_post->post_title ); } else { esc_html_e( 'Subject', 'mjschool' ); } ?>"></i>
+										</a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php echo ! empty( $msg_post->post_title ) ? esc_attr( $msg_post->post_title ) : esc_attr__( 'Subject', 'mjschool' ); ?>"></i>
 									</td>
-									<td >
-										<a href="?page=mjschool_message&tab=view_message&from=sendbox&id=<?php echo esc_attr( mjschool_encrypt_id( $msg_post->ID ) ); ?>" class="mjschool-text-decoration-none">
+									<td>
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message&tab=view_message&from=sendbox&id=' . rawurlencode( mjschool_encrypt_id( $msg_post->ID ) ) ) ); ?>" class="mjschool-text-decoration-none">
 											<?php
 											$body_char = strlen( $msg_post->post_content );
 											if ( $body_char <= 30 ) {
 												echo esc_html( $msg_post->post_content );
 											} else {
-												$char_limit = 30;
-												$msg_body   = substr( strip_tags( $msg_post->post_content ), 0, $char_limit ) . '...';
+												$msg_body = substr( wp_strip_all_tags( $msg_post->post_content ), 0, 30 ) . '...';
 												echo esc_html( $msg_body );
 											}
 											?>
-										</a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php if ( ! empty( $msg_post->post_content ) ) { echo esc_html( $msg_post->post_content ); } else { esc_html_e( 'Description', 'mjschool' ); } ?>"></i>
+										</a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php echo ! empty( $msg_post->post_content ) ? esc_attr( $msg_post->post_content ) : esc_attr__( 'Description', 'mjschool' ); ?>"></i>
 									</td>
 									<td>
 										<?php
@@ -206,7 +178,7 @@ if ( isset( $_GET['tab'] ) ) {
 											$attchment_array = explode( ',', $attchment );
 											foreach ( $attchment_array as $attchment_data ) {
 												?>
-												<a target="blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $attchment_data ); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a></br>
+												<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . sanitize_file_name( $attchment_data ) ) ); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a></br>
 												<?php
 											}
 										} else {
@@ -215,11 +187,8 @@ if ( isset( $_GET['tab'] ) ) {
 										?>
 									</td>
 									<td>
-										<a href="?page=mjschool_message&tab=view_message&from=sendbox&id=<?php echo esc_attr( mjschool_encrypt_id( $msg_post->ID ) ); ?>" class="mjschool-text-decoration-none">
-											<?php
-											$created_date = $msg_post->post_date_gmt;
-											echo esc_html( mjschool_convert_date_time( $created_date ) );
-											?>
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message&tab=view_message&from=sendbox&id=' . rawurlencode( mjschool_encrypt_id( $msg_post->ID ) ) ) ); ?>" class="mjschool-text-decoration-none">
+											<?php echo esc_html( mjschool_convert_date_time( $msg_post->post_date_gmt ) ); ?>
 										</a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Date & Time', 'mjschool' ); ?>"></i>
 									</td>
 									<?php
@@ -227,21 +196,10 @@ if ( isset( $_GET['tab'] ) ) {
 									if ( ! empty( $user_custom_field ) ) {
 										foreach ( $user_custom_field as $custom_field ) {
 											if ( $custom_field->show_in_table === '1' ) {
-												$module             = 'message';
-												$custom_field_id    = $custom_field->id;
-												$module_record_id   = $msg_post->ID;
-												$custom_field_value = $mjschool_custom_field_obj->mjschool_get_single_custom_field_meta_value( $module, $module_record_id, $custom_field_id );
+												$custom_field_value = $mjschool_custom_field_obj->mjschool_get_single_custom_field_meta_value( $module, $msg_post->ID, $custom_field->id );
 												if ( $custom_field->field_type === 'date' ) {
 													?>
-													<td>
-														<?php
-														if ( ! empty( $custom_field_value ) ) {
-															echo esc_html( mjschool_get_date_in_input_box( $custom_field_value ) );
-														} else {
-															esc_html_e( 'N/A', 'mjschool' );
-														}
-														?>
-													</td>
+													<td><?php echo ! empty( $custom_field_value ) ? esc_html( mjschool_get_date_in_input_box( $custom_field_value ) ) : esc_html__( 'N/A', 'mjschool' ); ?></td>
 													<?php
 												} elseif ( $custom_field->field_type === 'file' ) {
 													?>
@@ -249,7 +207,7 @@ if ( isset( $_GET['tab'] ) ) {
 														<?php
 														if ( ! empty( $custom_field_value ) ) {
 															?>
-															<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+															<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . sanitize_file_name( $custom_field_value ) ) ); ?>" download="CustomFieldfile">
 																<button class="btn btn-default view_document" type="button"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 															</a>
 															<?php
@@ -261,15 +219,7 @@ if ( isset( $_GET['tab'] ) ) {
 													<?php
 												} else {
 													?>
-													<td> 
-														<?php
-														if ( ! empty( $custom_field_value ) ) {
-															echo esc_html( $custom_field_value );
-														} else {
-															esc_html_e( 'N/A', 'mjschool' );
-														}
-														?>
-													</td>
+													<td><?php echo ! empty( $custom_field_value ) ? esc_html( $custom_field_value ) : esc_html__( 'N/A', 'mjschool' ); ?></td>
 													<?php
 												}
 											}
@@ -291,8 +241,8 @@ if ( isset( $_GET['tab'] ) ) {
 					</button>
 					<?php
 					if ( $user_access_delete === '1' ) {
-						 ?>
-						<button id="delete_selected" data-toggle="tooltip" title="<?php esc_attr_e( 'Delete Selected', 'mjschool' ); ?>" name="delete_selected" class="delete_selected"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-delete.png"); ?>"></button>
+						?>
+						<button id="delete_selected" data-toggle="tooltip" title="<?php esc_attr_e( 'Delete Selected', 'mjschool' ); ?>" name="delete_selected" class="delete_selected"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-delete.png' ); ?>"></button>
 						<?php 
 					}
 					?>
@@ -301,22 +251,21 @@ if ( isset( $_GET['tab'] ) ) {
 		</form><!-- Form-div. -->
 		<?php
 	} elseif ( $user_access_add === '1' ) {
+		$nonce = wp_create_nonce( 'mjschool_message_tab' );
 		?>
 		<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-			<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_message&tab=compose' ); ?>">
-				<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
-				<?php  
-				?>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message&tab=compose&_wpnonce=' . $nonce ) ); ?>">
+				<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ); ?>">
 			</a>
 			<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
-				<label class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?> </label>
+				<label class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?></label>
 			</div>
 		</div>
 		<?php
 	} else {
 		?>
 		<div class="mjschool-calendar-event-new">
-			<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
+			<img class="mjschool-no-data-img" src="<?php echo esc_url( MJSCHOOL_NODATA_IMG ); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 		</div>
 		<?php
 	}

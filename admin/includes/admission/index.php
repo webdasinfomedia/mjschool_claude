@@ -522,7 +522,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 								?>
 								<a href="#" class="mjschool-view-video-popup youtube-icon" link="<?php echo esc_url('https://www.youtube.com/embed/Qz-hbpQkJXY?si=migIY_WmRJha3Zqh'); ?>" title="<?php esc_attr_e( 'Student Admission Form: Step-by-Step Guide', 'mjschool' ); ?>">
 									
-									<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_attr_e( 'YouTube', 'mjschool' ); ?>">
+									<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-youtube-icon.png"); ?>" alt="<?php esc_html_e( 'YouTube', 'mjschool' ); ?>">
 									
 								</a>
 								<?php

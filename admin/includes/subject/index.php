@@ -72,10 +72,11 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 // This is Dashboard at admin side.
 // -------------- Delete code. -------------------------------
 $teacher_obj = new Mjschool_Teacher();
+$subject_obj = new Mjschool_Subject();
 $tablename   = 'mjschool_subject';
 if ( $action === 'delete' ) {
 	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'delete_action' ) ) {
-		$result = mjschool_delete_subject( $tablename, mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['subject_id'])) ) );
+		$result = $subject_obj->mjschool_delete_subject( $tablename, mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['subject_id'])) ) );
 		if ( $result ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_Subject&tab=Subject&message=4' ) );
 			die();
@@ -88,7 +89,7 @@ if ( $action === 'delete' ) {
 if ( isset( $_REQUEST['delete_selected'] ) ) {
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $subject_id ) {
-			$result = mjschool_delete_subject( $tablename, $subject_id );
+			$result = $subject_obj->mjschool_delete_subject( $tablename, $subject_id );
 		}
 	}
 	if ( $result ) {

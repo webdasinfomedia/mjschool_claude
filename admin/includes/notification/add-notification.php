@@ -43,14 +43,14 @@ $school_type = get_option( 'mjschool_custom_class' );
 						?>
 					</select>
 				</div>
-				<?php if ( $school_type === 'school' ) {?>
+				<?php if ( $school_type === 'school' ) { ?>
 					<div class="col-md-6 input mjschool-notification-class-section-id">
 						<label class="ml-1 mjschool-custom-top-label top" for="mjschool-notification-class-section-id"><?php esc_html_e( 'Class Section', 'mjschool' ); ?></label>
 						<select name="class_section" class="form-control mjschool-max-width-100px" id="mjschool-notification-class-section-id">
 							<option value="All"><?php esc_html_e( 'All', 'mjschool' ); ?></option>
 						</select>
 					</div>
-				<?php }?>
+				<?php } ?>
 				<div class="col-md-6 input">
 					<label class="ml-1 mjschool-custom-top-label top" for="mjschool-notification-selected-users"><?php esc_html_e( 'Select Users', 'mjschool' ); ?></label>
 					<span class="mjschool-notification-user-display-block">
@@ -64,7 +64,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
 							<input id="title" class="form-control validate[required,custom[description_validation]] text-input" type="text" maxlength="100" name="title">
-							<label  for="title"><?php esc_html_e( 'Title', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
+							<label for="title"><?php esc_html_e( 'Title', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						</div>
 					</div>
 				</div>
@@ -90,7 +90,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 		<div class="form-body mjschool-user-form">
 			<div class="row">
 				<div class="col-sm-6">
-					<input type="submit" value="<?php esc_html_e( 'Add Notification', 'mjschool' ); ?>" name="save_notification" class="btn btn-success mjschool-save-btn" />
+					<input type="submit" value="<?php esc_attr_e( 'Add Notification', 'mjschool' ); ?>" name="save_notification" class="btn btn-success mjschool-save-btn" />
 				</div>
 			</div>
 		</div>

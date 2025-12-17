@@ -2699,6 +2699,7 @@ if ( $message ) {
 							} elseif ( $active_tab1 === 'issuebook' ) {
 								$student_issuebook = mjschool_student_issuebook_detail( $student_id );
 								if ( ! empty( $student_issuebook ) ) {
+									$mjschool_obj_lib = new Mjschool_Library();
 									?>
 									<div class="table-div"><!-- Start panel body div.. -->
 										<div class="table-responsive"><!-- Table responsive div start. -->
@@ -2750,7 +2751,7 @@ if ( $message ) {
 																	</p>
 																</td>
 																<td class="department"><?php echo esc_html( mjschool_student_display_name_with_roll( $retrieved_data->student_id ) ); ?><i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name & Roll No.', 'mjschool' ); ?>"></i></td>
-																<td><?php echo esc_html( stripslashes( mjschool_get_book_name( $retrieved_data->book_id ) ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Book Title', 'mjschool' ); ?>"></i></td>
+																<td><?php echo esc_html( stripslashes( $mjschool_obj_lib->mjschool_get_book_name( $retrieved_data->book_id ) ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Book Title', 'mjschool' ); ?>"></i></td>
 																<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->issue_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Issue Date', 'mjschool' ); ?>"></i></td>
 																<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->end_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Expected Return Date', 'mjschool' ); ?>"></i></td>
 																<td><?php echo esc_html( get_the_title( $retrieved_data->period ) ); ?><?php echo ' ' . esc_attr__( 'Days', 'mjschool' ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Time Period', 'mjschool' ); ?>"></i></td>

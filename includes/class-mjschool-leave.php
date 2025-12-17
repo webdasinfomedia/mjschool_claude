@@ -265,6 +265,7 @@ class Mjschool_Leave
     public function mjschool_get_single_user_leaves_for_report( $employee_id, $start_date, $end_date )
     {
         global $wpdb;
+        $employee_id = intval($employee_id);
         $table_hrmgt_leave = $wpdb->prefix . 'mjschool_leave';
         // Prepare the SQL query using placeholders.
         $sql = $wpdb->prepare("SELECT * FROM $table_hrmgt_leave WHERE start_date BETWEEN %s AND %s AND employee_id = %d", $start_date, $end_date, $employee_id);

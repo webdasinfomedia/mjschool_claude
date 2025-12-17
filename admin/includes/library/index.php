@@ -457,7 +457,6 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 														<td class="mjschool-checkbox-width-10px">
 															<input type="checkbox" class="mjschool-sub-chk selected_book select-checkbox" name="id[]" value="<?php echo esc_attr( intval( $retrieved_data->id ) ); ?>">
 														</td>
-														
 														<td class="mjschool-user-image mjschool-width-50px-td"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/thumb-icon/mjschool-library.png' ); ?>" class="img-circle" /></td>
 														
 														<td>

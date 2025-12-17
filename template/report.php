@@ -851,6 +851,7 @@ $GoogleCharts = new GoogleCharts();
 			<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res">
 				<?php
 				if ( ! empty( $book_issue_data ) ) {
+					$mjschool_obj_lib = new Mjschool_Library();
 					?>
 					<div class="row">
 						<div class="col-sm-12 col-md-12 col-lg-12 col-xs-12">
@@ -877,9 +878,9 @@ $GoogleCharts = new GoogleCharts();
 									foreach ( $book_issue_data as $retrieved_data ) {
 										?>
 										<tr>
-											<td><?php echo esc_html( mjschool_get_book_name( $retrieved_data->book_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Book Title', 'mjschool' ); ?>"></i></td>
-											<td><?php echo esc_html( mjschool_get_book_number( $retrieved_data->book_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Book Number', 'mjschool' ); ?>"></i></td>
-											<td><?php echo esc_html( mjschool_get_ISBN( $retrieved_data->book_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'ISBN', 'mjschool' ); ?>"></i></td>
+											<td><?php echo esc_html( $mjschool_obj_lib->mjschool_get_book_name( $retrieved_data->book_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Book Title', 'mjschool' ); ?>"></i></td>
+											<td><?php echo esc_html( $mjschool_obj_lib->mjschool_get_book_number( $retrieved_data->book_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Book Number', 'mjschool' ); ?>"></i></td>
+											<td><?php echo esc_html( $mjschool_obj_lib->mjschool_get_ISBN( $retrieved_data->book_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'ISBN', 'mjschool' ); ?>"></i></td>
 											<td>
 												<?php echo esc_html( mjschool_get_display_name( $retrieved_data->student_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i>
 											</td>
@@ -2104,7 +2105,7 @@ $GoogleCharts = new GoogleCharts();
 						$payment_status   = sanitize_text_field(wp_unslash($_POST['fee_status']));
 						$sdate            = sanitize_text_field(wp_unslash($_POST['sdate']));
 						$edate            = sanitize_text_field(wp_unslash($_POST['edate']));
-						$result_feereport = mjschool_get_payment_report_front( $class_id, $fee_term, $payment_status, $sdate, $edate, $section_id );
+						$result_feereport = $obj_library->mjschool_get_payment_report_front( $class_id, $fee_term, $payment_status, $sdate, $edate, $section_id );
 					}
 					if ( ! empty( $result_feereport ) ) {
 						?>

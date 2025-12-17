@@ -253,7 +253,7 @@ if ( isset( $_POST['subject'] ) ) {
 			}
 		}
 	}
-
+$subject_obj = new Mjschool_Subject();
 // --------------- MULTIPLE SELECTED SUBJECT DELETE. -----------------//
 if ( isset( $_REQUEST['delete_selected'] ) ) {
 	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bulk_delete_books' ) ) {
@@ -262,7 +262,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $subject_id ) {
 			$tablename = 'mjschool_subject';
-			$result    = mjschool_delete_subject( $tablename, $subject_id );
+			$result    = $subject_obj->mjschool_delete_subject( $tablename, $subject_id );
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=subject&message=4') );
 			die();
 		}
@@ -273,7 +273,7 @@ $teacher_obj = new Mjschool_Teacher();
 $tablename   = 'mjschool_subject';
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
-		$result = mjschool_delete_subject( $tablename, mjschool_decrypt_id( wp_unslash($_REQUEST['subject_id']) ) );
+		$result = $subject_obj->mjschool_delete_subject( $tablename, mjschool_decrypt_id( wp_unslash($_REQUEST['subject_id']) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=subject&message=4') );
 			die();

@@ -159,6 +159,7 @@ if ( isset( $_REQUEST['library_report'] ) ) {
 	$end_date        = date( 'Y-m-d' );
 	$book_issue_data = mjschool_check_book_issued_by_start_date_and_end_date( $start_date, $end_date );
 }
+$mjschool_obj_lib = new Mjschool_Library();
 ?>
 <script type="text/javascript">
 	(function (jQuery) {
@@ -200,6 +201,7 @@ if ( isset( $_REQUEST['library_report'] ) ) {
 <div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res">
 	<?php
 	if ( ! empty( $book_issue_data ) ) {
+		$mjschool_obj_lib = new Mjschool_Library();
 		?>
 		<div class="row">
 			<div class="col-sm-12 col-md-12 col-lg-12 col-xs-12">
@@ -228,9 +230,9 @@ if ( isset( $_REQUEST['library_report'] ) ) {
 						foreach ( $book_issue_data as $retrieved_data ) {
 							?>
 							<tr>
-								<td><?php echo esc_html( mjschool_get_book_name( $retrieved_data->book_id ) ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Book Title', 'mjschool' ); ?>"></i></td>
-								<td><?php echo esc_html( mjschool_get_book_number( $retrieved_data->book_id ) ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Book Number', 'mjschool' ); ?>"></i></td>
-								<td><?php echo esc_html( mjschool_get_ISBN( $retrieved_data->book_id ) ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'ISBN', 'mjschool' ); ?>"></i></td>
+								<td><?php echo esc_html( $mjschool_obj_lib->mjschool_get_book_name( $retrieved_data->book_id ) ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Book Title', 'mjschool' ); ?>"></i></td>
+								<td><?php echo esc_html( $mjschool_obj_lib->mjschool_get_book_number( $retrieved_data->book_id ) ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Book Number', 'mjschool' ); ?>"></i></td>
+								<td><?php echo esc_html( $mjschool_obj_lib->mjschool_get_ISBN( $retrieved_data->book_id ) ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'ISBN', 'mjschool' ); ?>"></i></td>
 								<td> <?php echo esc_html( mjschool_student_display_name_with_roll( $retrieved_data->student_id ) ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i> </td>
 								<td>
 									<?php

@@ -268,7 +268,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 										$smgt_issue_book_mail_service_enable = sanitize_text_field(wp_unslash($_POST['mjschool_issue_book_mail_service_enable']));
 										if ( $smgt_issue_book_mail_service_enable ) {
 											$search['{{student_name}}'] = mjschool_get_teacher( sanitize_text_field(wp_unslash($_POST['student_id'])) );
-											$search['{{book_name}}']    = mjschool_get_book_name( sanitize_text_field(wp_unslash($b_id)) );
+											$search['{{book_name}}']    = $mjschool_obj_lib->mjschool_get_book_name( sanitize_text_field(wp_unslash($b_id)) );
 											$search['{{issue_date}}']   = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['issue_date'])) );
 											$search['{{return_date}}']  = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['return_date'])) );
 											$search['{{school_name}}']  = get_option( 'mjschool_name' );

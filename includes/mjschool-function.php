@@ -1421,55 +1421,6 @@ function mjschool_get_student_parent_id( $student_id ) {
 	return $parent_idarray;
 }
 /**
- * Get book name by book ID.
- *
- * @since 1.0.0
- * @param int $id Book ID.
- * @return string Book name or 'N/A'.
- */
-function mjschool_get_book_name( $id ) {
-	global $wpdb;
-	$table_book = $wpdb->prefix . 'mjschool_library_book';
-	$book_id    = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_book where id=%d", $book_id ) );
-	if ( ! empty( $result ) ) {
-		return $result->book_name;
-	} else {
-		return 'N/A';
-	}
-}
-/**
- * Get ISBN number of a book.
- *
- * @since 1.0.0
- * @param int $id Book ID.
- * @return string ISBN value.
- */
-function mjschool_get_ISBN( $id ) {
-	global $wpdb;
-	$table_book = $wpdb->prefix . 'mjschool_library_book';
-	$book_id    = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_book where id=%d", $book_id ) );
-	return $result->ISBN;
-}
-/**
- * Get book number from library table.
- *
- * @since 1.0.0
- * @param int $id Book ID.
- * @return string Book number.
- */
-function mjschool_get_book_number( $id ) {
-	global $wpdb;
-	$table_book = $wpdb->prefix . 'mjschool_library_book';
-	$book_id    = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_book where id=%d", $book_id ) );
-	return $result->book_number;
-}
-/**
  * Get child IDs linked to a parent account.
  *
  * @since 1.0.0
@@ -1536,7 +1487,6 @@ function mjschool_get_user_notice( $role, $class_id, $section_id = 0 ) {
 	} elseif ( $role === 'administrator' ) {
 		$userdata = get_users( array( 'role' => $role ) );
 	} else {
-		
 		if ($class_id === 'all' ) {
 			$userdata = get_users(array( 'role' => $role ) );
 		} elseif ($section_id != 0) {
@@ -1545,111 +1495,12 @@ function mjschool_get_user_notice( $role, $class_id, $section_id = 0 ) {
 				'meta_value' => $section_id,
 				'meta_query' => array(array( 'key' => 'class_name', 'value' => $class_id, 'compare' => '=' ) ),
 				'role' => 'student'
-			 ) );
+			) );
 		} else {
 			$userdata = get_users(array( 'role' => $role, 'meta_key' => 'class_name', 'meta_value' => $class_id ) );
 		}
-
 	}
 	return $userdata;
-}
-/**
- * Get all fee payment records grouped by academic year.
- *
- * @since 1.0.0
- * @return array List of fee payment records.
- */
-function mjschool_get_fee_payment_all_record() {
-	global $wpdb;
-	$mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
-	// Query to get records with non-empty start_year and end_year, grouped by start_year and end_year.
-	$query = "SELECT * FROM $mjschool_fees_payment WHERE start_year != '' AND end_year != '' GROUP BY start_year, end_year";
-	// Execute the query.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $query );
-	return $result;
-}
-/**
- * Get payment report based on class, fee term, and date range (backend).
- *
- * @since 1.0.0
- * @param int $class_id Class ID.
- * @param int $fee_term Fee term ID.
- * @param string $sdate Start date.
- * @param string $edate End date.
- * @return array List of filtered payment records.
- */
-function mjschool_get_payment_report( $class_id, $fee_term, $sdate, $edate ) {
-	global $wpdb;
-	$mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
-	$conditions            = array();
-	$params                = array();
-	// Add conditions based on provided input.
-	if ( ! empty( trim( $class_id ) ) ) {
-		$conditions[] = 'class_id = %d';
-		$params[]     = $class_id;
-	}
-	if ( ! empty( trim( $fee_term ) ) ) {
-		$conditions[] = 'fees_id = %d';
-		$params[]     = $fee_term;
-	}
-	if ( ! empty( $sdate ) && ! empty( $edate ) ) {
-		$conditions[] = 'paid_by_date BETWEEN %s AND %s';
-		$params[]     = $sdate;
-		$params[]     = $edate;
-	}
-	// Construct the query.
-	$sql = "SELECT * FROM $mjschool_fees_payment";
-	if ( ! empty( $conditions ) ) {
-		$sql .= ' WHERE ' . implode( ' AND ', $conditions );
-	}
-	// Prepare and execute the query.
-	$prepared_query = $wpdb->prepare( $sql, $params );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $prepared_query );
-	return $result;
-}
-/**
- * Get payment report for frontend filters.
- *
- * @since 1.0.0
- * @param int|string $class_id Class ID or 'all_class'.
- * @param int $fee_term Fee term ID.
- * @param string $payment_status Status (paid/unpaid/partial).
- * @param string $sdate Start date.
- * @param string $edate End date.
- * @param int $section_id Section ID.
- * @return array List of filtered payment records.
- */
-function mjschool_get_payment_report_front( $class_id, $fee_term, $payment_status, $sdate, $edate, $section_id ) {
-	global $wpdb;
-	// Sanitize inputs.
-	$start_date            = date( 'Y-m-d', strtotime( sanitize_text_field( $sdate ) ) );
-	$end_date              = date( 'Y-m-d', strtotime( sanitize_text_field( $edate ) ) );
-	$class_id              = ( $class_id === 'all_class' ) ? 0 : intval( $class_id );
-	$fee_term              = intval( $fee_term );
-	$payment_status        = sanitize_text_field( $payment_status );
-	$mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
-	$sql                   = "SELECT * FROM $mjschool_fees_payment WHERE paid_by_date BETWEEN %s AND %s";
-	$params                = array( $start_date, $end_date );
-	// Optional filters.
-	if ( $class_id > 0 ) {
-		$sql     .= ' AND class_id = %d';
-		$params[] = $class_id;
-	}
-	if ( $fee_term > 0 ) {
-		$sql     .= ' AND FIND_IN_SET(%d, fees_id)';
-		$params[] = $fee_term;
-	}
-	if ( ! empty( $payment_status ) ) {
-		$sql     .= ' AND payment_status = %s';
-		$params[] = $payment_status;
-	}
-	// Prepare and execute.
-	$prepared_sql = $wpdb->prepare( $sql, ...$params );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $prepared_sql );
-	return $result;
 }
 /**
  * Insert a new record into a custom table.
@@ -1771,28 +1622,6 @@ function mjschool_update_record( $mjschool_table_name, $data, $record_id ) {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->update( $table_name, $data, $record_id );
 	return $result;
-}
-/**
- * Delete a subject and all related teacher mappings.
- *
- * @since 1.0.0
- * @param string $mjschool_table_name Table name.
- * @param int $id Subject ID.
- * @return int Rows affected.
- */
-function mjschool_delete_subject( $mjschool_table_name, $id ) {
-	global $wpdb;
-	$table_name         = $wpdb->prefix . $mjschool_table_name;
-	$teacher_table_name = $wpdb->prefix . 'mjschool_teacher_subject';
-	$record_id          = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$event   = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name where subid=%d", $record_id ) );
-	$subject = $event->sub_name;
-	mjschool_append_audit_log( '' . esc_html__( 'Subject Deleted', 'mjschool' ) . '( ' . $subject . ' )' . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field(wp_unslash($_REQUEST['page'])) );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$wpdb->query( $wpdb->prepare( "DELETE FROM $teacher_table_name WHERE subject_id= %d", $record_id ) );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE subid= %d", $record_id ) );
 }
 /**
  * Delete a class and log audit entry.

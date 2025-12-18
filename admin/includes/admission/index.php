@@ -8,13 +8,16 @@
  * and access right verification for the Mjschool plugin.
  *
  * @since      1.0.0
+ * @since      2.0.1 Security hardening - Added nonce verification, file validation, path traversal protection
  *
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/admission
  */
 defined( 'ABSPATH' ) || exit;
+
 // -------- Check browser javascript.. ----------//
 mjschool_browser_javascript_check();
+
 $mjschool_role = mjschool_get_user_role( get_current_user_id() );
 if ( $mjschool_role === 'administrator' ) {
 	$user_access_add    = '1';
@@ -56,10 +59,12 @@ else
 		}
 	}
 }
+
 $mjschool_obj_admission    = new Mjschool_admission();
 $mjschool_custom_field_obj = new mjschool_custome_field();
 $module                    = 'admission';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
+
 // ------------ ACTIVE ADMISSION. ------------//
 if ( isset( $_POST['active_user_admission'] ) ) {
 	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field(wp_unslash($_POST['_wpnonce'])), 'save_active_student_admission_nonce' ) ) {
@@ -248,6 +253,7 @@ if ( isset( $_POST['active_user_admission'] ) ) {
 	$class                 = $user_info['class_name'][0];
 	$section               = $user_info['class_section'][0];
 }
+
 // ------------- SAVE STUDENT ADMISSION FORM. ------------------//
 if ( isset( $_POST['student_admission'] ) ) {
 	$nonce = sanitize_text_field(wp_unslash($_POST['_wpnonce']));
@@ -334,29 +340,51 @@ if ( isset( $_POST['student_admission'] ) ) {
 		}
 	}
 }
+
 // ------------- DELETE ADMISSION.  ------------------//
+// SECURITY FIX: Added nonce verification and array validation
 if ( isset( $_REQUEST['delete_selected'] ) ) {
-	if ( ! empty( $_REQUEST['id'] ) ) {
+	// SECURITY FIX: Verify nonce before bulk delete
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'save_mjschool-admission-form' ) ) {
+		wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+	}
+	
+	// SECURITY FIX: Validate array before iteration
+	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+		$deleted_count = 0;
 		foreach ( $_REQUEST['id'] as $id ) {
 			$result = mjschool_delete_usedata( intval( $id ) );
+			if ( $result ) {
+				$deleted_count++;
+			}
+		}
+		
+		if ( $deleted_count > 0 ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_admission&tab=admission_list&message=8' ) );
 			exit;
 		}
 	}
-	if ( $result ) {
-		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_admission&tab=admission_list&message=8' ) );
-		exit;
-	}
 }
+
+// SECURITY FIX: Enhanced CSV export with proper validation
 if ( isset( $_POST['admission_export_csv_selected'] ) ) {
 	
-	if (! isset($_POST['_wpnonce']) || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_wpnonce'])), 'mjschool-admission-export-nonce')) {
-		wp_die(esc_html__('Security check failed.', 'mjschool'));
+	// Nonce verification (already present - GOOD!)
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'mjschool-admission-export-nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
 	}
-	if ( isset( $_POST['id'] ) ) {
+	
+	// SECURITY FIX: Validate array before processing
+	if ( isset( $_POST['id'] ) && is_array( $_POST['id'] ) ) {
+		$admission_list = array();
+		
 		foreach ( $_POST['id'] as $s_id ) {
-			$admission_list[] = get_userdata( $s_id );
+			$user_data = get_userdata( intval( $s_id ) );
+			if ( $user_data ) {
+				$admission_list[] = $user_data;
+			}
 		}
+		
 		if ( ! empty( $admission_list ) ) {
 			$header   = array();
 			$header[] = 'Email';
@@ -388,9 +416,24 @@ if ( isset( $_POST['admission_export_csv_selected'] ) ) {
 			$header[] = 'Mother DOB';
 			$header[] = 'Mother Mobile';
 			$header[] = 'Mother Address';
+			
 			$filename = 'export/mjschool-export-admission.csv';
-			$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) or wp_die( "can't open file" );
+			$file_path = MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename;
+			$export_dir = dirname( $file_path );
+			
+			// SECURITY FIX: Ensure directory exists
+			if ( ! file_exists( $export_dir ) ) {
+				wp_mkdir_p( $export_dir );
+			}
+			
+			// SECURITY FIX: Safe file handle with error checking
+			$fh = fopen( $file_path, 'w' );
+			if ( false === $fh ) {
+				wp_die( esc_html__( 'Unable to create export file. Please check directory permissions.', 'mjschool' ) );
+			}
+			
 			fputcsv( $fh, $header );
+			
 			foreach ( $admission_list as $retrive_data ) {
 				$row       = array();
 				$user_info = get_userdata( $retrive_data->ID );
@@ -426,25 +469,50 @@ if ( isset( $_POST['admission_export_csv_selected'] ) ) {
 				fputcsv( $fh, $row );
 			}
 			fclose( $fh );
-			// download csv file.
+			
+			// SECURITY FIX: Secure file download
 			ob_clean();
-			$file = MJSCHOOL_PLUGIN_DIR . '/sample-csv/export/mjschool-export-admission.csv'; // file location.
-			$mime = 'text/plain';
-			header( 'Content-Type:application/force-download' );
-			header( 'Pragma: public' );       // required.
-			header( 'Expires: 0' );           // no cache.
+			
+			$file = MJSCHOOL_PLUGIN_DIR . '/sample-csv/export/mjschool-export-admission.csv';
+			
+			// SECURITY FIX: Validate file exists
+			if ( ! file_exists( $file ) ) {
+				wp_die( esc_html__( 'Export file not found.', 'mjschool' ) );
+			}
+			
+			// SECURITY FIX: Prevent directory traversal
+			$file_real = realpath( $file );
+			$allowed_dir = realpath( MJSCHOOL_PLUGIN_DIR . '/sample-csv/export/' );
+			
+			if ( false === $file_real || strpos( $file_real, $allowed_dir ) !== 0 ) {
+				wp_die( esc_html__( 'Invalid file path.', 'mjschool' ) );
+			}
+			
+			// SECURITY FIX: Validate file is readable
+			if ( ! is_readable( $file_real ) ) {
+				wp_die( esc_html__( 'File is not readable.', 'mjschool' ) );
+			}
+			
+			// Set secure headers
+			$mime = 'text/csv';
+			header( 'Content-Type: application/force-download' );
+			header( 'Pragma: public' );
+			header( 'Expires: 0' );
 			header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-			header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+			header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', filemtime( $file_real ) ) . ' GMT' );
 			header( 'Cache-Control: private', false );
 			header( 'Content-Type: ' . $mime );
-			header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
+			header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( basename( $file_real ) ) . '"' );
 			header( 'Content-Transfer-Encoding: binary' );
+			header( 'Content-Length: ' . filesize( $file_real ) );
 			header( 'Connection: close' );
-			readfile( $file );
-			die();
+			
+			readfile( $file_real );
+			exit; // Use exit instead of die() for better WordPress practices
 		}
 	}
 }
+
 // -----------Delete Code.--------
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'delete_action' ) ) {
@@ -458,6 +526,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
 }
+
 $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'])) : 'admission_list'; {
 	?>
 	<!-- POP up code. -->

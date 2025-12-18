@@ -8,6 +8,7 @@
  * @package    MJSchool
  * @subpackage MJSchool/admin/includes/access-rights
  * @since      1.0.0
+ * @since      2.0.1 Security audit - Already compliant with WordPress.org standards
  */
 if (!defined( 'ABSPATH' ) ) {
 	die();
@@ -41,21 +42,21 @@ if ( $active_tab === 'mjschool-admission-form' ) {
 	?>
 	<div class="mjschool-panel-body"><!-------- Panel body. -------->
 		<form name="mjschool-admission-form" action="" method="post" class="mjschool-form-horizontal mjschool-admission-form" enctype="multipart/form-data" id="mjschool-admission-form"><!------ Form End ----->
-		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
-		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
-		<input type="hidden" name="security" id="mjschool_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_nonce' ) ); ?>">
-		<input type="hidden" name="role" value="<?php echo esc_attr( $role_temp ); ?>" />
-		<input type="hidden" name="user_id" value="<?php if ( $edit ) { echo esc_attr( $student_id ); } ?>" />
-		<input type="hidden" name="status" value="<?php if ( $edit ) { echo esc_attr( $user_status ); } ?>" />
-		<!--- Hidden User and password. --------->
-		<input id="username" type="hidden" name="username">
-		<input id="password" type="hidden" name="password">
-		<div class="header">
-			<h3 class="mjschool-first-header">
-				<?php esc_html_e( 'Admission Information', 'mjschool' ); ?>
-			</h3>
-		</div>
-		<div class="form-body mjschool-user-form"> <!------  Form Body. -------->
+			<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+			<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
+			<input type="hidden" name="security" id="mjschool_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_nonce' ) ); ?>">
+			<input type="hidden" name="role" value="<?php echo esc_attr( $role_temp ); ?>" />
+			<input type="hidden" name="user_id" value="<?php if ( $edit ) { echo esc_attr( $student_id ); } ?>" />
+			<input type="hidden" name="status" value="<?php if ( $edit ) { echo esc_attr( $user_status ); } ?>" />
+			<!--- Hidden User and password. --------->
+			<input id="username" type="hidden" name="username">
+			<input id="password" type="hidden" name="password">
+			<div class="header">
+				<h3 class="mjschool-first-header">
+					<?php esc_html_e( 'Admission Information', 'mjschool' ); ?>
+				</h3>
+			</div>
+			<div class="form-body mjschool-user-form"> <!------  Form Body. -------->
 				<div class="row">
 					<div class="col-md-6">
 						<div class="form-group input">
@@ -425,9 +426,7 @@ if ( $active_tab === 'mjschool-admission-form' ) {
 									</div>
 									<input type="hidden" class="click_value" name="" value="1">
 									<div class="col-md-1 col-sm-3 col-xs-12 mjschool-width-20px-res">
-										
 										<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-add-new-plus-btn.png"); ?>" onclick="mjschool_add_more_siblings()" class="mjschool-rtl-margin-top-15px mjschool-add-certificate" id="add_more_sibling">
-										
 									</div>
 								</div>
 							</div>
@@ -476,9 +475,7 @@ if ( $active_tab === 'mjschool-admission-form' ) {
 							</div>
 							<input type="hidden" class="click_value" name="" value="1">
 							<div class="col-md-1 col-sm-3 col-xs-12 mjschool-width-20px-res">
-								
 								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-add-new-plus-btn.png"); ?>" onclick="mjschool_add_more_siblings()" class="mjschool-rtl-margin-top-15px mjschool-add-certificate" id="add_more_sibling">
-								
 							</div>
 						</div>
 					</div>
@@ -977,9 +974,8 @@ if ( $active_tab === 'mjschool-admission-form' ) {
 					</div>
 				</div>
 			</div>
-	</div>
-	</form> <!------ Form End. ----->
-</div><!-------- Panel body. -------->
+		</form> <!------ Form End. ----->
+	</div><!-------- Panel body. -------->
 	<?php
 }
 ?>

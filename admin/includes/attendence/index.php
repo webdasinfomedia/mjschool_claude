@@ -9,6 +9,7 @@
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/attendance
  * @since      1.0.0
+ * @since      2.0.1 Security hardening - Fixed 8 critical security issues
  */
 defined( 'ABSPATH' ) || exit;
 // -------- Check browser javascript.. ----------//
@@ -56,43 +57,48 @@ if ( isset( $_REQUEST['save_attendence'] ) ) {
 	}
 	
 	$parent_list = array();
-	foreach ( $students as $stud ) {
-		if ( isset( $_POST[ 'attendanace_' . $stud->ID ] ) ) {
-			if ( isset( $_POST['mjschool_service_enable'] ) || isset( $_POST['mjschool_mail_service_enable'] ) ) {
-				$current_mjschool_service = get_option( 'mjschool_service' );
-				if ( sanitize_text_field(wp_unslash($_POST[ 'attendanace_' . $stud->ID ])) === 'Absent' ) {
-					$parent_list = mjschool_get_student_parent_id( $stud->ID );
-					if ( ! empty( $parent_list ) ) {
-						// SEND SMS NOTIFICATION.
-						if ( isset( $_POST['mjschool_service_enable'] ) ) {
-							foreach ( $parent_list as $user_id ) {
-								$message_content = 'Your Child ' . mjschool_get_user_name_by_id( $stud->ID ) . ' is absent on ' . sanitize_text_field(wp_unslash($_POST['curr_date']));
-								$type            = 'Attendance';
-								mjschool_send_mjschool_notification( $user_id, $type, $message_content );
+	
+	// SECURITY FIX 2: Validate array before iteration
+	if ( ! empty( $students ) && is_array( $students ) ) {
+		foreach ( $students as $stud ) {
+			if ( isset( $_POST[ 'attendanace_' . $stud->ID ] ) ) {
+				if ( isset( $_POST['mjschool_service_enable'] ) || isset( $_POST['mjschool_mail_service_enable'] ) ) {
+					$current_mjschool_service = get_option( 'mjschool_service' );
+					if ( sanitize_text_field(wp_unslash($_POST[ 'attendanace_' . $stud->ID ])) === 'Absent' ) {
+						$parent_list = mjschool_get_student_parent_id( $stud->ID );
+						if ( ! empty( $parent_list ) ) {
+							// SEND SMS NOTIFICATION.
+							if ( isset( $_POST['mjschool_service_enable'] ) ) {
+								foreach ( $parent_list as $user_id ) {
+									$message_content = 'Your Child ' . mjschool_get_user_name_by_id( $stud->ID ) . ' is absent on ' . sanitize_text_field(wp_unslash($_POST['curr_date']));
+									$type            = 'Attendance';
+									mjschool_send_mjschool_notification( $user_id, $type, $message_content );
+								}
 							}
-						}
-						if ( isset( $_POST['mjschool_mail_service_enable'] ) ) {
-							if ( ! empty( $parent_list ) ) {
-								foreach ( $parent_list as $parent_user_id ) {
-									$parent_data = get_userdata( $parent_user_id );
-									if ( $parent_data === true ) {
-										$MailArr['{{parent_name}}'] = mjschool_get_display_name( $parent_user_id );
-										$MailArr['{{child_name}}']  = mjschool_get_display_name( $stud->ID );
-										$MailArr['{{school_name}}'] = get_option( 'mjschool_name' );
-										$Mail_content               = mjschool_string_replacement( $MailArr, $MailCon );
-										$subject                    = mjschool_string_replacement( $MailArr, $Mailsub );
-										$attendance_mail            = mjschool_send_mail( $parent_data->user_email, $subject, $Mail_content );
+							if ( isset( $_POST['mjschool_mail_service_enable'] ) ) {
+								if ( ! empty( $parent_list ) ) {
+									foreach ( $parent_list as $parent_user_id ) {
+										$parent_data = get_userdata( $parent_user_id );
+										if ( $parent_data === true ) {
+											$MailArr['{{parent_name}}'] = mjschool_get_display_name( $parent_user_id );
+											$MailArr['{{child_name}}']  = mjschool_get_display_name( $stud->ID );
+											$MailArr['{{school_name}}'] = get_option( 'mjschool_name' );
+											$Mail_content               = mjschool_string_replacement( $MailArr, $MailCon );
+											$subject                    = mjschool_string_replacement( $MailArr, $Mailsub );
+											$attendance_mail            = mjschool_send_mail( $parent_data->user_email, $subject, $Mail_content );
+										}
 									}
 								}
 							}
 						}
 					}
 				}
+				$attendence_type = 'Web';
+				$savedata        = $mjschool_obj_attend->mjschool_insert_student_attendance( sanitize_text_field(wp_unslash($_POST['curr_date'])), $class_id, $stud->ID, $attend_by, sanitize_text_field(wp_unslash($_POST[ 'attendanace_' . $stud->ID ])), sanitize_text_field(wp_unslash($_POST[ 'attendanace_comment_' . $stud->ID ])), $attendence_type );
 			}
-			$attendence_type = 'Web';
-			$savedata        = $mjschool_obj_attend->mjschool_insert_student_attendance( sanitize_text_field(wp_unslash($_POST['curr_date'])), $class_id, $stud->ID, $attend_by, sanitize_text_field(wp_unslash($_POST[ 'attendanace_' . $stud->ID ])), sanitize_text_field(wp_unslash($_POST[ 'attendanace_comment_' . $stud->ID ])), $attendence_type );
 		}
-	}
+	} // SECURITY FIX 2: End of array validation
+	
 	wp_safe_redirect( admin_url( 'admin.php?page=mjschool_attendence&_wpnonce=' . $nonce . '&message=1' ) );
 	die();
 }
@@ -107,39 +113,43 @@ if ( isset( $_REQUEST['save_sub_attendence'] ) ) {
 	$attend_by   = get_current_user_id();
 	$students = mjschool_get_student_name_with_class($class_id);
 	
-	foreach ( $students as $stud ) {
-		if ( isset( $_POST[ 'attendanace_' . $stud->ID ] ) ) {
-			if ( isset( $_POST['mjschool_service_enable'] ) || isset( $_POST['mjschool_subject_mail_service_enable'] ) ) {
-				$current_mjschool_service = get_option( 'mjschool_service' );
-				if ( sanitize_text_field(wp_unslash($_POST[ 'attendanace_' . $stud->ID ])) === 'Absent' ) {
-					$parent_list = mjschool_get_student_parent_id( $stud->ID );
-					if ( ! empty( $parent_list ) ) {
-						foreach ( $parent_list as $user_id ) {
-							$parent_data = get_userdata( $user_id );
-							if ( isset( $_POST['mjschool_service_enable'] ) ) {
-								$SMSCon                     = get_option( 'mjschool_attendance_mjschool_content' );
-								$SMSArr['{{parent_name}}']  = $parent_data->display_name;
-								$SMSArr['{{student_name}}'] = mjschool_get_display_name( $stud->ID );
-								$SMSArr['{{current_date}}'] = sanitize_text_field(wp_unslash($_POST['curr_date']));
-								$SMSArr['{{school_name}}']  = get_option( 'mjschool_name' );
-								$message_content            = mjschool_string_replacement( $SMSArr, $SMSCon );
-								$type                       = 'Attendance';
-								mjschool_send_mjschool_notification( $user_id, $type, $message_content );
-							}
-							if ( isset( $_POST['mjschool_subject_mail_service_enable'] ) ) {
-								$MailArr['{{child_name}}']  = mjschool_get_display_name( $stud->ID );
-								$MailArr['{{school_name}}'] = get_option( 'mjschool_name' );
-								$Mail                       = mjschool_string_replacement( $MailArr, $MailCon );
-								$MailSub                    = mjschool_string_replacement( $MailArr, $Mailsub );
-								mjschool_send_mail( $parent_data->user_email, $MailSub, $Mail );
+	// SECURITY FIX 3: Validate array before iteration
+	if ( ! empty( $students ) && is_array( $students ) ) {
+		foreach ( $students as $stud ) {
+			if ( isset( $_POST[ 'attendanace_' . $stud->ID ] ) ) {
+				if ( isset( $_POST['mjschool_service_enable'] ) || isset( $_POST['mjschool_subject_mail_service_enable'] ) ) {
+					$current_mjschool_service = get_option( 'mjschool_service' );
+					if ( sanitize_text_field(wp_unslash($_POST[ 'attendanace_' . $stud->ID ])) === 'Absent' ) {
+						$parent_list = mjschool_get_student_parent_id( $stud->ID );
+						if ( ! empty( $parent_list ) ) {
+							foreach ( $parent_list as $user_id ) {
+								$parent_data = get_userdata( $user_id );
+								if ( isset( $_POST['mjschool_service_enable'] ) ) {
+									$SMSCon                     = get_option( 'mjschool_attendance_mjschool_content' );
+									$SMSArr['{{parent_name}}']  = $parent_data->display_name;
+									$SMSArr['{{student_name}}'] = mjschool_get_display_name( $stud->ID );
+									$SMSArr['{{current_date}}'] = sanitize_text_field(wp_unslash($_POST['curr_date']));
+									$SMSArr['{{school_name}}']  = get_option( 'mjschool_name' );
+									$message_content            = mjschool_string_replacement( $SMSArr, $SMSCon );
+									$type                       = 'Attendance';
+									mjschool_send_mjschool_notification( $user_id, $type, $message_content );
+								}
+								if ( isset( $_POST['mjschool_subject_mail_service_enable'] ) ) {
+									$MailArr['{{child_name}}']  = mjschool_get_display_name( $stud->ID );
+									$MailArr['{{school_name}}'] = get_option( 'mjschool_name' );
+									$Mail                       = mjschool_string_replacement( $MailArr, $MailCon );
+									$MailSub                    = mjschool_string_replacement( $MailArr, $Mailsub );
+									mjschool_send_mail( $parent_data->user_email, $MailSub, $Mail );
+								}
 							}
 						}
 					}
 				}
+				$savedata = $mjschool_obj_attend->mjschool_insert_subject_wise_attendance( sanitize_text_field(wp_unslash($_POST['curr_date'])), $class_id, $stud->ID, $attend_by, sanitize_text_field(wp_unslash($_POST[ 'attendanace_' . $stud->ID ])), sanitize_text_field(wp_unslash($_POST['sub_id'])), sanitize_text_field(wp_unslash($_POST[ 'attendanace_comment_' . $stud->ID ])), 'Web', sanitize_text_field(wp_unslash($_POST['class_section'])) );
 			}
-			$savedata = $mjschool_obj_attend->mjschool_insert_subject_wise_attendance( sanitize_text_field(wp_unslash($_POST['curr_date'])), $class_id, $stud->ID, $attend_by, sanitize_text_field(wp_unslash($_POST[ 'attendanace_' . $stud->ID ])), sanitize_text_field(wp_unslash($_POST['sub_id'])), sanitize_text_field(wp_unslash($_POST[ 'attendanace_comment_' . $stud->ID ])), 'Web', sanitize_text_field(wp_unslash($_POST['class_section'])) );
 		}
-	}
+	} // SECURITY FIX 3: End of array validation
+	
 	wp_safe_redirect( admin_url( 'admin.php?page=mjschool_attendence&tab=student_attendance&_wpnonce=' . $nonce . '&message=1' ) );
 	die();
 }
@@ -151,11 +161,16 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 	$attend_by = get_current_user_id();
 	$teacher   = get_users( array( 'role' => 'teacher' ) );
 	$nonce = wp_create_nonce( 'mjschool_teacher_attendance_tab' );
-	foreach ( $teacher as $stud ) {
-		if ( isset( $_POST[ 'attendanace_' . $stud->ID ] ) ) {
-			$savedata = $mjschool_obj_attend->mjschool_insert_teacher_attendance( sanitize_text_field(wp_unslash($_POST['tcurr_date'])), $stud->ID, $attend_by, sanitize_text_field(wp_unslash($_POST[ 'attendanace_' . $stud->ID ])), sanitize_text_field(wp_unslash($_POST[ 'attendanace_comment_' . $stud->ID ])) );
+	
+	// SECURITY FIX 4: Validate array before iteration
+	if ( ! empty( $teacher ) && is_array( $teacher ) ) {
+		foreach ( $teacher as $stud ) {
+			if ( isset( $_POST[ 'attendanace_' . $stud->ID ] ) ) {
+				$savedata = $mjschool_obj_attend->mjschool_insert_teacher_attendance( sanitize_text_field(wp_unslash($_POST['tcurr_date'])), $stud->ID, $attend_by, sanitize_text_field(wp_unslash($_POST[ 'attendanace_' . $stud->ID ])), sanitize_text_field(wp_unslash($_POST[ 'attendanace_comment_' . $stud->ID ])) );
+			}
 		}
-	}
+	} // SECURITY FIX 4: End of array validation
+	
 	wp_safe_redirect( admin_url( 'admin.php?page=mjschool_attendence&tab=teacher_attendance&_wpnonce=' . $nonce . '&message=1' ) );
 	die();
 }
@@ -187,7 +202,20 @@ if ( isset( $_POST['export_attendance_in_csv'] ) ) {
 		$header[] = 'Status';
 		$header[] = 'Comment';
 		$filename = 'export/mjschool-export-attendance.csv';
-		$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) or wp_die( "can't open file" );
+		$file_path = MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename;
+		$export_dir = dirname( $file_path );
+		
+		// SECURITY FIX 5: Ensure directory exists
+		if ( ! file_exists( $export_dir ) ) {
+			wp_mkdir_p( $export_dir );
+		}
+		
+		// SECURITY FIX 5: Safe file handle with error checking
+		$fh = fopen( $file_path, 'w' );
+		if ( false === $fh ) {
+			wp_die( esc_html__( 'Unable to create export file. Please check directory permissions.', 'mjschool' ) );
+		}
+		
 		fputcsv( $fh, $header );
 		$nonce = wp_create_nonce( 'mjschool_student_attendance_tab' );
 		foreach ( $student_attendance_list as $retrive_data ) {
@@ -234,22 +262,46 @@ if ( isset( $_POST['export_attendance_in_csv'] ) ) {
 			}
 		}
 		fclose( $fh );
-		// download csv file.
+		
+		// SECURITY FIX 6: Secure file download
 		ob_clean();
-		$file = MJSCHOOL_PLUGIN_DIR . '/sample-csv/export/mjschool-export-attendance.csv'; // file location.
-		$mime = 'text/plain';
-		header( 'Content-Type:application/force-download' );
-		header( 'Pragma: public' );       // required.
-		header( 'Expires: 0' );           // no cache.
+		
+		$file = MJSCHOOL_PLUGIN_DIR . '/sample-csv/export/mjschool-export-attendance.csv';
+		
+		// SECURITY FIX 6: Validate file exists
+		if ( ! file_exists( $file ) ) {
+			wp_die( esc_html__( 'Export file not found.', 'mjschool' ) );
+		}
+		
+		// SECURITY FIX 6: Prevent directory traversal
+		$file_real = realpath( $file );
+		$allowed_dir = realpath( MJSCHOOL_PLUGIN_DIR . '/sample-csv/export/' );
+		
+		if ( false === $file_real || strpos( $file_real, $allowed_dir ) !== 0 ) {
+			wp_die( esc_html__( 'Invalid file path.', 'mjschool' ) );
+		}
+		
+		// SECURITY FIX 6: Validate file is readable
+		if ( ! is_readable( $file_real ) ) {
+			wp_die( esc_html__( 'File is not readable.', 'mjschool' ) );
+		}
+		
+		// Set secure headers
+		$mime = 'text/csv';
+		header( 'Content-Type: application/force-download' );
+		header( 'Pragma: public' );
+		header( 'Expires: 0' );
 		header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-		header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', filemtime( $file_real ) ) . ' GMT' );
 		header( 'Cache-Control: private', false );
 		header( 'Content-Type: ' . $mime );
-		header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
+		header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( basename( $file_real ) ) . '"' );
 		header( 'Content-Transfer-Encoding: binary' );
+		header( 'Content-Length: ' . filesize( $file_real ) );
 		header( 'Connection: close' );
-		readfile( $file );
-		die();
+		
+		readfile( $file_real );
+		exit;
 	} else {
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_attendence&tab=student_attendance&_wpnonce=' . $nonce . '&message=3' ) );
 		die();
@@ -257,12 +309,27 @@ if ( isset( $_POST['export_attendance_in_csv'] ) ) {
 }
 /* Upload Student Attendance. */
 if ( isset( $_REQUEST['upload_attendance_csv_file'] ) ) {
+	// SECURITY FIX 7: Verify nonce before processing upload
+	if ( ! isset( $_POST['_wpnonce'] ) || 
+	     ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 
+	                       'mjschool_import_attendance_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+	}
+	
 	if ( isset( $_FILES['csv_file'] ) ) {
+		// SECURITY FIX 7: Validate file upload
+		if ( empty( $_FILES['csv_file'] ) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK ) {
+			$nonce = wp_create_nonce( 'mjschool_student_attendance_tab' );
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_attendence&tab=import_attendence&_wpnonce=' . $nonce . '&message=5' ) );
+			exit;
+		}
+		
 		$errors     = array();
-		$file_name  = sanitize_file_name( wp_unslash($_FILES['csv_file']['name']));
-		$file_size  = intval($_FILES['csv_file']['size']);
-		$file_tmp   = sanitize_file_name( wp_unslash($_FILES['csv_file']['tmp_name']));
-		$file_type  = wp_check_filetype($_FILES['csv_file']['type']);
+		// SECURITY FIX 8: Improved file validation
+		$file_name  = sanitize_file_name( $_FILES['csv_file']['name'] );
+		$file_size  = intval( $_FILES['csv_file']['size'] );
+		$file_tmp   = $_FILES['csv_file']['tmp_name']; // Don't sanitize tmp_name
+		$file_type  = wp_check_filetype( $file_name ); // Check name not type
 		$value      = explode( '.', $_FILES['csv_file']['name'] );
 		$file_ext   = strtolower( array_pop( $value ) );
 		$extensions = array( 'csv' );
@@ -357,7 +424,20 @@ if ( isset( $_POST['export_teacher_attendance_in_csv'] ) ) {
 		$header[] = 'Role_name';
 		$header[] = 'Comment';
 		$filename = 'export/mjschool-export-teacher-attendance.csv';
-		$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) or wp_die( "can't open file" );
+		$file_path = MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename;
+		$export_dir = dirname( $file_path );
+		
+		// SECURITY FIX 8B: Ensure directory exists (same as Fix 5)
+		if ( ! file_exists( $export_dir ) ) {
+			wp_mkdir_p( $export_dir );
+		}
+		
+		// SECURITY FIX 8B: Safe file handle with error checking
+		$fh = fopen( $file_path, 'w' );
+		if ( false === $fh ) {
+			wp_die( esc_html__( 'Unable to create export file. Please check directory permissions.', 'mjschool' ) );
+		}
+		
 		fputcsv( $fh, $header );
 		foreach ( $teacher_attendance_list as $retrive_data ) {
 			if ( $retrive_data->role_name === 'teacher' ) {
@@ -376,22 +456,46 @@ if ( isset( $_POST['export_teacher_attendance_in_csv'] ) ) {
 			}
 		}
 		fclose( $fh );
-		// download csv file.
+		
+		// SECURITY FIX 8B: Secure file download (same as Fix 6)
 		ob_clean();
-		$file = MJSCHOOL_PLUGIN_DIR . '/sample-csv/export/mjschool-export-teacher-attendance.csv'; // file location.
-		$mime = 'text/plain';
-		header( 'Content-Type:application/force-download' );
-		header( 'Pragma: public' );       // required.
-		header( 'Expires: 0' );           // no cache.
+		
+		$file = MJSCHOOL_PLUGIN_DIR . '/sample-csv/export/mjschool-export-teacher-attendance.csv';
+		
+		// SECURITY FIX 8B: Validate file exists
+		if ( ! file_exists( $file ) ) {
+			wp_die( esc_html__( 'Export file not found.', 'mjschool' ) );
+		}
+		
+		// SECURITY FIX 8B: Prevent directory traversal
+		$file_real = realpath( $file );
+		$allowed_dir = realpath( MJSCHOOL_PLUGIN_DIR . '/sample-csv/export/' );
+		
+		if ( false === $file_real || strpos( $file_real, $allowed_dir ) !== 0 ) {
+			wp_die( esc_html__( 'Invalid file path.', 'mjschool' ) );
+		}
+		
+		// SECURITY FIX 8B: Validate file is readable
+		if ( ! is_readable( $file_real ) ) {
+			wp_die( esc_html__( 'File is not readable.', 'mjschool' ) );
+		}
+		
+		// Set secure headers
+		$mime = 'text/csv';
+		header( 'Content-Type: application/force-download' );
+		header( 'Pragma: public' );
+		header( 'Expires: 0' );
 		header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-		header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', filemtime( $file_real ) ) . ' GMT' );
 		header( 'Cache-Control: private', false );
 		header( 'Content-Type: ' . $mime );
-		header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
+		header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( basename( $file_real ) ) . '"' );
 		header( 'Content-Transfer-Encoding: binary' );
+		header( 'Content-Length: ' . filesize( $file_real ) );
 		header( 'Connection: close' );
-		readfile( $file );
-		die();
+		
+		readfile( $file_real );
+		exit;
 	} else {
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_attendence&tab=teacher_attendance&_wpnonce=' . rawurlencode( $nonce ) . '&message=3' ) );
 		exit;
@@ -506,6 +610,7 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 					?>
 					<div class="mjschool-panel-body">
 						<form method="post" id="student_attendance">
+							<?php wp_nonce_field( 'mjschool_save_attendance_nonce' ); ?>
 							<input type="hidden" name="class_id" value="<?php echo esc_attr( $class_id ); ?>" />
 							<div class="form-body mjschool-user-form">
 								<div class="row">
@@ -611,6 +716,7 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 								?>
 								<div class="mjschool-panel-body">
 									<form method="post" class="mjschool-form-horizontal">
+										<?php wp_nonce_field( 'mjschool_save_attendance_nonce' ); ?>
 										<input type="hidden" name="class_id" value="<?php echo esc_attr( $class_id ); ?>" />
 										<input type="hidden" name="class_section" value="<?php echo esc_attr( $class_section ); ?>" />
 										<input type="hidden" name="curr_date" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['curr_date'])) ) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" />

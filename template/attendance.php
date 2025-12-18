@@ -380,7 +380,7 @@ if ( isset( $_POST['export_attendance_in_csv'] ) ) {
 		header( 'Pragma: public' );       // Required.
 		header( 'Expires: 0' );           // No cache.
 		header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+		header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 		header( 'Cache-Control: private', false );
 		header( 'Content-Type: ' . $mime );
 		header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );

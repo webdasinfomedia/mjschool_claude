@@ -22,12 +22,13 @@
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
-if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_action' ) ) {
-	$active_tab1      = isset( $_REQUEST['tab1'] ) ? sanitize_text_field(wp_unslash($_REQUEST['tab1'])) : 'general';
+if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'view_action' ) ) {
+	$active_tab1 = isset( $_REQUEST['tab1'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['tab1'] ) ) : 'general';
 	$teacher_obj      = new Mjschool_Teacher();
 	$obj_route        = new Mjschool_Class_Routine();
 	$custom_field_obj = new Mjschool_Custome_Field();
-	$teacher_id       = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) ) );
+	$teacher_id_encrypted = isset( $_REQUEST['teacher_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['teacher_id'] ) ) : '';
+	$teacher_id = ! empty( $teacher_id_encrypted ) ? intval( mjschool_decrypt_id( $teacher_id_encrypted ) ) : 0;
 	$teacher_data     = get_userdata( $teacher_id );
 	$user_access      = mjschool_get_user_role_wise_access_right_array();
 	$school_obj       = new MJSchool_Management( get_current_user_id() );
@@ -53,7 +54,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 											if ($user_access_edit === '1' ) {
 												?>
 												<div class="mjschool-view-user-edit-btn">
-													<a class="mjschool-color-white mjschool-margin-left-2px" href="?page=mjschool_teacher&tab=addteacher&action=edit&teacher_id=<?php echo esc_attr( mjschool_encrypt_id($teacher_data->ID ) ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) );?>">
+													<a class="mjschool-color-white mjschool-margin-left-2px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_teacher&tab=addteacher&action=edit&teacher_id='.rawurlencode( mjschool_encrypt_id($teacher_data->ID ) ) ).'&_wpnonce='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );?>">
 														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-edit.png"); ?>">
 													</a>
 												</div>
@@ -113,22 +114,22 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 					<div class="col-xl-12 col-md-12 col-sm-12 mjschool-rs-width">
 						<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 							<li class="<?php if ( $active_tab1 === 'general' ) { ?>active<?php } ?>">
-								<a href="<?php echo esc_url( 'admin.php?page=mjschool_teacher&tab=view_teacher&action=view_teacher&tab1=general&teacher_id=' . sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) . '&_wpnonce=' . mjschool_get_nonce('view_action') ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'general' ? 'active' : ''; ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_teacher&tab=view_teacher&action=view_teacher&tab1=general&teacher_id=' . rawurlencode(sanitize_text_field(wp_unslash($_REQUEST['teacher_id']))) . '&_wpnonce=' . rawurlencode(mjschool_get_nonce('view_action'))) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'general' ? 'active' : ''; ?>">
 									<?php esc_html_e( 'GENERAL', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab1 === 'mjschool-class-list' ) { ?>active<?php } ?>">
-								<a href="<?php echo esc_url( 'admin.php?page=mjschool_teacher&tab=view_teacher&action=view_teache&tab1=mjschool-class-list&teacher_id=' . sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) . '&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'mjschool-class-list' ? 'active' : ''; ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_teacher&tab=view_teacher&action=view_teache&tab1=mjschool-class-list&teacher_id=' . rawurlencode(sanitize_text_field(wp_unslash($_REQUEST['teacher_id']))) . '&_wpnonce=' . rawurlencode(mjschool_get_nonce( 'view_action' ))) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'mjschool-class-list' ? 'active' : ''; ?>">
 									<?php esc_html_e( 'CLass List', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab1 === 'schedule' ) { ?>active<?php } ?>">
-								<a href="<?php echo esc_url( 'admin.php?page=mjschool_teacher&tab=view_teacher&action=view_teache&tab1=schedule&teacher_id=' . sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) . '&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'schedule' ? 'active' : ''; ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_teacher&tab=view_teacher&action=view_teache&tab1=schedule&teacher_id=' . rawurlencode(sanitize_text_field(wp_unslash($_REQUEST['teacher_id']))) . '&_wpnonce=' . rawurlencode(mjschool_get_nonce( 'view_action' )) )); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'schedule' ? 'active' : ''; ?>">
 									<?php esc_html_e( 'Class Schedule', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab1 === 'attendance' ) { ?>active<?php } ?>">
-								<a href="<?php echo esc_url( 'admin.php?page=mjschool_teacher&tab=view_teacher&action=view_teache&tab1=attendance&teacher_id=' . sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) . '&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'attendance' ? 'active' : ''; ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_teacher&tab=view_teacher&action=view_teache&tab1=attendance&teacher_id=' . rawurlencode(sanitize_text_field(wp_unslash($_REQUEST['teacher_id']))) . '&_wpnonce=' . rawurlencode(mjschool_get_nonce( 'view_action' ))) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'attendance' ? 'active' : ''; ?>">
 									<?php esc_html_e( 'Attendance', 'mjschool' ); ?>
 								</a>
 							</li>
@@ -405,7 +406,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 															<?php
 															if ( ! empty( $value->document_file ) ) {
 																?>
-																<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $value->document_file ); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
+																<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $value->document_file ) ); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
 																<?php
 															} else {
 																esc_html_e( 'Not Provided', 'mjschool' );
@@ -767,12 +768,12 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 																		?>
 																		<ul role="menu" class="dropdown-menu">
 																			<li>
-																				<a href="<?php echo esc_url( 'admin.php?page=mjschool_route&tab=addroute&action=edit&route_id=' . esc_attr( $period_data->route_id ) ); ?>">
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_route&tab=addroute&action=edit&route_id=' . rawurlencode( $period_data->route_id ) ) ); ?>">
 																					<?php esc_html_e( 'Edit', 'mjschool' ); ?>
 																				</a>
 																			</li>
 																			<li>
-																				<a href="<?php echo esc_url( 'admin.php?page=mjschool_route&tab=route_list&action=delete&route_id=' . esc_attr( $period_data->route_id ) ); ?>">
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_route&tab=route_list&action=delete&route_id=' . rawurlencode( $period_data->route_id )) ); ?>">
 																					<?php esc_html_e( 'Delete', 'mjschool' ); ?>
 																				</a>
 																			</li>

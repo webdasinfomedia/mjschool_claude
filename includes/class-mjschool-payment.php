@@ -55,6 +55,7 @@ class Mjschool_Invoice
     public function mjschool_get_invoice_data( $invoice_id )
     {
         global $wpdb;
+        $invoice_id = intval($invoice_id);
         $table_invoice = $wpdb->prefix . 'mjschool_invoice';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_invoice where invoice_id=%d", $invoice_id));
@@ -86,6 +87,7 @@ class Mjschool_Invoice
     public function mjschool_delete_invoice( $invoice_id )
     {
         global $wpdb;
+        $invoice_id = intval($invoice_id);
         $table_invoice = $wpdb->prefix . 'mjschool_invoice';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->query($wpdb->prepare("DELETE FROM $table_invoice where invoice_id=%d", $invoice_id));
@@ -146,7 +148,7 @@ class Mjschool_Invoice
         $total_amount = $this->mjschool_get_entry_total_amount($data);
         global $wpdb;
         $table_income               = $wpdb->prefix . 'mjschool_income_expense';
-        $incomedata['invoice_type'] = $data['invoice_type'];
+        $incomedata['invoice_type'] = sanitize_text_field($data['invoice_type']);
         if (isset($data['class_id']) ) {
             $incomedata['class_id'] = sanitize_text_field($data['class_id']);
         }
@@ -159,7 +161,7 @@ class Mjschool_Invoice
         $incomedata['entry']              = $entry_value;
         $incomedata['create_by']          = get_current_user_id();
         if (isset($data['tax']) ) {
-            $tax        = implode(',', (array) $_POST['tax']);
+            $tax        = implode(',', array_map('sanitize_text_field', (array) $data['tax']));
             $tax_amount = mjschool_get_tax_amount($total_amount, $data['tax']);
         } else {
             $tax        = null;
@@ -167,28 +169,28 @@ class Mjschool_Invoice
         }
         $incomedata['tax']        = $tax;
         $incomedata['tax_amount'] = $tax_amount;
-        if ($data['action'] == 'edit' ) {
+        if (isset($data['action']) && $data['action'] == 'edit' ) {
             $income_dataid['income_id'] = intval($data['income_id']);
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $result  = $wpdb->update($table_income, $incomedata, $income_dataid);
             $student = mjschool_get_user_name_by_id(sanitize_text_field($incomedata['supplier_name']));
-            mjschool_append_audit_log('' . esc_html__('Income Updated', 'mjschool') . '( ' . $student . ' )' . '', get_current_user_id(), get_current_user_id(), 'edit', sanitize_text_field(wp_unslash($_REQUEST['page'])));
+            mjschool_append_audit_log('' . esc_html__('Income Updated', 'mjschool') . '( ' . $student . ' )' . '', get_current_user_id(), get_current_user_id(), 'edit', isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '');
             return $result;
-        } elseif ($data['action'] == 'edit_payment' ) {
+        } elseif (isset($data['action']) && $data['action'] == 'edit_payment' ) {
             // Delete payment record and add in income record.
             $tablename      = 'mjschool_payment';
             $delete_payment = mjschool_delete_payment($tablename, $data['payment_id']);
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $result  = $wpdb->insert($table_income, $incomedata);
             $student = mjschool_get_user_name_by_id(sanitize_text_field($incomedata['supplier_name']));
-            mjschool_append_audit_log('' . esc_html__('Income Added', 'mjschool') . '( ' . $student . ' )' . '', get_current_user_id(), get_current_user_id(), 'insert', sanitize_text_field(wp_unslash($_REQUEST['page'])));
+            mjschool_append_audit_log('' . esc_html__('Income Added', 'mjschool') . '( ' . $student . ' )' . '', get_current_user_id(), get_current_user_id(), 'insert', isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '');
             return $result;
         } else {
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $result   = $wpdb->insert($table_income, $incomedata);
             $leave_id = $wpdb->insert_id;
             $student  = mjschool_get_user_name_by_id(sanitize_text_field($incomedata['supplier_name']));
-            mjschool_append_audit_log('' . esc_html__('Income Added', 'mjschool') . '( ' . $student . ' )' . '', get_current_user_id(), get_current_user_id(), 'insert', sanitize_text_field(wp_unslash($_REQUEST['page'])));
+            mjschool_append_audit_log('' . esc_html__('Income Added', 'mjschool') . '( ' . $student . ' )' . '', get_current_user_id(), get_current_user_id(), 'insert', isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '');
             return $leave_id;
         }
     }
@@ -219,6 +221,7 @@ class Mjschool_Invoice
     public function mjschool_get_income_data( $income_id )
     {
         global $wpdb;
+        $income_id = intval($income_id);
         $table_income = $wpdb->prefix . 'mjschool_income_expense';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_income where income_id=%d", $income_id));
@@ -235,6 +238,7 @@ class Mjschool_Invoice
     public function mjschool_get_income_own_data( $user_id )
     {
         global $wpdb;
+        $user_id = intval($user_id);
         $invoice_type = 'income';
         $table_income = $wpdb->prefix . 'mjschool_income_expense';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -281,6 +285,7 @@ class Mjschool_Invoice
     public function mjschool_get_income_data_created_by( $user_id )
     {
         global $wpdb;
+        $user_id = intval($user_id);
         $invoice_type = 'income';
         $table_income = $wpdb->prefix . 'mjschool_income_expense';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -298,11 +303,12 @@ class Mjschool_Invoice
     public function mjschool_delete_income( $income_id )
     {
         global $wpdb;
+        $income_id = intval($income_id);
         $table_income = $wpdb->prefix . 'mjschool_income_expense';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $event   = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_income where income_id= %d", $income_id));
         $student = mjschool_get_user_name_by_id($event->supplier_name);
-        mjschool_append_audit_log('' . esc_html__('Income Deleted', 'mjschool') . '( ' . $student . ' )' . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field(wp_unslash($_REQUEST['page'])));
+        mjschool_append_audit_log('' . esc_html__('Income Deleted', 'mjschool') . '( ' . $student . ' )' . '', get_current_user_id(), get_current_user_id(), 'delete', isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '');
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->query($wpdb->prepare("DELETE FROM $table_income where income_id= %d", $income_id));
         return $result;
@@ -320,9 +326,8 @@ class Mjschool_Invoice
     public function mjschool_get_onepatient_income_data( $patient_id )
     {
         global $wpdb;
+        $patient_id = intval($patient_id);
         $table_income = $wpdb->prefix . 'mjschool_income_expense';
-     	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_income where supplier_name= '" . $patient_id . "' order by income_create_date desc"));
         if (is_numeric($patient_id) ) {
             // Treat as an ID (integer).
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -347,6 +352,7 @@ class Mjschool_Invoice
     public function mjschool_get_onestudent_income_data( $income_id )
     {
         global $wpdb;
+        $income_id = intval($income_id);
         $table_income = $wpdb->prefix . 'mjschool_income_expense';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_income where income_id= %d", $income_id));
@@ -371,19 +377,19 @@ class Mjschool_Invoice
         $incomedata['payment_status']     = sanitize_text_field($data['payment_status']);
         $incomedata['entry']              = $entry_value;
         $incomedata['create_by']          = get_current_user_id();
-        if ($data['action'] == 'edit' ) {
-            $expense_dataid['income_id'] = sanitize_text_field($data['expense_id']);
+        if (isset($data['action']) && $data['action'] == 'edit' ) {
+            $expense_dataid['income_id'] = intval($data['expense_id']);
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $result  = $wpdb->update($table_income, $incomedata, $expense_dataid);
             $suplier = $incomedata['supplier_name'];
-            mjschool_append_audit_log('' . esc_html__('Expense Updated', 'mjschool') . '( ' . $suplier . ' )' . '', get_current_user_id(), get_current_user_id(), 'edit', sanitize_text_field(wp_unslash($_REQUEST['page'])));
+            mjschool_append_audit_log('' . esc_html__('Expense Updated', 'mjschool') . '( ' . $suplier . ' )' . '', get_current_user_id(), get_current_user_id(), 'edit', isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '');
             return $result;
         } else {
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $result   = $wpdb->insert($table_income, $incomedata);
             $leave_id = $wpdb->insert_id;
             $suplier  = $incomedata['supplier_name'];
-            mjschool_append_audit_log('' . esc_html__('Expense Added', 'mjschool') . '( ' . $suplier . ' )' . '', get_current_user_id(), get_current_user_id(), 'insert', sanitize_text_field(wp_unslash($_REQUEST['page'])));
+            mjschool_append_audit_log('' . esc_html__('Expense Added', 'mjschool') . '( ' . $suplier . ' )' . '', get_current_user_id(), get_current_user_id(), 'insert', isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '');
             return $leave_id;
         }
     }
@@ -398,11 +404,12 @@ class Mjschool_Invoice
     public function mjschool_delete_expense( $expense_id )
     {
         global $wpdb;
+        $expense_id = intval($expense_id);
         $table_income = $wpdb->prefix . 'mjschool_income_expense';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $event   = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_income where income_id= %d,$expense_id"));
+        $event   = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_income where income_id= %d", $expense_id));
         $student = $event->supplier_name;
-        mjschool_append_audit_log('' . esc_html__('Expense Deleted', 'mjschool') . '( ' . $student . ' )' . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field(wp_unslash($_REQUEST['page'])));
+        mjschool_append_audit_log('' . esc_html__('Expense Deleted', 'mjschool') . '( ' . $student . ' )' . '', get_current_user_id(), get_current_user_id(), 'delete', isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '');
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->query($wpdb->prepare("DELETE FROM $table_income where income_id=%d", $expense_id));
         return $result;
@@ -433,6 +440,7 @@ class Mjschool_Invoice
     public function mjschool_get_all_expense_data_created_by( $user_id )
     {
         global $wpdb;
+        $user_id = intval($user_id);
         $table_income = $wpdb->prefix . 'mjschool_income_expense';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_income where invoice_type= %s and create_by=%d", 'expense', $user_id));

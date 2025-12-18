@@ -413,27 +413,27 @@ if ( $school_obj->role === 'administrator' ) {
 							?>
 							<li class="<?php if ( $active_tab === 'general_setting' ) { ?>active<?php } ?>">
 								<a href="?dashboard=mjschool_user&page=general-settings&tab=general_setting&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'general_setting' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'General Settings', 'mjschool' ); ?>
+									<?php esc_html_e( 'General Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'document_settings' ) { ?>active<?php } ?>">
 								<a href="?dashboard=mjschool_user&page=general-settings&tab=document_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'document_settings' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'Document Settings', 'mjschool' ); ?>
+									<?php esc_html_e( 'Document Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'dashboard_card_settings' ) { ?>active<?php } ?>">
 								<a href="?dashboard=mjschool_user&page=general-settings&tab=dashboard_card_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'dashboard_card_settings' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'Dashboard Card Settings', 'mjschool' ); ?>
+									<?php esc_html_e( 'Dashboard Card Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'mobile_app_settings' ) { ?>active<?php } ?>">
 								<a href="?dashboard=mjschool_user&page=general-settings&tab=mobile_app_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'mobile_app_settings' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'Mobile APP Settings', 'mjschool' ); ?>
+									<?php esc_html_e( 'Mobile APP Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'exam_merge_settings' ) { ?>active<?php } ?>">
 								<a href="?dashboard=mjschool_user&page=general-settings&tab=exam_merge_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'exam_merge_settings' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'Group Exam Result Settings', 'mjschool' ); ?>
+									<?php esc_html_e( 'Group Exam Result Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<?php
@@ -441,37 +441,37 @@ if ( $school_obj->role === 'administrator' ) {
 							?>
 							<li class="<?php if ( $active_tab === 'general_setting' ) { ?>active<?php } ?>">
 								<a href="?page=mjschool_general_settings&tab=general_setting&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'general_setting' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'General Settings', 'mjschool' ); ?>
+									<?php esc_html_e( 'General Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'document_settings' ) { ?>active<?php } ?>">
 								<a href="?page=mjschool_general_settings&tab=document_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'document_settings' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'Document Settings', 'mjschool' ); ?>
+									<?php esc_html_e( 'Document Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'dashboard_card_settings' ) { ?>active<?php } ?>">
 								<a href="?page=mjschool_general_settings&tab=dashboard_card_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'dashboard_card_settings' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'Dashboard Card Settings', 'mjschool' ); ?>
+									<?php esc_html_e( 'Dashboard Card Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'mobile_app_settings' ) { ?>active<?php } ?>">
 								<a href="?&page=mjschool_general_settings&tab=mobile_app_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'mobile_app_settings' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'Mobile APP Settings', 'mjschool' ); ?>
+									<?php esc_html_e( 'Mobile APP Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'exam_merge_settings' ) { ?>active<?php } ?>">
 								<a href="?&page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'exam_merge_settings' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'Group Exam Result Settings', 'mjschool' ); ?>
+									<?php esc_html_e( 'Group Exam Result Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'student_onboarding' ) { ?>active<?php } ?>">
 								<a href="?page=mjschool_general_settings&tab=student_onboarding&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'student_onboarding' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'Student Onboarding', 'mjschool' ); ?>
+									<?php esc_html_e( 'Student Onboarding', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'class_settings' ) { ?>active<?php } ?>">
 								<a href="?page=mjschool_general_settings&tab=class_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="padding_left_0 tab <?php echo esc_attr( $active_tab  ) === 'class_settings' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_attr__( 'class settings', 'mjschool' ); ?>
+									<?php esc_html_e( 'class settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<?php
@@ -535,7 +535,7 @@ if ( $school_obj->role === 'administrator' ) {
 											$result = $exam_obj->mjschool_delete_exam_setting( $id );
 										}
 										$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
-										wp_redirect( admin_url() . 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.esc_attr( $nonce ).'&message=6' );
+										wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.rawurlencode( $nonce ).'&message=6' ) );
 										die();
 									}
 								}

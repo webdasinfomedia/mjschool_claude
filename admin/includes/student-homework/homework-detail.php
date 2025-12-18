@@ -40,7 +40,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 									<div class="col-xl-12 col-md-12 col-sm-12 mjschool-float-left-width-100px">
 										<span class="mjschool-view-user-name-label"><?php echo esc_html( $homeworkdata->title ); ?></span>
 										<div class="mjschool-view-user-edit-btn">
-											<a class="mjschool-color-white mjschool-margin-left-2px" href="?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=<?php echo esc_attr( mjschool_encrypt_id( $homeworkdata->homework_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>">
+											<a class="mjschool-color-white mjschool-margin-left-2px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . rawurlencode( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce_action=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>">
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-edit.png' ); ?>">
 											</a>
 										</div>
@@ -66,7 +66,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 						if ( $active_tab1 === 'general' ) {
 							?>
 							active<?php } ?>">
-							<a href="admin.php?page=mjschool_student_homewrok&tab=view_homework&tab1=general&id=<?php echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'general' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=view_homework&tab1=general&id=' . rawurlencode( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'general' ? 'active' : ''; ?>">
 								<?php esc_html_e( 'Homework Details', 'mjschool' ); ?>
 							</a>
 						</li>
@@ -75,7 +75,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 						if ( $active_tab1 === 'submission' ) {
 							?>
 							active<?php } ?>">
-							<a href="admin.php?page=mjschool_student_homewrok&tab=view_homework&tab1=submission&id=<?php echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'submission' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=view_homework&tab1=submission&id=' . rawurlencode( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'submission' ? 'active' : ''; ?>">
 								<?php esc_html_e( 'Submissions', 'mjschool' ); ?>
 							</a>
 						</li>
@@ -87,7 +87,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 							if ( $active_tab1 === 'review_homework' ) {
 								?>
 								active<?php } ?>">
-								<a href="admin.php?page=mjschool_student_homewrok&tab=view_homework&tab1=review_homework&id=<?php echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ); ?>&stud_homework_id=<?php echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['stud_homework_id'] ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'review_homework' ? 'active' : ''; ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=view_homework&tab1=review_homework&id=' . rawurlencode( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ) . '&stud_homework_id=' . rawurlencode( sanitize_text_field( wp_unslash( $_REQUEST['stud_homework_id'] ) ) ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'review_homework' ? 'active' : ''; ?>">
 									<?php esc_html_e( 'Evaluate Homework', 'mjschool' ); ?>
 								</a>
 							</li>
@@ -113,7 +113,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 											<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Subject', 'mjschool' ); ?></label><br>
 											<?php
 											if ( $user_access_edit === '1' && empty( $homeworkdata->subject ) ) {
-												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . esc_attr( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . rawurlencode( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 												echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 											} else {
 												?>
@@ -124,7 +124,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 											<label class="mjschool-guardian-labels mjschool-view-page-header-labels"><?php esc_html_e( 'Class', 'mjschool' ); ?></label><br>
 											<?php
 											if ( $user_access_edit === '1' && empty( $homeworkdata->class_name ) ) {
-												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . esc_attr( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . rawurlencode( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 												echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 											} else {
 												?>
@@ -137,7 +137,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 											$birth_date      = $homeworkdata->created_date;
 											$is_invalid_date = empty( $birth_date ) || $birth_date === '1970-01-01' || $birth_date === '0000-00-00';
 											if ( $user_access_edit === '1' && $is_invalid_date ) {
-												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . esc_attr( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . rawurlencode( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 												echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 											} else {
 												?>
@@ -158,7 +158,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 											$birth_date      = $homeworkdata->submition_date;
 											$is_invalid_date = empty( $birth_date ) || $birth_date === '1970-01-01' || $birth_date === '0000-00-00';
 											if ( $user_access_edit === '1' && $is_invalid_date ) {
-												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . esc_attr( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . rawurlencode( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 												echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 											} else {
 												?>
@@ -169,7 +169,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 											<label class="mjschool-guardian-labels mjschool-view-page-header-labels"><?php esc_html_e( 'Marks', 'mjschool' ); ?></label><br>
 											<?php
 											if ( $user_access_edit === '1' && empty( $homeworkdata->marks ) ) {
-												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . esc_attr( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . rawurlencode( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 												echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 											} else {
 												?>
@@ -189,7 +189,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 											<?php
 											$doc_data = json_decode( $homeworkdata->homework_document );
 											if ( $user_access_edit === '1' && empty( $doc_data[0]->title ) ) {
-												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . esc_attr( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . rawurlencode( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 												echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 											} else {
 												?>
@@ -197,7 +197,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 													<?php
 													$doc_data = json_decode( $homeworkdata->homework_document );
 													if ( ! empty( $doc_data[0]->title ) ) {
-														echo esc_attr( $doc_data[0]->title );
+														echo esc_html( $doc_data[0]->title );
 													} else {
 														esc_html_e( 'Not Provided', 'mjschool' );
 													}
@@ -210,7 +210,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 											<?php
 											$doc_data = json_decode( $homeworkdata->homework_document );
 											if ( $user_access_edit === '1' && empty( $doc_data[0]->value ) ) {
-												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . esc_attr( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . rawurlencode( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 												echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 											} else {
 												?>
@@ -218,7 +218,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 													<?php
 													if ( ! empty( $doc_data[0]->value ) ) {
 														?>
-														<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $doc_data[0]->value ); ?>"  class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_attr( $homeworkdata->homework_id ); ?>"><i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+														<a download href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>"  class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_attr( $homeworkdata->homework_id ); ?>"><i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 														<?php
 													} else {
 														esc_html_e( 'Not Provided', 'mjschool' );
@@ -231,7 +231,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 											<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Homework Content', 'mjschool' ); ?></label><br>
 											<?php
 											if ( $user_access_edit === '1' && empty( $homeworkdata->content ) ) {
-												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . esc_attr( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+												$edit_url = admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=' . rawurlencode( mjschool_encrypt_id( $homeworkdata->homework_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 												echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 											} else {
 												?>
@@ -308,7 +308,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 														?>
 													</td>
 													<td>
-														<a  href="?page=mjschool_student&tab=view_student&action=view_student&student_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->student_id ) ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>"><?php echo esc_html( mjschool_student_display_name_with_roll( $retrieved_data->student_id ) ); ?></a> 
+														<a  href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&tab=view_student&action=view_student&student_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->student_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>"><?php echo esc_html( mjschool_student_display_name_with_roll( $retrieved_data->student_id ) ); ?></a> 
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i>
 													</td>
 													<td><?php echo esc_html( mjschool_get_class_name( $retrieved_data->class_name ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class', 'mjschool' ); ?>"></i></td>
@@ -317,7 +317,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 													<?php
 													if ( $retrieved_data->uploaded_date === 0000 - 00 - 00 ) {
 														?>
-														<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo 'Not Provided '; ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Submitted Date', 'mjschool' ); ?>"></i></td> 
+														<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php esc_html_e( 'Not Provided', 'mjschool' ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Submitted Date', 'mjschool' ); ?>"></i></td> 
 														<?php
 													} else {
 														?>
@@ -388,7 +388,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 																		if ( $retrieved_data->status != 0 ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a href="?page=mjschool_student_homewrok&tab=view_homework&tab1=review_homework&id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->homework_id ) ); ?>&stud_homework_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->stu_homework_id ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-check"></i><?php esc_html_e( 'Evaluate Homework', 'mjschool' ); ?></a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=view_homework&tab1=review_homework&id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->homework_id ) ) . '&stud_homework_id=' . rawurlencode( mjschool_encrypt_id( $retrieved_data->stu_homework_id ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-check"></i><?php esc_html_e( 'Evaluate Homework', 'mjschool' ); ?></a>
 																			</li>
 																			<?php
 																		}
@@ -396,7 +396,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 																			echo '';
 																		}
 																		?>
-																																			</ul>
+																	</ul>
 																</li>
 															</ul>
 														</div>
@@ -430,20 +430,20 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 						// File upload handling.
 						if ( ! empty( $_FILES['review_file']['name'] ) ) {
 							$randm           = mt_rand( 5, 15 ); // Generate random number.
-							$file_name       = 'H' . $randm . '_' . sanitize_file_name( $_FILES['review_file']['name'] );
-							$file_tmp        = $_FILES['review_file']['tmp_name'];
+							$file_name       = 'H' . $randm . '_' . sanitize_file_name( wp_unslash( $_FILES['review_file']['name'] ) );
+							$file_tmp        = sanitize_text_field( wp_unslash( $_FILES['review_file']['tmp_name'] ) );
 							$upload          = wp_upload_dir();
 							$upload_dir_path = $upload['basedir'];
 							$upload_dir      = $upload_dir_path . '/homework_file';
 							// Ensure the upload directory exists.
 							if ( ! file_exists( $upload_dir ) ) {
 								if ( ! mkdir( $upload_dir, 0700, true ) && ! is_dir( $upload_dir ) ) {
-									wp_die( 'Failed to create upload directory.' );
+									wp_die( esc_html__( 'Failed to create upload directory.', 'mjschool' ) );
 								}
 							}
 							// Move uploaded file.
 							if ( ! move_uploaded_file( $file_tmp, $upload_dir . '/' . $file_name ) ) {
-								wp_die( 'Failed to upload file.' );
+								wp_die( esc_html__( 'Failed to upload file.', 'mjschool' ) );
 							}
 						}
 						// Retrieve and sanitize POST data.
@@ -455,10 +455,10 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 						$result           = $objj->mjschool_update_student_homework( $stud_homework_id, $file_name, $obtain_marks, $teacher_comment, $evaluate_date, $status );
 						// Redirect with an appropriate message.
 						if ( $result !== false ) {
-							wp_redirect( esc_url( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=view_homework&tab1=submission&id=' . mjschool_encrypt_id( $data->homework_id ) . '&review_success=review_success' ) );
-							die();
+							wp_safe_redirect( esc_url_raw( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=view_homework&tab1=submission&id=' . mjschool_encrypt_id( $data->homework_id ) . '&review_success=review_success' ) ) );
+							exit;
 						} else {
-							wp_die( 'Failed to update homework review.' );
+							wp_die( esc_html__( 'Failed to update homework review.', 'mjschool' ) );
 						}
 					}
 					if ( isset( $_REQUEST['review_success'] ) && sanitize_text_field( wp_unslash( $_REQUEST['review_success'] ) ) === 'review_success' ) {
@@ -496,7 +496,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 												<?php
 												if ( ! empty( $data->file ) ) {
 													?>
-													<a download href="<?php print esc_url( content_url() . '/uploads/homework_file/' . $data->file ); ?>" class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_attr( $data->stu_homework_id ); ?>" download><i class="fas fa-download"></i>&nbsp;&nbsp;<?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+													<a download href="<?php echo esc_url( content_url( '/uploads/homework_file/' . $data->file ) ); ?>" class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_attr( $data->stu_homework_id ); ?>" download><i class="fas fa-download"></i>&nbsp;&nbsp;<?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 													<?php
 												} else {
 													esc_html_e( 'Not Provided', 'mjschool' );
@@ -600,7 +600,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 															<?php
 															if ( ! empty( $data->review_file ) ) {
 																?>
-																<a download href="<?php print esc_url( content_url() . '/uploads/homework_file/' . $data->review_file ); ?>" class="btn" record_id="<?php echo esc_attr( $data->stu_homework_id ); ?>" download><i class="fas fa-download"></i>&nbsp;&nbsp;<?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+																<a download href="<?php echo esc_url( content_url( '/uploads/homework_file/' . $data->review_file ) ); ?>" class="btn" record_id="<?php echo esc_attr( $data->stu_homework_id ); ?>" download><i class="fas fa-download"></i>&nbsp;&nbsp;<?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 																<?php
 															}
 															?>
@@ -610,12 +610,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 												<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 													<div class="form-group input">
 														<div class="col-md-12 form-control">
-															<input id="marks" value="
-															<?php
-															if ( ! empty( $data->obtain_marks ) ) {
-																echo esc_attr( $data->obtain_marks );}
-															?>
-															" class="form-control validate[max[<?php echo esc_attr( $homework_data->marks ); ?>],maxSize[10]] text-input" type="number" name="obtain_marks">
+															<input id="marks" value="<?php if ( ! empty( $data->obtain_marks ) ) { echo esc_attr( $data->obtain_marks );} ?>" class="form-control validate[max[<?php echo esc_attr( $homework_data->marks ); ?>],maxSize[10]] text-input" type="number" name="obtain_marks">
 															<label class="date_label" for="class_capacity"><?php esc_html_e( 'Marks Obtained', 'mjschool' ); ?></label>
 														</div>
 													</div>
@@ -624,12 +619,10 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 													<div class="form-group input">
 														<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 															<div class="form-field">
-																<textarea name="teacher_comment" class="mjschool-textarea-height-60px form-control validate[custom[description_validation]]" maxlength="1000" id="teacher_comment">
-																<?php
+																<textarea name="teacher_comment" class="mjschool-textarea-height-60px form-control validate[custom[description_validation]]" maxlength="1000" id="teacher_comment"><?php
 																if ( ! empty( $data->teacher_comment ) ) {
-																	echo esc_attr( $data->teacher_comment );}
-																?>
-																</textarea>
+																	echo esc_textarea( $data->teacher_comment );}
+																?></textarea>
 																<span class="mjschool-txt-title-label"></span>
 																<label class="text-area address active" for="teacher_comment"><?php esc_html_e( 'Teacher Comment', 'mjschool' ); ?></label>
 															</div>
@@ -641,7 +634,7 @@ $homeworkdata     = $objj->mjschool_get_edit_record( $homework_id );
 										<div class="form-body mjschool-user-form"><!------ Form body. -------->
 											<div class="row">
 												<div class="col-sm-6">        	
-													<input type="submit" value="<?php esc_html_e( 'Evaluate Homework', 'mjschool' ); ?>" name="student_review_homework" class="btn btn-success save_homework mjschool-save-btn" />
+													<input type="submit" value="<?php esc_attr_e( 'Evaluate Homework', 'mjschool' ); ?>" name="student_review_homework" class="btn btn-success save_homework mjschool-save-btn" />
 												</div> 
 											</div>
 										</div>

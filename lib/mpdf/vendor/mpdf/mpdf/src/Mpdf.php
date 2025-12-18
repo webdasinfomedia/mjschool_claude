@@ -9534,7 +9534,7 @@ class Mpdf implements \Psr\Log\LoggerAwareInterface
 					header('Pragma: public');
 					header('X-Generator: mPDF' . ($this->exposeVersion ? (' ' . static::VERSION) : ''));
 					header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-					header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+					header('Last-Modified: ' . date('D, d M Y H:i:s') . ' GMT');
 				}
 
 				echo $this->buffer;
@@ -9553,7 +9553,7 @@ class Mpdf implements \Psr\Log\LoggerAwareInterface
 				header('Pragma: public');
 				header('X-Generator: mPDF' . ($this->exposeVersion ? (' ' . static::VERSION) : ''));
 				header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-				header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+				header('Last-Modified: ' . date('D, d M Y H:i:s') . ' GMT');
 				header('Content-Type: application/pdf');
 
 				if (!isset($_SERVER['HTTP_ACCEPT_ENCODING']) || empty($_SERVER['HTTP_ACCEPT_ENCODING'])) {

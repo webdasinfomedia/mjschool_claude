@@ -3921,7 +3921,7 @@ function mjschool_student_view_payment_history() {
 	<?php
 	$fees_pay_id                = intval(wp_unslash($_REQUEST['idtest']));
 	$fees_detail_result         = mjschool_get_single_fees_payment_record( $fees_pay_id );
-	$fees_history_detail_result = mjschool_get_payment_history_by_feespayid( $fees_pay_id );
+	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
 	$obj_feespayment            = new Mjschool_Feespayment();
 	?>
 	<div class="mjschool-background-image-print" style="background-image: url(<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/thumb-icon/mjschool-Invoice-bg.png' ); ?>);">

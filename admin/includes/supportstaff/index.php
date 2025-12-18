@@ -67,21 +67,21 @@ $mjschool_role = 'supportstaff';
 if ( isset( $_POST['save_supportstaff'] ) ) {
 	$nonce = $_POST['_wpnonce'];
 	if ( wp_verify_nonce( $nonce, 'save_supportstaff_admin_nonce' ) ) {
-		$firstname  = sanitize_text_field( wp_unslash($_POST['first_name']) );
-		$middlename = sanitize_text_field( wp_unslash($_POST['middle_name']) );
-		$lastname   = sanitize_text_field( wp_unslash($_POST['last_name']) );
+		$firstname  = isset( $_POST['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['first_name'] ) ) : '';
+		$middlename = isset( $_POST['middle_name'] ) ? sanitize_text_field( wp_unslash( $_POST['middle_name'] ) ) : '';
+		$lastname = isset( $_POST['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['last_name'] ) ) : '';
 		$userdata   = array(
-			'user_login'    => sanitize_email( wp_unslash($_POST['email']) ),
+			'user_login'    => isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '',
 			'user_nicename' => null,
-			'user_email'    => sanitize_email( wp_unslash($_POST['email']) ),
+			'user_email'    => isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '',
 			'user_url'      => null,
 			'display_name'  => $firstname . ' ' . $middlename . ' ' . $lastname,
 		);
-		if ( $_POST['password'] != '' ) {
+		if ( isset( $_POST['password'] ) && ! empty( $_POST['password'] ) ) {
 			$userdata['user_pass'] = mjschool_password_validation( wp_unslash($_POST['password']) );
 		}
-		if ( isset( $_POST['mjschool_user_avatar'] ) && $_POST['mjschool_user_avatar'] != '' ) {
-			$photo = sanitize_text_field(wp_unslash($_POST['mjschool_user_avatar']));
+		if ( isset( $_POST['mjschool_user_avatar'] ) && ! empty( $_POST['mjschool_user_avatar'] ) ) {
+			$photo = sanitize_text_field( wp_unslash( $_POST['mjschool_user_avatar'] ) );
 		} else {
 			$photo = '';
 		}
@@ -90,8 +90,8 @@ if ( isset( $_POST['save_supportstaff'] ) ) {
 		if ( ! empty( $_FILES['document_file']['name'] ) ) {
 			$count_array = count( $_FILES['document_file']['name'] );
 			for ( $a = 0; $a < $count_array; $a++ ) {
-				if ( ( $_FILES['document_file']['size'][ $a ] > 0 ) && ( ! empty( $_POST['document_title'][ $a ] ) ) ) {
-					$document_title = sanitize_text_field(wp_unslash($_POST['document_title'][ $a ]));
+				if ( ( $_FILES['document_file']['size'][ $a ] > 0 ) && isset( $_POST['document_title'][ $a ] ) && ! empty( $_POST['document_title'][ $a ] ) ) {
+    				$document_title = sanitize_text_field( wp_unslash( $_POST['document_title'][ $a ] ) );
 					$document_file  = mjschool_upload_document_user_multiple( $_FILES['document_file'], $a, $_POST['document_title'][ $a ] );
 				} elseif ( ! empty( $_POST['user_hidden_docs'][ $a ] ) && ! empty( $_POST['document_title'][ $a ] ) ) {
 					$document_title = sanitize_text_field(wp_unslash($_POST['document_title'][ $a ]));
@@ -129,7 +129,8 @@ if ( isset( $_POST['save_supportstaff'] ) ) {
 		);
 		if ( $action === 'edit' ) {
 			if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'edit_action' ) ) {
-				$userdata['ID'] = mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['supportstaff_id'])) );
+				$supportstaff_id_encrypted = isset( $_REQUEST['supportstaff_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['supportstaff_id'] ) ) : '';
+				$userdata['ID'] = ! empty( $supportstaff_id_encrypted ) ? intval( mjschool_decrypt_id( $supportstaff_id_encrypted ) ) : 0;
 				$result         = mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
 				// Update custom field data.
 				$custom_field_obj    = new Mjschool_Custome_Field();
@@ -142,7 +143,7 @@ if ( isset( $_POST['save_supportstaff'] ) ) {
 			} else {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 			}
-		} elseif ( ! email_exists( $_POST['email'] ) && ! username_exists( mjschool_strip_tags_and_stripslashes( $_POST['username'] ) ) ) {
+		} elseif ( ! email_exists( $_POST['email'] ) && ! username_exists( sanitize_user( wp_unslash( $_POST['username'] ) ) ) ) {
 			$result = mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
 			// Add custom field data.
 			$custom_field_obj   = new Mjschool_Custome_Field();
@@ -160,7 +161,10 @@ if ( isset( $_POST['save_supportstaff'] ) ) {
 }
 if ( $action === 'delete' ) {
 	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'delete_action' ) ) {
-		$result = mjschool_delete_usedata( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['supportstaff_id'])) ) );
+		$supportstaff_id_encrypted = isset( $_REQUEST['supportstaff_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['supportstaff_id'] ) ) : '';
+		if ( ! empty( $supportstaff_id_encrypted ) ) {
+			$result = mjschool_delete_usedata( intval( mjschool_decrypt_id( $supportstaff_id_encrypted ) ) );
+		}
 		if ( $result ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_supportstaff&tab=supportstaff_list&message=4' ) );
 			die();
@@ -170,8 +174,9 @@ if ( $action === 'delete' ) {
 	}
 }
 if ( isset( $_REQUEST['delete_selected'] ) ) {
-	if ( ! empty( $_REQUEST['id'] ) ) {
-		foreach ( $_REQUEST['id'] as $id ) {
+	if ( isset( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+		$ids = array_map( 'intval', $_REQUEST['id'] );
+		foreach ( $ids as $id ) {
 			$result = mjschool_delete_usedata( $id );
 		}
 	}
@@ -182,9 +187,13 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 }
 // -------------- Export staff data. ---------------//
 if ( isset( $_POST['staff_csv_selected'] ) ) {
-	if ( isset( $_POST['id'] ) ) {
-		foreach ( $_POST['id'] as $s_id ) {
-			$staff_list[] = get_userdata( $s_id );
+	if ( isset( $_POST['id'] ) && is_array( $_POST['id'] ) ) {
+		$ids = array_map( 'intval', $_POST['id'] );
+		foreach ( $ids as $s_id ) {
+			$user = get_userdata( $s_id );
+			if ( $user ) {
+				$staff_list[] = $user;
+			}
 		}
 		if ( ! empty( $staff_list ) ) {
 			$header   = array();
@@ -231,7 +240,7 @@ if ( isset( $_POST['staff_csv_selected'] ) ) {
 			header( 'Pragma: public' );       // Required.
 			header( 'Expires: 0' );           // No cache.
 			header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-			header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+			header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 			header( 'Cache-Control: private', false );
 			header( 'Content-Type: ' . $mime );
 			header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
@@ -246,7 +255,7 @@ if ( isset( $_POST['staff_csv_selected'] ) ) {
 }
 // ------------------ Import staff member. --------------------//
 if ( isset( $_REQUEST['upload_staff_csv_file'] ) ) {
-	$nonce = $_POST['_wpnonce'];
+	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	if ( wp_verify_nonce( $nonce, 'upload_csv_nonce' ) ) {
 		if ( isset( $_FILES['csv_file'] ) ) {
 			$errors     = array();
@@ -353,11 +362,11 @@ if ( isset( $_REQUEST['upload_staff_csv_file'] ) ) {
 					}
 					if ( isset( $csv['gender'] ) ) {
 						$gender = strtolower( trim( $csv['gender'] ) );
-						// Optionally validate allowed values.
-						if ( in_array( $gender, array( 'male', 'female' ) ) ) {
+						// Validate against whitelist.
+						if ( in_array( $gender, array( 'male', 'female' ), true ) ) {
 							update_user_meta( $user_id, 'gender', $gender );
 						} else {
-							update_user_meta( $user_id, 'gender', '' ); // Or skip, or set default.
+							update_user_meta( $user_id, 'gender', '' ); // Or skip
 						}
 					}
 					if ( isset( $csv['birth date'] ) ) {
@@ -386,7 +395,8 @@ if ( isset( $_REQUEST['upload_staff_csv_file'] ) ) {
 					}
 					$success = 1;
 					if ( $user_created ) {
-						if ( isset($_REQUEST['mjschool_import_staff_mail']) && sanitize_text_field(wp_unslash($_REQUEST['mjschool_import_staff_mail'])) === '1' ) {
+						$import_mail_enabled = isset( $_REQUEST['mjschool_import_staff_mail'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['mjschool_import_staff_mail'] ) ) : '0';
+						if ( $import_mail_enabled === '1' ) {
 							if ( $user_id ) {
 								$userdata                  = get_userdata( $user_id );
 								$string                    = array();
@@ -425,7 +435,7 @@ if ( isset( $_REQUEST['upload_staff_csv_file'] ) ) {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
 }
-$active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'])) : 'supportstaff_list';
+$active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'supportstaff_list';
 ?>
 <!-- POP-UP code start-->
 <div class="mjschool-popup-bg">
@@ -439,7 +449,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 <div class="mjschool-page-inner"><!-- Mjschool-page-inner. -->
 	<div class="mjschool-main-list-margin-15px"><!-- Mjschool-main-list-margin-15px. -->
 		<?php
-		$message = isset( $_REQUEST['message'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message'])) : '0';
+		$message = isset( $_REQUEST['message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message'] ) ) : '0';
 		switch ( $message ) {
 			case '1':
 				$message_string = esc_html__( 'Support Staff Added Successfully.', 'mjschool' );
@@ -576,7 +586,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																					<?php
 																					if ( ! empty( $custom_field_value ) ) {
 																						?>
-																						<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . sanitize_file_name( $custom_field_value ) ); ?>" download="CustomFieldfile">
+																						<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . sanitize_file_name( $custom_field_value ) ) ); ?>" download="CustomFieldfile">
 																							<button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 																						</a>
 																						<?php

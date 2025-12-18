@@ -6,9 +6,9 @@
  * marks submission, retrieval, and grade calculation for students and teachers
  * using custom database tables.
  *
- * @package    MJSchool
+ * @package    MJSchool
  * @subpackage MJSchool/includes
- * @since      1.0.0
+ * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
 /**
@@ -39,16 +39,19 @@ class Mjschool_Marks_Manage {
 		if ( $marks ) {
 			global $wpdb;
 			$table_name = $wpdb->prefix . 'mjschool_marks';
+			$marks_id   = intval( $marks );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$mark_data           = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE mark_id=%d", $marks ) );
-			$this->mark_id       = $mark_data->mark_id;
-			$this->exam_id       = $mark_data->exam_id;
-			$this->class_id      = $mark_data->class_id;
-			$this->subject_id    = $mark_data->subject_id;
-			$this->marks         = $mark_data->marks;
-			$this->attendance    = $mark_data->attendance;
-			$this->student_id    = $mark_data->student_id;
-			$this->marks_comment = $mark_data->marks_comment;
+			$mark_data = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE mark_id = %d", $marks_id ) );
+			if ( $mark_data ) {
+				$this->mark_id       = $mark_data->mark_id;
+				$this->exam_id       = $mark_data->exam_id;
+				$this->class_id      = $mark_data->class_id;
+				$this->subject_id    = $mark_data->subject_id;
+				$this->marks         = $mark_data->marks;
+				$this->attendance    = $mark_data->attendance;
+				$this->student_id    = $mark_data->student_id;
+				$this->marks_comment = $mark_data->marks_comment;
+			}
 		}
 	}
 	/**
@@ -60,7 +63,9 @@ class Mjschool_Marks_Manage {
 	 */
 	public function mjschool_marks_exist( $mark_id ) {
 		global $wpdb;
-		$query = $wpdb->prepare( 'SELECT mark_id FROM ' . $wpdb->marks . ' WHERE mark_id = %d', $mark_id );
+		$table_name = $wpdb->prefix . 'mjschool_marks';
+		$mark_id    = intval( $mark_id );
+		$query      = $wpdb->prepare( "SELECT mark_id FROM $table_name WHERE mark_id = %d", $mark_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$marks = $wpdb->get_var( $query );
 		if ( ! empty( $marks ) ) {
@@ -83,13 +88,15 @@ class Mjschool_Marks_Manage {
 	 * Updates an existing mark record.
 	 *
 	 * @param array $marks_data Array of mark data to be updated.
-	 * @param int $mark_id The ID of the mark record to update.
+	 * @param int   $mark_id The ID of the mark record to update.
 	 * @return int|false The number of rows updated, or false on error.
 	 * @since 1.0.0
 	 */
 	public function mjschool_update_marks( $marks_data, $mark_id ) {
-		$table_name    = 'mjschool_marks';
-		return $result = mjschool_update_record( $table_name, $marks_data, $mark_id );
+		$table_name = 'mjschool_marks';
+		$mark_id    = intval( $mark_id );
+		$result     = mjschool_update_record( $table_name, $marks_data, $mark_id );
+		return $result;
 	}
 	/**
 	 * Retrieves subject marks details for a specific exam, class, subject, and student.
@@ -105,8 +112,12 @@ class Mjschool_Marks_Manage {
 	public function mjschool_subject_makrs_detail_byuser( $exam_id, $class_id, $subject_id, $userid ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_marks';
+		$exam_id    = intval( $exam_id );
+		$class_id   = intval( $class_id );
+		$subject_id = intval( $subject_id );
+		$userid     = intval( $userid );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$retrieve_marks = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_id= %d AND class_id = %d  AND subject_id = %d  AND student_id = %d ", $exam_id, $class_id, $subject_id, $userid ) );
+		$retrieve_marks = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_id = %d AND class_id = %d AND subject_id = %d AND student_id = %d", $exam_id, $class_id, $subject_id, $userid ) );
 		if ( ! empty( $retrieve_marks ) ) {
 			return $retrieve_marks;
 		} else {
@@ -124,8 +135,9 @@ class Mjschool_Marks_Manage {
 	public function mjschool_subject_makrs_by_student_id( $userid ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_marks';
+		$userid     = intval( $userid );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$retrieve_marks = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE student_id = %d ", $userid ) );
+		$retrieve_marks = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE student_id = %d", $userid ) );
 		return $retrieve_marks;
 	}
 	/**
@@ -142,8 +154,9 @@ class Mjschool_Marks_Manage {
 		$table_name  = $wpdb->prefix . 'mjschool_subject';
 		$table_name2 = $wpdb->prefix . 'mjschool_teacher_subject';
 		$user_id     = get_current_user_id();
+		$class_id    = intval( $class_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id= %d ", $class_id ) );
+		$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d", $class_id ) );
 		return $retrieve_subject;
 	}
 	/**
@@ -160,12 +173,14 @@ class Mjschool_Marks_Manage {
 		$table_name  = $wpdb->prefix . 'mjschool_subject';
 		$table_name2 = $wpdb->prefix . 'mjschool_teacher_subject';
 		$user_id     = get_current_user_id();
-		if ( $section_id == 0 ) {
+		$class_id    = intval( $class_id );
+		$section_id  = intval( $section_id );
+		if ( $section_id === 0 ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id= %d", $class_id ) );
+			$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d", $class_id ) );
 		} else {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id= %d && section_id = %d ", $class_id, $section_id ) );
+			$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d AND section_id = %d", $class_id, $section_id ) );
 		}
 		return $retrieve_subject;
 	}
@@ -187,8 +202,8 @@ class Mjschool_Marks_Manage {
 		$user_id     = get_current_user_id();
 		$section_id  = intval( $section_id ); // Ensure section_id is an integer.
 		$class_id    = intval( $class_id ); // Ensure class_id is an integer.
-		if ( mjschool_get_roles( $user_id ) == 'teacher' ) {
-			if ( $section_id != 0 ) {
+		if ( mjschool_get_roles( $user_id ) === 'teacher' ) {
+			if ( $section_id !== 0 ) {
 				// Use $wpdb->prepare to secure the query.
 				$query = $wpdb->prepare( "SELECT p1.*, p2.* FROM {$table_name} p1 INNER JOIN {$table_name2} p2 ON (p1.subid = p2.subject_id) WHERE p2.teacher_id = %d AND p1.class_id = %d AND p1.section_id = %d", $user_id, $class_id, $section_id );
 			} else {
@@ -199,7 +214,7 @@ class Mjschool_Marks_Manage {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$retrieve_subject = $wpdb->get_results( $query );
 		} else {
-			if ( $section_id != 0 ) {
+			if ( $section_id !== 0 ) {
 				// Use $wpdb->prepare to secure the query.
 				$query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE section_id = %d AND class_id = %d", $section_id, $class_id );
 			} else {
@@ -224,12 +239,7 @@ class Mjschool_Marks_Manage {
 	public function mjschool_student_subject_list( $class_id, $section_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_subject';
-		if ( $section_id == '' ) {
-			$section_id = 0;
-		} else {
-			$section_id = $section_id;
-		}
-		$section_id = intval( $section_id ); // Ensure section_id is an integer.
+		$section_id = ( $section_id === '' || $section_id === null ) ? 0 : intval( $section_id );
 		$class_id   = intval( $class_id ); // Ensure class_id is an integer.
 		// Secure the query using $wpdb->prepare.
 		$query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id = %d", $class_id );
@@ -269,8 +279,11 @@ class Mjschool_Marks_Manage {
 	public function mjschool_teachers_subject( $class_id, $teacherid ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_subject';
+		$class_id   = intval( $class_id );
+		$teacherid  = intval( $teacherid );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		return $retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id=%d and teacher_id=%d", $class_id, $teacherid ) );
+		$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d AND teacher_id = %d", $class_id, $teacherid ) );
+		return $retrieve_subject;
 	}
 	/**
 	 * Retrieves the calculated marks for a specific student, subject, class, and exam.
@@ -293,11 +306,11 @@ class Mjschool_Marks_Manage {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_marks';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_id = %d AND class_id= %d AND subject_id = %d AND student_id = %d ", $exam_id, $class_id, $subject_id, $user_id ) );
+		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_id = %d AND class_id = %d AND subject_id = %d AND student_id = %d", $exam_id, $class_id, $subject_id, $user_id ) );
 		$marks  = 0;
 		if ( ! empty( $result ) ) {
-			if ( $result->contributions == 'yes' ) {
-				$marks = json_decode( $result->class_marks );
+			if ( $result->contributions === 'yes' ) {
+				$marks = json_decode( $result->class_marks, true );
 			} else {
 				$marks = $result->marks;
 			}
@@ -321,11 +334,11 @@ class Mjschool_Marks_Manage {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_marks';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_id = %d AND student_id = %d ", $exam_id, $user_id ) );
+		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_id = %d AND student_id = %d", $exam_id, $user_id ) );
 		$marks  = 0;
 		if ( ! empty( $result ) ) {
-			if ( $result->contributions == 'yes' ) {
-				$marks = json_decode( $result->class_marks );
+			if ( $result->contributions === 'yes' ) {
+				$marks = json_decode( $result->class_marks, true );
 			} else {
 				$marks = $result->marks;
 			}
@@ -345,8 +358,12 @@ class Mjschool_Marks_Manage {
 	public function mjschool_get_marks_pass_fail( $exam_id, $class_id, $user_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_marks';
+		$exam_id    = intval( $exam_id );
+		$class_id   = intval( $class_id );
+		$user_id    = intval( $user_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		return $retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT marks FROM $table_name WHERE exam_id = %d AND class_id= %d AND student_id = %d", $exam_id, $class_id, $user_id ) );
+		$retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT marks FROM $table_name WHERE exam_id = %d AND class_id = %d AND student_id = %d", $exam_id, $class_id, $user_id ) );
+		return $retrieve_result;
 	}
 	/**
 	 * Retrieves the maximum marks for an exam.
@@ -359,8 +376,10 @@ class Mjschool_Marks_Manage {
 	public function mjschool_get_max_marks( $exam_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_exam';
+		$exam_id    = intval( $exam_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		return $retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT total_mark FROM $table_name WHERE exam_id = %d ", $exam_id ) );
+		$retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT total_mark FROM $table_name WHERE exam_id = %d", $exam_id ) );
+		return $retrieve_result;
 	}
 	/**
 	 * Retrieves the passing marks for an exam.
@@ -373,8 +392,10 @@ class Mjschool_Marks_Manage {
 	public function mjschool_get_pass_marks( $exam_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_exam';
+		$exam_id    = intval( $exam_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		return $retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT passing_mark FROM $table_name WHERE exam_id = %d", $exam_id ) );
+		$retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT passing_mark FROM $table_name WHERE exam_id = %d", $exam_id ) );
+		return $retrieve_result;
 	}
 	/**
 	 * Retrieves the exam term for a given exam ID.
@@ -387,8 +408,10 @@ class Mjschool_Marks_Manage {
 	public function mjschool_get_exam_term( $exam_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_exam';
+		$exam_id    = intval( $exam_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		return $retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT exam_term FROM $table_name WHERE exam_id = %d ", $exam_id ) );
+		$retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT exam_term FROM $table_name WHERE exam_id = %d", $exam_id ) );
+		return $retrieve_result;
 	}
 	/**
 	 * Retrieves the marks comment for a student in a specific subject and exam.
@@ -404,6 +427,10 @@ class Mjschool_Marks_Manage {
 	public function mjschool_get_marks_comment( $exam_id, $class_id, $subject_id, $user_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_marks';
+		$exam_id    = intval( $exam_id );
+		$class_id   = intval( $class_id );
+		$subject_id = intval( $subject_id );
+		$user_id    = intval( $user_id );
 		$query      = "SELECT marks_comment FROM $table_name WHERE exam_id = %d AND class_id = %d AND subject_id = %d AND student_id = %d";
 		// Use $wpdb->prepare to safely insert the variables into the query
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -421,8 +448,10 @@ class Mjschool_Marks_Manage {
 	public function mjschool_get_grade_marks_comment( $grade_name ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_grade';
+		$grade_name = sanitize_text_field( $grade_name );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		return $retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT grade_comment FROM $table_name WHERE grade_name = %s", $grade_name ) );
+		$retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT grade_comment FROM $table_name WHERE grade_name = %s", $grade_name ) );
+		return $retrieve_result;
 	}
 	/**
 	 * Retrieves the attendance status for a student in a specific subject and exam.
@@ -438,8 +467,13 @@ class Mjschool_Marks_Manage {
 	public function mjschool_get_attendance( $exam_id, $class_id, $subject_id, $user_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_marks';
+		$exam_id    = intval( $exam_id );
+		$class_id   = intval( $class_id );
+		$subject_id = intval( $subject_id );
+		$user_id    = intval( $user_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		return $retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT attendance FROM $table_name WHERE exam_id = %d AND class_id= %d AND subject_id = %d AND student_id = %d", $exam_id, $class_id, $subject_id, $user_id ) );
+		$retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT attendance FROM $table_name WHERE exam_id = %d AND class_id = %d AND subject_id = %d AND student_id = %d", $exam_id, $class_id, $subject_id, $user_id ) );
+		return $retrieve_result;
 	}
 	/**
 	 * Retrieves the name of a grade given its ID.
@@ -452,8 +486,10 @@ class Mjschool_Marks_Manage {
 	public function mjschool_get_grade_name( $grade_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_grade';
+		$grade_id   = intval( $grade_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		return $retrieve_result = $wpdb->get_var( "SELECT grade_name FROM $table_name WHERE grade_id = " . $grade_id );
+		$retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT grade_name FROM $table_name WHERE grade_id = %d", $grade_id ) );
+		return $retrieve_result;
 	}
 	/**
 	 * Calculates the grade name based on a total mark value (grand total).
@@ -466,10 +502,11 @@ class Mjschool_Marks_Manage {
 	public function mjschool_get_grade_base_on_grand_total( $total_marks ) {
 		global $wpdb;
 		$table_grade = $wpdb->prefix . 'mjschool_grade';
+		$total_marks = intval( $total_marks );
 		// Fetch grade.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$grade = $wpdb->get_var( $wpdb->prepare( "SELECT grade_name FROM $table_grade WHERE %d BETWEEN mark_upto AND mark_from", $total_marks ) );
-		return $grade ?: '';
+		return $grade ? $grade : '';
 	}
 	/**
 	 * Retrieves the grade name for a student's mark in a specific subject and exam.
@@ -510,7 +547,7 @@ class Mjschool_Marks_Manage {
 		// Fetch grade.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$grade = $wpdb->get_var( $wpdb->prepare( "SELECT grade_name FROM $table_grade WHERE %d BETWEEN mark_upto AND mark_from", $total_marks ) );
-		return $grade ?: '';
+		return $grade ? $grade : '';
 	}
 	/**
 	 * Retrieves the grade comment for a student's mark in a specific subject and exam.
@@ -551,7 +588,7 @@ class Mjschool_Marks_Manage {
 		// Fetch grade.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$grade = $wpdb->get_var( $wpdb->prepare( "SELECT grade_comment FROM $table_grade WHERE %d BETWEEN mark_upto AND mark_from", $total_marks ) );
-		return $grade ?: '';
+		return $grade ? $grade : '';
 	}
 	/**
 	 * Retrieves the grade point for a student's mark in a specific subject and exam.
@@ -592,7 +629,7 @@ class Mjschool_Marks_Manage {
 		// Fetch grade.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$grade = $wpdb->get_var( $wpdb->prepare( "SELECT grade_point FROM $table_grade WHERE %d BETWEEN mark_upto AND mark_from", $total_marks ) );
-		return $grade ?: 0;
+		return $grade ? floatval( $grade ) : 0;
 	}
 	/**
 	 * Retrieves the grade ID based on a mark value.
@@ -605,6 +642,7 @@ class Mjschool_Marks_Manage {
 	public function mjschool_get_grade_id( $marks ) {
 		global $wpdb;
 		$tbl_grade = $wpdb->prefix . 'mjschool_grade';
+		$marks     = intval( $marks );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT grade_id FROM $tbl_grade WHERE %d BETWEEN mark_upto AND mark_from", $marks ) );
 		return $retrieve_result;
@@ -621,8 +659,11 @@ class Mjschool_Marks_Manage {
 	public function mjschool_export_marks( $exam_id, $class_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mjschool_marks';
+		$exam_id    = intval( $exam_id );
+		$class_id   = intval( $class_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		return $retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT marks_comment FROM $table_name WHERE exam_id = %d AND class_id= %d ", $exam_id, $class_id ) );
+		$retrieve_result = $wpdb->get_var( $wpdb->prepare( "SELECT marks_comment FROM $table_name WHERE exam_id = %d AND class_id = %d", $exam_id, $class_id ) );
+		return $retrieve_result;
 	}
 	/**
 	 * Retrieves the mark for a student in a specific subject, class, and exam, used primarily for export.

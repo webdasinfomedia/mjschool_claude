@@ -68,11 +68,12 @@ $module            = 'tax';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 // ------------------ Save tax. --------------------//
 if ( isset( $_POST['save_tax'] ) ) {
-	$nonce = $_POST['_wpnonce'];
+	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	if ( wp_verify_nonce( $nonce, 'save_tax_admin_nonce' ) ) {
-		if ( isset( $_POST['action'] ) && sanitize_text_field(wp_unslash($_POST['action'])) === 'edit' ) {
+		$post_action = isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '';
+		if ( $post_action === 'edit' ) {
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( $_GET['_wpnonce_action'], 'edit_action' ) ) {
-				$tax_id              = sanitize_text_field(wp_unslash($_REQUEST['tax_id']));
+				$tax_id              = isset( $_REQUEST['tax_id'] ) ? intval( wp_unslash( $_REQUEST['tax_id'] ) ) : 0;
 				$result              = $obj_tax->mjschool_insert_tax( wp_unslash($_POST) );
 				$custom_field_obj    = new Mjschool_Custome_Field();
 				$module              = 'tax';
@@ -268,7 +269,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 																		<?php
 																		if ( ! empty( $custom_field_value ) ) {
 																			?>
-																			<a target="" href="<?php echo esc_url(content_url() . '/uploads/school_assets/' . sanitize_file_name( $custom_field_value )); ?>" download="CustomFieldfile"><a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . sanitize_file_name( $custom_field_value ) ); ?>" download="CustomFieldfile">
+																			<a target="" href="<?php echo esc_url(content_url() . '/uploads/school_assets/' . sanitize_file_name( $custom_field_value )); ?>" download="CustomFieldfile"><a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . sanitize_file_name( $custom_field_value ) ) ); ?>" download="CustomFieldfile">
 																				<button class="btn btn-default view_document" type="button"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 																			</a>
 																			<?php
@@ -349,7 +350,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 						if ($user_access_add === '1' ) {
 							?>
 							<div class="mjschool-no-data-list-div">
-								<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_tax&tab=add_tax' ); ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_tax&tab=add_tax' ) ); ?>">
 									<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 								</a>
 								<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">

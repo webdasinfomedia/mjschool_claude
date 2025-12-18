@@ -131,7 +131,7 @@ $school_type=get_option( 'mjschool_custom_class' );
 								if ( ! empty( $syllabus ) ) {
 									?>
 									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-										<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . sanitize_file_name( $syllabus ) ); ?>" record_id="<?php echo esc_attr( $subject->subject ); ?>"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?> </a>
+										<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . sanitize_file_name( $syllabus ) ) ); ?>" record_id="<?php echo esc_attr( $subject->subject ); ?>"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?> </a>
 									</div>
 									<?php
 								}
@@ -338,7 +338,7 @@ $school_type=get_option( 'mjschool_custom_class' );
 		<div class="form-body mjschool-user-form">
 			<div class="row">
 				<div class="col-sm-6">
-					<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Subject', 'mjschool' ); } else { esc_html_e( 'Add Subject', 'mjschool' );}?>" name="subject" class="btn btn-success mjschool-save-btn mjschool-teacher-for-alert" />
+					<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Subject', 'mjschool' ); } else { esc_attr_e( 'Add Subject', 'mjschool' );}?>" name="subject" class="btn btn-success mjschool-save-btn mjschool-teacher-for-alert" />
 				</div>
 			</div>
 		</div>

@@ -148,7 +148,7 @@ if (isset($_REQUEST['action']) && sanitize_text_field(wp_unslash($_REQUEST['acti
                                 if (! empty($doc_data[0]->value) ) {
                                     ?>
                                     <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-                                        <a target="blank"  class="mjschool-status-read btn btn-default" href="<?php print esc_url(content_url() . '/uploads/school_assets/' . $doc_data[0]->value); ?>" record_id="<?php echo esc_attr($classdata->homework_id); ?>">
+                                        <a target="blank"  class="mjschool-status-read btn btn-default" href="<?php echo esc_url(content_url( '/uploads/school_assets/' . $doc_data[0]->value) ); ?>" record_id="<?php echo esc_attr($classdata->homework_id); ?>">
                                         <i class="fas fa-download"></i>&nbsp;&nbsp;<?php esc_html_e('Download', 'mjschool'); ?></a>
                                     </div>
                                     <?php

@@ -124,7 +124,7 @@ class MessageFormatter implements MessageFormatterInterface {
 						break;
 					case 'ts':
 					case 'date_iso_8601':
-						$result = \gmdate( 'c' );
+						$result = \date( 'c' );
 						break;
 					case 'date_common_log':
 						$result = \date( 'd/M/Y:H:i:s O' );

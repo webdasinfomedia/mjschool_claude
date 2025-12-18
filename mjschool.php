@@ -129,12 +129,6 @@ if ( ! defined( 'MJSCHOOL_NODATA_IMG' ) ) {
 	define( 'MJSCHOOL_NODATA_IMG', MJSCHOOL_ASSETS_URL . '/images/dashboard-icon/mjschool-nodata.png' );
 }
 
-// Database table prefix
-if ( ! defined( 'MJSCHOOL_DB_PREFIX' ) ) {
-	global $wpdb;
-	define( 'MJSCHOOL_DB_PREFIX', $wpdb->prefix . 'mjschool_' );
-}
-
 // Debug mode
 if ( ! defined( 'MJSCHOOL_DEBUG' ) ) {
 	define( 'MJSCHOOL_DEBUG', defined( 'WP_DEBUG' ) && WP_DEBUG );

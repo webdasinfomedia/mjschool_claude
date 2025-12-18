@@ -13,16 +13,20 @@
  */
 defined( 'ABSPATH' ) || exit;
 $edit = 0;
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
-	$edit    = 1;
-	$taxdata = $obj_tax->mjschool_get_single_tax( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['tax_id'])) ) ) );
+$request_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+if ( $request_action === 'edit' ) {
+    $edit = 1;
+    $tax_id_encrypted = isset( $_REQUEST['tax_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['tax_id'] ) ) : '';
+    if ( ! empty( $tax_id_encrypted ) ) {
+        $taxdata = $obj_tax->mjschool_get_single_tax( intval( mjschool_decrypt_id( $tax_id_encrypted ) ) );
+    }
 }
 ?>
 <div class="mjschool-panel-body"><!-------- Panel body. -------->
 	<form name="tax_form" action="" method="post" class="mjschool-form-horizontal" id="tax_form" enctype="multipart/form-data"><!------- form Start --------->
-		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; ?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
-		<input type="hidden" name="tax_id" value="<?php if ( $edit ) {  echo esc_attr( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['tax_id'] ) ) ) );  } ?>" />
+		<input type="hidden" name="tax_id" value="<?php if ( $edit && isset( $_REQUEST['tax_id'] ) ) { $tax_id_encrypted = sanitize_text_field( wp_unslash( $_REQUEST['tax_id'] ) ); echo esc_attr( intval( mjschool_decrypt_id( $tax_id_encrypted ) ) ); } ?>" />
 		<div class="header">
 			<h3 class="mjschool-first-header"><?php esc_html_e( 'Tax Information', 'mjschool' ); ?></h3>
 		</div>
@@ -31,7 +35,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 				<div class="col-md-6">
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
-							<input id="tax_title" class="form-control validate[required,custom[popup_category_validation]]" maxlength="30" type="text" value="<?php if ( $edit ) { echo esc_attr( $taxdata->tax_title ); } elseif ( isset( $_POST['tax_title'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_POST['tax_title'] ) ) ); } ?>" name="tax_title">
+							<input id="tax_title" class="form-control validate[required,custom[popup_category_validation]]" maxlength="30" type="text" value="<?php if ( $edit && isset( $taxdata->tax_title ) ) { echo esc_attr( $taxdata->tax_title ); } elseif ( isset( $_POST['tax_title'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_POST['tax_title'] ) ) ); } ?>" name="tax_title">
 							<label for="tax_title"><?php esc_html_e( 'Tax Name', 'mjschool' ); ?><span class="required">*</span></label>
 						</div>
 					</div>
@@ -39,7 +43,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 				<div class="col-md-6 mjschool-error-msg-left-margin">
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
-							<input id="tax" class="form-control validate[required,custom[number]] text-input" onkeypress="if(this.value.length==6) return false;" step="0.01" type="number" value="<?php if ( $edit ) { echo esc_attr( $taxdata->tax_value ); } elseif ( isset( $_POST['tax_value'] ) ) { echo esc_attr( floatval( wp_unslash( $_POST['tax_value'] ) ) ); } ?>" name="tax_value" min="0" max="100">
+							<input id="tax" class="form-control validate[required,custom[number]] text-input" onkeypress="if(this.value.length==6) return false;" step="0.01" type="number" value="<?php if ( $edit && isset( $taxdata->tax_value ) ) { echo esc_attr( $taxdata->tax_value ); } elseif ( isset( $_POST['tax_value'] ) ) { echo esc_attr( floatval( wp_unslash( $_POST['tax_value'] ) ) ); } ?>" name="tax_value" min="0" max="100">
 							<label  for="tax"><?php esc_html_e( 'Tax Value(%)', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						</div>
 					</div>

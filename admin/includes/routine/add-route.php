@@ -23,32 +23,35 @@
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
-$school_type = get_option( "mjschool_custom_class");
-$cust_class_room = get_option( "mjschool_class_room");
+$school_type     = get_option( 'mjschool_custom_class' );
+$cust_class_room = get_option( 'mjschool_class_room' );
 ?>
 <!------- Panel white. ------->
 <div class="mjschool-panel-white mjschool-margin-top-20px mjschool-padding-top-25px-res">
 	<?php
-	$edit = 0;
-	if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
-		$edit       = 1;
-		$route_data = mjschool_get_route_by_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['route_id'])) ) ) );
+	$edit       = 0;
+	$route_data = null;
+	if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) {
+		$edit = 1;
+		if ( isset( $_REQUEST['route_id'] ) ) {
+			$route_data = mjschool_get_route_by_id( intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['route_id'] ) ) ) ) );
+		}
 	}
 	?>
 
 	<div class="mjschool-panel-body"> <!------- Panel Body. ------->
 		<form name="route_form" action="" method="post" class="mjschool-form-horizontal" id="rout_form">
-			<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+			<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; ?>
 			<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 			<div class="form-body mjschool-user-form">
 				<div class="row">
 					<div class="col-md-6 input">
 						<label class="ml-1 mjschool-custom-top-label top" for="mjschool-class-list"><?php esc_html_e( 'Class', 'mjschool' ); ?><span class="required">*</span></label>
 						<?php
-						if ( $edit ) {
+						if ( $edit && $route_data ) {
 							$classval = $route_data->class_id;
 						} elseif ( isset( $_POST['class_id'] ) ) {
-							$classval = sanitize_text_field(wp_unslash($_POST['class_id']));
+							$classval = intval( $_POST['class_id'] );
 						} else {
 							$classval = '';
 						}
@@ -63,14 +66,14 @@ $cust_class_room = get_option( "mjschool_class_room");
 						</select>
 					</div>
 					<?php wp_nonce_field( 'save_root_admin_nonce' ); ?>
-					<?php if ( $school_type === 'school' ) {?>
+					<?php if ( $school_type === 'school' ) { ?>
 						<div class="col-md-6 input">
 							<label class="ml-1 mjschool-custom-top-label top" for="class_section"><?php esc_html_e( 'Class Section', 'mjschool' ); ?></label>
 							<?php
-							if ( $edit ) {
+							if ( $edit && $route_data ) {
 								$sectionval = $route_data->section_name;
 							} elseif ( isset( $_POST['class_section'] ) ) {
-								$sectionval = sanitize_text_field(wp_unslash($_POST['class_section']));
+								$sectionval = intval( $_POST['class_section'] );
 							} else {
 								$sectionval = '';
 							}
@@ -78,7 +81,7 @@ $cust_class_room = get_option( "mjschool_class_room");
 							<select name="class_section" class="form-control mjschool-max-width-100px mjschool-section-id-exam" id="class_section">
 								<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 								<?php
-								if ( $edit ) {
+								if ( $edit && $route_data ) {
 									foreach ( mjschool_get_class_sections( $route_data->class_id ) as $sectiondata ) {
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
@@ -92,17 +95,17 @@ $cust_class_room = get_option( "mjschool_class_room");
 					<div class="col-md-6 input">
 						<label class="ml-1 mjschool-custom-top-label top" for="mjschool-subject-list"><?php esc_html_e( 'Subject', 'mjschool' ); ?><span class="required">*</span></label>
 						<?php
-						if ( $edit ) {
+						if ( $edit && $route_data ) {
 							$subject_id = $route_data->subject_id;
 						} elseif ( isset( $_POST['subject_id'] ) ) {
-							$subject_id = sanitize_text_field(wp_unslash($_POST['subject_id']));
+							$subject_id = intval( $_POST['subject_id'] );
 						} else {
 							$subject_id = '';
 						}
 						?>
 						<select name="subject_id" id="mjschool-subject-list" class="form-control mjschool-change-subject validate[required] mjschool-max-width-100px">
 							<?php
-							if ( $edit ) {
+							if ( $edit && $route_data ) {
 								$subject = mjschool_get_subject_by_class_id( $route_data->class_id );
 								if ( ! empty( $subject ) ) {
 									foreach ( $subject as $ubject_data ) {
@@ -120,26 +123,30 @@ $cust_class_room = get_option( "mjschool_class_room");
 						</select>
 					</div>
 					<?php
-					if ( $school_type === 'university' )
-					{
-						if ( $cust_class_room === 1)
-						{	?>
+					if ( $school_type === 'university' ) {
+						if ( intval( $cust_class_room ) === 1 ) {
+							?>
 							<div class="col-md-6 input">
 								<label class="ml-1 mjschool-custom-top-label top" for="classroom_id"><?php esc_html_e( 'Class Room', 'mjschool' ); ?><span class="required">*</span></label>
-								<?php if ( $edit){ $room_id=$route_data->room_id; }elseif( isset( $_POST['room_id'] ) ){$room_id=sanitize_text_field(wp_unslash($_POST['room_id']));}else{$room_id='';}?>
+								<?php
+								if ( $edit && $route_data ) {
+									$room_id = $route_data->room_id;
+								} elseif ( isset( $_POST['room_id'] ) ) {
+									$room_id = intval( $_POST['room_id'] );
+								} else {
+									$room_id = '';
+								}
+								?>
 								<select name="room_id" id="classroom_id" class="form-control validate[required] mjschool-max-width-100px">
 									<option value=""><?php esc_html_e( 'Select class Room', 'mjschool' ); ?></option>
 									<?php
-									if( $edit )
-									{
-										$classroom = mjschool_get_assign_class_room_for_single_class($route_data->class_id);
-										if( ! empty( $classroom ) )
-										{
-											foreach ($classroom as $room_data)
-											{
-											?>
-												<option value="<?php echo esc_attr($room_data->room_id) ;?>" <?php selected($room_id, $room_data->room_id);  ?>><?php echo esc_html( $room_data->room_name);?></option>
-											<?php 
+									if ( $edit && $route_data ) {
+										$classroom = mjschool_get_assign_class_room_for_single_class( $route_data->class_id );
+										if ( ! empty( $classroom ) ) {
+											foreach ( $classroom as $room_data ) {
+												?>
+												<option value="<?php echo esc_attr( $room_data->room_id ); ?>" <?php selected( $room_id, $room_data->room_id ); ?>><?php echo esc_html( $room_data->room_name ); ?></option>
+												<?php
 											}
 										}
 									}
@@ -149,7 +156,7 @@ $cust_class_room = get_option( "mjschool_class_room");
 							<?php
 						}
 					}
-					if ( $edit ) {
+					if ( $edit && $route_data ) {
 						$teachval = mjschool_teacher_by_subject_id( $subject_id );
 						?>
 						<div class="col-md-6 input">
@@ -157,10 +164,12 @@ $cust_class_room = get_option( "mjschool_class_room");
 							<select name="subject_teacher" id="subject_teacher" class="form-control validate[required] teacher_list">
 								<option value=""><?php esc_html_e( 'Select Teacher', 'mjschool' ); ?></option>
 								<?php
-								foreach ( $teachval as $teacher ) {
-									?>
-									<option value="<?php echo esc_attr( $teacher ); ?>" <?php selected( $route_data->teacher_id, $teacher ); ?>><?php echo esc_html( mjschool_get_display_name( $teacher ) ); ?></option>
-									<?php
+								if ( is_array( $teachval ) ) {
+									foreach ( $teachval as $teacher ) {
+										?>
+										<option value="<?php echo esc_attr( $teacher ); ?>" <?php selected( $route_data->teacher_id, $teacher ); ?>><?php echo esc_html( mjschool_get_display_name( $teacher ) ); ?></option>
+										<?php
+									}
 								}
 								?>
 							</select>
@@ -177,10 +186,10 @@ $cust_class_room = get_option( "mjschool_class_room");
 					}
 					?>
 					<?php
-					if ( $edit ) {
+					if ( $edit && $route_data ) {
 						$day_key = $route_data->weekday;
 					} elseif ( isset( $_POST['weekday'] ) ) {
-						$day_key = sanitize_text_field(wp_unslash($_POST['weekday']));
+						$day_key = sanitize_text_field( wp_unslash( $_POST['weekday'] ) );
 					} else {
 						$day_key = '';
 					}
@@ -191,7 +200,7 @@ $cust_class_room = get_option( "mjschool_class_room");
 							<select name="weekday" class="form-control validate[required] mjschool-max-width-100px" id="weekday">
 								<?php
 								foreach ( mjschool_day_list() as $daykey => $dayname ) {
-									echo '<option  value="' . esc_attr( $daykey ) . '" ' . selected( $day_key, $daykey ) . '>' . esc_html( $dayname ) . '</option>';
+									echo '<option  value="' . esc_attr( $daykey ) . '" ' . selected( $day_key, $daykey, false ) . '>' . esc_html( $dayname ) . '</option>';
 								}
 								?>
 							</select>
@@ -203,25 +212,27 @@ $cust_class_room = get_option( "mjschool_class_room");
 							<select name="weekday[]" class="form-control validate[required] mjschool-max-width-100px mjschool-multiple-select-day" id="weekday" multiple="multiple">
 								<?php
 								foreach ( mjschool_day_list() as $daykey => $dayname ) {
-									echo '<option  value="' . esc_attr( $daykey ) . '" ' . selected( $day_key, $daykey ) . '>' . esc_html( $dayname ) . '</option>';
+									echo '<option  value="' . esc_attr( $daykey ) . '" ' . selected( $day_key, $daykey, false ) . '>' . esc_html( $dayname ) . '</option>';
 								}
 								?>
 							</select>
 						</div>
 						<?php
 					}
-					if ( $edit ) {
+					$start_time = '';
+					$end_time   = '';
+					if ( $edit && $route_data ) {
 						// ------------ Start time convert. --------------//
 						$stime      = explode( ':', $route_data->start_time );
-						$start_hour = $stime[0];
-						$start_min  = $stime[1];
+						$start_hour = isset( $stime[0] ) ? $stime[0] : '00';
+						$start_min  = isset( $stime[1] ) ? $stime[1] : '00';
 						$shours     = str_pad( $start_hour, 2, '0', STR_PAD_LEFT );
 						$smin       = str_pad( $start_min, 2, '0', STR_PAD_LEFT );
 						$start_time = $shours . ':' . $smin;
 						// -------------------- End time convert. -----------------//
 						$etime    = explode( ':', $route_data->end_time );
-						$end_hour = $etime[0];
-						$end_min  = $etime[1];
+						$end_hour = isset( $etime[0] ) ? $etime[0] : '00';
+						$end_min  = isset( $etime[1] ) ? $etime[1] : '00';
 						$ehours   = str_pad( $end_hour, 2, '0', STR_PAD_LEFT );
 						$emin     = str_pad( $end_min, 2, '0', STR_PAD_LEFT );
 						$end_time = $ehours . ':' . $emin;
@@ -230,7 +241,7 @@ $cust_class_room = get_option( "mjschool_class_room");
 					<div class="col-md-3">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input type="text" id="mjschool-start-timepicker" name="start_time" class="form-control validate[required] start_time" value="<?php if ( ! empty( $route_data->start_time ) ) { echo esc_attr( $start_time ); }?>" />
+								<input type="text" id="mjschool-start-timepicker" name="start_time" class="form-control validate[required] start_time" value="<?php echo esc_attr( $start_time ); ?>" />
 								<label for="mjschool-start-timepicker"><?php esc_html_e( 'Start Time', 'mjschool' ); ?><span class="required">*</span></label>
 							</div>
 						</div>
@@ -238,7 +249,7 @@ $cust_class_room = get_option( "mjschool_class_room");
 					<div class="col-md-3">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input type="text" id="mjschool-end-timepicker" name="end_time" class="form-control validate[required] end_time" value="<?php if ( ! empty( $route_data->end_time ) ) { echo esc_attr( $end_time ); } ?>" />
+								<input type="text" id="mjschool-end-timepicker" name="end_time" class="form-control validate[required] end_time" value="<?php echo esc_attr( $end_time ); ?>" />
 								<label for="mjschool-end-timepicker"><?php esc_html_e( 'End Time', 'mjschool' ); ?><span class="required">*</span></label>
 							</div>
 						</div>
@@ -314,7 +325,7 @@ $cust_class_room = get_option( "mjschool_class_room");
 			<div class="form-body">
 				<div class="row">
 					<div class="col-sm-6">
-						<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Route', 'mjschool' ); } else { esc_html_e( 'Add Route', 'mjschool' );} ?>" name="save_route" class="btn mjschool-save-btn" />
+						<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Route', 'mjschool' ); } else { esc_attr_e( 'Add Route', 'mjschool' ); } ?>" name="save_route" class="btn mjschool-save-btn" />
 					</div>
 				</div>
 			</div>

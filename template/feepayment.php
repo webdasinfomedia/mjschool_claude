@@ -1783,7 +1783,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 			} elseif ( $active_tab === 'view_fesspayment' ) {
 				$fees_pay_id                = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['idtest'])) ) );
 				$fees_detail_result         = mjschool_get_single_fees_payment_record( $fees_pay_id );
-				$fees_history_detail_result = mjschool_get_payment_history_by_feespayid( $fees_pay_id );
+				$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
 				$mjschool_obj_feespayment   = new Mjschool_Feespayment();
 				$format                     = get_option( 'mjschool_invoice_option' );
 				$invoice_number             = mjschool_generate_invoice_number( $fees_pay_id );

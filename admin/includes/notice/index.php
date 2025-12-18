@@ -63,8 +63,8 @@ if ( isset( $_POST['save_notice'] ) ) {
 	if ( wp_verify_nonce( $nonce, 'save_notice_admin_nonce' ) ) {
 		$start_date_raw = isset( $_REQUEST['start_date'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['start_date'] ) ) : '';
 		$end_date_raw   = isset( $_REQUEST['end_date'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['end_date'] ) ) : '';
-		$start_date     = gmdate( 'Y-m-d', strtotime( $start_date_raw ) );
-		$end_date       = gmdate( 'Y-m-d', strtotime( $end_date_raw ) );
+		$start_date     = date( 'Y-m-d', strtotime( $start_date_raw ) );
+		$end_date       = date( 'Y-m-d', strtotime( $end_date_raw ) );
 
 		if ( $start_date > $end_date ) {
 			?>

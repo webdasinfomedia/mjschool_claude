@@ -148,7 +148,7 @@ if ( isset( $_REQUEST['upload_csv_file'] ) ) {
 							'total_quentity' => intval( $csv['quantity'] ?? 0 ),
 							'description'    => sanitize_textarea_field( $csv['description'] ?? '' ),
 							'added_by'       => get_current_user_id(),
-							'added_date'     => gmdate( 'Y-m-d' ),
+							'added_date'     => date( 'Y-m-d' ),
 						);
 						$book_name = $bookdata['book_name'] ?? '';
 						// Rack Location.

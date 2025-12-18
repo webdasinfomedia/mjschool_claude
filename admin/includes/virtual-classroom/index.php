@@ -196,7 +196,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 													<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription mjschool-padding-left-0">
 														<a href="" class="show-popup" meeting_id="<?php echo esc_attr( $retrieved_data->meeting_id ); ?>"> 
 															<p class="mjschool-prescription-tag mjschool-padding-15px mjschool-margin-bottom-0px <?php echo esc_attr($color_class_css); ?>">	
-																<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/dashboard-icon/icons/white-icons/mjschool-virtual-class.png")?>" class="mjschool-massage-image">
+																<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/dashboard-icon/icons/white-icons/mjschool-virtual-class.png");?>" class="mjschool-massage-image">
 															</p>
 														</a>
 													</td>
@@ -247,7 +247,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 															<ul  class="mjschool_ul_style">
 																<li >
 																	<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
-																		<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/listpage-icon/mjschool-more.png")?>">
+																		<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/listpage-icon/mjschool-more.png");?>">
 																	</a>
 																	<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																		<li class="mjschool-float-left-width-100px">
@@ -257,13 +257,13 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 																			<a href="<?php echo esc_url( $retrieved_data->meeting_start_link ); ?>" class="mjschool-float-left-width-100px" target="_blank"><i class="fas fa-video-camera" aria-hidden="true"></i> <?php esc_html_e( 'Start Virtual Class', 'mjschool' ); ?> </a>
 																		</li>
 																		<li class="mjschool-float-left-width-100px">
-																			<a href="<?php echo esc_url( '?page=mjschool_virtual_classroom&tab=view_past_participle_list&action=view&meeting_uuid=' . esc_attr( $retrieved_data->uuid ) ); ?>"class="mjschool-float-left-width-100px"><i class="fas fa-eye" aria-hidden="true"></i> <?php esc_html_e( 'View Participant List', 'mjschool' ); ?> </a>
+																			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_virtual_classroom&tab=view_past_participle_list&action=view&meeting_uuid=' . rawurlencode( $retrieved_data->uuid ) ) ); ?>"class="mjschool-float-left-width-100px"><i class="fas fa-eye" aria-hidden="true"></i> <?php esc_html_e( 'View Participant List', 'mjschool' ); ?> </a>
 																		</li>
 																		<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																			<a href="<?php echo esc_url( '?page=mjschool_virtual_classroom&tab=edit_meeting&action=edit&meeting_id=' . esc_attr( $retrieved_data->meeting_id ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"></i> <?php esc_html_e( 'Edit', 'mjschool' ); ?> </a>
+																			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_virtual_classroom&tab=edit_meeting&action=edit&meeting_id=' . rawurlencode( $retrieved_data->meeting_id ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"></i> <?php esc_html_e( 'Edit', 'mjschool' ); ?> </a>
 																		</li>
 																		<li class="mjschool-float-left-width-100px">
-																			<a href="<?php echo esc_url( '?page=mjschool_virtual_classroom&tab=meeting_list&action=delete&meeting_id=' . esc_attr( $retrieved_data->meeting_id ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
+																			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_virtual_classroom&tab=meeting_list&action=delete&meeting_id=' . rawurlencode( $retrieved_data->meeting_id ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
 																		</li>
 																	</ul>
 																</li>
@@ -292,7 +292,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 						?>
 						<div class="mjschool-no-data-list-div pt-2">
 							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_route&tab=addroute' ) ); ?>">
-								<img class="col-md-12 mjschool-no-img-width-100px rtl_float_remove" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
+								<img class="col-md-12 mjschool-no-img-width-100px rtl_float_remove" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ); ?>">
 							</a>
 							<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
 								<label class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?> </label>

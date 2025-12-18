@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
 global $wpdb;
 $fees_pay_id                = intval(mjschool_decrypt_id( wp_unslash($_REQUEST['idtest']) ) );
 $fees_detail_result         = mjschool_get_single_fees_payment_record($fees_pay_id);
-$fees_history_detail_result = mjschool_get_payment_history_by_feespayid($fees_pay_id);
+$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id($fees_pay_id);
 $mjschool_obj_feespayment   = new Mjschool_Feespayment();
 $format                     = get_option( 'mjschool_invoice_option' );
 $table                      = $wpdb->prefix . 'mjschool_fees_payment';

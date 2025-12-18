@@ -583,19 +583,201 @@ $subject_id = isset( $_REQUEST['subject_id'] ) ? intval( wp_unslash( $_REQUEST['
 						?>
 						<div class="mjschool-panel-body clearfix mjschool-margin-top-20px">
 							<form method="post" class="form-inline" id="marks_form" enctype="multipart/form-data">
-								<input type="hidden" name="security" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_manage_marks_nonce' ) ); ?>">
-								<input type="hidden" name="exam_id" value="<?php echo esc_attr( $exam_id ); ?>" />
-								<input type="hidden" name="subject_id" value="<?php echo esc_attr( $subject_id ); ?>" />
-								<input type="hidden" name="class_id" value="<?php echo esc_attr( $class_id ); ?>" />
-								<input type="hidden" name="section_id" value="<?php echo isset( $_REQUEST['class_section'] ) ? esc_attr( intval( wp_unslash( $_REQUEST['class_section'] ) ) ) : ''; ?>" />
-								<input type="hidden" name="class_section" value="<?php echo isset( $_REQUEST['class_section'] ) ? esc_attr( intval( wp_unslash( $_REQUEST['class_section'] ) ) ) : ''; ?>" />
-								<input type="hidden" name="contributions" value="<?php echo esc_attr( $contributions ); ?>" />
-								<!-- Rest of form content continues... -->
-								<?php if ( ! empty( $student ) ) { ?>
-									<div class="col-sm-6 mjschool-margin-top-15px">
-										<input type="submit" class="btn btn-success mjschool-save-btn" name="save_all_marks" value="<?php esc_attr_e( 'Update All Marks', 'mjschool' ); ?>">
+								<input type="hidden" name="exam_id" value="<?php echo esc_attr($exam_id); ?>" />
+								<input type="hidden" name="subject_id" value="<?php echo esc_attr($subject_id); ?>" />
+								<input type="hidden" name="class_id" value="<?php echo esc_attr($class_id); ?>" />
+								<input type="hidden" name="section_id" value="<?php if( isset( $_REQUEST['class_section'] ) ){ echo esc_attr($_REQUEST['class_section']); }?>" />
+								<input type="hidden" name="class_section" value="<?php if( isset( $_REQUEST['class_section'] ) ){ echo esc_attr($_REQUEST['class_section']); }?>" />
+								<input type="hidden" name="contributions" value="<?php echo esc_attr($contributions); ?>" />
+								<?php
+								if ( ! empty( $student ) ) {
+									?>
+									<div class="form-body mjschool-user-form mjschool-margin-top-20px mjschool-padding-top-25px-res">
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-group input">
+													<div class="col-md-12 form-control mjschool-res-rtl-height-50px">
+														<label class="mjschool-custom-control-label mjschool-custom-top-label ml-2 mjschool-margin-left-30px"><?php esc_html_e( 'Select CSV file', 'mjschool' ); ?></label>
+														<div class="col-sm-12">
+															<input type="file" name="csv_file" id="csv_file" class="d-inline form-control file mjschool-file-validation" />
+														</div>
+													</div>
+												</div>
+											</div>
+											<label class="mjschool-padding-top-25px-res whitespace_initial">
+												<?php esc_html_e( 'CSV file Must have headers as follows', 'mjschool' ); ?> : <br>
+												<?php echo esc_attr__( '1) Not contribution exam header', 'mjschool' ) . ' => ' . esc_attr( 'roll_no, name, marks, comment', 'mjschool' ); ?><br>
+												<?php echo esc_attr__( '2 ) Contribution exam header', 'mjschool' ) . ' => ' . esc_attr( 'roll_no, name, class_marks_0, class_marks_1, comment', 'mjschool' ); ?>
+											</label>
+										</div>
 									</div>
-								<?php } ?>
+									<input type="submit" name="upload_csv_file" value="<?php esc_html_e( 'Fill data from CSV File', 'mjschool' ); ?>" class="fill_data btn mjschool-save-btn_1 mjschool-margin-top-20px" />
+									<br/>
+									<p></p>
+									<div class="table-responsive">
+										<table class="table col-md-12">
+											<tr>
+												<th class="mjschool-multiple-subject-mark"><?php esc_html_e( 'Roll No.', 'mjschool' ); ?></th>
+												<th class="mjschool-multiple-subject-mark"><?php esc_html_e( 'Name', 'mjschool' ); ?></th>
+												<?php
+												if ($contributions == 'yes' && !empty($contributions_data_array ) ) {
+													foreach ($contributions_data_array as $con_id => $con_value) {
+														?>
+														<th class="mjschool-multiple-subject-mark"><?php esc_html(  '' . $con_value['label'] . ' ( ' . $con_value['mark'] . ' )' ); ?></th>
+														<?php
+													}
+													?>
+													<?php
+												} else {
+													if ( $school_type == 'university' )
+													{?>
+														<th class="mjschool-multiple-subject-mark"><?php esc_html_e( 'Mark Obtained( '.$sub_max_marks.' )', 'mjschool' ); //phpcs:ignore ?></th>
+														<?php		
+													}
+													else
+													{
+														?>
+														<th class="mjschool-multiple-subject-mark"><?php esc_html_e( 'Mark Obtained(100)', 'mjschool' ); ?></th>
+														<?php
+													}
+												}
+												?>
+												<th class="mjschool-multiple-subject-mark"><?php esc_html_e( 'Comment', 'mjschool' ); ?></th>
+												<th>&nbsp;</th>
+											</tr>
+											<?php
+											if ( isset( $_REQUEST['upload_csv_file'] ) ) {
+												if ( isset( $_FILES['csv_file'] ) ) {
+													$errors    = array();
+													$file_name = $_FILES['csv_file']['name'];
+													$file_size = $_FILES['csv_file']['size'];
+													$file_tmp  = $_FILES['csv_file']['tmp_name'];
+													$file_type = $_FILES['csv_file']['type'];
+													$value     = explode( '.', $_FILES['csv_file']['name']);
+													$file_ext  = strtolower(array_pop($value ) );
+													$extensions = array( 'csv' );
+													$upload_dir = wp_upload_dir();
+													if ($file_size > 2097152 ) {
+														$errors[] = 'File size limit : 2 MB';
+														$msg      = '2';
+													}
+													if (empty($file_name) && empty($file_size ) ) {
+														$errors[] = 'Please enter CSV File.';
+														$msg      = '5';
+													}
+													if (empty($errors) == true) {
+														$rows   = array_map( 'str_getcsv', file($file_tmp ) );
+														$header = array_map( 'strtolower', array_shift($rows ) );
+														$csv    = array();
+														foreach ($rows as $row) {
+															$csv[] = array_combine($header, $row);
+														}
+													} else {
+														$nonce = wp_create_nonce( 'mjschool_exam_result_tab' );
+														wp_redirect(admin_url() . "admin.php?page=mjschool_result&_wpnonce=".esc_attr( $nonce )."&message={$msg}");
+														die();
+													}
+												}
+											}
+											function mjschool_get_csv_rowid($array, $roll_no)
+											{
+												if ( ! empty( $array ) ) {
+													$marks_array = array();
+													foreach ($array as $key => $value) {
+														if ($roll_no == $value['roll_no']) {
+															return $key;
+														}
+													}
+													return null;
+												}
+											}
+											function mjschool_arraymap($element)
+											{
+												return $element['roll_no'];
+											}
+											if (!function_exists( 'mjschool_array_column' ) ) {
+												function mjschool_array_column($array, $column_name)
+												{
+													return array_map( 'mjschool_arraymap', $array, $column_name);
+												}
+											}
+											$i = 0;
+											foreach ($student as $user) {
+												$mark_detail = $mjschool_obj_marks->mjschool_subject_makrs_detail_byuser($exam_id, $class_id, $subject_id, $user->ID);
+												$button_text = esc_attr__( 'Add', 'mjschool' );
+												if ( isset( $csv ) ) {
+													$key = mjschool_get_csv_rowid($csv, $user->roll_id);
+												}
+												if ($mark_detail) {
+													$mark_id       = $mark_detail->mark_id;
+													$marks         = $mark_detail->marks;
+													$class_marks   = json_decode($mark_detail->class_marks);
+													$marks_comment = $mark_detail->marks_comment;
+													$button_text   = esc_attr__( 'Update', 'mjschool' );
+													$mjschool_action = 'edit';
+												} else {
+													$marks         = 0;
+													$class_marks   = 0;
+													$attendance    = 0;
+													$marks_comment = '';
+													$mjschool_action = 'save';
+													$mark_id       = '0';
+												}
+												echo '<tr>';
+												echo '<td><span ' . (isset($csv) && !(isset($key ) ) ? '>' : '>' ) . esc_html( $user->roll_id) . '</span></td>';
+												echo '<td><span>' . esc_html( $user->first_name) . ' ' . esc_html( $user->last_name) . '</span></td>';
+												if ($contributions == 'yes' ) {
+													foreach ($contributions_data_array as $con_id => $con_value) {
+														echo '<td id="mjschool-position-relative">';
+														echo '<div class="form-group input mjschool-width-60px mjschool-margin-bottom-0px">';
+														echo '<div class="col-md-12 form-control">';
+														if ( $class_marks == 0 ) {
+															echo '<input type="text" name="class_marks_[' . esc_attr( $user->ID ) . '][' . esc_attr( $con_id ) . ']" placeholder=' . esc_attr__( 'Mark', 'mjschool' ) . ' value="' . ( isset( $key ) ? esc_attr( $csv[ $key ] )[ 'class_marks_' . esc_attr( $con_id ) ] : esc_attr( $class_marks ) ) . '" class="form-control validate[required,custom[onlyNumberSp],min[0],max[' . esc_attr( $con_value['mark'] ) . ']] text-input">';
+														} else {
+															echo '<input type="text" name="class_marks_[' . esc_attr( $user->ID ) . '][' . esc_attr( $con_id ) . ']" placeholder=' . esc_attr__( 'Mark', 'mjschool' ) . ' value="' . ( isset( $key ) ? esc_attr( $csv[ $key ] )[ 'class_marks_' . esc_attr( $con_id ) ] : esc_attr( $class_marks[ $con_id ] ) ) . '" class="form-control validate[required,custom[onlyNumberSp],min[0],max[' . esc_attr( $con_value['mark'] ) . ']] text-input">';
+														}
+														echo '</div>';
+														echo '</div>';
+														echo '</td>';
+													}
+												} else {
+													echo '<td id="mjschool-position-relative">';
+													echo '<div class="form-group input mjschool-margin-bottom-0px">';
+													echo '<div class="col-md-12 form-control">';
+													echo '<input type="text" name="marks_' . esc_attr( $user->ID ) . '" placeholder="' . esc_attr__( 'Mark', 'mjschool' ) . '" value="' . ( isset( $key ) && isset( $csv[ $key ]['marks'] ) ? esc_attr( $csv[ $key ]['marks'] ) : esc_attr( $marks ) ) . '" class="form-control validate[required,custom[phone_number],max['.esc_attr($sub_max_marks).'],minSize[0],maxSize[5]] text-input">';
+													echo '</div>';
+													echo '</div>';
+													echo '</td>';
+												}
+												echo '<td>';
+												echo '<div class="form-group input mjschool-margin-bottom-0px">';
+												echo '<div class="col-md-12 form-control">';
+												echo '<input type="text" name="comment_' . esc_attr($user->ID) . '" placeholder=' . esc_attr__( 'Comment', 'mjschool' ) . ' value="' . (isset($key) && isset($csv[$key]['comment']) ? esc_attr($csv[$key]['comment']) : esc_attr($marks_comment ) ) . '" maxlength="50" class="form-control">';
+												echo '</div>';
+												echo '</div>';
+												echo '</td>';
+												echo '<td>';
+												echo '<input type="hidden" name="' . esc_attr($mjschool_action) . '_' . esc_attr($user->ID) . '" value="' . esc_attr($marks_comment) . '" class="form-control">';
+												echo '<input type="hidden" name="mark_id_' . esc_attr($user->ID) . '" value="' . esc_attr($mark_id) . '">';
+												echo '<button type="submit" name="add_mark" value="' . esc_attr($user->ID) . '" class="btn-success mjschool-save-btn p-2 font_size_12px_res">' . esc_html( $button_text) . '</button>';
+												echo '</td>';
+												echo '</tr>';
+											}
+											?>
+										</table>
+									</div>
+									<div class="col-sm-6 mjschool-margin-top-15px">
+										<input type="submit" class="btn btn-success mjschool-save-btn" name="save_all_marks" value="<?php esc_html_e( 'Update All Marks', 'mjschool' ); ?>">
+									</div>
+									<?php
+								} else {
+									?>
+									<div>
+										<h4><?php echo esc_attr__( 'No Student Available In This Class.', 'mjschool' ); ?></h3>
+									</div>
+									<?php
+								}
+								?>
 							</form>
 						</div>
 						<?php

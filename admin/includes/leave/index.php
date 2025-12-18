@@ -155,7 +155,7 @@ $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_fie
 					header( 'Pragma: public' );       // required.
 					header( 'Expires: 0' );           // no cache.
 					header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-					header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+					header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 					header( 'Cache-Control: private', false );
 					header( 'Content-Type: ' . $mime );
 					header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
@@ -278,7 +278,7 @@ $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_fie
 												<div class="col-md-6 mb-2">
 													<div class="form-group input">
 														<div class="col-md-12 form-control">
-															<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) ) : esc_attr( gmdate( 'Y-m-d' ) ); ?>" readonly>
+															<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
 															<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 														</div>
 													</div>
@@ -286,7 +286,7 @@ $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_fie
 												<div class="col-md-6 mb-2">
 													<div class="form-group input">
 														<div class="col-md-12 form-control">
-															<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) ) : esc_attr( gmdate( 'Y-m-d' ) ); ?>" readonly>
+															<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
 															<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 														</div>
 													</div>

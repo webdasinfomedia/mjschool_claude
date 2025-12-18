@@ -324,7 +324,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																		<?php
 																		if ( ! empty( $custom_field_value ) ) {
 																			?>
-																			<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+																			<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
 																				<button class="btn btn-default view_document" type="button"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 																			</a>
 																			<?php
@@ -366,14 +366,14 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																		if ($user_access_edit === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																				<a href="?page=mjschool_transport&tab=addtransport&action=edit&transport_id=<?php echo esc_attr( mjschool_encrypt_id($retrieved_data->transport_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) );?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_transport&tab=addtransport&action=edit&transport_id='.rawurlencode( mjschool_encrypt_id($retrieved_data->transport_id ) ).'&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) );?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																			</li>
 																			<?php
 																		}
 																		if ($user_access_delete === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a href="?page=mjschool_transport&tab=transport&action=delete&transport_id=<?php echo esc_attr( mjschool_encrypt_id($retrieved_data->transport_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) );?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_transport&tab=transport&action=delete&transport_id='.rawurlencode( mjschool_encrypt_id($retrieved_data->transport_id ) ).'&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ) );?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
 																					<i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?>
 																				</a>
 																			</li>
@@ -413,7 +413,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 							?>
 							<div class="mjschool-no-data-list-div">
 								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_transport&tab=addtransport' ) ); ?>">
-									<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
+									<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ); ?>">
 								</a>
 								<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
 									<label class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?> </label>

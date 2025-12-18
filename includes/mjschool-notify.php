@@ -34,12 +34,12 @@ $pfData  = $_POST;
 $results = $_POST;
 // Strip any slashes in data.
 foreach ( $pfData as $key => $val ) {
-	$pfData[ $key ] = stripslashes( $val );
+	$pfData[ $key ] = wp_unslash( $val );
 }
 // Convert posted variables to a string.
 foreach ( $pfData as $key => $val ) {
 	if ( $key !== 'signature' ) {
-		$pfParamString .= $key . '=' . urlencode( $val ) . '&';
+		$pfParamString .= sanitize_key($key) . '=' . urlencode( sanitize_text_field($val) ) . '&';
 	} else {
 		break;
 	}
@@ -53,17 +53,18 @@ $pfParamString = substr( $pfParamString, 0, -1 );
  *
  * @param array $pfData The POST data array from PayFast.
  * @param string $pfParamString The data string used for local signature generation.
+ * @param string|null $pfPassphrase Optional passphrase for signature generation.
  * @return bool True if signatures match, false otherwise.
  */
 function mjschool_pf_valid_signature_payfast( $pfData, $pfParamString, $pfPassphrase = null ) {
 	// Calculate security signature.
 	if ( $pfPassphrase === null ) {
-		$tempParamStrings = $pfParamString;
+		$tempParamString = $pfParamString;
 	} else {
 		$tempParamString = $pfParamString . '&passphrase=' . urlencode( $pfPassphrase );
 	}
 	$signature = md5( $tempParamString );
-	return ( $pfData['signature'] = $signature );
+	return ( $pfData['signature'] === $signature );
 }
 /**
  * Checks if the request is coming from a valid PayFast IP address.
@@ -87,7 +88,13 @@ function mjschool_pf_valid_ip_payfast() {
 	}
 	// Remove duplicates.
 	$validIps   = array_unique( $validIps );
-	$referrerIp = gethostbyname( parse_url( $_SERVER['HTTP_REFERER'] )['host'] );
+	$referrerIp = '';
+	if (isset($_SERVER['HTTP_REFERER'])) {
+		$parsed = parse_url( sanitize_url($_SERVER['HTTP_REFERER']) );
+		if (isset($parsed['host'])) {
+			$referrerIp = gethostbyname( $parsed['host'] );
+		}
+	}
 	if ( in_array( $referrerIp, $validIps, true ) ) {
 		return true;
 	}
@@ -96,7 +103,7 @@ function mjschool_pf_valid_ip_payfast() {
 /**
  * Validates the payment data (status and amount).
  *
- * @param float $amount_gross The amount paid by the user.
+ * @param float $cartTotal The expected cart total.
  * @param array $pfData The POST data array from PayFast.
  * @return bool True if valid, false otherwise.
  */
@@ -111,6 +118,7 @@ function mjschool_pf_valid_payment_data( $cartTotal, $pfData ) {
  *
  * @param string $pfParamString The parameter string (excluding signature and passphrase).
  * @param string $pfHost The PayFast host URL.
+ * @param string|null $pfProxy Optional proxy URL.
  * @return bool True if confirmed as 'VALID', false otherwise.
  */
 function mjschool_pf_valid_server_confirmation( $pfParamString, $pfHost = 'sandbox.payfast.co.za', $pfProxy = null ) {
@@ -155,21 +163,21 @@ if ( $check1 && $check2 && $check3 && $check4 ) {
 		require_once $root . '/wp-config.php';
 	}
 	$obj_fees_payment          = new Mjschool_Feespayment();
-	$feedata['fees_pay_id']    = $pfData['m_payment_id'];
-	$feedata['amount']         = $pfData['amount_gross'];
+	$feedata['fees_pay_id']    = sanitize_text_field($pfData['m_payment_id']);
+	$feedata['amount']         = floatval($pfData['amount_gross']);
 	$feedata['payment_method'] = 'PayFast';
-	$feedata['trasaction_id']  = $pfData['pf_payment_id'];
-	$feedata['created_by']     = $pfData['custom_int1'];
+	$feedata['trasaction_id']  = sanitize_text_field($pfData['pf_payment_id']);
+	$feedata['created_by']     = intval($pfData['custom_int1']);
 	$feedata['paid_by_date']   = date( 'Y-m-d' );
-	$feedata['email_address']  = $pfData['email_address'];
-	$feedata['name_first']     = $pfData['name_first'];
-	$feedata['name_last']      = $pfData['name_last'];
+	$feedata['email_address']  = sanitize_email($pfData['email_address']);
+	$feedata['name_first']     = sanitize_text_field($pfData['name_first']);
+	$feedata['name_last']      = sanitize_text_field($pfData['name_last']);
 	$results                   = $obj_fees_payment->mjschool_add_feespayment_history_For_payfast( $feedata );
 	if ( $results ) {
-		wp_redirect( home_url() . '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success&payment=paystack_success' );
+		wp_safe_redirect( (home_url('?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success&payment=paystack_success')) );
 		die();
 	} else {
-		wp_redirect( home_url() . '?dashboard=mjschool_user&page=feepayment&action=cancel' );
+		wp_safe_redirect( (home_url('?dashboard=mjschool_user&page=feepayment&action=cancel')) );
 		die();
 	}
 }

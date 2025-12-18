@@ -46,7 +46,7 @@ class Mjschool_Custome_Field {
 		}
 		if ( $custome_data['action'] === 'edit' ) {
 			$custom_field_data['updated_by'] = get_current_user_id();
-			$custom_field_data['updated_at'] = gmdate( 'Y-m-d H:i:s' );
+			$custom_field_data['updated_at'] = date( 'Y-m-d H:i:s' );
 			if ( isset( $custome_data['show_in_table'] ) && $custome_data['show_in_table'] != '' ) {
 				$custom_field_data['show_in_table'] = $custome_data['show_in_table'];
 			}
@@ -73,9 +73,9 @@ class Mjschool_Custome_Field {
 					$custom_field_dropdown_data['custom_fields_id'] = $custom_field_id;
 					$custom_field_dropdown_data['option_label']     = $label;
 					$custom_field_dropdown_data['created_by']       = get_current_user_id();
-					$custom_field_dropdown_data['created_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_dropdown_data['created_at']       = date( 'Y-m-d H:i:s' );
 					$custom_field_dropdown_data['updated_by']       = get_current_user_id();
-					$custom_field_dropdown_data['updated_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_dropdown_data['updated_at']       = date( 'Y-m-d H:i:s' );
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 					$insert_custom_field_dropdown_data = $wpdb->insert( $wpnc_custom_field_dropdown_metas, $custom_field_dropdown_data );
 				}
@@ -97,9 +97,9 @@ class Mjschool_Custome_Field {
 					$custom_field_checkbox_data['custom_fields_id'] = $custom_field_id;
 					$custom_field_checkbox_data['option_label']     = $label;
 					$custom_field_checkbox_data['created_by']       = get_current_user_id();
-					$custom_field_checkbox_data['created_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_checkbox_data['created_at']       = date( 'Y-m-d H:i:s' );
 					$custom_field_checkbox_data['updated_by']       = get_current_user_id();
-					$custom_field_checkbox_data['updated_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_checkbox_data['updated_at']       = date( 'Y-m-d H:i:s' );
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 					$insert_custom_field_checkbox_data = $wpdb->insert( $wpnc_custom_field_dropdown_metas, $custom_field_checkbox_data );
 				}
@@ -121,9 +121,9 @@ class Mjschool_Custome_Field {
 					$custom_field_radio_data['custom_fields_id'] = $custom_field_id;
 					$custom_field_radio_data['option_label']     = $label;
 					$custom_field_radio_data['created_by']       = get_current_user_id();
-					$custom_field_radio_data['created_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_radio_data['created_at']       = date( 'Y-m-d H:i:s' );
 					$custom_field_radio_data['updated_by']       = get_current_user_id();
-					$custom_field_radio_data['updated_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_radio_data['updated_at']       = date( 'Y-m-d H:i:s' );
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 					$insert_custom_field_radio_data = $wpdb->insert( $wpnc_custom_field_dropdown_metas, $custom_field_radio_data );
 				}
@@ -133,7 +133,7 @@ class Mjschool_Custome_Field {
 			$custom_field_data['form_name']  = sanitize_text_field( $custome_data['form_name'] );
 			$custom_field_data['field_type'] = sanitize_text_field( $custome_data['field_type'] );
 			$custom_field_data['created_by'] = get_current_user_id();
-			$custom_field_data['created_at'] = gmdate( 'Y-m-d H:i:s' );
+			$custom_field_data['created_at'] = date( 'Y-m-d H:i:s' );
 			if ( isset( $custome_data['show_in_table'] ) && $custome_data['show_in_table'] != '' ) {
 				$custom_field_data['show_in_table'] = sanitize_text_field( $custome_data['show_in_table'] );
 			}
@@ -155,9 +155,9 @@ class Mjschool_Custome_Field {
 					$custom_field_dropdown_data['custom_fields_id'] = $custom_field_id;
 					$custom_field_dropdown_data['option_label']     = $label;
 					$custom_field_dropdown_data['created_by']       = get_current_user_id();
-					$custom_field_dropdown_data['created_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_dropdown_data['created_at']       = date( 'Y-m-d H:i:s' );
 					$custom_field_dropdown_data['updated_by']       = get_current_user_id();
-					$custom_field_dropdown_data['updated_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_dropdown_data['updated_at']       = date( 'Y-m-d H:i:s' );
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 					$insert_custom_field_dropdown_data = $wpdb->insert( $wpnc_custom_field_dropdown_metas, $custom_field_dropdown_data );
 				}
@@ -174,9 +174,9 @@ class Mjschool_Custome_Field {
 					$custom_field_checkbox_data['custom_fields_id'] = $custom_field_id;
 					$custom_field_checkbox_data['option_label']     = $label;
 					$custom_field_checkbox_data['created_by']       = get_current_user_id();
-					$custom_field_checkbox_data['created_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_checkbox_data['created_at']       = date( 'Y-m-d H:i:s' );
 					$custom_field_checkbox_data['updated_by']       = get_current_user_id();
-					$custom_field_checkbox_data['updated_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_checkbox_data['updated_at']       = date( 'Y-m-d H:i:s' );
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 					$insert_custom_field_checkbox_data = $wpdb->insert( $wpnc_custom_field_dropdown_metas, $custom_field_checkbox_data );
 				}
@@ -193,9 +193,9 @@ class Mjschool_Custome_Field {
 					$custom_field_radio_data['custom_fields_id'] = $custom_field_id;
 					$custom_field_radio_data['option_label']     = $label;
 					$custom_field_radio_data['created_by']       = get_current_user_id();
-					$custom_field_radio_data['created_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_radio_data['created_at']       = date( 'Y-m-d H:i:s' );
 					$custom_field_radio_data['updated_by']       = get_current_user_id();
-					$custom_field_radio_data['updated_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_field_radio_data['updated_at']       = date( 'Y-m-d H:i:s' );
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 					$insert_custom_field_radio_data = $wpdb->insert( $wpnc_custom_field_dropdown_metas, $custom_field_radio_data );
 				}
@@ -436,8 +436,8 @@ class Mjschool_Custome_Field {
 				} else {
 					$custom_meta_data['field_value'] = sanitize_text_field( $value );
 				}
-				$custom_meta_data['created_at'] = gmdate( 'Y-m-d H:i:s' );
-				$custom_meta_data['updated_at'] = gmdate( 'Y-m-d H:i:s' );
+				$custom_meta_data['created_at'] = date( 'Y-m-d H:i:s' );
+				$custom_meta_data['updated_at'] = date( 'Y-m-d H:i:s' );
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 				$insert_custom_meta_data = $wpdb->insert( $wpnc_custom_field_metas, $custom_meta_data );
 			}
@@ -497,7 +497,7 @@ class Mjschool_Custome_Field {
 					} else {
 						$field_value = sanitize_text_field( $value );
 					}
-					$updated_at = gmdate( 'Y-m-d H:i:s' );
+					$updated_at = date( 'Y-m-d H:i:s' );
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 					$update_custom_meta_data = $wpdb->query( $wpdb->prepare( "UPDATE $wpnc_custom_field_metas SET field_value = %s, updated_at = %s WHERE module = %s AND module_record_id = %d AND custom_fields_id = %d", $field_value, $updated_at, $module, intval( $module_record_id ), $key_int ) );
 				} else {
@@ -510,8 +510,8 @@ class Mjschool_Custome_Field {
 					} else {
 						$custom_meta_data['field_value'] = sanitize_text_field( $value );
 					}
-					$custom_meta_data['created_at'] = gmdate( 'Y-m-d H:i:s' );
-					$custom_meta_data['updated_at'] = gmdate( 'Y-m-d H:i:s' );
+					$custom_meta_data['created_at'] = date( 'Y-m-d H:i:s' );
+					$custom_meta_data['updated_at'] = date( 'Y-m-d H:i:s' );
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 					$update_custom_meta_data = $wpdb->insert( $wpnc_custom_field_metas, $custom_meta_data );
 				}
@@ -901,7 +901,7 @@ class Mjschool_Custome_Field {
 							<div class="col-md-6">
 								<div class="form-group input">
 									<div class="col-md-12 form-control">
-										<input class="form-control date_picker custom_datepicker <?php echo esc_attr( $datepicker_class ); ?> hideattar<?php echo esc_attr( $custom_field->form_name ); ?> <?php if ( ! empty( $required ) ) { ?> validate[<?php echo esc_attr( $required ); ?>] <?php } ?>" type="text" name="custom[<?php echo esc_attr( $custom_field->id ); ?>]" <?php if ( $edit ) { ?> value="<?php if ( ! empty( $custom_field_value ) ) { echo esc_attr( mjschool_get_date_in_input_box( $custom_field_value ) ); } ?>" <?php } else { ?> value="<?php echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); ?><?php } ?>" id="<?php echo esc_attr( $custom_field->id ); ?>" label="<?php echo esc_attr( $custom_field->field_label ); ?>">
+										<input class="form-control date_picker custom_datepicker <?php echo esc_attr( $datepicker_class ); ?> hideattar<?php echo esc_attr( $custom_field->form_name ); ?> <?php if ( ! empty( $required ) ) { ?> validate[<?php echo esc_attr( $required ); ?>] <?php } ?>" type="text" name="custom[<?php echo esc_attr( $custom_field->id ); ?>]" <?php if ( $edit ) { ?> value="<?php if ( ! empty( $custom_field_value ) ) { echo esc_attr( mjschool_get_date_in_input_box( $custom_field_value ) ); } ?>" <?php } else { ?> value="<?php echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); ?><?php } ?>" id="<?php echo esc_attr( $custom_field->id ); ?>" label="<?php echo esc_attr( $custom_field->field_label ); ?>">
 										<label class="date_label"><?php echo esc_html( $custom_field->field_label ); ?><span class="required red"><?php echo esc_html( $red ); ?></span></label>
 									</div>
 								</div>
@@ -1085,8 +1085,8 @@ class Mjschool_Custome_Field {
 					$custom_meta_data['module_record_id'] = intval( $module_id );
 					$custom_meta_data['custom_fields_id'] = intval( $key );
 					$custom_meta_data['field_value']      = sanitize_text_field( $custom_field_file_value );
-					$custom_meta_data['created_at']       = gmdate( 'Y-m-d H:i:s' );
-					$custom_meta_data['updated_at']       = gmdate( 'Y-m-d H:i:s' );
+					$custom_meta_data['created_at']       = date( 'Y-m-d H:i:s' );
+					$custom_meta_data['updated_at']       = date( 'Y-m-d H:i:s' );
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 					$insert_custom_meta_data = $wpdb->insert( $wpnc_custom_field_metas, $custom_meta_data );
 				}
@@ -1139,7 +1139,7 @@ class Mjschool_Custome_Field {
 							$get_file_name           = $custom_file_array[ $key ]['name'];
 							$custom_field_file_value = mjschool_load_documets_new( $value, $value, $get_file_name );
 							// Add File in Custom Field Meta.//
-							$updated_at = gmdate( 'Y-m-d H:i:s' );
+							$updated_at = date( 'Y-m-d H:i:s' );
 							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 							$update_custom_meta_data = $wpdb->query( $wpdb->prepare( "UPDATE $wpnc_custom_field_metas SET field_value = %s, updated_at = %s WHERE module = %s AND module_record_id = %d AND custom_fields_id = %d", sanitize_text_field( $custom_field_file_value ), $updated_at, sanitize_text_field( $module ), intval( $module_id ), intval( $key ) ) );
 						}
@@ -1155,8 +1155,8 @@ class Mjschool_Custome_Field {
 						$custom_meta_data['module_record_id'] = intval( $module_id );
 						$custom_meta_data['custom_fields_id'] = intval( $key );
 						$custom_meta_data['field_value']      = sanitize_text_field( $custom_field_file_value );
-						$custom_meta_data['created_at']       = gmdate( 'Y-m-d H:i:s' );
-						$custom_meta_data['updated_at']       = gmdate( 'Y-m-d H:i:s' );
+						$custom_meta_data['created_at']       = date( 'Y-m-d H:i:s' );
+						$custom_meta_data['updated_at']       = date( 'Y-m-d H:i:s' );
 						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 						$insert_custom_meta_data = $wpdb->insert( $wpnc_custom_field_metas, $custom_meta_data );
 					}

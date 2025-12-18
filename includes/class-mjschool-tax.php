@@ -71,6 +71,7 @@ class Mjschool_Tax_Manage
     public function mjschool_get_single_tax( $tax_id )
     {
         global $wpdb;
+        $tax_id = intval($tax_id);
         $table_name = $wpdb->prefix . 'mjschool_taxes';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name where tax_id=%d", $tax_id));
@@ -87,6 +88,7 @@ class Mjschool_Tax_Manage
     public function mjschool_delete_tax( $id )
     {
         global $wpdb;
+        $id = intval($id);
         $table_name = $wpdb->prefix . 'mjschool_taxes';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->query($wpdb->prepare("DELETE FROM $table_name where tax_id=%d", $id));

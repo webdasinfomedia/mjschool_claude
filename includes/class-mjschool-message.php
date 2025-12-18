@@ -64,7 +64,7 @@ class Mjschool_Message
     public function mjschool_delete_reply( $id ) {
         global $wpdb;
         $table_name     = $wpdb->prefix . 'mjschool_message_replies';
-        $reply_id['id'] = $id;
+        $reply_id['id'] = intval( $id );
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         return $result = $wpdb->delete( $table_name, $reply_id );
     }

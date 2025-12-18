@@ -63,12 +63,13 @@ class Mjschool_Class_Routine
     {
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_time_table';
+        $lastid = array();
         foreach ( $route_data as $route ) {
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $result = $wpdb->insert($table_name, $route);
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $lastid[] = $wpdb->insert_id;
-            mjschool_append_audit_log('' . esc_html__('Route Added', 'mjschool') . '', get_current_user_id(), get_current_user_id(), 'insert', sanitize_text_field($_REQUEST['page']));
+            mjschool_append_audit_log('' . esc_html__('Route Added', 'mjschool') . '', get_current_user_id(), get_current_user_id(), 'insert', isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '');
         }
         return $lastid;
     }
@@ -86,7 +87,7 @@ class Mjschool_Class_Routine
     {
         $table_name = 'mjschool_time_table';
         mjschool_update_record($table_name, $route_data, $route_id);
-        mjschool_append_audit_log('' . esc_html__('Route Updated', 'mjschool') . '', get_current_user_id(), get_current_user_id(), 'edit', sanitize_text_field($_REQUEST['page']));
+        mjschool_append_audit_log('' . esc_html__('Route Updated', 'mjschool') . '', get_current_user_id(), get_current_user_id(), 'edit', isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '');
     }
     /**
      * Checks if a class routine period already exists, either as a duplicate entry
@@ -155,6 +156,7 @@ class Mjschool_Class_Routine
     public function mjschool_get_period( $class_id, $section, $week_day )
     {
         global $wpdb;
+        $class_id = intval($class_id);
         $table_name    = $wpdb->prefix . $this->table_name;
         $table_subject = $wpdb->prefix . 'mjschool_subject';
         // Use prepared statements to prevent SQL injection.
@@ -203,27 +205,27 @@ class Mjschool_Class_Routine
         global $wpdb;
         $table = $wpdb->prefix . 'mjschool_teacher_class';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result  = $wpdb->get_results('SELECT * FROM ' . $table . ' where teacher_id =' . $teacher_id);
+        $result  = $wpdb->get_results($wpdb->prepare('SELECT * FROM ' . $table . ' where teacher_id =%d', intval($teacher_id)));
         $classes = array();
         if (! empty($result) ) {
             foreach ( $result as $retrive_data ) {
-                $classes[] = $retrive_data->class_id;
+                $classes[] = intval($retrive_data->class_id);
             }
         }
         $table = $wpdb->prefix . 'mjschool_teacher_class';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result_sub = $wpdb->get_results('SELECT * FROM ' . $table . ' where teacher_id =' . $teacher_id);
+        $result_sub = $wpdb->get_results($wpdb->prepare('SELECT * FROM ' . $table . ' where teacher_id =%d', intval($teacher_id)));
         $subjects   = array();
         if (! empty($result_sub) ) {
             foreach ( $result_sub as $sub_retrive_data ) {
                 if (isset($sub_retrive_data->subject_id) ) {
-                    $subjects[] = $sub_retrive_data->subject_id;
+                    $subjects[] = intval($sub_retrive_data->subject_id);
                 }
             }
         }
-        $classes = implode(',', $classes);
+        $classes = implode(',', array_map('intval', $classes));
         if (! empty($subjects) ) {
-            $subjects = implode(',', $subjects);
+            $subjects = implode(',', array_map('intval', $subjects));
             $tbl      = $wpdb->prefix . $this->table_name;
             // Assuming $week_day, $classes, $subjects are properly validated and sanitized.
             $query = $wpdb->prepare(
@@ -260,8 +262,8 @@ class Mjschool_Class_Routine
         $class_id   = get_user_meta($teacher_id, 'class_name', true);
         $route_data = array();
         if (! empty($class_id) ) {
-            $classes = implode(',', $class_id);
-            $query   = $wpdb->prepare("SELECT * FROM $table_name WHERE weekday = %s AND class_id IN ($classes) AND teacher_id LIKE %s AND multiple_teacher = 'yes'", $week_day, $teacher_id);
+            $classes = implode(',', array_map('intval', $class_id));
+            $query   = $wpdb->prepare("SELECT * FROM $table_name WHERE weekday = %s AND class_id IN ($classes) AND teacher_id LIKE %s AND multiple_teacher = 'yes'", $week_day, intval($teacher_id));
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $route_data = $wpdb->get_results($query);
         }

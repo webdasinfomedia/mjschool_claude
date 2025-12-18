@@ -99,7 +99,7 @@ if (isset($end_time_data[2]) ) {
                 <div class="col-md-6">
                     <div class="form-group input">
                         <div class="col-md-12 form-control">
-                            <input id="start_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_html_e('Enter Start Date', 'mjschool'); ?>" name="start_date" value="<?php echo esc_attr(date('Y-m-d', strtotime($meeting_data->start_date))); ?>" readonly>
+                            <input id="start_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_attr_e('Enter Start Date', 'mjschool'); ?>" name="start_date" value="<?php echo esc_attr(date('Y-m-d', strtotime($meeting_data->start_date))); ?>" readonly>
                             <label for="userinput1"><?php esc_html_e('Start Date', 'mjschool'); ?></label>
                         </div>
                     </div>
@@ -107,7 +107,7 @@ if (isset($end_time_data[2]) ) {
                 <div class="col-md-6">
                     <div class="form-group input">
                         <div class="col-md-12 form-control">
-                            <input id="end_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_html_e('Enter Exam Date', 'mjschool'); ?>" name="end_date" value="<?php echo esc_attr(date('Y-m-d', strtotime($meeting_data->end_date))); ?>" readonly>
+                            <input id="end_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_attr_e('Enter Exam Date', 'mjschool'); ?>" name="end_date" value="<?php echo esc_attr(date('Y-m-d', strtotime($meeting_data->end_date))); ?>" readonly>
                             <label for="userinput1"><?php esc_html_e('End Date', 'mjschool'); ?></label>
                         </div>
                     </div>
@@ -137,7 +137,7 @@ if (isset($end_time_data[2]) ) {
         <div class="form-body mjschool-user-form">
             <div class="row">
                 <div class="col-md-6">
-                    <input type="submit" value="<?php if (! empty($route_data) ) { esc_html_e('Save Meeting', 'mjschool'); } else { esc_html_e('Create Meeting', 'mjschool'); } ?>" name="edit_meeting" class="btn mjschool-save-btn btn-success" />
+                    <input type="submit" value="<?php if (! empty($route_data) ) { esc_attr_e('Save Meeting', 'mjschool'); } else { esc_attr_e('Create Meeting', 'mjschool'); } ?>" name="edit_meeting" class="btn mjschool-save-btn btn-success" />
                 </div>
             </div>
         </div>

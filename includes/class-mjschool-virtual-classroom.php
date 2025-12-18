@@ -203,6 +203,7 @@ class Mjschool_Virtual_Classroom
     public function mjschool_get_meeting_by_teacher_id_data_in_zoom( $teacher_id )
     {
         global $wpdb;
+        $teacher_id = intval($teacher_id);
         $table_zoom_meeting = $wpdb->prefix . 'mjschool_zoom_meeting';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_zoom_meeting WHERE teacher_id=%d", $teacher_id));
@@ -219,6 +220,7 @@ class Mjschool_Virtual_Classroom
     public function mjschool_get_meeting_by_class_id_data_in_zoom( $class_id )
     {
         global $wpdb;
+        $class_id = intval($class_id);
         $table_zoom_meeting = $wpdb->prefix . 'mjschool_zoom_meeting';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_zoom_meeting WHERE class_id=%d", $class_id));
@@ -236,6 +238,8 @@ class Mjschool_Virtual_Classroom
     public function mjschool_get_meeting_by_class_id_and_section_id_data_in_zoom( $class_id, $section_id )
     {
         global $wpdb;
+        $class_id = intval($class_id);
+        $section_id = intval($section_id);
         $table_zoom_meeting = $wpdb->prefix . 'mjschool_zoom_meeting';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_zoom_meeting WHERE class_id=%d AND section_id=%d", $class_id, $section_id));
@@ -252,6 +256,7 @@ class Mjschool_Virtual_Classroom
     public function mjschool_get_single_meeting_data_in_zoom( $meeting_id )
     {
         global $wpdb;
+        $meeting_id = intval($meeting_id);
         $table_zoom_meeting = $wpdb->prefix . 'mjschool_zoom_meeting';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_zoom_meeting WHERE meeting_id=%d", $meeting_id));
@@ -271,6 +276,7 @@ class Mjschool_Virtual_Classroom
     public function mjschool_get_single_meeting_by_route_data_in_zoom( $route_id )
     {
         global $wpdb;
+        $route_id = intval($route_id);
         $table_zoom_meeting = $wpdb->prefix . 'mjschool_zoom_meeting';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_zoom_meeting WHERE route_id=%d", $route_id));
@@ -287,6 +293,7 @@ class Mjschool_Virtual_Classroom
     public function mjschool_get_meeting_data_by_day_in_zoom( $day_id )
     {
         global $wpdb;
+        $day_id = intval($day_id);
         $table_zoom_meeting = $wpdb->prefix . 'mjschool_zoom_meeting';
      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_zoom_meeting WHERE weekday_id=%d", $day_id));

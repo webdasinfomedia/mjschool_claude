@@ -21,9 +21,12 @@ $mjschool_role = 'teacher';
 $edit = 0;
 $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
 if ( $action === 'edit' ) {
-	$edit            = 1;
-	$user_info       = get_userdata( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) ) ) );
-	$user_deligation = get_user_meta( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) ) ), 'designation', true );
+    $edit = 1;
+    $teacher_id_encrypted = isset( $_REQUEST['teacher_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['teacher_id'] ) ) : '';
+    if ( ! empty( $teacher_id_encrypted ) ) {
+        $user_info = get_userdata( intval( mjschool_decrypt_id( $teacher_id_encrypted ) ) );
+        $user_deligation = get_user_meta( intval( mjschool_decrypt_id( $teacher_id_encrypted ) ), 'designation', true );
+    }
 }
 ?>
 <?php
@@ -35,7 +38,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 <div class="mjschool-panel-body"><!-- Mjschool-panel-body. -->
 	<!-- Add teacher form start. -->
 	<form name="teacher_form" action="" method="post" class="form-horizontal" id="teacher_form" enctype='multipart/form-data'>
-		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; ?>
 		<input type="hidden" name="security" id="mjschool_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_nonce' ) ); ?>">
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 		<input type="hidden" name="role" value="<?php echo esc_attr( $mjschool_role ); ?>" />
@@ -130,7 +133,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 					</select>
 				</div>
 				<div class="col-md-2 col-sm-1 mjschool-res-width-30px">
-					<input type="button" id="mjschool-addremove-cat" value="<?php esc_html_e( 'ADD', 'mjschool' ); ?>" model="designation" class="btn btn-success mjschool-save-btn" />
+					<input type="button" id="mjschool-addremove-cat" value="<?php esc_attr_e( 'ADD', 'mjschool' ); ?>" model="designation" class="btn btn-success mjschool-save-btn" />
 				</div>
 			</div>
 		</div><!-- Mjschool-user-form. -->
@@ -294,7 +297,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 							<span class="mjschool-custom-control-label mjschool-custom-top-label ml-2 mjschool-label-position-rtl" for="photo"><?php esc_html_e( 'Image', 'mjschool' ); ?></span>
 							<div class="col-sm-12 mjschool-display-flex">
 								<input type="text" id="smgt_user_avatar_url" class="form-control mjschool-image-path-dots" name="mjschool_user_avatar" value="<?php echo esc_url( $edit ? $user_info->mjschool_user_avatar : ( isset($_POST['mjschool_user_avatar']) ? sanitize_text_field( wp_unslash( $_POST['mjschool_user_avatar'] ) ) : '' ) ); ?>" readonly />
-								<input id="upload_user_avatar_button" type="button" class="button mjschool-upload-image-btn mjschool_float_right"  value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+								<input id="upload_user_avatar_button" type="button" class="button mjschool-upload-image-btn mjschool_float_right"  value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 							</div>
 						</div>
 						<div class="clearfix"></div>
@@ -303,7 +306,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 							<div id="mjschool-upload-user-avatar-preview">
 								<?php if ($edit) {
 									if ($user_info->mjschool_user_avatar === "") { ?>
-										<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_teacher_thumb_new' ) ) ?>">
+										<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_teacher_thumb_new' ) ); ?>">
 										<?php
 									} else {
 										?>
@@ -312,7 +315,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 									}
 								} else {
 									?>
-									<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_teacher_thumb_new' ) ) ?>">
+									<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_teacher_thumb_new' ) ); ?>">
 									<?php
 								} ?>
 							</div>
@@ -353,7 +356,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 													<input name="document_file[]" type="file" class="form-control file_validation file" />
 												</div>
 												<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 p-0">
-													<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url(content_url() . '/uploads/school_assets/' . sanitize_file_name( $value->document_file ) ); ?>" record_id="<?php echo esc_attr($key); ?>"><i class="fas fa-download"></i> <?php esc_html_e( "Download", "mjschool" ); ?></a>
+													<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url(content_url( '/uploads/school_assets/' . sanitize_file_name( $value->document_file ) ) ); ?>" record_id="<?php echo esc_attr($key); ?>"><i class="fas fa-download"></i> <?php esc_html_e( "Download", "mjschool" ); ?></a>
 												</div>
 											</div>
 										</div>
@@ -395,7 +398,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 									<div class="col-md-12 form-control mjschool-upload-profile-image-patient mjschool-res-rtl-height-50px mjschool-file-height-padding">
 										<span for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2"><?php esc_html_e( 'Document File', 'mjschool' ); ?></span>
 										<div class="col-sm-12 mjschool-display-flex">
-											<input name="document_file[]" type="file" class="form-control file_validation file" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+											<input name="document_file[]" type="file" class="form-control file_validation file" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 										</div>
 									</div>
 								</div>
@@ -426,7 +429,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 								<div class="col-md-12 form-control mjschool-upload-profile-image-patient mjschool-res-rtl-height-50px mjschool-file-height-padding">
 									<span for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2"><?php esc_html_e( 'Document File', 'mjschool' ); ?></span>
 									<div class="col-sm-12 mjschool-display-flex">
-										<input name="document_file[]" type="file" class="form-control file_validation file" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+										<input name="document_file[]" type="file" class="form-control file_validation file" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 									</div>
 								</div>
 							</div>
@@ -454,7 +457,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 							if ( ! empty( $signature_file ) ) {
 								?>
 								<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-									<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url() . '/' . sanitize_file_name( $signature_file ) ); ?>"><i class="fa fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+									<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url( '/' . sanitize_file_name( $signature_file ) ) ); ?>"><i class="fa fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 								</div>
 								<?php
 							}
@@ -475,7 +478,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 		<div class="form-body mjschool-user-form"> <!--Mjschool-user-form div.-->
 			<div class="row">
 				<div class="col-md-6 col-sm-6 col-xs-12"><!--Save btn.-->
-					<input type="submit" id="mjschool-class-for-alert" value="<?php if ( $edit ) { esc_html_e( 'Save Teacher', 'mjschool' ); } else { esc_html_e( 'Add Teacher', 'mjschool' );}?>" name="save_teacher" class="mjschool-save-btn mjschool-class-for-alert mjschool-rtl-margin-0px" />
+					<input type="submit" id="mjschool-class-for-alert" value="<?php if ( $edit ) { esc_attr_e( 'Save Teacher', 'mjschool' ); } else { esc_attr_e( 'Add Teacher', 'mjschool' );}?>" name="save_teacher" class="mjschool-save-btn mjschool-class-for-alert mjschool-rtl-margin-0px" />
 				</div><!--Save btn.-->
 			</div>
 		</div>

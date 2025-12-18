@@ -1028,7 +1028,7 @@ function mjschool_option() {
 	$options = array(
 		// Basic Settings
 		'mjschool_name'                    => esc_attr__( 'School Management System', 'mjschool' ),
-		'mjschool_staring_year'            => gmdate( 'Y' ),
+		'mjschool_staring_year'            => date( 'Y' ),
 		'mjschool_address'                 => '',
 		'mjschool_contact_number'          => '',
 		'mjschool_combine'                 => 0,
@@ -1061,7 +1061,7 @@ function mjschool_option() {
 		'mjschool_driver_thumb_new'        => $plugin_url . 'assets/images/thumb-icon/mjschool-transport.png',
 
 		// Footer
-		'mjschool_footer_description'      => 'Copyright ©' . gmdate( 'Y' ) . ' Mojoomla. All rights reserved.',
+		'mjschool_footer_description'      => 'Copyright ©' . date( 'Y' ) . ' Mojoomla. All rights reserved.',
 
 		// Access Rights
 		'mjschool_access_right_student'    => $role_access_right_student,
@@ -1723,7 +1723,7 @@ function mjschool_enqueue_plugin_css() {
     wp_enqueue_style( 'mjschool-inputs', mjschool_asset_url( '/assets/css/mjschool-inputs.css' ), array(), $version );
     wp_enqueue_style( 'mjschool-responsive', mjschool_asset_url( '/assets/css/mjschool-school-responsive.css' ), array(), $version );
     wp_enqueue_style( 'mjschool-frontend-calendar', mjschool_asset_url( '/assets/css/mjschool-frontend-calendar.css' ), array(), $version );
-    
+
     // Font families
     wp_enqueue_style( 'mjschool-poppins-font-family', mjschool_asset_url( '/assets/css/mjschool-popping-font.css' ), array(), $version );
     wp_enqueue_style( 'mjschool-roboto-fontfamily', mjschool_asset_url( '/assets/css/mjschool-roboto-font.css' ), array(), $version );
@@ -2334,8 +2334,8 @@ function mjschool_user_dashboard() {
     }
     
     if ( isset( $_REQUEST['mjschool_login'] ) ) {
-        if ( function_exists( 'mjschool_pu_blank_login' ) ) {
-            add_action( 'authenticate', 'mjschool_pu_blank_login' );
+        if ( function_exists( 'mjschool_custom_blank_login' ) ) {
+            add_action( 'authenticate', 'mjschool_custom_blank_login' );
         }
     }
 }
@@ -2867,7 +2867,7 @@ class MJSchool_Student_Registration {
         if ( false === $timestamp ) {
             return '';
         }
-        return gmdate( 'Y-m-d', $timestamp );
+        return date( 'Y-m-d', $timestamp );
     }
 
     /**
@@ -3466,7 +3466,7 @@ class MJSchool_Student_Registration {
     private function render_date_field() {
         $birth_date = $this->form_data['birth_date'];
         if ( empty( $birth_date ) && function_exists( 'mjschool_get_date_in_input_box' ) ) {
-            $birth_date = mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) );
+            $birth_date = mjschool_get_date_in_input_box( date( 'Y-m-d' ) );
         }
         ?>
         <div class="col-md-6">
@@ -6033,7 +6033,7 @@ class MJSchool_Admission_Handler {
         // Get current date formatted.
         $current_date = '';
         if ( function_exists( 'mjschool_get_date_in_input_box' ) ) {
-            $current_date = mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) );
+            $current_date = mjschool_get_date_in_input_box( date( 'Y-m-d' ) );
         }
 
         // Get currency symbol.
@@ -6269,7 +6269,7 @@ class MJSchool_Recurring_Invoice_Handler {
         $obj_feespayment = new Mjschool_Feespayment();
         $table_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
         $table_recurring = $wpdb->prefix . 'mjschool_fees_payment_recurring';
-        $current_date = gmdate( 'Y-m-d' );
+        $current_date = date( 'Y-m-d' );
 
         $all_recurring = $obj_feespayment->mjschool_get_all_recurring_fees_active( $current_date );
 
@@ -6327,7 +6327,7 @@ class MJSchool_Recurring_Invoice_Handler {
         );
 
         $interval = $intervals[ $recurring_type ] ?? '+0 days';
-        return gmdate( 'Y-m-d', strtotime( $interval ) );
+        return date( 'Y-m-d', strtotime( $interval ) );
     }
 
     /**
@@ -6384,9 +6384,9 @@ class MJSchool_Recurring_Invoice_Handler {
             'tax_amount'     => $tax_amount,
             'total_amount'   => $total_fees + $tax_amount,
             'description'    => $recurring->description,
-            'start_year'     => gmdate( 'Y-m-d' ),
+            'start_year'     => date( 'Y-m-d' ),
             'end_year'       => $end_date,
-            'paid_by_date'   => gmdate( 'Y-m-d' ),
+            'paid_by_date'   => date( 'Y-m-d' ),
             'created_date'   => current_time( 'mysql' ),
             'created_by'     => get_current_user_id(),
         );
@@ -6415,8 +6415,8 @@ class MJSchool_Recurring_Invoice_Handler {
 
         $currency = function_exists( 'mjschool_get_currency_symbol' ) ? mjschool_get_currency_symbol() : '';
         $date_formatted = function_exists( 'mjschool_get_date_in_input_box' ) 
-            ? mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) 
-            : gmdate( 'Y-m-d' );
+            ? mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) 
+            : date( 'Y-m-d' );
 
         $replacements = array(
             '{{student_name}}' => $student_info->display_name,
@@ -6464,7 +6464,7 @@ class MJSchool_Recurring_Invoice_Handler {
         }
 
         $reminder_day = absint( get_option( 'mjschool_system_payment_reminder_day', 0 ) );
-        $reminder_date = gmdate( 'Y-m-d', strtotime( "+{$reminder_day} days" ) );
+        $reminder_date = date( 'Y-m-d', strtotime( "+{$reminder_day} days" ) );
 
         $obj_feespayment = new Mjschool_Feespayment();
         $fees_payment_data = $obj_feespayment->mjschool_get_all_student_fees_data_for_reminder( $reminder_date );
@@ -6498,7 +6498,7 @@ class MJSchool_Recurring_Invoice_Handler {
                     array(
                         'student_id'  => $student_id,
                         'fees_pay_id' => $fees_id,
-                        'date_time'   => gmdate( 'Y-m-d' ),
+                        'date_time'   => date( 'Y-m-d' ),
                     ),
                     array( '%d', '%d', '%s' )
                 );

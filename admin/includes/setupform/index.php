@@ -13,19 +13,21 @@
  * @since      1.0.0
  */
 
-defined('ABSPATH') || exit;
-$active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])) : 'setup';
+defined( 'ABSPATH' ) || exit;
+$active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'setup';
 ?>
 <div id="mjschool-img-spinner"></div>
 <div class="mjschool_ajax-ani"></div>
 <div class="mjschool-page-inner mjschool_min_height_1088px">
 <?php
-    if (isset($_REQUEST['varify_key'])) {
-		if (! isset($_POST['security']) || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['security'])), 'mjschool_license_registration_nonce')) {
-			wp_die(esc_html__('Security check failed.', 'mjschool'));
+	if ( isset( $_REQUEST['varify_key'] ) ) {
+		if ( ! isset( $_POST['security'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'mjschool_license_registration_nonce' ) ) {
+			wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
 		}
-        $verify_result = mjschool_submit_setup_form(wp_unslash($_POST));
-		if ( $verify_result['mjschool_verify'] === '0' ) {
+		// Sanitize POST data before passing.
+		$post_data     = array_map( 'sanitize_text_field', wp_unslash( $_POST ) );
+		$verify_result = mjschool_submit_setup_form( $post_data );
+		if ( isset( $verify_result['mjschool_verify'] ) && $verify_result['mjschool_verify'] === '0' ) {
 			?>
 			<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible successMessage">
 				<p><?php echo esc_html( $verify_result['message'] ); ?></p>
@@ -35,31 +37,40 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])
 		} else {
 			?>
 			<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
-				<p><?php echo esc_html( $verify_result['message'] ); ?></p>
+				<p><?php echo isset( $verify_result['message'] ) ? esc_html( $verify_result['message'] ) : ''; ?></p>
 				<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 			</div>
 			<?php
 		}
 	}
 	if ( isset( $_REQUEST['reset_key'] ) ) {
-		if (! isset($_POST['security']) || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['security'])), 'mjschool_license_reset_nonce')) {
-			wp_die(esc_html__('Security check failed.', 'mjschool'));
+		if ( ! isset( $_POST['security'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'mjschool_license_reset_nonce' ) ) {
+			wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
 		}
-		$reset_form = mjschool_reset_key_form( wp_unslash($_POST) );
+		// Sanitize POST data before passing.
+		$post_data  = array_map( 'sanitize_text_field', wp_unslash( $_POST ) );
+		$reset_form = mjschool_reset_key_form( $post_data );
 		?>
-        <div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
+		<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
 			<p><?php echo esc_html( $reset_form ); ?></p>
 			<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 		</div>
 		<?php if ( $reset_form === 'OTP sent to your email' ) : ?>
+			<?php
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Session data is internally managed.
+			$session_licence_key = isset( $_SESSION['mjschool_licence_key'] ) ? sanitize_text_field( wp_unslash( $_SESSION['mjschool_licence_key'] ) ) : '';
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Session data is internally managed.
+			$session_email = isset( $_SESSION['enter_email'] ) ? sanitize_email( wp_unslash( $_SESSION['enter_email'] ) ) : '';
+			?>
 			<div id="countdown-timer" class="mjschool_color_red_font_weight_bold">
 				OTP will expire in <span id="timer">02:00</span>.
 			</div>
 			<!-- Always visible resend button (disabled initially). -->
 			<div id="resend-otp-wrapper" class="mjschool-margin-top-10px">
 				<form method="post">
-					<input type="hidden" name="licence_key" value="<?php echo esc_attr( $_SESSION['mjschool_licence_key'] ); ?>">
-					<input type="hidden" name="enter_email" value="<?php echo esc_attr( $_SESSION['enter_email'] ); ?>">
+					<?php wp_nonce_field( 'mjschool_license_reset_nonce', 'security' ); ?>
+					<input type="hidden" name="licence_key" value="<?php echo esc_attr( $session_licence_key ); ?>">
+					<input type="hidden" name="enter_email" value="<?php echo esc_attr( $session_email ); ?>">
 					<button type="submit" name="reset_key" class="btn btn-secondary mjschool_setup_form_no_cursor" id="resend-btn" disabled >
 						Resend OTP
 					</button>
@@ -104,12 +115,14 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])
 		<?php
 	}
 	if ( isset( $_REQUEST['verify_reset_otp'] ) ) {
-		if (! isset($_POST['security']) || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['security'])), 'mjschool_verify_otp_nonce')) {
-			wp_die(esc_html__('Security check failed.', 'mjschool'));
+		if ( ! isset( $_POST['security'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'mjschool_verify_otp_nonce' ) ) {
+			wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
 		}
-		$reset_form = mjschool_reset_key_otp_verify_form( wp_unslash($_POST) );
+		// Sanitize POST data before passing.
+		$post_data  = array_map( 'sanitize_text_field', wp_unslash( $_POST ) );
+		$reset_form = mjschool_reset_key_otp_verify_form( $post_data );
 		if ( $reset_form === 'License has been reset successfully' ) {
-			wp_redirect( admin_url() . 'admin.php?page=mjschool_setup&reset=success' );
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_setup&reset=success' ) );
 			die();
 		} else {
 			?>
@@ -142,7 +155,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])
 		})(jQuery);
 	</script>
 	<?php
-	if ( isset( $_REQUEST['reset'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['reset'])) === 'success' ) ) {
+	if ( isset( $_REQUEST['reset'] ) && ( sanitize_text_field( wp_unslash( $_REQUEST['reset'] ) ) === 'success' ) ) {
 		?>
 		<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
 			<p><?php esc_html_e( 'License has been reset successfully', 'mjschool' ); ?></p>
@@ -154,40 +167,40 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])
 	<div class="mjschool-panel-body mjschool-main-list-margin-15px"><!------------------ Panel body. ------------------->
 		<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 			<li class="<?php if ( $active_tab === 'setup' ) { ?>active<?php } ?>">
-				<a href="?page=mjschool_setup&tab=setup" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'setup' ? 'nav-tab-active' : ''; ?>">
-					<?php echo esc_attr__( 'Register License', 'mjschool' ); ?>
+				<a href="?page=mjschool_setup&tab=setup" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'setup' ? 'nav-tab-active' : ''; ?>">
+					<?php esc_html_e( 'Register License', 'mjschool' ); ?>
 				</a>
 			</li>
-			<li class="<?php if ( $active_tab === 'reset' ) {?>active<?php } ?>">
-				<a href="?page=mjschool_setup&tab=reset" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'reset' ? 'nav-tab-active' : ''; ?>">
-					<?php echo esc_attr__( 'Reset License', 'mjschool' ); ?>
+			<li class="<?php if ( $active_tab === 'reset' ) { ?>active<?php } ?>">
+				<a href="?page=mjschool_setup&tab=reset" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'reset' ? 'nav-tab-active' : ''; ?>">
+					<?php esc_html_e( 'Reset License', 'mjschool' ); ?>
 				</a>
 			</li>
 		</ul>
 		<?php
 		if ( $active_tab === 'setup' ) {
-			if ( get_option( 'mjschool_licence_key' ) && get_option( 'mjschool_setup_email' ) ) {
-				$domain_name        = sanitize_text_field(wp_unslash($_SERVER['SERVER_NAME']));
-				$licence_key        = get_option( 'mjschool_licence_key' );
-				$email              = get_option( 'mjschool_setup_email' );
+			$check_varification = '';
+			$licence_key        = get_option( 'mjschool_licence_key' );
+			$email              = get_option( 'mjschool_setup_email' );
+			if ( $licence_key && $email ) {
+				$domain_name        = isset( $_SERVER['SERVER_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : '';
 				$check_varification = mjschool_check_product_key( $domain_name, $licence_key, $email );
-			} else {
-				$check_varification = '';
 			}
 			if ( ! empty( $licence_key ) && ! empty( $email ) && $check_varification === '0' ) {
-				 ?>
+				?>
 				<div>
-					<label class="mjschool_cursor_default_font_17px"><?php esc_html_e( 'License Verification Completed Successfully','mjschool' );?></label>
-					<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/thumb-icon/mjschool-checked.gif")?>" class="calender_logo_image mjschool-textarea-height-60px">
+					<label class="mjschool_cursor_default_font_17px"><?php esc_html_e( 'License Verification Completed Successfully', 'mjschool' ); ?></label>
+					<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/thumb-icon/mjschool-checked.gif' ); ?>" class="calender_logo_image mjschool-textarea-height-60px">
 				</div>
 				<div class="mt-3">
-					<label class="mjschool_color_setup_form"><i class="fas fa-exclamation-triangle text-black"></i> <?php echo esc_html__( 'Important', 'mjschool' ); ?> : </label> <label class="mjschool_display_contents"><?php esc_html_e( 'If you want to transfer your license to a new domain, please reset this license. This action will deactivate your current license on this domain and allow you to register a new domain.', 'mjschool' ); ?>&nbsp;<a href="admin.php?page=mjschool_setup&tab=reset"><?php esc_html_e( 'Reset now.', 'mjschool' ); ?></a></label>
+					<label class="mjschool_color_setup_form"><i class="fas fa-exclamation-triangle text-black"></i> <?php esc_html_e( 'Important', 'mjschool' ); ?> : </label> <label class="mjschool_display_contents"><?php esc_html_e( 'If you want to transfer your license to a new domain, please reset this license. This action will deactivate your current license on this domain and allow you to register a new domain.', 'mjschool' ); ?>&nbsp;<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_setup&tab=reset' ) ); ?>"><?php esc_html_e( 'Reset now.', 'mjschool' ); ?></a></label>
 				</div>
 				<div class="mt-3">
-					<label class="mjschool_color_setup_form"><i class="fas fa-exclamation-triangle text-black"></i> <?php echo esc_html__( 'Important', 'mjschool' ); ?> : </label> <label class="mjschool_display_contents"><?php esc_html_e( 'If you want to transfer your license to a new domain, please reset this license. This action will deactivate your current license on this domain and allow you to register a new domain.', 'mjschool' ); ?></label>
+					<label class="mjschool_color_setup_form"><i class="fas fa-exclamation-triangle text-black"></i> <?php esc_html_e( 'Important', 'mjschool' ); ?> : </label> <label class="mjschool_display_contents"><?php esc_html_e( 'If you want to transfer your license to a new domain, please reset this license. This action will deactivate your current license on this domain and allow you to register a new domain.', 'mjschool' ); ?></label>
 				</div>
 				<?php
 			} else {
+				$server_name = isset( $_SERVER['SERVER_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : '';
 				?>
 				<!------------------ License verification form. ---------------------->
 				<form name="verification_form" action="" method="post" class="mjschool-form-horizontal" id="verification_form">
@@ -200,7 +213,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])
 							<div class="col-md-6">
 								<div class="form-group input">
 									<div class="col-md-12 form-control">
-										<input id="server_name" class="form-control validate[required]" type="text" value="<?php echo esc_attr( sanitize_text_field(wp_unslash($_SERVER['SERVER_NAME'])) ); ?>" name="domain_name" readonly>
+										<input id="server_name" class="form-control validate[required]" type="text" value="<?php echo esc_attr( $server_name ); ?>" name="domain_name" readonly>
 										<label for="server_name"><?php esc_html_e( 'Domain', 'mjschool' ); ?><span class="required">*</span></label>
 									</div>
 								</div>
@@ -226,7 +239,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])
 					<div class="form-body mjschool-user-form">
 						<div class="row">
 							<div class="col-sm-6">
-								<input type="submit" value="<?php esc_html_e( 'Submit', 'mjschool' ); ?>" name="varify_key" id="varify_key_new" class="btn btn-success mjschool-save-btn" />
+								<input type="submit" value="<?php esc_attr_e( 'Submit', 'mjschool' ); ?>" name="varify_key" id="varify_key_new" class="btn btn-success mjschool-save-btn" />
 							</div>
 						</div>
 					</div>
@@ -235,7 +248,9 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])
 			}
 		}
 		if ( $active_tab === 'reset' ) {
-			if ( isset( $_SESSION['send_otp'] ) && ( sanitize_text_field(wp_unslash($_SESSION['send_otp'])) === '1' ) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Session data is internally managed.
+			$send_otp = isset( $_SESSION['send_otp'] ) ? sanitize_text_field( wp_unslash( $_SESSION['send_otp'] ) ) : '';
+			if ( $send_otp === '1' ) {
 				?>
 				<form name="verify_otp_form" action="" method="post" class="mjschool-form-horizontal" id="verify_otp_form">
 					<input type="hidden" name="security" id="mjschool_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_verify_otp_nonce' ) ); ?>">
@@ -253,7 +268,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])
 								</div>
 							</div>
 							<div class="col-md-3">
-								<input type="submit" value="<?php esc_html_e( 'Submit', 'mjschool' ); ?>" name="verify_reset_otp" id="verify_reset_otp" class="btn btn-success mjschool-save-btn" />
+								<input type="submit" value="<?php esc_attr_e( 'Submit', 'mjschool' ); ?>" name="verify_reset_otp" id="verify_reset_otp" class="btn btn-success mjschool-save-btn" />
 							</div>
 						</div>
 					</div>
@@ -264,7 +279,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])
 				<form name="reset_form" action="" method="post" class="mjschool-form-horizontal" id="reset_form">
 					<input type="hidden" name="security" id="mjschool_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_license_reset_nonce' ) ); ?>">
 					<div class="mt-3">
-						<label class="mjschool_color_setup_form"><i class="fa fa-exclamation-triangle text-black"></i> <?php echo esc_html__( 'Important', 'mjschool' ); ?> : </label> <label class="mjschool_display_contents"><?php esc_html_e( 'If you want to transfer your license to a new domain, please reset this license. This action will deactivate your current license on this domain and allow you to register a new domain.', 'mjschool' ); ?></label>
+						<label class="mjschool_color_setup_form"><i class="fa fa-exclamation-triangle text-black"></i> <?php esc_html_e( 'Important', 'mjschool' ); ?> : </label> <label class="mjschool_display_contents"><?php esc_html_e( 'If you want to transfer your license to a new domain, please reset this license. This action will deactivate your current license on this domain and allow you to register a new domain.', 'mjschool' ); ?></label>
 					</div>
 					<div class="header">
 						<h3 class="mjschool-first-header"><?php esc_html_e( 'License Reset Information', 'mjschool' ); ?></h3>
@@ -292,7 +307,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])
 					<div class="form-body mjschool-user-form">
 						<div class="row">
 							<div class="col-sm-6">
-								<input type="submit" value="<?php esc_html_e( 'Submit', 'mjschool' ); ?>" name="reset_key" id="reset_key" class="btn btn-success mjschool-save-btn" />
+								<input type="submit" value="<?php esc_attr_e( 'Submit', 'mjschool' ); ?>" name="reset_key" id="reset_key" class="btn btn-success mjschool-save-btn" />
 							</div>
 						</div>
 					</div>

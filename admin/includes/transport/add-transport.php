@@ -115,7 +115,7 @@ defined( 'ABSPATH' ) || exit;
 								<span class="mjschool-custom-control-label mjschool-custom-top-label ml-2 mjschool-label-position-rtl" for="photo"><?php esc_html_e( 'Image Upload', 'mjschool' ); ?></span>
 								<div class="col-sm-12 mjschool-display-flex">
 									<input type="text" id="smgt_user_avatar_url" name="smgt_user_avatar" class="mjschool-image-path-dots" value="<?php if ( $edit ) { echo esc_url( $transport_data->smgt_user_avatar );}?>" readonly />
-									<input id="upload_user_avatar_button" type="button" class="button mjschool-upload-image-btn mjschool-btn-top" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+									<input id="upload_user_avatar_button" type="button" class="button mjschool-upload-image-btn mjschool-btn-top" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 								</div>
 							</div>
 							<div class="clearfix"></div>
@@ -124,13 +124,13 @@ defined( 'ABSPATH' ) || exit;
 									<?php
 									if ($edit) {
 										if ($transport_data->smgt_user_avatar === "") {?>
-											<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_driver_thumb_new' ) ) ?>">
+											<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_driver_thumb_new' ) ); ?>">
 										<?php } else { ?>
 											<img class="mjschool-image-preview-css" src="<?php if ($edit) echo esc_url( $transport_data->smgt_user_avatar ); ?>" />
 										<?php }
 									} else {
 										?>
-										<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_driver_thumb_new' ) ) ?>">
+										<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_driver_thumb_new' ) ); ?>">
 										<?php
 									}?>
 								</div>
@@ -149,7 +149,7 @@ defined( 'ABSPATH' ) || exit;
 			<div class="form-body mjschool-user-form">
 				<div class="row">
 					<div class="col-sm-6">
-						<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Transport', 'mjschool' ); } else { esc_html_e( 'Add Transport', 'mjschool' ); } ?>" name="save_transport" class="btn btn-success mjschool-rtl-margin-0px mjschool-save-btn" />
+						<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Transport', 'mjschool' ); } else { esc_attr_e( 'Add Transport', 'mjschool' ); } ?>" name="save_transport" class="btn btn-success mjschool-rtl-margin-0px mjschool-save-btn" />
 					</div>
 				</div>
 			</div>

@@ -140,7 +140,7 @@ class Mjschool_Homework {
 	 */
 	public function mjschool_parent_view_detail() {
 		global $wpdb;
-		$current_date = gmdate( 'Y-m-d' );
+		$current_date = date( 'Y-m-d' );
 		$table_name   = $wpdb->prefix . 'mjschool_homework';
 		$table_name2  = $wpdb->prefix . 'mjschool_student_homework';
 		global $user_ID;
@@ -178,7 +178,7 @@ class Mjschool_Homework {
 	 */
 	public function mjschool_parent_upcoming_homework() {
 		global $wpdb;
-		$current_date = gmdate( 'Y-m-d' );
+		$current_date = date( 'Y-m-d' );
 		$table_name   = $wpdb->prefix . 'mjschool_homework';
 		$table_name2  = $wpdb->prefix . 'mjschool_student_homework';
 		global $user_ID;
@@ -218,7 +218,7 @@ class Mjschool_Homework {
 	 */
 	public function mjschool_parent_closed_homework() {
 		global $wpdb;
-		$current_date = gmdate( 'Y-m-d' );
+		$current_date = date( 'Y-m-d' );
 		$table_name   = $wpdb->prefix . 'mjschool_homework';
 		$table_name2  = $wpdb->prefix . 'mjschool_student_homework';
 		global $user_ID;
@@ -259,7 +259,7 @@ class Mjschool_Homework {
 	 */
 	public function mjschool_parent_view_detail_for_dashboard( $child_ids ) {
 		global $wpdb;
-		$current_date = gmdate( 'Y-m-d' );
+		$current_date = date( 'Y-m-d' );
 		$table_name   = $wpdb->prefix . 'mjschool_homework';
 		$table_name2  = $wpdb->prefix . 'mjschool_student_homework';
 		global $user_ID;
@@ -303,7 +303,7 @@ class Mjschool_Homework {
 	public function mjschool_student_view_detail() {
 		global $wpdb;
 		global $user_ID;
-		$current_date = gmdate( 'Y-m-d' );
+		$current_date = date( 'Y-m-d' );
 		$user_ID      = intval( $user_ID ); // Ensure user_ID is an integer.
 		$class_id     = intval( get_user_meta( $user_ID, 'class_name', true ) );
 		$table_name   = $wpdb->prefix . 'mjschool_homework';
@@ -333,7 +333,7 @@ class Mjschool_Homework {
 	public function mjschool_student_view_upcoming_homework() {
 		global $wpdb;
 		global $user_ID;
-		$current_date = gmdate( 'Y-m-d' );
+		$current_date = date( 'Y-m-d' );
 		$user_ID      = intval( $user_ID ); // Ensure user_ID is an integer.
 		$class_id     = intval( get_user_meta( $user_ID, 'class_name', true ) );
 		$table_name   = $wpdb->prefix . 'mjschool_homework';
@@ -364,7 +364,7 @@ class Mjschool_Homework {
 	public function mjschool_student_view_closed_homework() {
 		global $wpdb;
 		global $user_ID;
-		$current_date = gmdate( 'Y-m-d' );
+		$current_date = date( 'Y-m-d' );
 		$user_ID      = intval( $user_ID ); // Ensure user_ID is an integer.
 		$class_id     = intval( get_user_meta( $user_ID, 'class_name', true ) );
 		$table_name   = $wpdb->prefix . 'mjschool_homework';
@@ -393,7 +393,7 @@ class Mjschool_Homework {
 	public function mjschool_student_view_detail_for_dashboard() {
 		global $wpdb;
 		global $user_ID;
-		$current_date = gmdate( 'Y-m-d' );
+		$current_date = date( 'Y-m-d' );
 		$user_ID      = intval( $user_ID );
 		$class_id     = intval( get_user_meta( $user_ID, 'class_name', true ) );
 		$table_name   = $wpdb->prefix . 'mjschool_homework';
@@ -466,14 +466,14 @@ class Mjschool_Homework {
 		global $wpdb;
 		$table_name                     = $wpdb->prefix . 'mjschool_homework';
 		$table_name2                    = $wpdb->prefix . 'mjschool_student_homework';
-		$homeworkdata['title']          = isset( $data['title'] ) ? sanitize_text_field( stripslashes( $data['title'] ) ) : '';
+		$homeworkdata['title']          = isset( $data['title'] ) ? sanitize_text_field( wp_unslash( $data['title'] ) ) : '';
 		$homeworkdata['class_name']     = isset( $data['class_name'] ) ? intval( $data['class_name'] ) : 0;
 		$homeworkdata['section_id']     = isset( $data['class_section'] ) ? intval( $data['class_section'] ) : 0;
 		$homeworkdata['subject']        = isset( $data['subject_id'] ) ? intval( $data['subject_id'] ) : 0;
-		$homeworkdata['content']        = isset( $data['content'] ) ? stripslashes( sanitize_textarea_field( $data['content'] ) ) : '';
+		$homeworkdata['content']        = isset( $data['content'] ) ? sanitize_textarea_field( wp_unslash( $data['content'] ) ) : '';
 		$homeworkdata['marks']          = isset( $data['homework_marks'] ) ? floatval( $data['homework_marks'] ) : 0;
-		$homeworkdata['created_date']   = gmdate( 'Y-m-d H:i:s' );
-		$homeworkdata['submition_date'] = isset( $data['sdate'] ) ? gmdate( 'Y-m-d', strtotime( sanitize_text_field( $data['sdate'] ) ) ) : gmdate( 'Y-m-d' );
+		$homeworkdata['created_date']   = date( 'Y-m-d H:i:s' );
+		$homeworkdata['submition_date'] = isset( $data['sdate'] ) ? date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $data['sdate'] ) ) ) ) : date( 'Y-m-d' );
 		$homeworkdata['createdby']      = get_current_user_id();
 		$subject_name                   = mjschool_get_single_subject_name( intval( $data['subject_id'] ) );
 		$page_name                      = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
@@ -543,7 +543,7 @@ class Mjschool_Homework {
 					$homeworstud['homework_id']  = $last_homework_id;
 					$homeworstud['status']       = '0';
 					$homeworstud['created_by']   = get_current_user_id();
-					$homeworstud['created_date'] = gmdate( 'Y-m-d H:i:s' );
+					$homeworstud['created_date'] = date( 'Y-m-d H:i:s' );
 					$device_token                = array();
 					foreach ( $studentdata as $student ) {
 						$homeworstud['student_id'] = $student->ID;
@@ -585,13 +585,13 @@ class Mjschool_Homework {
 											$mjschool_parent_homework_mail_content = get_option( 'mjschool_parent_homework_mail_content' );
 											$mjschool_parent_homework_mail_subject = get_option( 'mjschool_parent_homework_mail_subject' );
 											$parerntdata                           = get_user_by( 'email', $email_to );
-											$searchArr['{{parent_name}}']          = $parerntdata->display_name;
-											$searchArr['{{student_name}}']         = $student_name;
-											$searchArr['{{title}}']                = sanitize_text_field( $data['title'] );
-											$searchArr['{{submition_date}}']       = mjschool_get_date_in_input_box( sanitize_text_field( $data['sdate'] ) );
-											$searchArr['{{homework_date}}']        = mjschool_get_date_in_input_box( gmdate( 'Y-m-d H:i:s' ) );
-											$searchArr['{{subject}}']              = $subject_name;
-											$searchArr['{{school_name}}']          = get_option( 'mjschool_name' );
+											$searchArr['{{parent_name}}']          = esc_html( $parerntdata->display_name );
+											$searchArr['{{student_name}}']         = esc_html( $student_name );
+											$searchArr['{{title}}']                = sanitize_text_field( wp_unslash( $data['title'] ) );
+											$searchArr['{{submition_date}}']       = mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $data['sdate'] ) ) );
+											$searchArr['{{homework_date}}']        = mjschool_get_date_in_input_box( date( 'Y-m-d H:i:s' ) );
+											$searchArr['{{subject}}']              = esc_html( $subject_name );
+											$searchArr['{{school_name}}']          = esc_html( get_option( 'mjschool_name' ) );
 											$message                               = mjschool_string_replacement( $searchArr, $mjschool_parent_homework_mail_content );
 											if ( ! empty( $document_data[0] ) ) {
 												$attechment = WP_CONTENT_DIR . '/uploads/school_assets/' . sanitize_file_name( $document_data[0]['value'] );
@@ -603,12 +603,12 @@ class Mjschool_Homework {
 									}
 									// Send mail notification for student.
 									$string                       = array();
-									$string['{{student_name}}']   = $student_name;
-									$string['{{title}}']          = sanitize_text_field( $data['title'] );
-									$string['{{submition_date}}'] = mjschool_get_date_in_input_box( sanitize_text_field( $data['sdate'] ) );
-									$string['{{homework_date}}']  = mjschool_get_date_in_input_box( gmdate( 'Y-m-d H:i:s' ) );
-									$string['{{subject}}']        = $subject_name;
-									$string['{{school_name}}']    = get_option( 'mjschool_name' );
+									$string['{{student_name}}']   = esc_html( $student_name );
+									$string['{{title}}']          = sanitize_text_field( wp_unslash( $data['title'] ) );
+									$string['{{submition_date}}'] = mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $data['sdate'] ) ) );
+									$string['{{homework_date}}']  = mjschool_get_date_in_input_box( date( 'Y-m-d H:i:s' ) );
+									$string['{{subject}}']        = esc_html( $subject_name );
+									$string['{{school_name}}']    = esc_html( get_option( 'mjschool_name' ) );
 									$msgcontent                   = get_option( 'mjschool_homework_mailcontent' );
 									$msgsubject                   = get_option( 'mjschool_homework_title' );
 									$student_message              = mjschool_string_replacement( $string, $msgcontent );
@@ -623,10 +623,10 @@ class Mjschool_Homework {
 								if ( $enable_student ) {
 									$SMSArr                     = array();
 									$SMSCon                     = get_option( 'mjschool_homework_student_mjschool_content' );
-									$SMSArr['{{student_name}}'] = $student_name;
-									$SMSArr['{{title}}']        = sanitize_text_field( $data['title'] );
-									$SMSArr['{{date}}']         = mjschool_get_date_in_input_box( sanitize_text_field( $data['sdate'] ) );
-									$SMSArr['{{school_name}}']  = get_option( 'mjschool_name' );
+									$SMSArr['{{student_name}}'] = esc_html( $student_name );
+									$SMSArr['{{title}}']        = sanitize_text_field( wp_unslash( $data['title'] ) );
+									$SMSArr['{{date}}']         = mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $data['sdate'] ) ) );
+									$SMSArr['{{school_name}}']  = esc_html( get_option( 'mjschool_name' ) );
 									$message_content            = mjschool_string_replacement( $SMSArr, $SMSCon );
 									$type                       = 'Homework';
 									mjschool_send_mjschool_notification( $userdata->ID, $type, $message_content );
@@ -640,9 +640,9 @@ class Mjschool_Homework {
 											$email_to                  = $user_info->user_email;
 											$parerntdata               = get_user_by( 'email', $email_to );
 											$SMSCon                    = get_option( 'mjschool_homework_parent_mjschool_content' );
-											$SMSArr['{{parent_name}}'] = $parerntdata->display_name;
-											$SMSArr['{{title}}']       = sanitize_text_field( $data['title'] );
-											$SMSArr['{{school_name}}'] = get_option( 'mjschool_name' );
+											$SMSArr['{{parent_name}}'] = esc_html( $parerntdata->display_name );
+											$SMSArr['{{title}}']       = sanitize_text_field( wp_unslash( $data['title'] ) );
+											$SMSArr['{{school_name}}'] = esc_html( get_option( 'mjschool_name' ) );
 											$message_content           = mjschool_string_replacement( $SMSArr, $SMSCon );
 											$type                      = 'Homework';
 											mjschool_send_mjschool_notification( intval( $p ), $type, $message_content );
@@ -679,7 +679,7 @@ class Mjschool_Homework {
 	 */
 	public function mjschool_get_all_upcoming_homework() {
 		global $wpdb;
-		$current_date = gmdate( 'Y-m-d' );
+		$current_date = date( 'Y-m-d' );
 		$table_name   = $wpdb->prefix . 'mjschool_homework';
 		$query        = $wpdb->prepare( "SELECT * FROM $table_name WHERE submition_date >= %s", $current_date );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -695,7 +695,7 @@ class Mjschool_Homework {
 	 */
 	public function mjschool_get_all_closed_homework() {
 		global $wpdb;
-		$current_date = gmdate( 'Y-m-d' );
+		$current_date = date( 'Y-m-d' );
 		$table_name   = $wpdb->prefix . 'mjschool_homework';
 		$query        = $wpdb->prepare( "SELECT * FROM $table_name WHERE submition_date < %s", $current_date );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -725,7 +725,7 @@ class Mjschool_Homework {
 	 */
 	public function mjschool_get_all_own_upcoming_homeworklist() {
 		global $wpdb;
-		$current_date        = gmdate( 'Y-m-d' );
+		$current_date        = date( 'Y-m-d' );
 		$get_current_user_id = get_current_user_id();
 		$table_name          = $wpdb->prefix . 'mjschool_homework';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -740,7 +740,7 @@ class Mjschool_Homework {
 	 */
 	public function mjschool_get_all_own_closed_homeworklist() {
 		global $wpdb;
-		$current_date        = gmdate( 'Y-m-d' );
+		$current_date        = date( 'Y-m-d' );
 		$get_current_user_id = get_current_user_id();
 		$table_name          = $wpdb->prefix . 'mjschool_homework';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -819,7 +819,7 @@ class Mjschool_Homework {
 	public function mjschool_get_all_own_homework_list_for_teacher() {
 		global $wpdb;
 		$get_current_user_id = get_current_user_id();
-		$current_date        = gmdate( 'Y-m-d' );
+		$current_date        = date( 'Y-m-d' );
 		$table_name          = $wpdb->prefix . 'mjschool_homework';
 		$class               = get_user_meta( $get_current_user_id, 'class_name', true );
 		$rows                = array();
@@ -847,7 +847,7 @@ class Mjschool_Homework {
 	public function mjschool_get_all_own_upcoming_homework_list_for_teacher() {
 		global $wpdb;
 		$get_current_user_id = get_current_user_id();
-		$current_date        = gmdate( 'Y-m-d' );
+		$current_date        = date( 'Y-m-d' );
 		$table_name          = $wpdb->prefix . 'mjschool_homework';
 		$class               = get_user_meta( $get_current_user_id, 'class_name', true );
 		$rows                = array();
@@ -875,7 +875,7 @@ class Mjschool_Homework {
 	public function mjschool_get_all_own_closed_homework_list_for_teacher() {
 		global $wpdb;
 		$get_current_user_id = get_current_user_id();
-		$current_date        = gmdate( 'Y-m-d' );
+		$current_date        = date( 'Y-m-d' );
 		$table_name          = $wpdb->prefix . 'mjschool_homework';
 		$class               = get_user_meta( $get_current_user_id, 'class_name', true );
 		$rows                = array();

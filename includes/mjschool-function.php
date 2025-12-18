@@ -1832,7 +1832,7 @@ function mjschool_get_single_fees_payment_record( $id ) {
  * @param int $fees_pay_id Payment ID.
  * @return array Payment history list.
  */
-function mjschool_get_payment_history_by_feespayid( $fees_pay_id ) {
+function mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id ) {
 	global $wpdb;
 	$table_mjschool_fee_payment_history = $wpdb->prefix . 'mjschool_fee_payment_history';
 	$fees_pay_id                        = intval( $fees_pay_id );
@@ -2144,7 +2144,7 @@ function mjschool_get_subject_id_by_teacher( $id ) {
 	$subjects         = array();
 	if ( ! empty( $retrieve_subject ) ) {
 		foreach ( $retrieve_subject as $retrive_data ) {
-			$count = mjschool_is_subject( $retrive_data->subject_id );
+			$count = mjschool_is_subject_check( $retrive_data->subject_id );
 			if ( $count > 0 ) {
 				$subjects[] = $retrive_data->subject_id;
 			}
@@ -2159,7 +2159,7 @@ function mjschool_get_subject_id_by_teacher( $id ) {
  * @return int Number of matching records.
  * @since 1.0.0
  */
-function mjschool_is_subject( $id ) {
+function mjschool_is_subject_check( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_subject';
 	$subject_id = intval( $id );
@@ -3764,7 +3764,7 @@ function mjschool_pagination( $totalposts, $p, $lpm1, $prev, $next ) {
  * @param int $next       Next page link.
  * @return string         Pagination HTML.
  */
-function mjschool_fronted_sentbox_pagination( $totalposts, $p, $lpm1, $prev, $next ) {
+function mjschool_frontend_sentbox_pagination( $totalposts, $p, $lpm1, $prev, $next ) {
 	$adjacents  = 1;
 	$page_order = '';
 	$pagination = '';
@@ -3784,45 +3784,6 @@ function mjschool_fronted_sentbox_pagination( $totalposts, $p, $lpm1, $prev, $ne
 		}
 		if ( $p < $totalposts ) {
 			$pagination .= " <a href=\"?dashboard=mjschool_user&page=message&tab=sentbox&pg=$next\" class=\"btn btn-default next-page\"><i class=\"fa fa-angle-right\"></i></a>";
-		} else {
-			$pagination .= ' <a class="btn btn-default disabled"><i class="fa fa-angle-right"></i></a>';
-		}
-		$pagination .= "</div>\n";
-	}
-	return $pagination;
-}
-/**
- * Generate pagination HTML for message listing.
- *
- * @since 1.0.0
- *
- * @param int $totalposts Total pages.
- * @param int $p          Current page.
- * @param int $lpm1       Limit per page.
- * @param int $prev       Previous page link.
- * @param int $next       Next page link.
- * @return string         Pagination HTML.
- */
-function mjschool_admininbox_pagination( $totalposts, $p, $lpm1, $prev, $next ) {
-	$adjacents  = 1;
-	$page_order = '';
-	$pagination = '';
-	$form_id    = 1;
-	if ( isset( $_REQUEST['form_id'] ) ) {
-		$form_id = sanitize_text_field(wp_unslash($_REQUEST['form_id']));
-	}
-	if ( isset( $_GET['orderby'] ) ) {
-		$page_order = '&orderby=' . sanitize_text_field(wp_unslash($_GET['orderby'])) . '&order=' . sanitize_text_field(wp_unslash($_GET['order']));
-	}
-	if ( $totalposts > 1 ) {
-		$pagination .= '<div class="btn-group">';
-		if ( $p > 1 ) {
-			$pagination .= "<a href=\"?page=mjschool_message&tab=inbox&pg=$prev\" class=\"btn btn-default\"><i class=\"fa fa-angle-left\"></i></a> ";
-		} else {
-			$pagination .= '<a class="btn btn-default disabled"><i class="fa fa-angle-left"></i></a> ';
-		}
-		if ( $p < $totalposts ) {
-			$pagination .= " <a href=\"?page=mjschool_message&tab=inbox&pg=$next\" class=\"btn btn-default next-page\"><i class=\"fa fa-angle-right\"></i></a>";
 		} else {
 			$pagination .= ' <a class="btn btn-default disabled"><i class="fa fa-angle-right"></i></a>';
 		}
@@ -3920,7 +3881,7 @@ function mjschool_login_failed( $user ) {
  *
  * @param WP_User|null $user User object or null.
  */
-function mjschool_pu_blank_login( $user ) {
+function mjschool_custom_blank_login( $user ) {
 	// Check what page the login attempt is coming from.
 	$referrer = isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '';
 	$error    = false;
@@ -7166,7 +7127,7 @@ function mjschool_get_html_content( $fees_pay_id ) {
 	$schoolCountry              = get_option( 'mjschool_contry' );
 	$schoolNo                   = get_option( 'mjschool_contact_number' );
 	$fees_detail_result         = mjschool_get_single_fees_payment_record( $fees_pay_id );
-	$fees_history_detail_result = mjschool_get_payment_history_by_feespayid( $fees_pay_id );
+	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
 	$student_id                 = $fees_detail_result->student_id;
 	$abc                        = '';
 	if ( $student_id != 0 ) {
@@ -9716,7 +9677,7 @@ function mjschool_send_mail_paid_invoice_pdf( $emails, $subject, $message, $fees
 		mkdir( $document_path, 0777, true );
 	}
 	$fees_detail_result = mjschool_get_single_fees_payment_record( $fees_pay_id );
-	$fees_history_detail_result = mjschool_get_payment_history_by_feespayid( $fees_pay_id );
+	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
 	$invoice_number = mjschool_generate_invoice_number( $fees_pay_id );
 	require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
 	$mpdf = new Mpdf\Mpdf();
@@ -10096,7 +10057,7 @@ function mjschool_api_translate_invoice_pdf($id, $student) {
 	}
 	$fees_pay_id = $id;
 	$fees_detail_result = mjschool_get_single_fees_payment_record($fees_pay_id);
-	$fees_history_detail_result = mjschool_get_payment_history_by_feespayid($fees_pay_id);
+	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id($fees_pay_id);
 	require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
 	$mpdf = new Mpdf\Mpdf;
 	$mpdf->autoScriptToLang = true;
@@ -18598,5 +18559,4 @@ function mjschool_get_certificate_by_id( $certificate_id ) {
 
     return $result ?: null;
 }
-
 ?>

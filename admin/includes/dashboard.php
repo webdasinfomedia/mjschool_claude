@@ -649,7 +649,7 @@ if ( ! empty( $exam_list ) ) {
 		<div class="row mjschool-header mjschool-plugin-code-start mjschool-admin-dashboard-main-div mjchool_margin_none" >
 			<!--Header part in set logo & title start.-->
 			<div class="col-sm-12 col-md-12 col-lg-2 col-xl-2 mjschool-custom-padding-0">
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool' ); ?>" class='mjschool-logo'>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool' ) ); ?>" class='mjschool-logo'>
 					<img src="<?php echo esc_url( get_option( 'mjschool_system_logo' ) ); ?>" class="mjschool-system-logo-height-width">
 				</a>
 				<!-- Toggle button & design start. -->
@@ -691,7 +691,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_student' ) {
 									if ( $active_tab === 'addstudent' || $active_tab === 'view_student' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student&tab=studentlist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&tab=studentlist' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -708,7 +708,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_teacher' ) {
 									if ( $active_tab === 'addteacher' || $active_tab === 'view_teacher' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_teacher&tab=teacherlist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_teacher&tab=teacherlist' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -725,7 +725,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_parent' ) {
 									if ( $active_tab === 'addparent' || $active_tab === 'view_parent' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_parent&tab=parentlist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent&tab=parentlist' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -742,7 +742,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_supportstaff' ) {
 									if ( $active_tab === 'addsupportstaff' || $active_tab === 'view_supportstaff' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_supportstaff&tab=supportstaff_list' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_supportstaff&tab=supportstaff_list' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -760,7 +760,7 @@ if ( ! empty( $exam_list ) ) {
 									$nonce = wp_create_nonce( 'mjschool_homework_tab' );
 									if ( $active_tab === 'addhomework' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce=' . $nonce ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce=' . $nonce ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -771,14 +771,14 @@ if ( ! empty( $exam_list ) ) {
 										}
 									} elseif ( $active_tab === 'view_homework' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce=' . $nonce ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce=' . $nonce ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
 										esc_html_e( 'Homework Details', 'mjschool' );
 									} elseif ( $active_tab === 'view_stud_detail' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce=' . $nonce ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce=' . $nonce ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -794,14 +794,14 @@ if ( ! empty( $exam_list ) ) {
 										esc_html_e( 'Issue & Return', 'mjschool' );
 									} elseif ( $active_tab === 'issue_return' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_library&tab=issuelist&_wpnonce=' . $nonce ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_library&tab=issuelist&_wpnonce=' . $nonce ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
 										esc_html_e( 'Issue & Return', 'mjschool' );
 									} elseif ( $active_tab === 'view_book' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_library&tab=booklist&_wpnonce=' . $nonce ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_library&tab=booklist&_wpnonce=' . $nonce ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -812,7 +812,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_class' ) {
 									if ( $active_tab === 'addclass' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_class&tab=classlist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class&tab=classlist' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -823,7 +823,7 @@ if ( ! empty( $exam_list ) ) {
 										}
 									} elseif ( $active_tab === 'class_details' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_class&tab=classlist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class&tab=classlist' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -837,7 +837,7 @@ if ( ! empty( $exam_list ) ) {
 									if ($active_tab === 'add_class_room' )
 									{
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_class_room&tab=class_room_list' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class_room&tab=class_room_list' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -857,7 +857,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_admission' ) {
 									if ( $active_tab === 'mjschool-admission-form' || $active_tab === 'view_admission' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_admission' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -886,7 +886,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_virtual_classroom' ) {
 									if ( $active_tab === 'edit_meeting' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_virtual_classroom' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_virtual_classroom' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -899,7 +899,7 @@ if ( ! empty( $exam_list ) ) {
 										}
 									} elseif ( $active_tab === 'view_past_participle_list' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_virtual_classroom' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_virtual_classroom' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -913,7 +913,7 @@ if ( ! empty( $exam_list ) ) {
 									if ( $active_tab === 'addexam' || $active_tab === 'exam_time_table' ) {
 										?>
 										<?php $nonce = wp_create_nonce( 'mjschool_exam_module_tab' ); ?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce=' . $nonce ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce=' . $nonce ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -933,7 +933,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_Subject' ) {
 									if ( $active_tab === 'addsubject' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_Subject&tab=Subject' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_Subject&tab=Subject' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -960,7 +960,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_grade' ) {
 									if ( $active_tab === 'addgrade' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_grade&tab=gradelist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_grade&tab=gradelist' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -997,7 +997,7 @@ if ( ! empty( $exam_list ) ) {
 								elseif ( $mjschool_page_name === 'mjschool_leave' ) {
 									if ( $active_tab === 'add_leave' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_leave&tab=leave_list' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_leave&tab=leave_list' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -1017,14 +1017,14 @@ if ( ! empty( $exam_list ) ) {
 										esc_html_e( 'Hostel', 'mjschool' );
 									} elseif ( $mjschool_page_name === 'mjschool_hostel' && $active_tab === 'hostel_details' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_list' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_list' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
 										esc_html_e( 'Hostel Details', 'mjschool' );
 									} elseif ($mjschool_page_name === 'mjschool_hostel' && $active_tab === 'add_hostel' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_list' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_list' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php 
@@ -1041,7 +1041,7 @@ if ( ! empty( $exam_list ) ) {
 								elseif ( $mjschool_page_name === 'mjschool_notice' ) {
 									if ( $active_tab === 'addnotice' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notice&tab=noticelist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notice&tab=noticelist' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -1057,7 +1057,7 @@ if ( ! empty( $exam_list ) ) {
 									$nonce = wp_create_nonce( 'mjschool_certificate_tab' );
 									if ( $active_tab === 'add_certificate' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_certificate&tab=certificatelist&_wpnonce=' . $nonce ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_certificate&tab=certificatelist&_wpnonce=' . $nonce ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -1071,7 +1071,7 @@ if ( ! empty( $exam_list ) ) {
 									}
 									if ( $active_tab === 'assign_certificate' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_certificate&tab=assign_list&_wpnonce=' . $nonce ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_certificate&tab=assign_list&_wpnonce=' . $nonce ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -1086,7 +1086,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_event' ) {
 									if ( $active_tab === 'add_event' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_event&tab=eventlist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_event&tab=eventlist' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 										</a>
 										<?php
@@ -1101,7 +1101,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_notification' ) {
 									if ( $active_tab === 'addnotification' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notification&tab=notificationlist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notification&tab=notificationlist' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -1114,7 +1114,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_holiday' ) {
 									if ( $active_tab === 'addholiday' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_holiday&tab=holidaylist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_holiday&tab=holidaylist' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -1155,7 +1155,7 @@ if ( ! empty( $exam_list ) ) {
 									} elseif ( $active_tab === 'view_invoice' ) {
 										if ( $request_invoice_type === 'income' || $request_invoice_type === 'invoice' ) {
 											?>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_payment&tab=incomelist' ); ?>'>
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_payment&tab=incomelist' ) ); ?>'>
 												
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 												
@@ -1163,7 +1163,7 @@ if ( ! empty( $exam_list ) ) {
 											<?php
 										} elseif ( $request_invoice_type === 'expense' ) {
 											?>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_payment&tab=expenselist' ); ?>'>
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_payment&tab=expenselist' ) ); ?>'>
 												
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 												
@@ -1202,7 +1202,7 @@ if ( ! empty( $exam_list ) ) {
 										}
 									} elseif ( $active_tab === 'view_fesspayment' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -1213,7 +1213,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_tax' ) {
 									if ( $active_tab === 'add_tax' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_tax&tab=tax' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_tax&tab=tax' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -1230,7 +1230,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_transport' ) {
 									if ( $active_tab === 'addtransport' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_transport&tab=transport' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_transport&tab=transport' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -1253,7 +1253,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_custom_field' ) {
 									if ( $active_tab === 'add_custome_field' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_custom_field&tab=custome_field_list' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_custom_field&tab=custome_field_list' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -1284,7 +1284,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_document' ) {
 									if ( $active_tab === 'add_document' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_document&tab=documentlist' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_document&tab=documentlist' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>">
 											
@@ -1309,7 +1309,7 @@ if ( ! empty( $exam_list ) ) {
 									
 									if ($student_add_access === '1') {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student&tab=addstudent' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&tab=addstudent' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1317,7 +1317,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ($mjschool_page_name === "mjschool_admission" && $active_tab != 'mjschool-admission-form' && $active_tab != 'view_admission' ) {
 									if ($admission_add_access === '1') {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_admission&tab=mjschool-admission-form' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission&tab=mjschool-admission-form' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1325,7 +1325,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ($mjschool_page_name === "mjschool_class" && $active_tab != 'class_details' && $active_tab != 'addclass' && $active_tab != 'class_wise_student_list' ) {
 									if ($class_add_access === '1') {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_class&tab=addclass' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class&tab=addclass' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1333,7 +1333,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ($mjschool_page_name === "mjschool_class_room" && $active_tab != 'add_class_room' ) {
 									if ($class_room_add_access === '1') {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_class_room&tab=add_class_room' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class_room&tab=add_class_room' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1341,7 +1341,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ($mjschool_page_name === "mjschool_route" && $active_tab != 'addroute' ) {
 									if ($schedule_add_access === '1') {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_route&tab=addroute' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_route&tab=addroute' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1349,7 +1349,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ($mjschool_page_name === "mjschool_teacher" && $active_tab != 'addteacher' && $active_tab != 'view_teacher' && $mjschool_action != 'view_teacher' ) {
 									if ($teacher_add_access === '1') {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_teacher&tab=addteacher' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_teacher&tab=addteacher' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1357,7 +1357,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ($mjschool_page_name === "mjschool_parent" && $active_tab != 'addparent' && $mjschool_action != 'view_parent' ) {
 									if ($parent_add_access === '1') {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_parent&tab=addparent' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent&tab=addparent' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1365,7 +1365,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ($mjschool_page_name === "mjschool_supportstaff" && $active_tab != 'addsupportstaff' && $mjschool_action != 'view_supportstaff' ) {
 									if ($staff_add_access === '1') {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php 
@@ -1373,7 +1373,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_student_homewrok' && $active_tab != 'addhomework' && $active_tab != 'view_stud_detail' && $active_tab != 'view_homework' ) {
 									if ( $homework_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=addhomework' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework' ) ); ?>'>
 											
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
@@ -1382,7 +1382,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_virtual_classroom' && $active_tab != 'edit_meeting' && $active_tab != 'view_past_participle_list' ) {
 									if ( $virtual_class_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_route&tab=addroute' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_route&tab=addroute' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1390,7 +1390,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_Subject' && $active_tab != 'addsubject' ) {
 									if ( $subject_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_Subject&tab=addsubject' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_Subject&tab=addsubject' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1398,7 +1398,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_exam' && $active_tab != 'addexam' && $active_tab != 'exam_time_table' ) {
 									if ( $exam_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_exam&tab=addexam' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=addexam' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1406,7 +1406,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_hall' && $active_tab != 'addhall' && $active_tab != 'exam_hall_receipt' ) {
 									if ( $hall_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_hall&tab=addhall' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hall&tab=addhall' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1414,7 +1414,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_library' && $active_tab === 'booklist' ) {
 									if ( $library_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_library&tab=addbook' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_library&tab=addbook' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1422,7 +1422,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_grade' && $active_tab != 'addgrade' ) {
 									if ( $grade_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_grade&tab=addgrade' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_grade&tab=addgrade' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1430,7 +1430,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_hostel' && $active_tab === 'hostel_list' ) {
 									if ( $hostel_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_hostel&tab=add_hostel' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=add_hostel' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1438,7 +1438,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_tax' && $active_tab === 'tax' ) {
 									if ( $tax_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_tax&tab=add_tax' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_tax&tab=add_tax' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1447,7 +1447,7 @@ if ( ! empty( $exam_list ) ) {
 									if ( $active_tab === 'payment' ) {
 										if ( $payment_add_access === '1' ) {
 											?>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_payment&tab=addpayment' ); ?>'>
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_payment&tab=addpayment' ) ); ?>'>
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 											</a>
 											<?php
@@ -1455,7 +1455,7 @@ if ( ! empty( $exam_list ) ) {
 									} elseif ( $active_tab === 'incomelist' ) {
 										if ( $payment_add_access === '1' ) {
 											?>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_payment&tab=addincome' ); ?>'>
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_payment&tab=addincome' ) ); ?>'>
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 											</a>
 											<?php
@@ -1463,7 +1463,7 @@ if ( ! empty( $exam_list ) ) {
 									} elseif ( $active_tab === 'expenselist' ) {
 										if ( $payment_add_access === '1' ) {
 											?>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_payment&tab=addexpense' ); ?>'>
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_payment&tab=addexpense' ) ); ?>'>
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 											</a>
 											<?php
@@ -1473,7 +1473,7 @@ if ( ! empty( $exam_list ) ) {
 									if ( $active_tab === 'feeslist' ) {
 										if ( $fees_add_access === '1' ) {
 											?>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_fees_payment&tab=addfeetype' ); ?>'>
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=addfeetype' ) ); ?>'>
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 											</a>
 											<?php
@@ -1481,7 +1481,7 @@ if ( ! empty( $exam_list ) ) {
 									} elseif ( $active_tab === 'feespaymentlist' || $active_tab === 'recurring_feespaymentlist' ) {
 										if ( $fees_add_access === '1' ) {
 											?>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_fees_payment&tab=addpaymentfee' ); ?>'>
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=addpaymentfee' ) ); ?>'>
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 											</a>
 											<?php
@@ -1490,7 +1490,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_transport' && $active_tab != 'addtransport' ) {
 									if ( $hostel_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_transport&tab=addtransport' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_transport&tab=addtransport' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1498,7 +1498,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_leave' && $active_tab != 'add_leave' ) {
 									if ( $leave_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_leave&tab=add_leave' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_leave&tab=add_leave' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1507,7 +1507,7 @@ if ( ! empty( $exam_list ) ) {
 								elseif ( $mjschool_page_name === 'mjschool_notice' && $active_tab != 'addnotice' ) {
 									if ( $notice_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notice&tab=addnotice' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notice&tab=addnotice' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1515,7 +1515,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_event' && $active_tab != 'add_event' ) {
 									if ( $event_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_event&tab=add_event' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_event&tab=add_event' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1523,7 +1523,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_certificate' && $active_tab === 'assign_list' ) {
 									if ( $certificate_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_certificate&tab=assign_certificate&action=new' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_certificate&tab=assign_certificate&action=new' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1531,7 +1531,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_notification' && $active_tab != 'addnotification' ) {
 									if ( $notification_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notification&tab=addnotification' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notification&tab=addnotification' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1539,7 +1539,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_holiday' && $active_tab != 'addholiday' ) {
 									if ( $holiday_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_holiday&tab=addholiday' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_holiday&tab=addholiday' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1547,7 +1547,7 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_message' ) {
 									if ( $message_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_message&tab=compose' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message&tab=compose' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
@@ -1555,14 +1555,14 @@ if ( ! empty( $exam_list ) ) {
 								} elseif ( $mjschool_page_name === 'mjschool_custom_field' && $active_tab != 'add_custome_field' ) {
 									if ( $field_add_access === '1' ) {
 										?>
-										<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_custom_field&tab=add_custome_field' ); ?>'>
+										<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_custom_field&tab=add_custome_field' ) ); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 										</a>
 										<?php
 									}
 								} elseif ( $mjschool_page_name === 'mjschool_document' && $active_tab != 'add_document' ) {
 									?>
-									<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_document&tab=add_document' ); ?>'>
+									<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_document&tab=add_document' ) ); ?>'>
 										<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>">
 									</a>
 									<?php
@@ -1585,56 +1585,56 @@ if ( ! empty( $exam_list ) ) {
 										<ul class="dropdown-menu extended mjschool-action-dropdawn mjschool-logout-dropdown-menu logout mjschool-header-dropdown-menu mjschool-setting-dropdown-menu" aria-labelledby="dropdownMenuLink">
 											<li class="mjschool-float-left-width-100px">
 												<?php $nonce = wp_create_nonce( 'mjschool_general_setting_tab' ); ?>
-												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_general_settings&_wpnonce='.esc_attr( $nonce ) ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-general-setting.png"); ?>" class="mjschool-dashboard-popup-icon">
+												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_general_settings&_wpnonce='.esc_attr( $nonce ) ) ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-general-setting.png"); ?>" class="mjschool-dashboard-popup-icon">
 													<p class="mjschool-dashboard-setting-dropdow">
 														<?php esc_html_e( 'General Settings', 'mjschool' ); ?>
 													</p>
 												</a>
 											</li>
 											<li class="mjschool-float-left-width-100px">
-												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_custom_field' ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-custom-fields.png"); ?>" class="mjschool-dashboard-popup-icon">
+												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_custom_field' ) ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-custom-fields.png"); ?>" class="mjschool-dashboard-popup-icon">
 													<p class="mjschool-dashboard-setting-dropdow">
 														<?php esc_html_e( 'Custom Fields', 'mjschool' ); ?>
 													</p>
 												</a>
 											</li>
 											<li class="mjschool-float-left-width-100px">
-												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_sms_setting' ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-sms-settings.png"); ?>" class="mjschool-dashboard-popup-icon">
+												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_sms_setting' ) ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-sms-settings.png"); ?>" class="mjschool-dashboard-popup-icon">
 													<p class="mjschool-dashboard-setting-dropdow">
 														<?php esc_html_e( 'SMS Settings', 'mjschool' ); ?>
 													</p>
 												</a>
 											</li>
 											<li class="mjschool-float-left-width-100px">
-												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_email_template' ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-email-template.png"); ?>" class="mjschool-dashboard-popup-icon">
+												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_email_template' ) ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-email-template.png"); ?>" class="mjschool-dashboard-popup-icon">
 													<p class="mjschool-dashboard-setting-dropdow">
 														<?php esc_html_e( 'Email Template', 'mjschool' ); ?>
 													</p>
 												</a>
 											</li>
 											<li class="mjschool-float-left-width-100px">
-												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_sms_template' ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-email-template.png"); ?>" class="mjschool-dashboard-popup-icon">
+												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_sms_template' ) ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-email-template.png"); ?>" class="mjschool-dashboard-popup-icon">
 													<p class="mjschool-dashboard-setting-dropdow">
 														<?php esc_html_e( 'SMS Template', 'mjschool' ); ?>
 													</p>
 												</a>
 											</li>
 											<li class="mjschool-float-left-width-100px">
-												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_access_right' ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-access-rights.png"); ?>" class="mjschool-dashboard-popup-icon">
+												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_access_right' ) ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-access-rights.png"); ?>" class="mjschool-dashboard-popup-icon">
 													<p class="mjschool-dashboard-setting-dropdow">
 														<?php esc_html_e( 'Access Right', 'mjschool' ); ?>
 													</p>
 												</a>
 											</li>
 											<li class="mjschool-float-left-width-100px">
-												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_system_videos' ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-how-to-tutorial.png"); ?>" class="mjschool-dashboard-popup-icon">
+												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_system_videos' ) ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-how-to-tutorial.png"); ?>" class="mjschool-dashboard-popup-icon">
 													<p class="mjschool-dashboard-setting-dropdow">
 														<?php esc_html_e( 'How To Videos', 'mjschool' ); ?>
 													</p>
 												</a>
 											</li>
 											<li class="mjschool-float-left-width-100px">
-												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_system_addon' ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-system-addons.png"); ?>" class="mjschool-dashboard-popup-icon">
+												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_system_addon' ) ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/mjschool-system-addons.png"); ?>" class="mjschool-dashboard-popup-icon">
 													<p class="mjschool-dashboard-setting-dropdow">
 														<?php esc_html_e( 'Addons', 'mjschool' ); ?>
 													</p>
@@ -1645,7 +1645,7 @@ if ( ! empty( $exam_list ) ) {
 									<!-- End user login dropdown. -->
 								</ul>
 							</div>
-							<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notice' ); ?>' class="mjschool-setting-notification-bg">
+							<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notice' ) ); ?>' class="mjschool-setting-notification-bg">
 								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-bell-notification.png"); ?>" class="mjschool-right-heder-list-link">
 								<spna class="mjschool-between-border mjschool-right-heder-list-link"> </span>
 							</a>
@@ -1685,14 +1685,14 @@ if ( ! empty( $exam_list ) ) {
 					<nav class="sidebar_dashboard" id="sidebar">
 						<ul class='mjschool-navigation navbar-collapse mjschool-rs-side-menu-bgcolor' id="navbarNav">
 							<li class="card-icon">
-								<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_setup' ); ?>' class="<?php if ( $request_page === 'mjschool_setup' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
+								<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_setup' ) ); ?>' class="<?php if ( $request_page === 'mjschool_setup' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
 									<img class="icon img-top mjschool-responsive-iphone-icon" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-license.png"); ?>">
 									<img class="icon " src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-license.png"); ?>">
 									<span><?php esc_html_e( 'License settings', 'mjschool' ); ?></span>
 								</a>
 							</li>
 							<li class="card-icon">
-								<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool' ); ?>" class="<?php if ( $request_page === 'mjschool' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool' ) ); ?>" class="<?php if ( $request_page === 'mjschool' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
 									<img class="icon img-top mjschool-responsive-iphone-icon" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-dashboards.png"); ?>">
 									<img class="icon " src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-dashboards.png"); ?>">
 									<span><?php esc_html_e( 'Dashboard', 'mjschool' ); ?></span>
@@ -1702,7 +1702,7 @@ if ( ! empty( $exam_list ) ) {
 							if ( $admission_view_access === '1' ) {
 								?>
 								<li class="card-icon">
-									<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_admission' ); ?>' class="<?php if ( $request_page === 'mjschool_admission' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
+									<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission' ) ); ?>' class="<?php if ( $request_page === 'mjschool_admission' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
 										<img class="icon img-top mjschool-responsive-iphone-icon" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-admission.png"); ?>">
 										<img class="icon " src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-admission.png"); ?>">
 										<span><?php esc_html_e( 'Admission', 'mjschool' ); ?></span>
@@ -1725,7 +1725,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $class_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_class' ); ?>' class="<?php if ( $request_page === 'mjschool_class' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class' ) ); ?>' class="<?php if ( $request_page === 'mjschool_class' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
 													<span><?php esc_html_e( 'Class', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1739,7 +1739,7 @@ if ( ! empty( $exam_list ) ) {
 												if ( $class_room_view_access === '1' ) {
 													?>
 													<li class=''>
-														<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_class_room' ); ?>' class="<?php if ( $request_page === 'mjschool_class_room' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+														<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class_room' ) ); ?>' class="<?php if ( $request_page === 'mjschool_class_room' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 															<span><?php esc_html_e( 'Class Room', 'mjschool' ); ?></span>
 														</a>
 													</li>
@@ -1750,7 +1750,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $schedule_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_route' ); ?>' class="<?php if ( $request_page === 'mjschool_route' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_route' ) ); ?>' class="<?php if ( $request_page === 'mjschool_route' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Class Routine', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1760,7 +1760,7 @@ if ( ! empty( $exam_list ) ) {
 											if ( get_option( 'mjschool_enable_virtual_classroom' ) === 'yes' ) {
 												?>
 												<li class=''>
-													<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_virtual_classroom' ); ?>' class="<?php if ( $request_page === 'mjschool_virtual_classroom' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+													<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_virtual_classroom' ) ); ?>' class="<?php if ( $request_page === 'mjschool_virtual_classroom' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 														<span><?php esc_html_e( 'Virtual Classroom', 'mjschool' ); ?></span>
 													</a>
 												</li>
@@ -1770,7 +1770,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $subject_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_Subject' ); ?>' class="<?php if ( $request_page === 'mjschool_Subject' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_Subject' ) ); ?>' class="<?php if ( $request_page === 'mjschool_Subject' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Subject', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1798,7 +1798,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $student_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student' ); ?>' class="<?php if ( $request_page === 'mjschool_student' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student' ) ); ?>' class="<?php if ( $request_page === 'mjschool_student' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Student', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1807,7 +1807,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $teacher_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_teacher' ); ?>' class="<?php if ( $request_page === 'mjschool_teacher' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_teacher' ) ); ?>' class="<?php if ( $request_page === 'mjschool_teacher' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Teacher', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1816,7 +1816,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $staff_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_supportstaff' ); ?>' class="<?php if ( $request_page === 'mjschool_supportstaff' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_supportstaff' ) ); ?>' class="<?php if ( $request_page === 'mjschool_supportstaff' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Support Staff', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1825,7 +1825,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $parent_view_access === '1' ) {
 											?>
 											<li >
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_parent' ); ?>' class="<?php if ( $request_page === 'mjschool_parent' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent' ) ); ?>' class="<?php if ( $request_page === 'mjschool_parent' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
 													<span><?php esc_html_e( 'Parent', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1853,7 +1853,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $exam_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_exam' ); ?>' class="<?php if ( $request_page === 'mjschool_exam' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam' ) ); ?>' class="<?php if ( $request_page === 'mjschool_exam' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Exam', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1862,7 +1862,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $hall_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_hall' ); ?>' class="<?php if ( $request_page === 'mjschool_hall' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hall' ) ); ?>' class="<?php if ( $request_page === 'mjschool_hall' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Exam Hall', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1871,7 +1871,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $mark_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_result' ); ?>' class="<?php if ( $request_page === 'mjschool_result' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_result' ) ); ?>' class="<?php if ( $request_page === 'mjschool_result' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Manage Marks', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1880,7 +1880,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $grade_view_access === '1' ) {
 											?>
 											<li >
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_grade' ); ?>' class="<?php if ( $request_page === 'mjschool_grade' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_grade' ) ); ?>' class="<?php if ( $request_page === 'mjschool_grade' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Grade', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1889,7 +1889,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $migration_view_access === '1' ) {
 											?>
 											<li >
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_Migration' ); ?>' class="<?php if ( $request_page === 'mjschool_Migration' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_Migration' ) ); ?>' class="<?php if ( $request_page === 'mjschool_Migration' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Migration', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1903,7 +1903,7 @@ if ( ! empty( $exam_list ) ) {
 							if ( $homework_view_access === '1' ) {
 								?>
 								<li class="card-icon">
-									<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student_homewrok' ); ?>' class="<?php if ( $request_page === 'mjschool_student_homewrok' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+									<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok' ) ); ?>' class="<?php if ( $request_page === 'mjschool_student_homewrok' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 										<img class="icon img-top mjschool-responsive-iphone-icon" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-homework.png"); ?>">
 										<img class="icon " src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-homework.png"); ?>">
 										<span><?php esc_html_e( 'Homework', 'mjschool' ); ?></span>
@@ -1924,13 +1924,13 @@ if ( ! empty( $exam_list ) ) {
 									<ul class='submenu dropdown-menu'>
 										<?php $nonce = wp_create_nonce( 'mjschool_student_attendance_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_attendence&tab=student_attendance&_wpnonce='.esc_attr( $nonce ) ); ?>' >
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence&tab=student_attendance&_wpnonce='.esc_attr( $nonce ) ) ); ?>' >
 												<span><?php esc_html_e( 'Student Attendance', 'mjschool' ); ?></span>
 											</a>
 										</li>
 										<?php $nonce = wp_create_nonce( 'mjschool_teacher_attendance_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_attendence&tab=teacher_attendance&_wpnonce='.esc_attr( $nonce ) ); ?>' >
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence&tab=teacher_attendance&_wpnonce='.esc_attr( $nonce ) ) ); ?>' >
 												<span><?php esc_html_e( 'Teacher Attendance', 'mjschool' ); ?></span>
 											</a>
 										</li>
@@ -1942,7 +1942,7 @@ if ( ! empty( $exam_list ) ) {
 							if ( $document_view_access === '1' ) {
 								?>
 								<li class="card-icon">
-									<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_document' ); ?>' class="<?php if ( $request_page === 'mjschool_document' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+									<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_document' ) ); ?>' class="<?php if ( $request_page === 'mjschool_document' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 										<img class="icon img-top mjschool-responsive-iphone-icon" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-document.png"); ?>">
 										<img class="icon " src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-document.png"); ?>">
 										<span><?php esc_html_e( 'Documents', 'mjschool' ); ?></span>
@@ -1955,7 +1955,7 @@ if ( ! empty( $exam_list ) ) {
 							if ( $leave_view_access === '1' ) {
 								?>
 								<li class="card-icon">
-									<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_leave' ); ?>' class="<?php if ( $request_page === 'mjschool_leave' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+									<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_leave' ) ); ?>' class="<?php if ( $request_page === 'mjschool_leave' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 										<img class="icon img-top mjschool-responsive-iphone-icon" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-leave.png"); ?>">
 										<img class="icon " src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-leave.png"); ?>">
 										<span><?php esc_html_e( 'Leave', 'mjschool' ); ?></span>
@@ -1980,7 +1980,7 @@ if ( ! empty( $exam_list ) ) {
 											?>
 											<?php $nonce = wp_create_nonce( 'mjschool_feespayment_tab' ); ?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_fees_payment&tab=feeslist&_wpnonce='.esc_attr( $nonce ) ); ?>' class="<?php if ( $request_page === 'mjschool_fees_payment' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feeslist&_wpnonce='.esc_attr( $nonce ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_fees_payment' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Fees payment', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1990,7 +1990,7 @@ if ( ! empty( $exam_list ) ) {
 											?>
 											<?php $nonce = wp_create_nonce( 'mjschool_payment_tab' ); ?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ) ); ?>' class="<?php if ( $request_page === 'mjschool_payment' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_payment' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Other Payment', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -1999,7 +1999,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $tax_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_tax&tab=tax' ); ?>' class="<?php if ( $request_page === 'mjschool_tax' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_tax&tab=tax' ) ); ?>' class="<?php if ( $request_page === 'mjschool_tax' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Tax', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2014,7 +2014,7 @@ if ( ! empty( $exam_list ) ) {
 								$nonce = wp_create_nonce( 'mjschool_library_tab' );
 								?>
 								<li class="card-icon">
-									<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_library&tab=booklist&_wpnonce='.esc_attr( $nonce ) ); ?>' class="<?php if ( $request_page === 'mjschool_library' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+									<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_library&tab=booklist&_wpnonce='.esc_attr( $nonce ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_library' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 										<img class="icon img-top mjschool-responsive-iphone-icon" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-library.png"); ?>">
 										<img class="icon " src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-library.png"); ?>">
 										<span><?php esc_html_e( 'Library', 'mjschool' ); ?></span>
@@ -2025,7 +2025,7 @@ if ( ! empty( $exam_list ) ) {
 							if ( $hostel_view_access === '1' ) {
 								?>
 								<li class="card-icon">
-									<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_hostel&tab=hostel_list' ); ?>' class="<?php if ( $request_page === 'mjschool_hostel' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+									<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_list' ) ); ?>' class="<?php if ( $request_page === 'mjschool_hostel' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 										<img class="icon img-top mjschool-responsive-iphone-icon" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-hostel.png"); ?>">
 										<img class="icon " src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-hostel.png"); ?>">
 										<span><?php esc_html_e( 'Hostel', 'mjschool' ); ?></span>
@@ -2036,7 +2036,7 @@ if ( ! empty( $exam_list ) ) {
 							if ( $transport_view_access === '1' ) {
 								?>
 								<li class="card-icon">
-									<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_transport' ); ?>' class="<?php if ( $request_page === 'mjschool_transport' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+									<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_transport' ) ); ?>' class="<?php if ( $request_page === 'mjschool_transport' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 										<img class="icon img-top mjschool-responsive-iphone-icon" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-transportation.png"); ?>">
 										<img class="icon " src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-transportation.png"); ?>">
 										<span><?php esc_html_e( 'Transport', 'mjschool' ); ?></span>
@@ -2048,7 +2048,7 @@ if ( ! empty( $exam_list ) ) {
 								$nonce = wp_create_nonce( 'mjschool_certificate_tab' );
 								?>
 								<li class="card-icon">
-									<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_certificate&tab=certificatelist&_wpnonce='.esc_attr( $nonce ) ); ?>' class="<?php if ( $request_page === 'mjschool_certificate' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+									<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_certificate&tab=certificatelist&_wpnonce='.esc_attr( $nonce ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_certificate' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 										<img class="icon img-top mjschool-responsive-iphone-icon" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-certificate-icon-dark.png"); ?>">
 										<img class="icon " src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-certificate-icon-light.png"); ?>">
 										<span><?php esc_html_e( 'Certificate', 'mjschool' ); ?></span>
@@ -2071,55 +2071,55 @@ if ( ! empty( $exam_list ) ) {
 									<ul class='submenu dropdown-menu'>
 										<?php $nonce = wp_create_nonce( 'mjschool_student_infomation_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_report&tab=student_information_report&_wpnonce='.esc_attr( $nonce ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_report&tab=student_information_report&_wpnonce='.esc_attr( $nonce ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'Student Information', 'mjschool' ); ?></span>
 											</a>
 										</li>
 										<?php $nonce1 = wp_create_nonce( 'mjschool_finance_report_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_report&tab=finance_report&_wpnonce='.esc_attr( $nonce1 ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_report&tab=finance_report&_wpnonce='.esc_attr( $nonce1 ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'Finance/Payment', 'mjschool' ); ?></span>
 											</a>
 										</li>
 										<?php $nonce2 = wp_create_nonce( 'mjschool_attendance_report_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_report&tab=attendance_report&_wpnonce='.esc_attr( $nonce2 ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_report&tab=attendance_report&_wpnonce='.esc_attr( $nonce2 ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'Attendance', 'mjschool' ); ?></span>
 											</a>
 										</li>
 										<?php $nonce3 = wp_create_nonce( 'mjschool_examination_report_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_report&tab=examinations_report&_wpnonce='.esc_attr( $nonce3 ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_report&tab=examinations_report&_wpnonce='.esc_attr( $nonce3 ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'Examinations', 'mjschool' ); ?></span>
 											</a>
 										</li>
 										<?php $nonce4 = wp_create_nonce( 'mjschool_library_report_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_report&tab=library_report&_wpnonce='.esc_attr( $nonce4 ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_report&tab=library_report&_wpnonce='.esc_attr( $nonce4 ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'Library', 'mjschool' ); ?></span>
 											</a>
 										</li>
 										<?php $nonce5 = wp_create_nonce( 'mjschool_hostel_report_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_report&tab=hostel_report&_wpnonce='.esc_attr( $nonce5 ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_report&tab=hostel_report&_wpnonce='.esc_attr( $nonce5 ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'Hostel', 'mjschool' ); ?></span>
 											</a>
 										</li>
 										<?php $nonce6 = wp_create_nonce( 'mjschool_user_log_report_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_report&tab=user_log_report&_wpnonce='.esc_attr( $nonce6 ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_report&tab=user_log_report&_wpnonce='.esc_attr( $nonce6 ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'User Log', 'mjschool' ); ?></span>
 											</a>
 										</li>
 										<?php $nonce7 = wp_create_nonce( 'mjschool_audit_trail_report_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_report&tab=audit_log_report&_wpnonce='.esc_attr( $nonce7 ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_report&tab=audit_log_report&_wpnonce='.esc_attr( $nonce7 ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'Audit Trail Report', 'mjschool' ); ?></span>
 											</a>
 										</li>
 										<?php $nonce8 = wp_create_nonce( 'mjschool_migration_report_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_report&tab=migration_report&_wpnonce='.esc_attr( $nonce8 ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_report&tab=migration_report&_wpnonce='.esc_attr( $nonce8 ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'Migration Report', 'mjschool' ); ?></span>
 											</a>
 										</li>
@@ -2140,19 +2140,19 @@ if ( ! empty( $exam_list ) ) {
 									<ul class='submenu dropdown-menu'>
 										<?php $nonce = wp_create_nonce( 'mjschool_advance_student_infomation_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_advance_report&tab=student_information_report&_wpnonce='.esc_attr( $nonce ) ); ?>' class=" <?php if ( $request_page === 'mjschool_advance_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_advance_report&tab=student_information_report&_wpnonce='.esc_attr( $nonce ) ) ); ?>' class=" <?php if ( $request_page === 'mjschool_advance_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'Student Information', 'mjschool' ); ?></span>
 											</a>
 										</li>
 										<?php $nonce2 = wp_create_nonce( 'mjschool_advance_finance_report_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_advance_report&tab=finance_report&_wpnonce='.esc_attr( $nonce2 ) ); ?>' class="<?php if ( $request_page === 'mjschool_advance_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_advance_report&tab=finance_report&_wpnonce='.esc_attr( $nonce2 ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_advance_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'Finance/Payment', 'mjschool' ); ?></span>
 											</a>
 										</li>
 										<?php $nonce3 = wp_create_nonce( 'mjschool_advance_attendance_report_tab' ); ?>
 										<li class=''>
-											<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_advance_report&tab=student_attendance_report&_wpnonce='.esc_attr( $nonce3 ) ); ?>' class="<?php if ( $request_page === 'mjschool_advance_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+											<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_advance_report&tab=student_attendance_report&_wpnonce='.esc_attr( $nonce3 ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_advance_report' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 												<span><?php esc_html_e( 'Attendance', 'mjschool' ); ?></span>
 											</a>
 										</li>
@@ -2175,7 +2175,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $notice_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notice' ); ?>' class="<?php if ( $request_page === 'mjschool_notice' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notice' ) ); ?>' class="<?php if ( $request_page === 'mjschool_notice' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Notice', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2184,7 +2184,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $message_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_message' ); ?>' class="<?php if ( $request_page === 'mjschool_message' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message' ) ); ?>' class="<?php if ( $request_page === 'mjschool_message' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Message', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2193,7 +2193,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $notification_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notification' ); ?>' class="<?php if ( $request_page === 'mjschool_notification' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notification' ) ); ?>' class="<?php if ( $request_page === 'mjschool_notification' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Notification', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2202,7 +2202,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $event_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_event' ); ?>' class="<?php if ( $request_page === 'mjschool_event' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_event' ) ); ?>' class="<?php if ( $request_page === 'mjschool_event' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Event', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2211,7 +2211,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $holiday_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_holiday' ); ?>' class="<?php if ( $request_page === 'mjschool_holiday' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_holiday' ) ); ?>' class="<?php if ( $request_page === 'mjschool_holiday' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Holiday', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2237,7 +2237,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $field_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_custom_field' ); ?>' class="<?php if ( $request_page === 'custom_field' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_custom_field' ) ); ?>' class="<?php if ( $request_page === 'custom_field' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Custom Fields', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2246,7 +2246,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $sms_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_sms_setting' ); ?>' class="<?php if ( $request_page === 'mjschool_sms_setting' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_sms_setting' ) ); ?>' class="<?php if ( $request_page === 'mjschool_sms_setting' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'SMS Settings', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2255,7 +2255,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $mail_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_email_template' ); ?>' class="<?php if ( $request_page === 'mjschool_email_template' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_email_template' ) ); ?>' class="<?php if ( $request_page === 'mjschool_email_template' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Email Template', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2264,7 +2264,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $mjschool_template_view_access === '1' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_sms_template' ); ?>' class="<?php if ( $request_page === 'mjschool_sms_template' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_sms_template' ) ); ?>' class="<?php if ( $request_page === 'mjschool_sms_template' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'SMS Template', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2274,7 +2274,7 @@ if ( ! empty( $exam_list ) ) {
 										if ( $mjschool_role === 'administrator' ) {
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_access_right' ); ?>' class="<?php if ( $request_page === 'mjschool_access_right' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_access_right' ) ); ?>' class="<?php if ( $request_page === 'mjschool_access_right' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Access Right', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2282,7 +2282,7 @@ if ( ! empty( $exam_list ) ) {
 											if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 												?>
 												<li class=''>
-													<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_system_videos' ); ?>' class="<?php if ( $request_page === 'mjschool_system_videos' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+													<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_system_videos' ) ); ?>' class="<?php if ( $request_page === 'mjschool_system_videos' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 														<span><?php esc_html_e( 'How To Videos', 'mjschool' ); ?></span>
 													</a>
 												</li>
@@ -2290,13 +2290,13 @@ if ( ! empty( $exam_list ) ) {
 											}
 											?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_system_addon' ); ?>' class="<?php if ( $request_page === 'mjschool_system_addon' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_system_addon' ) ); ?>' class="<?php if ( $request_page === 'mjschool_system_addon' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'Addons', 'mjschool' ); ?></span>
 												</a>
 											</li>
 											<?php $nonce = wp_create_nonce( 'mjschool_general_setting_tab' ); ?>
 											<li class=''>
-												<a href='<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_general_settings&_wpnonce='.esc_attr( $nonce1 ) ); ?>' class="<?php if ( $request_page === 'mjschool_general_settings' ) { esc_html_e( 'active', 'mjschool' );} ?>">
+												<a href='<?php echo esc_url( admin_url( 'admin.php?page=mjschool_general_settings&_wpnonce='.esc_attr( $nonce1 ) ) ); ?>' class="<?php if ( $request_page === 'mjschool_general_settings' ) { esc_html_e( 'active', 'mjschool' );} ?>">
 													<span><?php esc_html_e( 'General Settings', 'mjschool' ); ?></span>
 												</a>
 											</li>
@@ -2523,7 +2523,7 @@ if ( ! empty( $exam_list ) ) {
 																			<?php  
 																		} ?>
 																	</span>
-																	<span class="step-number"><?php echo esc_attr__( 'Add Class Time Table', 'mjschool' ); ?></span>
+																	<span class="step-number"><?php esc_html_e( 'Add Class Time Table', 'mjschool' ); ?></span>
 																</div>
 															</a>
 														</li>
@@ -2542,7 +2542,7 @@ if ( ! empty( $exam_list ) ) {
 																			<img class="mjschool-status-image" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/wizard/mjschool-wizard-hour-glass.png' ); ?>">
 																		<?php } ?>
 																	</span>
-																	<span class="step-number"><?php echo esc_attr__( 'Add Student', 'mjschool' ); ?></span>
+																	<span class="step-number"><?php esc_html_e( 'Add Student', 'mjschool' ); ?></span>
 																</div>
 															</a>
 														</li>
@@ -2627,7 +2627,7 @@ if ( ! empty( $exam_list ) ) {
 									<div class="panel mjschool-panel-white mjschool-line-chat">
 										<div class="mjschool-panel-heading mjschool-line-chat-p" id="mjschool-line-chat-p">
 											<h3 class="mjschool-panel-title mjschool_float_left" ><?php esc_html_e( 'Student Status', 'mjschool' ); ?></h3>
-											<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student' ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+											<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student' ) ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 										</div>
 										<div class="mjschool-member-chart">
 											<div class="outer">
@@ -2671,7 +2671,7 @@ if ( ! empty( $exam_list ) ) {
 									<div class="panel mjschool-panel-white mjschool-line-chat">
 										<div class="mjschool-panel-heading mjschool-line-chat-p" id="mjschool-line-chat-p">
 											<h3 class="mjschool-panel-title mjschool_float_left" ><?php esc_html_e( 'Payment Status', 'mjschool' ); ?></h3>
-											<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist' ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+											<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist' ) ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 										</div>
 										<div class="mjschool-member-chart">
 											<div class="outer">
@@ -2888,7 +2888,7 @@ if ( ! empty( $exam_list ) ) {
 									<div class="panel mjschool-panel-white mjschool-admmision-div mjschool-line-chat">
 										<div class="mjschool-panel-heading mjschool-line-chat-p" id="mjschool-line-chat-p">
 											<h3 class="mjschool-panel-title"><?php esc_html_e( 'Fees Payment Details', 'mjschool' ); ?></h3>
-											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist' ); ?>">
+											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist' ) ); ?>">
 												<img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>">
 											</a>
 										</div>
@@ -2943,7 +2943,7 @@ if ( ! empty( $exam_list ) ) {
 													<div class="mjschool-calendar-event-new">
 														<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 														<div class="col-md-12 mjschool-dashboard-btn">
-															<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_fees_payment&tab=addpaymentfee' ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'Fees Payment', 'mjschool' ); ?></a>
+															<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=addpaymentfee' ) ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'Fees Payment', 'mjschool' ); ?></a>
 														</div>
 													</div>
 													<?php
@@ -3251,7 +3251,7 @@ if ( ! empty( $exam_list ) ) {
 									<div class="panel mjschool-panel-white event priscription">
 										<div class="mjschool-panel-heading">
 											<h3 class="mjschool-panel-title"><?php esc_html_e( 'Class', 'mjschool' ); ?></h3>
-											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_class' ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class' ) ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 										</div>
 										<div class="mjschool-panel-body class_padding">
 											<div class="events1">
@@ -3306,7 +3306,7 @@ if ( ! empty( $exam_list ) ) {
 														<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 														
 														<div class="col-md-12 mjschool-dashboard-btn mjschool-padding-top-30px">
-															<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_class&tab=addclass' ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Class', 'mjschool' ); ?></a>
+															<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class&tab=addclass' ) ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Class', 'mjschool' ); ?></a>
 														</div>
 													</div>
 													<?php
@@ -3320,7 +3320,7 @@ if ( ! empty( $exam_list ) ) {
 									<div class="panel mjschool-panel-white event operation">
 										<div class="mjschool-panel-heading">
 											<h3 class="mjschool-panel-title"><?php esc_html_e( 'Exam List', 'mjschool' ); ?></h3>
-											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_exam' ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam' ) ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 										</div>
 										<div class="mjschool-panel-body">
 											<div class="events">
@@ -3365,7 +3365,7 @@ if ( ! empty( $exam_list ) ) {
 														<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 														
 														<div class="col-md-12 mjschool-dashboard-btn mjschool-padding-top-30px">
-															<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_exam&tab=addexam' ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Exam', 'mjschool' ); ?></a>
+															<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=addexam' ) ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Exam', 'mjschool' ); ?></a>
 														</div>
 													</div>
 													<?php
@@ -3380,7 +3380,7 @@ if ( ! empty( $exam_list ) ) {
 										<div class="mjschool-panel-heading">
 											<h3 class="mjschool-panel-title"><?php esc_html_e( 'Notice', 'mjschool' ); ?></h3>
 											
-											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notice' ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notice' ) ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 											
 										</div>
 										<div class="mjschool-panel-body">
@@ -3432,7 +3432,7 @@ if ( ! empty( $exam_list ) ) {
 														<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 														
 														<div class="col-md-12 mjschool-dashboard-btn mjschool-padding-top-30px">
-															<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notice&tab=addnotice' ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Notice', 'mjschool' ); ?></a>
+															<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notice&tab=addnotice' ) ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Notice', 'mjschool' ); ?></a>
 														</div>
 													</div>
 													<?php
@@ -3447,7 +3447,7 @@ if ( ! empty( $exam_list ) ) {
 										<div class="mjschool-panel-heading">
 											<h3 class="mjschool-panel-title"><?php esc_html_e( 'Event List', 'mjschool' ); ?></h3>
 											
-											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_event&tab=eventlist' ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_event&tab=eventlist' ) ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 											
 										</div>
 										<div class="mjschool-panel-body">
@@ -3500,7 +3500,7 @@ if ( ! empty( $exam_list ) ) {
 														<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG);?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 														
 														<div class="col-md-12 mjschool-dashboard-btn mjschool-padding-top-30px">
-															<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_event&tab=add_event' ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'Add Event', 'mjschool' ); ?></a>
+															<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_event&tab=add_event' ) ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'Add Event', 'mjschool' ); ?></a>
 														</div>
 													</div>
 													<?php
@@ -3515,7 +3515,7 @@ if ( ! empty( $exam_list ) ) {
 										<div class="mjschool-panel-heading">
 											<h3 class="mjschool-panel-title"><?php esc_html_e( 'Notification', 'mjschool' ); ?></h3>
 											
-											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notification' ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notification' ) ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 											
 										</div>
 										<div class="mjschool-panel-body mjschool-message-rtl-css">
@@ -3559,7 +3559,7 @@ if ( ! empty( $exam_list ) ) {
 														<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 														
 														<div class="col-md-12 mjschool-dashboard-btn mjschool-padding-top-30px">
-															<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notification&tab=addnotification' ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Notification', 'mjschool' ); ?></a>
+															<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notification&tab=addnotification' ) ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Notification', 'mjschool' ); ?></a>
 														</div>
 													</div>
 													<?php
@@ -3574,7 +3574,7 @@ if ( ! empty( $exam_list ) ) {
 										<div class="mjschool-panel-heading">
 											<h3 class="mjschool-panel-title"><?php esc_html_e( 'Holiday List', 'mjschool' ); ?></h3>
 											
-											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_holiday' ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_holiday' ) ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 											
 										</div>
 										<div class="mjschool-panel-body">
@@ -3621,7 +3621,7 @@ if ( ! empty( $exam_list ) ) {
 														<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 														
 														<div class="col-md-12 mjschool-dashboard-btn mjschool-padding-top-30px">
-															<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_holiday&tab=addholiday' ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Holiday', 'mjschool' ); ?></a>
+															<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_holiday&tab=addholiday' ) ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Holiday', 'mjschool' ); ?></a>
 														</div>
 													</div>
 													<?php
@@ -3636,7 +3636,7 @@ if ( ! empty( $exam_list ) ) {
 										<div class="mjschool-panel-heading">
 											<h3 class="mjschool-panel-title"><?php esc_html_e( 'Message', 'mjschool' ); ?></h3>
 											
-											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_message' ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message' ) ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 											
 										</div>
 										<div class="mjschool-panel-body">
@@ -3697,7 +3697,7 @@ if ( ! empty( $exam_list ) ) {
 														<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 														
 														<div class="col-md-12 mjschool-dashboard-btn mjschool-padding-top-30px">
-															<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_message&tab=compose' ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Message', 'mjschool' ); ?></a>
+															<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message&tab=compose' ) ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'ADD Message', 'mjschool' ); ?></a>
 														</div>
 													</div>
 													<?php
@@ -3711,7 +3711,7 @@ if ( ! empty( $exam_list ) ) {
 									<div class="panel mjschool-panel-white event operation">
 										<div class="mjschool-panel-heading">
 											<h3 class="mjschool-panel-title"><?php esc_html_e( 'Homework List', 'mjschool' ); ?></h3>
-											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student_homewrok' ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+											<a class="mjschool-page-link" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok' ) ); ?>"><img class="mjschool-vertical-align-unset" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 										</div>
 										<div class="mjschool-panel-body">
 											<div class="events mjschool-rtl-notice-css">
@@ -3754,7 +3754,7 @@ if ( ! empty( $exam_list ) ) {
 														<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 														
 														<div class="col-md-12 mjschool-dashboard-btn mjschool-padding-top-30px">
-															<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=addhomework' ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'Add Homework', 'mjschool' ); ?></a>
+															<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework' ) ); ?>" class="btn mjschool-save-btn mjschool-event-for-alert mjschool-line-height-31px"><?php esc_html_e( 'Add Homework', 'mjschool' ); ?></a>
 														</div>
 													</div>
 													<?php

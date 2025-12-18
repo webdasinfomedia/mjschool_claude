@@ -1180,7 +1180,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 												<div class="col-sm-12 col-md-2 col-lg-2 col-xl-2">
 													<div class="form-group input">
 														<div class="col-md-12 col-sm-12 col-xs-12 form-control assigndate_<?php echo esc_attr( intval( $i ) ); ?>" id="assigndate_<?php echo esc_attr( intval( $i ) ); ?>" name="assigndate">
-															<input id="assign_date_<?php echo esc_attr( intval( $i ) ); ?>" placeholder="<?php esc_attr_e( 'Enter Date', 'mjschool' ); ?>" class="datepicker form-control text-input mjschool-placeholder-color" type="text" name="assign_date[]" autocomplete="off" value="<?php echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); ?>">
+															<input id="assign_date_<?php echo esc_attr( intval( $i ) ); ?>" placeholder="<?php esc_attr_e( 'Enter Date', 'mjschool' ); ?>" class="datepicker form-control text-input mjschool-placeholder-color" type="text" name="assign_date[]" autocomplete="off" value="<?php echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); ?>">
 														</div>
 													</div>
 												</div>

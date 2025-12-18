@@ -21,12 +21,13 @@
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
-if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_action' ) ) {
+if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'view_action' ) ) {
 	$custom_field_obj = new Mjschool_Custome_Field();
-	$active_tab1      = isset( $_REQUEST['tab1'] ) ? sanitize_text_field(wp_unslash($_REQUEST['tab1'])) : 'general';
-	$staff_data       = get_userdata( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['supportstaff_id'])) ) ) );
+	$active_tab1 = isset( $_REQUEST['tab1'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['tab1'] ) ) : 'general';
+	$supportstaff_id_safe = isset( $_REQUEST['supportstaff_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['supportstaff_id'] ) ) : '';
+	$staff_data = ! empty( $supportstaff_id_safe ) ? get_userdata( intval( mjschool_decrypt_id( $supportstaff_id_safe ) ) ) : false;
 	?>
-	<div class="mjschool-panel-body mjschool-support-view-page mjschool-view-page-main"><!-- START PANEL BODY DIV-->
+	<div class="mjschool-panel-body mjschool-support-view-page mjschool-view-page-main"><!-- START PANEL BODY DIV.-->
 		<div class="content-body">
 			<!-- Detail page header start. -->
 			<section id="mjschool-user-information" class="mjschool-view-page-header-bg">
@@ -97,7 +98,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 								<label class="mjschool-view-page-header-labels"><?php esc_html_e( 'Mobile Number', 'mjschool' ); ?></label><br>
 								<?php
 								if ( $user_access_edit === '1' && empty( $staff_data->mobile_number ) ) {
-									$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . sanitize_text_field( wp_unslash( $_REQUEST['supportstaff_id'] ) ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) );
+									$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . rawurlencode( $supportstaff_id_safe ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 									echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 								} else {
 									?>
@@ -108,7 +109,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 								<label class="mjschool-view-page-header-labels"><?php esc_html_e( 'Gender', 'mjschool' ); ?></label><br>
 								<?php
 								if ( $user_access_edit === '1' && empty( $staff_data->gender ) ) {
-									$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . sanitize_text_field( wp_unslash( $_REQUEST['supportstaff_id'] ) ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) );
+									$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . rawurlencode( $supportstaff_id_safe ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 									echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 								} else {
 									?>
@@ -129,7 +130,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 								$birth_date      = $staff_data->birth_date;
 								$is_invalid_date = empty( $birth_date ) || $birth_date === '1970-01-01' || $birth_date === '0000-00-00';
 								if ( $user_access_edit === '1' && $is_invalid_date ) {
-									$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['supportstaff_id'])) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+									$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . rawurlencode( $supportstaff_id_safe ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 									echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 								} else {
 									?>
@@ -156,7 +157,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 												<label class="mjschool-guardian-labels mjschool-view-page-header-labels"><?php esc_html_e( 'City', 'mjschool' ); ?></label><br>
 												<?php
 												if ( $user_access_edit === '1' && empty( $staff_data->city ) ) {
-													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['supportstaff_id'])) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . rawurlencode( $supportstaff_id_safe ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 												} else {
 													?>
@@ -174,7 +175,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 												<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'State', 'mjschool' ); ?> </label><br>
 												<?php
 												if ( $user_access_edit === '1' && empty( $staff_data->state ) ) {
-													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['supportstaff_id'])) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . rawurlencode( $supportstaff_id_safe ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 												} else {
 													?>
@@ -193,7 +194,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 												<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Zipcode', 'mjschool' ); ?> </label><br>
 												<?php
 												if ( $user_access_edit === '1' && empty( $staff_data->zip_code ) ) {
-													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['supportstaff_id'])) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . rawurlencode( $supportstaff_id_safe ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 												} else {
 													?>
@@ -212,7 +213,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 												<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Alt. Mobile Number', 'mjschool' ); ?> </label><br>
 												<?php
 												if ( $user_access_edit === '1' && empty( $staff_data->alternet_mobile_number ) ) {
-													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['supportstaff_id'])) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . rawurlencode( $supportstaff_id_safe ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 												} else {
 													?>
@@ -234,7 +235,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 												<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Working Hour', 'mjschool' ); ?> </label><br>
 												<?php
 												if ( $user_access_edit === '1' && empty( $staff_data->working_hour ) ) {
-													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['supportstaff_id'])) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . rawurlencode( $supportstaff_id_safe ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 												} else {
 													?>
@@ -258,7 +259,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 												<label class="mjschool-guardian-labels mjschool-view-page-header-labels"><?php esc_html_e( 'Position', 'mjschool' ); ?></label><br>
 												<?php
 												if ( $user_access_edit === '1' && empty( $staff_data->possition ) ) {
-													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['supportstaff_id'])) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+													$edit_url = admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . rawurlencode( $supportstaff_id_safe ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) );
 													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 												} else {
 													?>
@@ -289,7 +290,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 															<?php
 															if ( ! empty( $value->document_file ) ) {
 																?>
-																<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . sanitize_file_name( $value->document_file ) ); ?>" record_id="<?php echo esc_attr( $key ); ?>"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
+																<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . sanitize_file_name( $value->document_file ) ) ); ?>" record_id="<?php echo esc_attr( $key ); ?>"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
 																<?php
 															} else {
 																esc_html_e( 'Not Provided', 'mjschool' );

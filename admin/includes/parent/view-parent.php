@@ -2,19 +2,16 @@
 /**
  * Parent Detail View Page Template.
  *
- * This file displays the detailed view of a parent user, including general information, 
- * contact details, documents, and the list of children associated with the parent.
- * The content is dynamically loaded based on the selected tab (General / Child List).
- *
  * @package    MJSchool
  * @subpackage MJSchool/admin/includes/parent
  * @since      1.0.0
- *
  */
 defined( 'ABSPATH' ) || exit;
-if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'view_action' ) ) {
-	$parent_id                 = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['parent_id'])) ) );
-	$active_tab1               = isset( $_REQUEST['tab1'] ) ? sanitize_text_field(wp_unslash($_REQUEST['tab1'])) : 'general';
+
+if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'view_action' ) ) {
+	$parent_id_encrypted       = isset( $_REQUEST['parent_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['parent_id'] ) ) : '';
+	$parent_id                 = intval( mjschool_decrypt_id( $parent_id_encrypted ) );
+	$active_tab1               = isset( $_REQUEST['tab1'] ) ? sanitize_key( wp_unslash( $_REQUEST['tab1'] ) ) : 'general';
 	$parent_data               = get_userdata( $parent_id );
 	$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 	$user_meta                 = get_user_meta( $parent_id, 'child', true );
@@ -27,20 +24,20 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 					<div class="row">
 						<div class="col-xl-10 col-md-9 col-sm-10">
 							<div class="mjschool-user-profile-header-left mjschool-float-left-width-100px">
-								<?php 
-								$umetadata = mjschool_get_user_image($parent_data->ID);
+								<?php
+								$umetadata = mjschool_get_user_image( $parent_data->ID );
 								?>
-								<img class="mjschool-user-view-profile-image" src="<?php if ( ! empty( $umetadata ) ) { echo esc_url($umetadata); } else { echo esc_url( get_option( 'mjschool_parent_thumb_new' ) ); } ?>">
+								<img class="mjschool-user-view-profile-image" src="<?php if ( ! empty( $umetadata ) ) { echo esc_url( $umetadata ); } else { echo esc_url( get_option( 'mjschool_parent_thumb_new' ) ); } ?>">
 								<div class="row mjschool-profile-user-name">
 									<div class="mjschool-float-left mjschool-view-top1">
 										<div class="col-xl-12 col-md-12 col-sm-12 mjschool-float-left-width-100px">
-											<span class="mjschool-view-user-name-label"><?php echo esc_html( $parent_data->display_name); ?></span>
+											<span class="mjschool-view-user-name-label"><?php echo esc_html( $parent_data->display_name ); ?></span>
 											<?php
-											if ($user_access_edit === '1' ) {
+											if ( $user_access_edit === '1' ) {
 												?>
 												<div class="mjschool-view-user-edit-btn">
-													<a class="mjschool-color-white mjschool-margin-left-2px" href="?page=mjschool_parent&tab=addparent&action=edit&parent_id=<?php echo esc_attr( mjschool_encrypt_id($parent_data->ID ) ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>">
-														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-edit.png"); ?>">
+													<a class="mjschool-color-white mjschool-margin-left-2px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . mjschool_encrypt_id( $parent_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) ) ); ?>">
+														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-edit.png' ); ?>">
 													</a>
 												</div>
 												<?php
@@ -49,7 +46,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 										</div>
 										<div class="col-xl-12 col-md-12 col-sm-12 mjschool-float-left-width-100px">
 											<div class="mjschool-view-user-phone mjschool-float-left-width-100px">
-												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-phone.png"); ?>">&nbsp;+<?php echo esc_html( mjschool_get_country_phonecode( get_option( 'mjschool_contry' ) ) ); ?>&nbsp;&nbsp;<span><?php echo esc_html( $parent_data->mobile_number); ?></span>
+												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-phone.png' ); ?>">&nbsp;+<?php echo esc_html( mjschool_get_country_phonecode( get_option( 'mjschool_contry' ) ) ); ?>&nbsp;&nbsp;<span><?php echo esc_html( $parent_data->mobile_number ); ?></span>
 											</div>
 										</div>
 									</div>
@@ -59,7 +56,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 										<div class="mjschool-view-top2">
 											<div class="row mjschool-view-user-teacher-label">
 												<div class="col-md-12 mjschool-address-student-div">
-													<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-location.png"); ?>">&nbsp;&nbsp;<label class="mjschool-address-detail-page"><?php echo esc_html( $parent_data->address); ?></label>
+													<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-location.png' ); ?>">&nbsp;&nbsp;<label class="mjschool-address-detail-page"><?php echo esc_html( $parent_data->address ); ?></label>
 												</div>
 											</div>
 										</div>
@@ -69,10 +66,9 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 						</div>
 						<div class="col-xl-2 col-lg-3 col-md-3 col-sm-2">
 							<div class="mjschool-group-thumbs">
-								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-group.png"); ?>">
+								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-group.png' ); ?>">
 							</div>
 						</div>
-						
 					</div>
 				</div>
 			</section>
@@ -83,12 +79,12 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 					<div class="col-xl-12 col-md-12 col-sm-12">
 						<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 							<li class="<?php if ( $active_tab1 === 'general' ) { ?>active<?php } ?>">
-								<a href="admin.php?page=mjschool_parent&tab=view_parent&action=view_parent&tab1=general&parent_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['parent_id'])) ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'general' ? 'active' : ''; ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent&tab=view_parent&action=view_parent&tab1=general&parent_id=' . $parent_id_encrypted . '&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo $active_tab1 === 'general' ? 'active' : ''; ?>">
 									<?php esc_html_e( 'GENERAL', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab1 === 'Child' ) { ?>active<?php } ?>">
-								<a href="admin.php?page=mjschool_parent&tab=view_parent&action=view_parent&tab1=Child&parent_id=<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['parent_id'])) ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'Child' ? 'active' : ''; ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent&tab=view_parent&action=view_parent&tab1=Child&parent_id=' . $parent_id_encrypted . '&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo $active_tab1 === 'Child' ? 'active' : ''; ?>">
 									<?php esc_html_e( 'Child List', 'mjschool' ); ?>
 								</a>
 							</li>
@@ -97,7 +93,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 				</div>
 			</section>
 			<!-- Detail page tabing end. -->
-			<!-- Detail page body content section.  -->
+			<!-- Detail page body content section. -->
 			<section id="mjschool-body-content-area">
 				<div class="mjschool-panel-body"><!-- Start panel body div..-->
 					<?php
@@ -113,8 +109,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 								<label class="mjschool-view-page-header-labels"> <?php esc_html_e( 'Mobile Number', 'mjschool' ); ?> </label><br />
 								<?php
 								if ( $user_access_edit === '1' && empty( $parent_data->mobile_number ) ) {
-									$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . esc_attr( mjschool_encrypt_id( $parent_data->ID ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
-									echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
+									$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . mjschool_encrypt_id( $parent_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) );
+									echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Add', 'mjschool' ) . '</a>';
 								} else {
 									?>
 									<label class="mjschool-view-page-content-labels">
@@ -128,11 +124,11 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 								$birth_date      = $parent_data->birth_date;
 								$is_invalid_date = empty( $birth_date ) || $birth_date === '1970-01-01' || $birth_date === '0000-00-00';
 								if ( $user_access_edit === '1' && $is_invalid_date ) {
-									$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . esc_attr( mjschool_encrypt_id( $parent_data->ID ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
-									echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
+									$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . mjschool_encrypt_id( $parent_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) );
+									echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Add', 'mjschool' ) . '</a>';
 								} else {
 									?>
-									<label class="mjschool-view-page-content-labels"> 
+									<label class="mjschool-view-page-content-labels">
 										<?php
 										if ( ! empty( $parent_data->birth_date ) ) {
 											echo esc_html( mjschool_get_date_in_input_box( $parent_data->birth_date ) );
@@ -147,8 +143,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 								<label class="mjschool-view-page-header-labels"> <?php esc_html_e( 'Gender', 'mjschool' ); ?> </label><br />
 								<?php
 								if ( $user_access_edit === '1' && empty( $parent_data->gender ) ) {
-									$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . esc_attr( mjschool_encrypt_id( $parent_data->ID ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
-									echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
+									$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . mjschool_encrypt_id( $parent_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) );
+									echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Add', 'mjschool' ) . '</a>';
 								} else {
 									?>
 									<label class="mjschool-view-page-content-labels"> <?php echo esc_html( ucfirst( $parent_data->gender ) ); ?></label>
@@ -158,8 +154,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 								<label class="mjschool-view-page-header-labels"> <?php esc_html_e( 'Relation', 'mjschool' ); ?> </label><br />
 								<?php
 								if ( $user_access_edit === '1' && empty( $parent_data->relation ) ) {
-									$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . esc_attr( mjschool_encrypt_id( $parent_data->ID ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
-									echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
+									$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . mjschool_encrypt_id( $parent_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) );
+									echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Add', 'mjschool' ) . '</a>';
 								} else {
 									?>
 									<label class="mjschool-view-page-content-labels">
@@ -175,7 +171,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 								<?php } ?>
 							</div>
 						</div>
-						<!-- Student information div start.  -->
+						<!-- Student information div start. -->
 						<div class="row mjschool-margin-top-20px">
 							<div class="col-xl-12 col-md-12 col-sm-12">
 								<div class="col-xl-12 col-md-12 col-sm-12 mjschool-margin-top-20px mjschool-margin-top-15px-rs">
@@ -186,8 +182,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 												<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'City', 'mjschool' ); ?> </label> <br>
 												<?php
 												if ( $user_access_edit === '1' && empty( $parent_data->city ) ) {
-													$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . esc_attr( mjschool_encrypt_id( $parent_data->ID ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
-													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
+													$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . mjschool_encrypt_id( $parent_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) );
+													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Add', 'mjschool' ) . '</a>';
 												} else {
 													?>
 													<label class="mjschool-view-page-content-labels">
@@ -205,8 +201,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 												<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'State', 'mjschool' ); ?> </label><br>
 												<?php
 												if ( $user_access_edit === '1' && empty( $parent_data->state ) ) {
-													$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . esc_attr( mjschool_encrypt_id( $parent_data->ID ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
-													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
+													$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . mjschool_encrypt_id( $parent_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) );
+													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Add', 'mjschool' ) . '</a>';
 												} else {
 													?>
 													<label class="mjschool-text-style-capitalization mjschool-view-page-content-labels">
@@ -224,8 +220,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 												<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Zip Code', 'mjschool' ); ?> </label><br>
 												<?php
 												if ( $user_access_edit === '1' && empty( $parent_data->zip_code ) ) {
-													$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . esc_attr( mjschool_encrypt_id( $parent_data->ID ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
-													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
+													$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . mjschool_encrypt_id( $parent_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) );
+													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Add', 'mjschool' ) . '</a>';
 												} else {
 													?>
 													<label class="mjschool-view-page-content-labels"><?php echo esc_html( $parent_data->zip_code ); ?></label>
@@ -235,8 +231,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 												<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Alt. Mobile Number', 'mjschool' ); ?> </label><br>
 												<?php
 												if ( $user_access_edit === '1' && empty( $parent_data->phone ) ) {
-													$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . esc_attr( mjschool_encrypt_id( $parent_data->ID ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
-													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
+													$edit_url = admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id=' . mjschool_encrypt_id( $parent_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) );
+													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Add', 'mjschool' ) . '</a>';
 												} else {
 													?>
 													<label class="mjschool-view-page-content-labels">
@@ -269,9 +265,9 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 															<?php
 															if ( ! empty( $value->document_file ) ) {
 																?>
-																<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $value->document_file ); ?>" record_id="<?php echo esc_attr( $key ); ?>">
+																<a target="_blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $value->document_file ) ); ?>" record_id="<?php echo esc_attr( $key ); ?>">
 																	<i class="fa fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?>
-																</a> 
+																</a>
 																<?php
 															} else {
 																esc_html_e( 'Not Provided', 'mjschool' );
@@ -295,9 +291,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 							</div>
 						</div>
 						<?php
-					}
-					// Attendance tab start.
-					elseif ( $active_tab1 === 'Child' ) {
+					} elseif ( $active_tab1 === 'Child' ) {
+						// Child tab start.
 						?>
 						<div>
 							<div id="Section1" class="mjschool_new_sections">
@@ -328,20 +323,19 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 																		<tr>
 																			<td class="mjschool-width-50px-td">
 																				<?php
-																				if ( $childsdata)
-																				{
-																					$umetadata=mjschool_get_user_image($childsdata);
+																				$umetadata = '';
+																				if ( $childsdata ) {
+																					$umetadata = mjschool_get_user_image( $childsdata );
 																				}
-																				if(empty($umetadata ) )
-																				{
-																					echo '<img src='.esc_url( get_option( 'mjschool_student_thumb_new' ) ).' height="50px" width="50px" class="img-circle" />';
+																				if ( empty( $umetadata ) ) {
+																					echo '<img src="' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . '" height="50px" width="50px" class="img-circle" />';
+																				} else {
+																					echo '<img src="' . esc_url( $umetadata ) . '" height="50px" width="50px" class="img-circle"/>';
 																				}
-																				else
-																					echo '<img src='.esc_url($umetadata).' height="50px" width="50px" class="img-circle"/>';
 																				?>
 																			</td>
 																			<td class="name">
-																				<a class="mjschool-color-black" href="admin.php?page=mjschool_student&tab=view_student&action=view_student&student_id=<?php echo esc_attr( mjschool_encrypt_id( $child->ID ) ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>"><?php echo esc_html( $child->first_name ) . ' ' . esc_html( $child->middle_name ) . ' ' . esc_html( $child->last_name ); ?></a>
+																				<a class="mjschool-color-black" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&tab=view_student&action=view_student&student_id=' . mjschool_encrypt_id( $child->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ) ); ?>"><?php echo esc_html( $child->first_name ) . ' ' . esc_html( $child->middle_name ) . ' ' . esc_html( $child->last_name ); ?></a>
 																				<br>
 																				<label class="mjschool-list-page-email"><?php echo esc_html( $child->user_email ); ?></label>
 																			</td>
@@ -373,7 +367,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 													} else {
 														?>
 														<div class="mjschool-calendar-event-new">
-															<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
+															<img class="mjschool-no-data-img" src="<?php echo esc_url( MJSCHOOL_NODATA_IMG ); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 														</div>
 														<?php
 													}

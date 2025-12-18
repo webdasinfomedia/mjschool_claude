@@ -34,7 +34,7 @@ class Mjschool_Teacher
     {
         global $wpdb;
         $table        = $wpdb->prefix . 'mjschool_teacher_class';
-        $teacher      = get_user_by('email', $name);
+        $teacher      = get_user_by('email', sanitize_email($name));
         $created_by   = get_current_user_id();
         $created_date = date('Y-m-d H:i:s');
         if (! empty($classes) && ! empty($teacher) ) {
@@ -44,7 +44,7 @@ class Mjschool_Teacher
                     $table,
                     array(
                     'teacher_id'   => $teacher->ID,
-                    'class_id'     => $class,
+                    'class_id'     => intval($class),
                     'created_by'   => $created_by,
                     'created_date' => $created_date,
                     )
@@ -71,18 +71,18 @@ class Mjschool_Teacher
     {
         global $wpdb;
         $table        = $wpdb->prefix . 'mjschool_teacher_class';
-        $teacher      = get_user_by('login', $name);
+        $teacher      = get_user_by('login', sanitize_user($name));
         $created_by   = get_current_user_id();
         $created_date = date('Y-m-d H:i:s');
         if (! empty($classes) && ! empty($teacher) ) {
             foreach ( $classes as $class ) {
-                $class_id = mjschool_get_class_id_by_name($class);
+                $class_id = mjschool_get_class_id_by_name(sanitize_text_field($class));
                 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
                 $success = $wpdb->insert(
                     $table,
                     array(
                     'teacher_id'   => $teacher->ID,
-                    'class_id'     => $class_id,
+                    'class_id'     => intval($class_id),
                     'created_by'   => $created_by,
                     'created_date' => $created_date,
                     )
@@ -106,10 +106,10 @@ class Mjschool_Teacher
         global $wpdb;
         $table = $wpdb->prefix . 'mjschool_teacher_class';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result   = $wpdb->get_results('SELECT * FROM ' . $table . ' where teacher_id =' . $teacher_id);
+        $result   = $wpdb->get_results($wpdb->prepare('SELECT * FROM ' . $table . ' where teacher_id =%d', intval($teacher_id)));
         $return_r = array();
         foreach ( $result as $retrive_data ) {
-            $return_r[] = $retrive_data->class_id;
+            $return_r[] = intval($retrive_data->class_id);
         }
         return $return_r;
     }
@@ -126,7 +126,7 @@ class Mjschool_Teacher
         global $wpdb;
         $table = $wpdb->prefix . 'mjschool_teacher_class';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result = $wpdb->get_results('SELECT * FROM ' . $table . ' where class_id =' . $class_id, ARRAY_A);
+        $result = $wpdb->get_results($wpdb->prepare('SELECT * FROM ' . $table . ' where class_id =%d', intval($class_id)), ARRAY_A);
         return $result;
     }
     /**
@@ -144,7 +144,7 @@ class Mjschool_Teacher
         global $wpdb;
         $table = $wpdb->prefix . 'mjschool_teacher_class';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result = $wpdb->get_row('SELECT * FROM ' . $table . ' where class_id =' . $class_id);
+        $result = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $table . ' where class_id =%d', intval($class_id)));
         return $result;
     }
     /**
@@ -165,7 +165,7 @@ class Mjschool_Teacher
         $table        = $wpdb->prefix . 'mjschool_teacher_class';
         $created_by   = get_current_user_id();
         $created_date = date('Y-m-d H:i:s');
-        $post_classes = $classes;
+        $post_classes = array_map('intval', $classes);
         $old_class    = $this->mjschool_get_teacher_class($teacher_id);
         $new_insert   = array_diff($post_classes, $old_class);
         $delete_class = array_diff($old_class, $post_classes);
@@ -176,8 +176,8 @@ class Mjschool_Teacher
                 $success = $wpdb->insert(
                     $table,
                     array(
-                    'teacher_id'   => $teacher_id,
-                    'class_id'     => $class_id,
+                    'teacher_id'   => intval($teacher_id),
+                    'class_id'     => intval($class_id),
                     'created_by'   => $created_by,
                     'created_date' => $created_date,
                     )
@@ -190,8 +190,8 @@ class Mjschool_Teacher
                 $wpdb->delete(
                     $table,
                     array(
-                    'teacher_id' => $teacher_id,
-                    'class_id'   => $class_id,
+                    'teacher_id' => intval($teacher_id),
+                    'class_id'   => intval($class_id),
                     )
                 );
             }
@@ -213,7 +213,7 @@ class Mjschool_Teacher
         global $wpdb;
         $table = $wpdb->prefix . 'mjschool_teacher_class';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $data = $wpdb->get_results("SELECT class_id FROM {$table} WHERE teacher_id = {$teacher_id}", ARRAY_A);
+        $data = $wpdb->get_results($wpdb->prepare("SELECT class_id FROM {$table} WHERE teacher_id = %d", intval($teacher_id)), ARRAY_A);
         return $data;
     }
     /**
@@ -232,10 +232,10 @@ class Mjschool_Teacher
         $classes = array();
         $table   = $wpdb->prefix . 'mjschool_teacher_class';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $data = $wpdb->get_results("SELECT class_id FROM {$table} WHERE teacher_id = {$teacher_id}", ARRAY_A);
+        $data = $wpdb->get_results($wpdb->prepare("SELECT class_id FROM {$table} WHERE teacher_id = %d", intval($teacher_id)), ARRAY_A);
         foreach ( $data as $key => $value ) {
             foreach ( $value as $class ) {
-                $classes[] = $class;
+                $classes[] = intval($class);
             }
         }
         return $classes;
@@ -272,7 +272,7 @@ class Mjschool_Teacher
         $table = $wpdb->prefix . 'mjschool_teacher_class';
         if ($class_id != null ) {
          	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-            $results = $wpdb->get_results("SELECT teacher_id FROM {$table} WHERE class_id = {$class_id}", ARRAY_A);
+            $results = $wpdb->get_results($wpdb->prepare("SELECT teacher_id FROM {$table} WHERE class_id = %d", intval($class_id)), ARRAY_A);
             return $results;
         } else {
             return false;
@@ -291,11 +291,11 @@ class Mjschool_Teacher
         global $wpdb;
         $table = $wpdb->prefix . 'mjschool_teacher_subject';
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result   = $wpdb->get_results('SELECT * FROM ' . $table . ' where teacher_id =' . $teacher_id);
-        $return_r = array();
+        $result   = $wpdb->get_results($wpdb->prepare('SELECT * FROM ' . $table . ' where teacher_id =%d', intval($teacher_id)));
+        $subjects = array();
         if (! empty($result) ) {
             foreach ( $result as $retrive_data ) {
-                $subjects[] = $retrive_data->subject_id;
+                $subjects[] = intval($retrive_data->subject_id);
             }
         }
         return $subjects;

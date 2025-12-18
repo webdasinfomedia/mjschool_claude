@@ -15,7 +15,7 @@ require_once MJSCHOOL_PLUGIN_DIR . '/lib/vendor/autoload.php';
 $client        = new GuzzleHttp\Client( array( 'base_uri' => 'https://zoom.us' ) );
 $CLIENT_ID     = get_option( 'mjschool_virtual_classroom_client_id' );
 $CLIENT_SECRET = get_option( 'mjschool_virtual_classroom_client_secret_id' );
-$REDIRECT_URI  = site_url() . '/?page=mjschoolcallback';
+$REDIRECT_URI  = esc_url_raw(site_url() . '/?page=mjschoolcallback');
 // The following conditional block handles both the initial token request and token refresh.
 if ( empty( get_option( 'mjschool_virtual_classroom_access_token' ) ) or get_option( 'mjschool_virtual_classroom_access_token' ) ) {
 	$response = $client->request(
@@ -34,8 +34,9 @@ if ( empty( get_option( 'mjschool_virtual_classroom_access_token' ) ) or get_opt
 	);
 	$token    = $response->getBody()->getContents();
 	update_option( 'mjschool_virtual_classroom_access_token', $token );
-	$site_url = site_url() . '/wp-admin/admin.php?page=mjschool_virtual_classroom&tab=meeting_list&message=4';
-	header( 'Location:' . $site_url );
+	$site_url = esc_url_raw(site_url() . '/wp-admin/admin.php?page=mjschool_virtual_classroom&tab=meeting_list&message=4');
+	wp_safe_redirect( $site_url );
+	exit;
 } else {
 	$get_token     = get_option( 'mjschool_virtual_classroom_access_token' );
 	$token_decode  = json_decode( $get_token );

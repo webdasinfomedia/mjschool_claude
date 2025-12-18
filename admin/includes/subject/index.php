@@ -344,7 +344,7 @@ if ( isset( $_POST['subject_export_csv_selected'] ) ) {
 			header( 'Pragma: public' );       // Required.
 			header( 'Expires: 0' );           // No cache.
 			header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-			header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+			header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 			header( 'Cache-Control: private', false );
 			header( 'Content-Type: ' . $mime );
 			header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
@@ -756,7 +756,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																		<?php
 																		if ( ! empty( $custom_field_value ) ) {
 																			?>
-																			<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+																			<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
 																				<button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 																			</a>
 																			<?php
@@ -800,7 +800,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																		if ( $user_access_edit === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																				<a href=<?php echo esc_url("?page=mjschool_Subject&tab=addsubject&action=edit&subject_id=". esc_attr( $encrypt_subid ) ."&_wpnonce=".esc_attr( mjschool_get_nonce( 'edit_action' ) ) ); ?> class="mjschool-float-left-width-100px">
+																				<a href=<?php echo esc_url( admin_url('admin.php?page=mjschool_Subject&tab=addsubject&action=edit&subject_id='. rawurlencode( $encrypt_subid ) .'&_wpnonce='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?> class="mjschool-float-left-width-100px">
 																					<i class="fa fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?>
 																				</a>
 																			</li>
@@ -809,7 +809,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																		if ( $user_access_delete === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a href=<?php echo esc_url("?page=mjschool_Subject&tab=Subject&action=delete&subject_id=". esc_attr( $encrypt_subid ) ."&_wpnonce=".esc_attr( mjschool_get_nonce( 'delete_action' ) ) ); ?> class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
+																				<a href=<?php echo esc_url( admin_url('admin.php?page=mjschool_Subject&tab=Subject&action=delete&subject_id='. rawurlencode( $encrypt_subid ) .'&_wpnonce='.rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ) ); ?> class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
 																					<i class="fas fa-trash"></i>
 																					<?php esc_html_e( 'Delete', 'mjschool' ); ?>
 																				</a>

@@ -62,7 +62,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 				<div class="col-md-6">
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
-							<input id="notice_Start_date" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'start_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); } ?>" name="start_date" readonly>
+							<input id="notice_Start_date" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'start_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="start_date" readonly>
 							<label class="date_label" for="notice_content"><?php esc_html_e( 'Notice Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						</div>
 					</div>
@@ -71,7 +71,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 				<div class="col-md-6 mjschool-error-msg-left-margin">
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
-							<input id="notice_end_date" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'end_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); } ?>" name="end_date" readonly>
+							<input id="notice_end_date" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'end_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="end_date" readonly>
 							<label class="date_label" for="notice_content"><?php esc_html_e( 'Notice End Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						</div>
 					</div>

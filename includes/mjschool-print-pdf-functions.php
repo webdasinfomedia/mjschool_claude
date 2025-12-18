@@ -30,7 +30,7 @@ function mjschool_student_fees_invoice_print( $fees_pay_id ) {
 	$format                     = get_option( 'mjschool_invoice_option' );
 	$fees_pay_id                = intval( mjschool_decrypt_id( $fees_pay_id ) );
 	$fees_detail_result         = mjschool_get_single_fees_payment_record( $fees_pay_id );
-	$fees_history_detail_result = mjschool_get_payment_history_by_feespayid( $fees_pay_id );
+	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
 	$invoice_number             = mjschool_generate_invoice_number( $fees_pay_id );
 	$obj_feespayment            = new mjschool_feespayment();
 	if ( is_rtl() ) {
@@ -3144,7 +3144,7 @@ function mjschool_student_payment_history_pdf( $id ) {
 	$fees_pay_id                = mjschool_decrypt_id( $id );
 	$invoice_number             = mjschool_generate_invoice_number( $fees_pay_id );
 	$fees_detail_result         = mjschool_get_single_fees_payment_record( $fees_pay_id );
-	$fees_history_detail_result = mjschool_get_payment_history_by_feespayid( $fees_pay_id );
+	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
 	?>
 	
 	<?php
@@ -4925,7 +4925,8 @@ function mjschool_send_mail_receipt_pdf( $emails, $subject, $message, $student_i
 	$mpdf->WriteHTML( '</body>' );
 	$mpdf->WriteHTML( '</html>' );
 	$mpdf->Output( $document_path . 'exam receipt' . $student_id . '.pdf', 'F' );
-	$mail_attachment = array( $document_path . 'exam receipt' . $student_id . '.pdf' );
+	$sanitized_filename = 'exam_receipt_' . absint($student_id) . '.pdf';
+    $mail_attachment = array($document_path . $sanitized_filename);
 	$school          = get_option( 'mjschool_name' );
 	$headers         = '';
 	$headers        .= 'From: ' . $school . ' <noreplay@gmail.com>' . "\r\n";
@@ -5018,7 +5019,7 @@ function mjschool_print_certificate_for_student() {
 			</script>';
 			echo '</head><body>';
 			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo $full_html;
+			echo wp_kses_post($full_html);
 			// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</body></html>';
 			die();

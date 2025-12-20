@@ -76,10 +76,7 @@ if ( isset( $_POST['save_holiday'] ) ) {
 		$end_date   = date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_REQUEST['end_date'])) ) );
 		$exlude_id  = mjschool_approve_student_list();
 		if ( $start_date > $end_date ) { ?>
-			<script type="text/javascript">
-				"use strict";
-				alert( "End Date should be greater than the Start Date");
-			</script>
+			<div class="mjschool-date-error-trigger" data-error="1"></div>
 			<?php
 		} else {
 			

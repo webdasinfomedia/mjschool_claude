@@ -247,9 +247,10 @@ if ( $active_tab === 'report3' ) {
 	$table_teacher_subject = $wpdb->prefix . 'mjschool_teacher_subject';
 	$teachers              = get_users( array( 'role' => 'teacher' ) );
 	$report_3              = array();
+	$obj_subject           = new Mjschool_Subject();
 	if ( ! empty( $teachers ) ) {
 		foreach ( $teachers as $teacher ) {
-			$report_3[ $teacher->ID ] = mjschool_get_subject_id_by_teacher( $teacher->ID );
+			$report_3[ $teacher->ID ] = $obj_subject->mjschool_get_subject_id_by_teacher( $teacher->ID );
 		}
 	}
 	if ( ! empty( $report_3 ) ) {

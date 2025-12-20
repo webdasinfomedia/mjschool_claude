@@ -17,6 +17,113 @@ defined( 'ABSPATH' ) || exit;
  * @since  1.0.0
  */
 class Mjschool_Subject {
+
+	/**
+	 * Checks if a subject exists.
+	 *
+	 * @param int $id Subject ID.
+	 * @return int Number of matching records.
+	 * @since 1.0.0
+	 */
+	public function mjschool_is_subject_check( $id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mjschool_subject';
+		$subject_id = absint( $id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subject = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $table_name WHERE subid=%d", $subject_id ) );
+		
+		return absint( $retrieve_subject );
+	}
+
+	/**
+	 * Retrieves subject IDs assigned to a teacher.
+	 *
+	 * @param int $id Teacher ID.
+	 * @return array List of subject IDs.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_subject_id_by_teacher( $id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mjschool_teacher_subject';
+		$teacher_id = absint( $id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE teacher_id=%d", $teacher_id ) );
+		
+		$subjects = array();
+		if ( ! empty( $retrieve_subject ) ) {
+			foreach ( $retrieve_subject as $retrive_data ) {
+				$count = $this->mjschool_is_subject_check( $retrive_data->subject_id );
+				if ( $count > 0 ) {
+					$subjects[] = absint( $retrive_data->subject_id );
+				}
+			}
+		}
+		
+		return $subjects;
+	}
+
+	/**
+	 * Retrieves subject names assigned to a teacher.
+	 *
+	 * @param int $id Teacher ID.
+	 * @return string Comma-separated subject names.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_subject_name_by_teacher( $id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mjschool_teacher_subject';
+		$teacher_id = absint( $id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE teacher_id=%d", $teacher_id ) );
+		
+		$subjec = '';
+		if ( ! empty( $retrieve_subject ) ) {
+			foreach ( $retrieve_subject as $retrive_data ) {
+				$sub_name = mjschool_get_single_subject_name( $retrive_data->subject_id );
+				$subjec  .= $sub_name . ', ';
+			}
+		}
+		
+		return $subjec;
+	}
+
+	/**
+	 * Retrieves only the subject code by ID.
+	 *
+	 * @param int $id Subject ID.
+	 * @return string|null Subject code.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_single_subject_code( $id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mjschool_subject';
+		$subject_id = absint( $id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subject = $wpdb->get_var( $wpdb->prepare( "SELECT subject_code FROM $table_name WHERE subid=%d", $subject_id ) );
+		
+		return $retrieve_subject;
+	}
+
+	/**
+	 * Retrieves all subjects stored in the system.
+	 *
+	 * @return array List of subjects.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_all_subject() {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mjschool_subject';
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Safe direct query with no user input
+		$retrive_subject = $wpdb->get_results( "SELECT * FROM {$table_name}" );
+		
+		return $retrive_subject;
+	}
+
 	/**
 	 * Retrieves the subject IDs associated with a specific teacher.
 	 *

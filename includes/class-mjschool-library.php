@@ -20,6 +20,25 @@ defined( 'ABSPATH' ) || exit;
  * @since 1.0.0
  */
 class Mjschool_Library {
+
+	/**
+	 * Retrieves a book record by ID.
+	 *
+	 * @param int $id Book ID.
+	 * @return object|null Book details.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_book( $id ) {
+		global $wpdb;
+		$table_book = $wpdb->prefix . 'mjschool_library_book';
+		$b_id       = absint( $id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_book WHERE id=%d", $b_id ) );
+		
+		return $result;
+	}
+
 	/**
 	 * Adds a new book or updates an existing one in the library database.
 	 *

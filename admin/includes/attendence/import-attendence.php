@@ -8,7 +8,6 @@
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/attendance
  * @since      1.0.0
- * @since      2.0.1 Security hardening - Added nonce field for CSRF protection
  */
 defined( 'ABSPATH' ) || exit;
 ?>
@@ -16,10 +15,6 @@ defined( 'ABSPATH' ) || exit;
 	<form name="mjschool-upload-form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-upload-form" enctype="multipart/form-data">
 		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
-		<?php 
-		// SECURITY FIX: Added nonce field for CSRF protection
-		wp_nonce_field( 'mjschool_import_attendance_nonce' ); 
-		?>
 		<div class="form-body mjschool-user-form">
 			<div class="row">
 				<div class="col-md-5">
@@ -33,7 +28,7 @@ defined( 'ABSPATH' ) || exit;
 					</div>
 				</div>
 				<div class="col-sm-3">
-					<input type="submit" value="<?php esc_attr_e('Upload CSV File', 'mjschool'); ?>" name="upload_attendance_csv_file" class="col-sm-6 mjschool-save-btn" />
+					<input type="submit" value="<?php esc_attr__('Upload CSV File', 'mjschool'); ?>" name="upload_attendance_csv_file" class="col-sm-6 mjschool-save-btn" />
 				</div>
 			</div>
 		</div>

@@ -18,7 +18,24 @@ defined('ABSPATH') || exit;
  * @since 1.0.0
  */
 class Mjschool_Invoice
-{
+{  
+    /**
+     * Get all payment list records joined with user table.
+     *
+     * @since 1.0.0
+     * @return array Payment list.
+     */
+    public function mjschool_get_payment_list() {
+        global $wpdb;
+        $table_users   = $wpdb->prefix . 'users';
+        $table_payment = $wpdb->prefix . 'mjschool_payment';
+        
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Safe direct query with no user input
+        $result = $wpdb->get_results( "SELECT * FROM {$table_users} AS u INNER JOIN {$table_payment} AS p ON u.ID = p.student_id" );
+        
+        return $result;
+    }
+
     /**
      * Generates a new invoice number based on the current date and the last invoice ID.
      *

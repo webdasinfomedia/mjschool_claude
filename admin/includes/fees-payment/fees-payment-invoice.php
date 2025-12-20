@@ -12,14 +12,17 @@
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
-// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+
 global $wpdb;
 $fees_pay_id                = intval( mjschool_decrypt_id( wp_unslash($_REQUEST['idtest'] ) ) );
 $fees_detail_result         = mjschool_get_single_fees_payment_record( $fees_pay_id );
 $fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
 $mjschool_obj_feespayment   = new Mjschool_Feespayment();
 $format                     = get_option( 'mjschool_invoice_option' );
-$table                      = $wpdb->prefix . 'mjschool_fees_payment';
+
+// FIXED: Use meaningful table name variable
+$fees_payment_table = $wpdb->prefix . 'mjschool_fees_payment';
+
 $invoice_number             = mjschool_generate_invoice_number( $fees_pay_id );
 ?>
 <?php if ( is_rtl() ) { 
@@ -43,9 +46,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 									<div class="mjschool_float_left_width_100">
 										<div class="mjschool_float_left_width_25">
 											<div class="mjschool-custom-logo-class mjschool_left_border_redius_50">
-												
 												<img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ) ?>" class="mjschool_main_logo_class" />
-												
 											</div>
 										</div>
 										<div class="mjschool_float_left_padding_width_75">
@@ -77,9 +78,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 								</h3>
 								<div class="col-md-1 col-sm-2 col-xs-3">
 									<div class="width_1 mjschool-rtl-width-80px">
-										
 										<img class="system_logo" src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>">
-										
 									</div>
 								</div>
 								<div class="col-md-11 col-sm-10 col-xs-9 mjschool-invoice-address mjschool-invoice-address-css">
@@ -90,9 +89,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 												<?php
 												$address         = get_option( 'mjschool_address' );
 												$escaped_address = esc_html( $address );
-												// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 												echo nl2br( chunk_split( $escaped_address, 100, "\n" ) );
-												// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 												?>
 											</label>
 										</div>
@@ -298,31 +295,37 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 										</thead>
 										<tbody>
 											<?php
-											$fees_id = explode( ',', $fees_detail_result->fees_id );
+											// FIXED: Sanitize fees_id and use proper array validation
+											$fees_id_string = $fees_detail_result->fees_id;
+											$fees_id = array_map( 'intval', explode( ',', $fees_id_string ) );
+											
 											$x       = 1;
 											$amounts = 0;
 											foreach ( $fees_id as $id ) {
-												?>
-												<tr>
-													<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_black_2px">
-														<?php echo esc_html( $x ); ?>
-													</td>
-													<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_black_2px">
-														<?php echo esc_html( mjschool_get_date_in_input_box( $fees_detail_result->created_date ) ); ?>
-													</td>
-													<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_black_2px">
-														<?php echo esc_html( mjschool_get_fees_term_name( $id ) ); ?>
-													</td>
-													<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_black_2px">
-														<?php
-														$amount   = $mjschool_obj_feespayment->mjschool_feetype_amount_data( $id );
-														$amounts += $amount;
-														echo esc_html( number_format( $amount, 2, '.', '' ) );
-														?>
-													</td>
-												</tr>
-												<?php
-												++$x;
+												// FIXED: Validate that $id is a positive integer
+												if ( $id > 0 ) {
+													?>
+													<tr>
+														<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_black_2px">
+															<?php echo esc_html( $x ); ?>
+														</td>
+														<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_black_2px">
+															<?php echo esc_html( mjschool_get_date_in_input_box( $fees_detail_result->created_date ) ); ?>
+														</td>
+														<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_black_2px">
+															<?php echo esc_html( mjschool_get_fees_term_name( $id ) ); ?>
+														</td>
+														<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_black_2px">
+															<?php
+															$amount   = $mjschool_obj_feespayment->mjschool_feetype_amount_data( $id );
+															$amounts += $amount;
+															echo esc_html( number_format( $amount, 2, '.', '' ) );
+															?>
+														</td>
+													</tr>
+													<?php
+													++$x;
+												}
 											}
 											$sub_total = $amounts;
 											if ( ! empty( $fees_detail_result->tax ) ) {
@@ -353,31 +356,36 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 									</thead>
 									<tbody>
 										<?php
-										$fees_id = explode( ',', $fees_detail_result->fees_id );
+										// FIXED: Same sanitization as above
+										$fees_id_string = $fees_detail_result->fees_id;
+										$fees_id = array_map( 'intval', explode( ',', $fees_id_string ) );
+										
 										$x       = 1;
 										$amounts = 0;
 										foreach ( $fees_id as $id ) {
-											?>
-											<tr>
-												<td class="mjschool-align-left mjschool-invoice-table-data">
-													<?php echo esc_html( $x ); ?>
-												</td>
-												<td class="mjschool-align-left mjschool-invoice-table-data">
-													<?php echo esc_html( mjschool_get_date_in_input_box( $fees_detail_result->created_date ) ); ?>
-												</td>
-												<td class="mjschool-align-left mjschool-invoice-table-data">
-													<?php echo esc_html( mjschool_get_fees_term_name( $id ) ); ?>
-												</td>
-												<td class="mjschool-align-left mjschool-invoice-table-data">
-													<?php
-													$amount   = $mjschool_obj_feespayment->mjschool_feetype_amount_data( $id );
-													$amounts += $amount;
-													echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $amount, 2, '.', '' ) ) );
-													?>
-												</td>
-											</tr>
-											<?php
-											++$x;
+											if ( $id > 0 ) {
+												?>
+												<tr>
+													<td class="mjschool-align-left mjschool-invoice-table-data">
+														<?php echo esc_html( $x ); ?>
+													</td>
+													<td class="mjschool-align-left mjschool-invoice-table-data">
+														<?php echo esc_html( mjschool_get_date_in_input_box( $fees_detail_result->created_date ) ); ?>
+													</td>
+													<td class="mjschool-align-left mjschool-invoice-table-data">
+														<?php echo esc_html( mjschool_get_fees_term_name( $id ) ); ?>
+													</td>
+													<td class="mjschool-align-left mjschool-invoice-table-data">
+														<?php
+														$amount   = $mjschool_obj_feespayment->mjschool_feetype_amount_data( $id );
+														$amounts += $amount;
+														echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $amount, 2, '.', '' ) ) );
+														?>
+													</td>
+												</tr>
+												<?php
+												++$x;
+											}
 										}
 										$sub_total = $amounts;
 										if ( ! empty( $fees_detail_result->tax ) ) {
@@ -638,11 +646,9 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 						<div class="col-md-12 grand_total_main_div total_mjschool-padding-15px mjschool-rtl-float-none">
 							<div class="row mjschool-margin-top-10px-res mjschool-width-50-res col-md-6 col-sm-6 col-xs-6 mjschool-print-button pull-left mjschool-invoice-print-pdf-btn">
 								<div class="col-md-2 mjschool-print-btn-rs mjschool-width-50-res">
-									
 									<a href="<?php echo esc_url('?page=mjschool_fees_payment&print=print&payment_id='. rawurlencode(sanitize_text_field( wp_unslash($_REQUEST['idtest']))) .'&fee_paymenthistory=fee_paymenthistory' ); ?>" id="exprience_latter" target="_blank" class="btn btn mjschool-save-btn mjschool-invoice-btn-div">
 										<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-print.png"); ?>">
 									</a>
-									
 								</div>
 								<?php
 								if ( isset( $_REQUEST['web_type'] ) && sanitize_text_field( wp_unslash($_REQUEST['web_type'])) === 'wpschool_app' ) {
@@ -910,7 +916,6 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 													<div class="col-md-1 mjschool-print-btn-rs">
 														<button data-toggle="tooltip" name="download_app_pdf" class="btn mjschool-color-white mjschool-invoice-btn-div btn mjschool-save-btn">
 															<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-pdf.png' ); ?>"></button>
-														
 													</div>
 												</div>
 											</div>
@@ -920,11 +925,9 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 								} else {
 									?>
 									<div class="col-md-3 mjschool-pdf-btn-rs mjschool-width-50-res">
-										
 										<a href="<?php echo esc_url('?page=mjschool_fees_payment&print=pdf&payment_id='. rawurlencode( wp_unslash($_REQUEST['idtest'])).'&fee_paymenthistory=fee_paymenthistory'); ?>" target="_blank" class="btn mjschool-color-white mjschool-invoice-btn-div btn mjschool-save-btn">
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-pdf.png"); ?>">
 										</a>
-										
 									</div>
 									<?php
 								}

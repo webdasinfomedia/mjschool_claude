@@ -279,24 +279,6 @@ if ( $message ) {
 	<?php
 }
 ?>
-<script type="text/javascript">
-	(function(jQuery) {
-		"use strict";
-		jQuery(document).ready(function() {
-			jQuery( '#attendence_list' ).DataTable({
-				responsive: true
-			});
-			jQuery( '#mjschool-Add-marks-form' ).validationEngine({
-				promptPosition: "bottomLeft",
-				maxErrorsPerField: 1
-			});
-			jQuery( '#marks_form' ).validationEngine({
-				promptPosition: "bottomLeft",
-				maxErrorsPerField: 1
-			});
-		});
-	})(jQuery);
-</script>
 <div class="mjschool-panel-body mjschool-panel-white mjschool-frontend-list-margin-30px-res">
 	<?php $nonce = wp_create_nonce( 'mjschool_exam_result_tab' ); ?>  
 	<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">

@@ -54,6 +54,41 @@ class Mjschool_Marks_Manage {
 			}
 		}
 	}
+
+	/**
+	 * Retrieves grade details by grade name.
+	 *
+	 * @param string $grade_name Grade name.
+	 * @return object|null Grade record.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_grade_by_name( $grade_name ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mjschool_grade';
+		$grade_name = sanitize_text_field( $grade_name );	
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE grade_name = %s", $grade_name ) );
+		return $retrieve_subject;
+	}
+
+	/**
+	 * Retrieves grade details by ID.
+	 *
+	 * @param int $id Grade ID.
+	 * @return object|null Grade record.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_grade_by_id( $id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mjschool_grade';
+		$gid        = absint( $id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE grade_id = %d", $gid ) );
+		
+		return $retrieve_subject;
+	}
+
 	/**
 	 * Checks if a mark record exists for a given ID.
 	 *

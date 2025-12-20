@@ -100,6 +100,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 				$created_date = date( 'Y-m-d H:i:s' );
 				$mark_from    = sanitize_text_field( wp_unslash($_POST['mark_from']));
 				$mark_upto    = sanitize_text_field( wp_unslash($_POST['mark_upto']));
+				$obj_mark = new Mjschool_Marks_Manage();
 				if ( $mark_upto < $mark_from ) {
 					$gradedata = array(
 						'grade_name'    => sanitize_textarea_field( wp_unslash( $_POST['grade_name'] ) ),
@@ -129,7 +130,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 							wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 						}
 					} else {
-						$grade_name = mjschool_get_grade_by_name( sanitize_text_field( wp_unslash($_POST['grade_name'])) );
+						$grade_name = $obj_mark->mjschool_get_grade_by_name( sanitize_text_field( wp_unslash($_POST['grade_name'])) );
 						if ( empty( $grade_name ) ) {
 							$result = mjschool_insert_record( $tablename, $gradedata );
 							global $wpdb;

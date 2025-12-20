@@ -362,7 +362,8 @@ if ( isset( $_REQUEST['upload_teacher_csv_file'] ) ) {
 						$status      = 'Fail';
 						$log_message = "Teacher import fail for: $emails";
 						mjschool_append_csv_log( $log_message, get_current_user_id(), $module, $status );
-						echo '<script type="text/javascript">alert(language_translate2.csv_alert);</script>';
+						// Set a JS trigger flag
+						echo '<input type="hidden" id="mjschool_csv_error" value="1">';
 						
 						continue;
 					}
@@ -575,6 +576,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 															$teacher_group[] = mjschool_get_teacher( $teacher_id );
 														}
 														$teachers = implode( ',', $teacher_group );
+														$obj_subject = new Mjschool_Subject();
 														?>
 														<tr>
 															<td class="mjschool-checkbox-width-10px">
@@ -619,7 +621,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 															</td>
 															<td >
 																<?php
-																$subjectname = mjschool_get_subject_name_by_teacher( $uid );
+																$subjectname = $obj_subject->mjschool_get_subject_name_by_teacher( $uid );
 																if ( ! empty( $subjectname ) ) {
 																	echo esc_html( rtrim( $subjectname, ', ' ) );
 																} else {

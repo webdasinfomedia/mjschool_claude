@@ -119,7 +119,7 @@ jQuery(document).ready(function () {
         changeMonth: true,
         dateFormat: "yy-mm-dd"
     });
-    jQuery( '#exam_form, #exam_form2, #hall_form, #receipt_form, #multiple_subject_mark_data, #export_mark_table, #select_data, #marks_form, #grade_form, #migration_index_table, #exam_form_front, #exam_time_table, #category_form_test' ).validationEngine({
+    jQuery( '#exam_form, #exam_form2, #hall_form, #receipt_form, #multiple_subject_mark_data, #export_mark_table, #select_data, #marks_form, #grade_form, #migration_index_table, #exam_form_front, #exam_time_table, #category_form_test, #mjschool-Add-marks-form' ).validationEngine({
         promptPosition: "bottomLeft",
         maxErrorsPerField: 1
     });
@@ -407,5 +407,8 @@ jQuery(document).ready(function () {
         },
         theme: 'purple',
         readOnly: false,
+    });
+    jQuery( '#attendence_list' ).DataTable({
+        responsive: true
     });
 });

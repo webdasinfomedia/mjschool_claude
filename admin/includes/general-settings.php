@@ -80,10 +80,10 @@ if ( isset( $_POST['save_dashboard_setting'] ) ) {
 	$dashboard_result_3 = update_option( 'mjschool_dashboard_card_for_parent', $dashboard_card_access_parent );
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 	if ( $school_obj->role === 'supportstaff' ) {
-		wp_redirect( home_url() . '?dashboard=mjschool_user&page=general-settings&tab=dashboard_card_settings&_wpnonce='.esc_attr( $nonce ).'&message=1' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=general-settings&tab=dashboard_card_settings&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
 		die();
 	} else {
-		wp_redirect( admin_url() . 'admin.php?page=mjschool_general_settings&tab=dashboard_card_settings&_wpnonce='.esc_attr( $nonce ).'&message=1' );
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=dashboard_card_settings&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
 		die();
 	}
 }
@@ -99,10 +99,10 @@ if ( isset( $_POST['save_mobile_app_settings'] ) ) {
 	}
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 	if ( $school_obj->role === 'supportstaff' ) {
-		wp_redirect( home_url() . '?dashboard=mjschool_user&page=general-settings&tab=mobile_app_settings&tab1=icon_setting&_wpnonce='.esc_attr( $nonce ).'&message=3' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=general-settings&tab=mobile_app_settings&tab1=icon_setting&_wpnonce='.rawurlencode( $nonce ).'&message=3' ) );
 		die();
 	} else {
-		wp_redirect( admin_url() . 'admin.php?page=mjschool_general_settings&tab=mobile_app_settings&tab1=icon_setting&_wpnonce='.esc_attr( $nonce ).'&message=3' );
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=mobile_app_settings&tab1=icon_setting&_wpnonce='.rawurlencode( $nonce ).'&message=3' ) );
 		die();
 	}
 }
@@ -153,7 +153,7 @@ if ( isset( $_POST['save_student_onboard'] ) ) {
 		update_option( 'mjschool_registration_fees', 'no' );
 	}
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
-	wp_redirect( admin_url() . 'admin.php?page=mjschool_general_settings&tab=student_onboarding&_wpnonce='.esc_attr( $nonce ).'&message=7' );
+	wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=student_onboarding&_wpnonce='.rawurlencode( $nonce ).'&message=7' ) );
 	die();
 }
 if ( isset( $_POST['save_class_room'] ) )
@@ -175,7 +175,7 @@ if ( isset( $_POST['save_class_room'] ) )
 		update_option( 'mjschool_custom_class_display', '0' );
 	}
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
-	wp_redirect( admin_url() . 'admin.php?page=mjschool_general_settings&tab=class_settings&_wpnonce='.esc_attr( $nonce ).'&message=8' );
+	wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=class_settings&_wpnonce='.rawurlencode( $nonce ).'&message=8' ) );
 	die();
 }
 if ( isset( $_POST['save_setting'] ) ) {
@@ -295,10 +295,10 @@ if ( isset( $_POST['save_setting'] ) ) {
 
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 	if ( $school_obj->role === 'supportstaff' ) {
-		wp_redirect( home_url() . '?dashboard=mjschool_user&page=general-settings&_wpnonce='.esc_attr( $nonce ).'&message=1' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=general-settings&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
 		die();
 	} else {
-		wp_redirect( admin_url() . 'admin.php?page=mjschool_general_settings&_wpnonce='.esc_attr( $nonce ).'&message=1' );
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
 		die();
 	}
 }
@@ -317,10 +317,10 @@ if ( isset( $_REQUEST['save_document_setting'] ) ) {
 
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 	if ( $school_obj->role === 'supportstaff' ) {
-		wp_redirect( home_url() . '?dashboard=mjschool_user&page=general-settings&tab=document_settings&_wpnonce='.esc_attr( $nonce ).'&message=2' );
+		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=general-settings&tab=document_settings&_wpnonce='.rawurlencode( $nonce ).'&message=2' ) );
 		die();
 	} else {
-		wp_redirect( admin_url() . 'admin.php?page=mjschool_general_settings&tab=document_settings&_wpnonce='.esc_attr( $nonce ).'&message=2' );
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=document_settings&_wpnonce='.rawurlencode( $nonce ).'&message=2' ) );
 		die();
 	}
 	?>
@@ -412,27 +412,27 @@ if ( $school_obj->role === 'administrator' ) {
 						if ( $school_obj->role === 'supportstaff' ) {
 							?>
 							<li class="<?php if ( $active_tab === 'general_setting' ) { ?>active<?php } ?>">
-								<a href="?dashboard=mjschool_user&page=general-settings&tab=general_setting&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'general_setting' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?dashboard=mjschool_user&page=general-settings&tab=general_setting&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'general_setting' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'General Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'document_settings' ) { ?>active<?php } ?>">
-								<a href="?dashboard=mjschool_user&page=general-settings&tab=document_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'document_settings' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?dashboard=mjschool_user&page=general-settings&tab=document_settings&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'document_settings' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Document Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'dashboard_card_settings' ) { ?>active<?php } ?>">
-								<a href="?dashboard=mjschool_user&page=general-settings&tab=dashboard_card_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'dashboard_card_settings' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?dashboard=mjschool_user&page=general-settings&tab=dashboard_card_settings&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'dashboard_card_settings' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Dashboard Card Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'mobile_app_settings' ) { ?>active<?php } ?>">
-								<a href="?dashboard=mjschool_user&page=general-settings&tab=mobile_app_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'mobile_app_settings' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?dashboard=mjschool_user&page=general-settings&tab=mobile_app_settings&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'mobile_app_settings' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Mobile APP Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'exam_merge_settings' ) { ?>active<?php } ?>">
-								<a href="?dashboard=mjschool_user&page=general-settings&tab=exam_merge_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'exam_merge_settings' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?dashboard=mjschool_user&page=general-settings&tab=exam_merge_settings&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'exam_merge_settings' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Group Exam Result Settings', 'mjschool' ); ?>
 								</a>
 							</li>
@@ -440,37 +440,37 @@ if ( $school_obj->role === 'administrator' ) {
 						} else {
 							?>
 							<li class="<?php if ( $active_tab === 'general_setting' ) { ?>active<?php } ?>">
-								<a href="?page=mjschool_general_settings&tab=general_setting&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'general_setting' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?page=mjschool_general_settings&tab=general_setting&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'general_setting' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'General Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'document_settings' ) { ?>active<?php } ?>">
-								<a href="?page=mjschool_general_settings&tab=document_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'document_settings' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?page=mjschool_general_settings&tab=document_settings&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'document_settings' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Document Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'dashboard_card_settings' ) { ?>active<?php } ?>">
-								<a href="?page=mjschool_general_settings&tab=dashboard_card_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'dashboard_card_settings' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?page=mjschool_general_settings&tab=dashboard_card_settings&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'dashboard_card_settings' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Dashboard Card Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'mobile_app_settings' ) { ?>active<?php } ?>">
-								<a href="?&page=mjschool_general_settings&tab=mobile_app_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'mobile_app_settings' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?&page=mjschool_general_settings&tab=mobile_app_settings&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'mobile_app_settings' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Mobile APP Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'exam_merge_settings' ) { ?>active<?php } ?>">
-								<a href="?&page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'exam_merge_settings' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?&page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'exam_merge_settings' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Group Exam Result Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'student_onboarding' ) { ?>active<?php } ?>">
-								<a href="?page=mjschool_general_settings&tab=student_onboarding&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'student_onboarding' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?page=mjschool_general_settings&tab=student_onboarding&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'student_onboarding' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Student Onboarding', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab === 'class_settings' ) { ?>active<?php } ?>">
-								<a href="?page=mjschool_general_settings&tab=class_settings&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="padding_left_0 tab <?php echo esc_attr( $active_tab  ) === 'class_settings' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url('?page=mjschool_general_settings&tab=class_settings&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="padding_left_0 tab <?php echo esc_attr( $active_tab  ) === 'class_settings' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'class settings', 'mjschool' ); ?>
 								</a>
 							</li>
@@ -499,7 +499,7 @@ if ( $school_obj->role === 'administrator' ) {
 											if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( $_GET['_wpnonce_action'], 'edit_action' ) ) {
 												$result = $exam_obj->mjschool_save_merge_exam_setting( wp_unslash($_POST) );
 												if ( $result ) {
-													wp_redirect( admin_url() . 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.esc_attr( $nonce ).'&message=5' );
+													wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.rawurlencode( $nonce ).'&message=5' ) );
 													die();
 												}
 											} else {
@@ -508,7 +508,7 @@ if ( $school_obj->role === 'administrator' ) {
 										} else {
 											$result = $exam_obj->mjschool_save_merge_exam_setting( wp_unslash($_POST) );
 											if ( $result ) {
-												wp_redirect( admin_url() . 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.esc_attr( $nonce ).'&message=4' );
+												wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.rawurlencode( $nonce ).'&message=4' ) );
 												die();
 											}
 										}
@@ -521,7 +521,7 @@ if ( $school_obj->role === 'administrator' ) {
 										$result = $exam_obj->mjschool_delete_exam_setting( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['merge_id'])) ) );
 										if ( $result ) {
 											$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
-											wp_redirect( admin_url() . 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.esc_attr( $nonce ).'&message=6' );
+											wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.rawurlencode( $nonce ).'&message=6' ) );
 											die();
 										}
 									} else {
@@ -694,7 +694,7 @@ if ( $school_obj->role === 'administrator' ) {
 											?>
 											<?php wp_nonce_field( 'save_merge_settings' ); ?>
 											<div class="col-sm-3 col-md-3 col-lg-3 col-xs-12">
-												<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save', 'mjschool' ); } else { esc_html_e( 'Save', 'mjschool' ); } ?>" name="save_merge_settings" class="mjschool-save-btn check_total_per " />
+												<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save', 'mjschool' ); } else { esc_attr_e( 'Save', 'mjschool' ); } ?>" name="save_merge_settings" class="mjschool-save-btn check_total_per " />
 											</div>
 										</div>
 									</div>
@@ -742,7 +742,7 @@ if ( $school_obj->role === 'administrator' ) {
 															?>
 															<i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class & Section', 'mjschool' ); ?>"></i>
 														</td>
-														<td><?php echo esc_html( mjschool_print_weightage_data( $retrieved_data->merge_config ) ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php echo esc_html( mjschool_print_weightage_data( $retrieved_data->merge_config ) ); ?>"></i></td>
+														<td><?php echo esc_html( mjschool_print_weightage_data( $retrieved_data->merge_config ) ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php echo esc_attr( mjschool_print_weightage_data( $retrieved_data->merge_config ) ); ?>"></i></td>
 														<td><?php echo esc_html( mjschool_get_display_name( $retrieved_data->created_by ) ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Created By', 'mjschool' ); ?>"></i></td>
 														<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->created_at ) ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Created Date', 'mjschool' ); ?>"></i></td>
 														<td><?php echo esc_html( $retrieved_data->status ); ?> <i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Status', 'mjschool' ); ?>"></i></td>
@@ -758,14 +758,14 @@ if ( $school_obj->role === 'administrator' ) {
 																			if ( $user_access_edit === '1' ) {
 																				?>
 																				<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
-																					<a href="?&page=mjschool_general_settings&tab=exam_merge_settings&merge_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ); ?>&action=edit_merge&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																					<a href="<?php echo esc_url('?&page=mjschool_general_settings&tab=exam_merge_settings&merge_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ).'&action=edit_merge&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																				</li>
 																				<?php
 																			}
 																			if ( $user_access_delete === '1' ) {
 																				?>
 																				<li class="mjschool-float-left-width-100px">
-																					<a href="?&page=mjschool_general_settings&tab=exam_merge_settings&action=delete_merge&merge_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fa fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
+																					<a href="<?php echo esc_url('?&page=mjschool_general_settings&tab=exam_merge_settings&action=delete_merge&merge_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ).'&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fa fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
 																				</li>
 																				<?php
 																			}
@@ -924,7 +924,7 @@ if ( $school_obj->role === 'administrator' ) {
 								<div class="row">
 									<div class="col-sm-6">
 										<input class="form-control text-input" type="hidden" value="<?php echo esc_attr( get_option( 'mjschool_general_setting_option_update' ) ); ?>" name="mjschool_general_setting_option_update">
-										<input type="submit" value="<?php esc_html_e( 'Save', 'mjschool' ); ?>" name="save_student_onboard" class="btn btn-success mjschool-save-btn" />
+										<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_student_onboard" class="btn btn-success mjschool-save-btn" />
 									</div>
 								</div>
 							</div>
@@ -1000,13 +1000,13 @@ if ( $school_obj->role === 'administrator' ) {
 						<?php $nonce = wp_create_nonce( 'mjschool_general_setting_tab' ); ?>
 						<ul class="nav nav-tabs mjschool-panel-tabs mjschool-margin-left-1per mjschool-flex-nowrap mjschool_margin_top_15px"  role="tablist"><!-- NAV TAB WRAPPER MENU START-->
 							<li class="<?php if ( $active_tab1 === 'license_verification' ) { ?>active<?php } ?>">
-								<a href="?page=mjschool_general_settings&tab=mobile_app_settings&tab1=license_verification&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'license_verification' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_html__( 'License Verification', 'mjschool' ); ?>
+								<a href="<?php echo esc_url('?page=mjschool_general_settings&tab=mobile_app_settings&tab1=license_verification&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'license_verification' ? 'nav-tab-active' : ''; ?>">
+									<?php esc_html_e( 'License Verification', 'mjschool' ); ?>
 								</a>
 							</li>
 							<li class="<?php if ( $active_tab1 === 'icon_setting' ) { ?>active<?php } ?>">
-								<a href="?page=mjschool_general_settings&tab=mobile_app_settings&tab1=icon_setting&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'icon_setting' ? 'nav-tab-active' : ''; ?>">
-									<?php echo esc_html__( 'Icon Settings', 'mjschool' ); ?>
+								<a href="<?php echo esc_url('?page=mjschool_general_settings&tab=mobile_app_settings&tab1=icon_setting&_wpnonce='.rawurlencode( $nonce ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1 ) === 'icon_setting' ? 'nav-tab-active' : ''; ?>">
+									<?php esc_html_e( 'Icon Settings', 'mjschool' ); ?>
 								</a>
 							</li>
 						</ul>
@@ -1067,7 +1067,7 @@ if ( $school_obj->role === 'administrator' ) {
 														<div class="form-body mjschool-user-form"> <!-- Mjschool-user-form start.-->
 															<div class="row"><!--Row div start.-->
 																<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-																	<input type="submit" value="<?php esc_html_e( 'Save', 'mjschool' ); ?>" name="varify_app_key" id="varify_app_key" class="btn mjschool-save-btn" />
+																	<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="varify_app_key" id="varify_app_key" class="btn mjschool-save-btn" />
 																</div>
 															</div>
 														</div>
@@ -1096,7 +1096,7 @@ if ( $school_obj->role === 'administrator' ) {
 																		<label class="mjschool-label-margin-left-7px mjschool-custom-control-label mjschool-custom-top-label ml-2" for="mjschool_cover_image"><?php esc_html_e( 'App Logo', 'mjschool' ); ?></label>
 																		<div class="col-sm-12 mjschool-display-flex">
 																			<input type="text" id="smgt_app_logo_image_url" name="mjschool_app_logo" class="mjschool-image-path-dots form-control" readonly value="<?php echo esc_attr( get_option( 'mjschool_app_logo' ) ); ?>" />
-																			<input id="app_upload_image_button" type="button" class="button upload_app_logo_button mjschool-upload-image-btn" value="<?php esc_html_e( 'Upload Cover Image', 'mjschool' ); ?>" />
+																			<input id="app_upload_image_button" type="button" class="button upload_app_logo_button mjschool-upload-image-btn" value="<?php esc_attr_e( 'Upload Cover Image', 'mjschool' ); ?>" />
 																		</div>
 																	</div>
 																	<div class="clearfix"></div>
@@ -1110,7 +1110,7 @@ if ( $school_obj->role === 'administrator' ) {
 													<div class="form-body mjschool-user-form"> <!-- Mjschool-user-form start.-->
 														<div class="row"><!--Row div start.-->
 															<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-																<input type="submit" value="<?php esc_html_e( 'Save', 'mjschool' ); ?>" name="save_mobile_app_settings" id="save_mobile_app_settings" class="btn mjschool-save-btn" />
+																<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_mobile_app_settings" id="save_mobile_app_settings" class="btn mjschool-save-btn" />
 															</div>
 														</div>
 													</div>
@@ -1203,7 +1203,7 @@ if ( $school_obj->role === 'administrator' ) {
 												<label class="mjschool-custom-control-label label_margin_left_15px mjschool-custom-top-label ml-2 mjschool-label-position-rtl mjschool-label-right-position" for="mjschool_email"><?php esc_html_e( 'System Logo', 'mjschool' ); ?> (<?php esc_html_e( 'Size Must Be 150 x 150 px', 'mjschool' ); ?>)<span class="mjschool-require-field">*</span></label>
 												<div class="col-sm-12 mjschool-display-flex">
 													<input type="text" id="mjschool_system_logo_url" name="mjschool_system_logo" class="mjschool-image-path-dots form-control validate[required]" value="<?php echo esc_attr( get_option( 'mjschool_system_logo' ) ); ?>" readonly />
-													<input id="upload_system_logo_button" type="button" class="button mjschool-upload-image-btn mjschool_float_right"  value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+													<input id="upload_system_logo_button" type="button" class="button mjschool-upload-image-btn mjschool_float_right"  value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 												</div>
 											</div>
 											<div class="clearfix"></div>
@@ -1221,7 +1221,7 @@ if ( $school_obj->role === 'administrator' ) {
 												<span class="mjschool-label-margin-left-7px mjschool-custom-control-label mjschool-label-position-rtl mjschool-custom-top-label ml-2" for="smgt_cover_image"><?php esc_html_e( 'Other Logo(Invoice, Mail)', 'mjschool' ); ?></span>
 												<div class="col-sm-12 mjschool-display-flex">
 													<input type="text" id="mjschool_background_image" name="mjschool_logo" class="mjschool-image-path-dots form-control" value="<?php echo esc_attr( get_option( 'mjschool_logo' ) ); ?>" readonly />
-													<input id="upload_image_button" type="button" class="button upload_user_cover_button mjschool-upload-image-btn mjschool_float_right"  value="<?php esc_html_e( 'Upload Cover Image', 'mjschool' ); ?>" />
+													<input id="upload_image_button" type="button" class="button upload_user_cover_button mjschool-upload-image-btn mjschool_float_right"  value="<?php esc_attr_e( 'Upload Cover Image', 'mjschool' ); ?>" />
 												</div>
 											</div>
 											<div class="clearfix"></div>
@@ -1583,7 +1583,7 @@ if ( $school_obj->role === 'administrator' ) {
 												<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 													<div class="form-group input">
 														<div class="col-md-12 form-control">
-															<input id="zoomurl" class="form-control text-input" type="text" value="<?php echo esc_url( site_url() ) . '/?page=mjschoolcallback'; ?>" name="zoomurl" disabled>
+															<input id="zoomurl" class="form-control text-input" type="text" value="<?php echo esc_url( site_url() . '/?page=mjschoolcallback' ); ?>" name="zoomurl" disabled>
 															<label  for="zoomurl"><?php esc_html_e( 'Redirect URL', 'mjschool' ); ?></label>
 														</div>
 														<span class="description"><?php esc_html_e( 'Please copy this Redirect URL and add in your zoom account Redirect URL.', 'mjschool' ); ?></span>
@@ -1675,7 +1675,7 @@ if ( $school_obj->role === 'administrator' ) {
 														<label class="mjschool-custom-control-label mjschool-custom-top-label ml-2 mjschool-label-position-rtl" for="mjschool_email"><?php esc_html_e( 'Principal Signature', 'mjschool' ); ?></label>
 														<div class="col-sm-12 mjschool-display-flex">
 															<input type="text" id="mjschool_principal_signature" name="mjschool_principal_signature" class="mjschool-image-path-dots form-control" value="<?php echo esc_attr( get_option( 'mjschool_principal_signature' ) ); ?>" readonly />
-															<input id="upload_principal_signature" type="button" class="button mjschool-upload-image-btn mjschool_float_right"  value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+															<input id="upload_principal_signature" type="button" class="button mjschool-upload-image-btn mjschool_float_right"  value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 														</div>
 													</div>
 													<div class="clearfix"></div>
@@ -1762,7 +1762,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="row">
 												<div class="col-sm-6">
 													<input class="form-control text-input" type="hidden" value="<?php echo esc_attr( get_option( 'mjschool_general_setting_option_update' ) ); ?>" name="mjschool_general_setting_option_update">
-													<input type="submit" value="<?php esc_html_e( 'Save', 'mjschool' ); ?>" name="save_setting" class="btn btn-success mjschool-save-btn" />
+													<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_setting" class="btn btn-success mjschool-save-btn" />
 												</div>
 											</div>
 										</div>
@@ -2017,7 +2017,7 @@ if ( $school_obj->role === 'administrator' ) {
 								<div class="form-body mjschool-user-form">
 									<div class="row">
 										<div class="col-sm-6">
-											<input type="submit" value="<?php esc_html_e( 'Save', 'mjschool' ); ?>" name="save_dashboard_setting" class="btn btn-success mjschool-save-btn" />
+											<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_dashboard_setting" class="btn btn-success mjschool-save-btn" />
 										</div>
 									</div>
 								</div>
@@ -2107,7 +2107,7 @@ if ( $school_obj->role === 'administrator' ) {
 								<div class="form-body mjschool-user-form"> <!-- Mjschool-user-form start.-->
 									<div class="row"><!--Row div start.-->
 										<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-											<input type="submit" value="<?php esc_html_e( 'Submit', 'mjschool' ); ?>" name="save_document_setting" id="save_document_setting" class="btn mjschool-document-type-validation mjschool-save-btn" />
+											<input type="submit" value="<?php esc_attr_e( 'Submit', 'mjschool' ); ?>" name="save_document_setting" id="save_document_setting" class="btn mjschool-document-type-validation mjschool-save-btn" />
 										</div>
 									</div>
 								</div>

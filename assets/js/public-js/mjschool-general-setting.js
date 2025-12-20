@@ -160,4 +160,74 @@ jQuery(document).ready(function () {
             return false;
         }
     });
+    // File check function.
+    function mjschool_custom_filed_file_check(obj) {
+        var fileExtension = jQuery(obj).attr( 'file_types' );
+        var fileExtensionArr = fileExtension.split( ',' );
+        var file_size = jQuery(obj).attr( 'file_size' );
+        var sizeInkb = obj.files[0].size / 1024;
+        if (jQuery.inArray(jQuery(obj).val().split( '.' ).pop().toLowerCase(), fileExtensionArr) === -1) {
+            alert( "Only " + fileExtension + " formats are allowed.");
+            jQuery(obj).val( '' );
+        }
+    }
+    // Make the function accessible globally if needed.
+    window.mjschool_custom_filed_file_check = mjschool_custom_filed_file_check;
+    // Custom Date Picker.
+    if (jQuery('.custom_datepicker').length > 0) {
+        jQuery('.custom_datepicker').datepicker({
+            dateFormat: mjschool_general_setting_data.date_format,
+            endDate: '+0d',
+            autoclose: true,
+            changeMonth: true,
+            changeYear: true,
+            orientation: "bottom"
+        });
+    }
+    if (jQuery('.space_validation').length > 0) {
+        jQuery('.space_validation').on('keypress', function (e) {
+            if (e.which === 32) return false;
+        });
+    }
+    // Custom field datepickers.
+    if (jQuery('.after_or_equal').length > 0) {
+        jQuery('.after_or_equal').datepicker({
+            dateFormat: mjschool_general_setting_data.date_format,
+            minDate: 0,
+            changeMonth: true,
+            changeYear: true,
+            beforeShow: function (textbox, instance) {
+                instance.dpDiv.css({
+                    marginTop: (-textbox.offsetHeight) + 'px'
+                });
+            }
+        });
+    }
+    if (jQuery('.date_equals').length > 0) {
+        jQuery('.date_equals').datepicker({
+            dateFormat: mjschool_general_setting_data.date_format,
+            minDate: 0,
+            maxDate: 0,
+            changeMonth: true,
+            changeYear: true,
+            beforeShow: function (textbox, instance) {
+                instance.dpDiv.css({
+                    marginTop: (-textbox.offsetHeight) + 'px'
+                });
+            }
+        });
+    }
+    if (jQuery('.before_or_equal').length > 0) {
+        jQuery('.before_or_equal').datepicker({
+            dateFormat: mjschool_general_setting_data.date_format,
+            maxDate: 0,
+            changeMonth: true,
+            changeYear: true,
+            beforeShow: function (textbox, instance) {
+                instance.dpDiv.css({
+                    marginTop: (-textbox.offsetHeight) + 'px'
+                });
+            }
+        });
+    }
 });

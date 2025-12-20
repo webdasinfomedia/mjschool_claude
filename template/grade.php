@@ -79,6 +79,7 @@ if ( isset( $_POST['save_grade'] ) ) {
 		$created_date = date( 'Y-m-d H:i:s' );
 		$mark_from    = sanitize_text_field(wp_unslash($_POST['mark_from']));
 		$mark_upto    = sanitize_text_field(wp_unslash($_POST['mark_upto']));
+		$obj_mark = new Mjschool_Marks_Manage();
 		if ( $mark_upto < $mark_from ) {
 			$gradedata = array(
 				'grade_name'    => sanitize_textarea_field( stripslashes( sanitize_text_field(wp_unslash($_POST['grade_name'])) ) ),
@@ -107,7 +108,7 @@ if ( isset( $_POST['save_grade'] ) ) {
 					wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 				}
 			} else {
-				$grade_name = mjschool_get_grade_by_name( sanitize_text_field(wp_unslash($_POST['grade_name'])) );
+				$grade_name = $obj_mark->mjschool_get_grade_by_name( sanitize_text_field(wp_unslash($_POST['grade_name'])) );
 				if ( empty( $grade_name ) ) {
 					$result = mjschool_insert_record( $tablename, $gradedata );
 					global $wpdb;
@@ -434,7 +435,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		$edit = 0;
 		if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 			$edit       = 1;
-			$grade_data = mjschool_get_grade_by_id( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['grade_id'])) ) );
+			$obj_manage_marks = new Mjschool_Marks_Manage();
+			$grade_data = $obj_manage_marks->mjschool_get_grade_by_id( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['grade_id'])) ) );
 		}
 		?>
 		<div class="mjschool-panel-body mjschool-padding-top-25px-res"><!---------------- Panel body. ----------------->

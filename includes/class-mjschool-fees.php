@@ -247,4 +247,20 @@ class Mjschool_Fees
         $result = $wpdb->query($wpdb->prepare("DELETE FROM $table_mjschool_fees where fees_id= " . $fees_id));
         return $result;
     }
+    /**
+     * Get full fee details from database.
+     *
+     * @since 1.0.0
+     * @param int $id Fee ID.
+     * @return object|null Fee row object.
+     */
+    public function mjschool_get_fees_details( $id ) {
+        global $wpdb;
+        $table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
+        $fees_id             = absint( $id );
+        
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+        $classname = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees WHERE fees_id=%d", $fees_id ) );
+        return $classname;
+    }
 }

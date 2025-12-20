@@ -332,7 +332,8 @@ if ( isset( $_REQUEST['upload_staff_csv_file'] ) ) {
 						$status      = 'Fail';
 						$log_message = "Support staff import fail for: $emails";
 						mjschool_append_csv_log( $log_message, get_current_user_id(), $module, $status );
-						echo '<script type="text/javascript"> alert(language_translate2.csv_alert); </script>';
+						// Set a JS trigger flag
+						echo '<input type="hidden" id="mjschool_csv_error" value="1">';
 						continue;
 					}
 					if ( $mjschool_role_name != 'administrator' ) {

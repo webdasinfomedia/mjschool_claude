@@ -142,7 +142,9 @@ if ( isset( $_REQUEST['view_attendance'] ) ) {
 	$attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $type );
 }
 if ( $start_date > $end_date ) {
-	echo '<script type="text/javascript">alert( "' . esc_html__( 'End Date should be greater than the Start Date', 'mjschool' ) . '");</script>';
+	?>
+	<div class="mjschool-date-error-trigger" data-error="1"></div>
+	<?php
 }
 if ( ! empty( $attendence_data ) ) {
 	?>

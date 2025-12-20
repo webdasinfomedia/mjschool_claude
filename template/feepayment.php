@@ -2450,8 +2450,9 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 					</div><!----- Panel body. --------->
 					<?php
 				} else {
+					$mjschool_obj_feespayment = new Mjschool_Feespayment();
 					$fee_pay_id   = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['payment_id'])) ) );
-					$fees_history = mjschool_get_single_payment_history( $fee_pay_id );
+					$fees_history = $$mjschool_obj_feespayment->mjschool_get_single_payment_history( $fee_pay_id );
 					?>
 					<div class="penal-body"><!----- Panel body. --------->
 						<div id="Fees_invoice"><!----- Fees invoice. --------->

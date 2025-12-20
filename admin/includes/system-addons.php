@@ -23,8 +23,8 @@ if ( session_status() === PHP_SESSION_NONE ) {
 		array(
 			'lifetime' => 0,         // Session expires when the browser is closed.
 			'path'     => '/',
-			'domain'   => '',          // Set the domain if required.
-			'secure'   => true,        // Send cookies only over HTTPS.
+			'domain'   => '',         // Set the domain if required.
+			'secure'   => true,       // Send cookies only over HTTPS.
 			'httponly' => true,      // Prevent JavaScript access to cookies.
 			'samesite' => 'Strict',  // Mitigate CSRF risks.
 		)
@@ -48,46 +48,46 @@ $url_with_sid = session_name() . '=' . session_id();
 						<div class="col-md-4">
 							
 							<div class="card mjschool-addon-card">
-								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/system-video-preview/mjschool-app-addon.png' ); ?>" class="card-img-top">
+								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/system-video-preview/mjschool-app-addon.png' ); ?>" class="card-img-top" alt="<?php esc_attr_e( 'School Master Mobile App for Android', 'mjschool' ); ?>">
 								<div class="card-body mjschool-addon-card-body">
 									<h5 class="mjschool-addon-card-title"><?php esc_html_e( 'School Master Mobile App for Android', 'mjschool' ); ?></h5>
-									<a href="https://codecanyon.net/item/school-master-mobile-app-for-android/20806118?<?php echo esc_url( $url_with_sid ); ?>" target="_blank" class="btn addon-button btn-primary"><?php echo esc_html__( 'Get It Now', 'mjschool' ); ?></a>
+									<a href="<?php echo esc_url('https://codecanyon.net/item/school-master-mobile-app-for-android/20806118?'.rawurlencode( $url_with_sid ) ); ?>" target="_blank" class="btn addon-button btn-primary"><?php esc_html_e( 'Get It Now', 'mjschool' ); ?></a>
 								</div>
 							</div>
 						</div>
 						<div class="col-md-4">
 							<div class="card mjschool-addon-card">
-								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/system-video-preview/mjschool-iphone.png' ); ?>" class="card-img-top">
+								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/system-video-preview/mjschool-iphone.png' ); ?>" class="card-img-top" alt="<?php esc_attr_e( 'School Master Mobile App for iPhone', 'mjschool' ); ?>">
 								<div class="card-body mjschool-addon-card-body">
 									<h5 class="mjschool-addon-card-title"><?php esc_html_e( 'School Master Mobile App for iphone', 'mjschool' ); ?></h5>
-									<a href="https://codecanyon.net/item/school-master-mobile-app-for-iphone/20792912?<?php echo esc_url( $url_with_sid ); ?>" target="_blank" class="btn addon-button btn-primary"><?php echo esc_html__( 'Get It Now', 'mjschool' ); ?></a>
+									<a href="<?php echo esc_url('https://codecanyon.net/item/school-master-mobile-app-for-iphone/20792912?'. rawurlencode( $url_with_sid ) ); ?>" target="_blank" class="btn addon-button btn-primary"><?php esc_html_e( 'Get It Now', 'mjschool' ); ?></a>
 								</div>
 							</div>
 						</div>
 						<div class="col-md-4">
 							<div class="card mjschool-addon-card">
-								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/system-video-preview/mjschool-paymaster-image.png' ); ?>" class="card-img-top">
+								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/system-video-preview/mjschool-paymaster-image.png' ); ?>" class="card-img-top" alt="<?php esc_attr_e( 'Paymaster - Multipurpose Payment Gateway', 'mjschool' ); ?>">
 								<div class="card-body mjschool-addon-card-body">
 									<h5 class="mjschool-addon-card-title"><?php esc_html_e( 'Paymaster - Multipurpose Payment Gateway', 'mjschool' ); ?></h5>
-									<a href="https://codecanyon.net/item/paymaster-multipurpose-payment-gateway/19693579?<?php echo esc_url( $url_with_sid ); ?>" target="_blank" class="btn addon-button btn-primary"><?php echo esc_html__( 'Get It Now', 'mjschool' ); ?></a>
+									<a href="<?php echo esc_url('https://codecanyon.net/item/paymaster-multipurpose-payment-gateway/19693579?'. rawurlencode( $url_with_sid ) ); ?>" target="_blank" class="btn addon-button btn-primary"><?php esc_html_e( 'Get It Now', 'mjschool' ); ?></a>
 								</div>
 							</div>
 						</div>
 						<div class="col-md-4">
 							<div class="card mjschool-addon-card">
-								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/system-video-preview/mjschool-sms-master.png' ); ?>" class="card-img-top">
+								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/system-video-preview/mjschool-sms-master.png' ); ?>" class="card-img-top" alt="<?php esc_attr_e( 'SMSmaster – Multipurpose SMS Gateway for WordPress', 'mjschool' ); ?>">
 								<div class="card-body mjschool-addon-card-body">
 									<h5 class="mjschool-addon-card-title"><?php esc_html_e( 'SMSmaster – Multipurpose SMS Gateway for WordPress', 'mjschool' ); ?></h5>
-									<a href="https://codecanyon.net/item/smsmaster-multipurpose-sms-gateway-for-WordPress/20605853?<?php echo esc_url( $url_with_sid ); ?>" target="_blank" class="btn addon-button btn-primary"><?php echo esc_html__( 'Get It Now', 'mjschool' ); ?></a>
+									<a href="<?php echo esc_url('https://codecanyon.net/item/smsmaster-multipurpose-sms-gateway-for-WordPress/20605853?'. rawurlencode( $url_with_sid ) ); ?>" target="_blank" class="btn addon-button btn-primary"><?php esc_html_e( 'Get It Now', 'mjschool' ); ?></a>
 								</div>
 							</div>
 						</div>
 						<div class="col-md-4">
 							<div class="card mjschool-addon-card">
-								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/system-video-preview/mjschool-lms-addon.png' ); ?>" class="card-img-top">
+								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/system-video-preview/mjschool-lms-addon.png' ); ?>" class="card-img-top" alt="<?php esc_attr_e( 'WPLMS - Learning Management System Integrated with WP-School', 'mjschool' ); ?>">
 								<div class="card-body mjschool-addon-card-body">
 									<h5 class="mjschool-addon-card-title"><?php esc_html_e( 'WPLMS - Learning Management System Intigreted with WP-School', 'mjschool' ); ?></h5>
-									<a href="https://codecanyon.net/item/wplms-learning-management-system-for-WordPress/15485895?<?php echo esc_url( $url_with_sid ); ?>" target="_blank" class="btn addon-button btn-primary"><?php echo esc_html__( 'Get It Now', 'mjschool' ); ?></a>
+									<a href="<?php echo esc_url('https://codecanyon.net/item/wplms-learning-management-system-for-WordPress/15485895?'. rawurlencode( $url_with_sid ) ); ?>" target="_blank" class="btn addon-button btn-primary"><?php esc_html_e( 'Get It Now', 'mjschool' ); ?></a>
 								</div>
 							</div>
 						</div>

@@ -8,7 +8,7 @@
  * - Editing or deleting individual certificates
  * - Bulk deletion of selected certificates
  * - Integration with DataTables for responsive sorting, filtering, and pagination
- * - “Select All” functionality for managing multiple records at once
+ * - "Select All" functionality for managing multiple records at once
  *
  * Integrated Features:
  * - AJAX-based DataTables for better performance
@@ -18,6 +18,7 @@
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/certificate
  * @since      1.0.0
+ * @since      2.0.1 Security hardening - Added nonce field for bulk delete
  */
 defined( 'ABSPATH' ) || exit;
 
@@ -38,6 +39,10 @@ if ($active_tab === 'assign_list' ) {
         <div class="mjschool-panel-body">
             <div class="table-responsive">
                 <form id="mjschool-common-form" name="mjschool-common-form" method="post">
+                    <?php 
+                    // SECURITY FIX: Add nonce field for bulk delete
+                    wp_nonce_field( 'mjschool_delete_certificate_nonce' ); 
+                    ?>
                     <table id="grade_list" class="display" cellspacing="0" width="100%">
                         <thead class="<?php echo esc_attr( mjschool_datatable_header( ) ); ?>">
                             <tr>
@@ -187,7 +192,6 @@ if ($active_tab === 'assign_list' ) {
             </div>
 			<?php
         }
-        
     }
 }
 ?>

@@ -450,6 +450,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 		}
 		$user_id             = get_current_user_id();
 		$mjschool_obj = new MJSchool_Management( $user_id );
+		$obj_exam = new Mjschool_Exam();
 		// ------- Exam data for student. ---------//
 		if ( $mjschool_obj->role === 'student' ) {
 			$own_data = $user_access['own_data'];
@@ -457,7 +458,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 				$class_id   = get_user_meta( get_current_user_id(), 'class_name', true );
 				$section_id = get_user_meta( get_current_user_id(), 'class_section', true );
 				if ( isset( $class_id ) && $section_id === '' ) {
-					$retrieve_class_data = mjschool_get_all_exam_by_class_id( $class_id );
+					$retrieve_class_data = $obj_exam->mjschool_get_all_exam_by_class_id( $class_id );
 				} else {
 					$retrieve_class_data = mjschool_get_all_exam_by_class_id_and_section_id_array( $class_id, $section_id );
 				}
@@ -1323,6 +1324,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 				</div>
 			</div>
 			<?php
+			$obj_subject = new Mjschool_Subject();
 			if ( ! empty( $exam_time_table ) ) {
 				?>
 				<div class="col-md-12 mjschool-margin-top-40">
@@ -1343,7 +1345,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 									foreach ( $exam_time_table as $retrieved_data ) {
 										?>
 										<tr class="mjschool_border_1px_white" >
-											<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" > <?php echo esc_html( mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?> </td>
+											<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" > <?php echo esc_html( $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?> </td>
 											<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" > <?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?> </td>
 											<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" > <?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?> </td>
 											<?php

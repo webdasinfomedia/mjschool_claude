@@ -58,6 +58,7 @@ class ViewProfile {
 				$result['city']        = $user_data->city;
 				$result['state']       = $user_data->state;
 				$result['phone']       = $user_data->mobile_number;
+				$obj_subject = new Mjschool_Subject();
 				if ( $school_obj->role == 'student' ) {
 					if ( $user_data->class_name != '' ) {
 						$classname = mjschool_get_class_name( $user_data->class_name );
@@ -100,7 +101,7 @@ class ViewProfile {
 					}
 				}
 				if ( $school_obj->role == 'teacher' ) {
-					$result['subjects'] = mjschool_get_subject_name_by_teacher( $user_data->ID );
+					$result['subjects'] = $obj_subject->mjschool_get_subject_name_by_teacher( $user_data->ID );
 				}
 				$response['status']   = 1;
 				$response['resource'] = $result;

@@ -15,7 +15,6 @@
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/attendance
  * @since      1.0.0
- * @since      2.0.1 Security hardening - Added array validation before foreach loops
  */
 defined( 'ABSPATH' ) || exit;
 $school_type = get_option( 'mjschool_custom_class' );
@@ -189,48 +188,44 @@ if ( $active_tab1 === 'subject_attendence' ) {
 										<?php
 										$date = sanitize_text_field(wp_unslash($_POST['curr_date']));
 										$i    = 1;
-										
-										// SECURITY FIX: Validate array before iteration
-										if ( ! empty( $student ) && is_array( $student ) ) {
-											foreach ( $student as $mjschool_user ) {
-												$umetadata = mjschool_get_user_image( $mjschool_user->ID );
-												if ( empty( $umetadata ) ) {
-													$profile_path = get_option( 'mjschool_student_thumb_new' );
-												} else {
-													$profile_path = $umetadata;
-												}
-												$date             = date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_POST['curr_date'])) ) );
-												if ( $school_type === 'school' ){
-													$check_attendance = $obj_attend->mjschool_check_has_subject_attendace( $mjschool_user->ID, $class_id, $date, sanitize_text_field(wp_unslash($_POST['sub_id'])), sanitize_text_field(wp_unslash($_POST['class_section'])) );
-												}
-												if ( ! empty( $check_attendance ) ) {
-													$attendanc_status = $check_attendance->status;
-												} else {
-													$attendanc_status = 'Present';
-												}
-												echo '<tr>';
-												echo '<td>' . esc_html( $i ) . '</td>';
-												
-												echo '<td class="mjschool_padding_left_0px"><img src=' . esc_url($profile_path) . ' class="img-circle" /><span class="ms-2">' . esc_html( mjschool_student_display_name_with_roll($mjschool_user->ID ) ) . '</span></td>';
-												
-												?>
-												<td class="mjschool_padding_left_0px">
-													<label class="radio-inline"><input type="radio" name="attendanace_<?php echo esc_attr( $mjschool_user->ID ); ?>" value="Present" <?php checked( $attendanc_status, 'Present' ); ?>> <?php esc_html_e( 'Present', 'mjschool' ); ?></label>
-													<label class="radio-inline"> <input type="radio" name="attendanace_<?php echo esc_attr( $mjschool_user->ID ); ?>" value="Absent" <?php checked( $attendanc_status, 'Absent' ); ?>> <?php esc_html_e( 'Absent', 'mjschool' ); ?></label><br>
-													<label class="radio-inline"><input type="radio" name="attendanace_<?php echo esc_attr( $mjschool_user->ID ); ?>" value="Late" <?php checked( $attendanc_status, 'Late' ); ?>> <?php esc_html_e( 'Late', 'mjschool' ); ?></label>
-													<label class="radio-inline"><input type="radio" name="attendanace_<?php echo esc_attr( $mjschool_user->ID ); ?>" value="Half Day" <?php checked( $attendanc_status, 'Half Day' ); ?>> <?php esc_html_e( 'Half Day', 'mjschool' ); ?></label>
-												</td>
-												<td class="padding_left_right_0">
-													<div class="form-group input mjschool-margin-bottom-0px">
-														<div class="col-md-12 form-control">
-															<input type="text" name="attendanace_comment_<?php echo esc_attr( $mjschool_user->ID ); ?>" class="form-control" value="<?php if ( ! empty( $check_attendance ) ) { echo esc_attr( $check_attendance->comment );} ?>">
-														</div>
-													</div>
-												</td>
-												<?php
-												echo '</tr>';
-												++$i;
+										foreach ( $student as $mjschool_user ) {
+											$umetadata = mjschool_get_user_image( $mjschool_user->ID );
+											if ( empty( $umetadata ) ) {
+												$profile_path = get_option( 'mjschool_student_thumb_new' );
+											} else {
+												$profile_path = $umetadata;
 											}
+											$date             = date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_POST['curr_date'])) ) );
+											if ( $school_type === 'school' ){
+												$check_attendance = $obj_attend->mjschool_check_has_subject_attendace( $mjschool_user->ID, $class_id, $date, sanitize_text_field(wp_unslash($_POST['sub_id'])), sanitize_text_field(wp_unslash($_POST['class_section'])) );
+											}
+											if ( ! empty( $check_attendance ) ) {
+												$attendanc_status = $check_attendance->status;
+											} else {
+												$attendanc_status = 'Present';
+											}
+											echo '<tr>';
+											echo '<td>' . esc_html( $i ) . '</td>';
+											
+											echo '<td class="mjschool_padding_left_0px"><img src=' . esc_url($profile_path) . ' class="img-circle" /><span class="ms-2">' . esc_html( mjschool_student_display_name_with_roll($mjschool_user->ID ) ) . '</span></td>';
+											
+											?>
+											<td class="mjschool_padding_left_0px">
+												<label class="radio-inline"><input type="radio" name="attendanace_<?php echo esc_attr( $mjschool_user->ID ); ?>" value="Present" <?php checked( $attendanc_status, 'Present' ); ?>> <?php esc_html_e( 'Present', 'mjschool' ); ?></label>
+												<label class="radio-inline"> <input type="radio" name="attendanace_<?php echo esc_attr( $mjschool_user->ID ); ?>" value="Absent" <?php checked( $attendanc_status, 'Absent' ); ?>> <?php esc_html_e( 'Absent', 'mjschool' ); ?></label><br>
+												<label class="radio-inline"><input type="radio" name="attendanace_<?php echo esc_attr( $mjschool_user->ID ); ?>" value="Late" <?php checked( $attendanc_status, 'Late' ); ?>> <?php esc_html_e( 'Late', 'mjschool' ); ?></label>
+												<label class="radio-inline"><input type="radio" name="attendanace_<?php echo esc_attr( $mjschool_user->ID ); ?>" value="Half Day" <?php checked( $attendanc_status, 'Half Day' ); ?>> <?php esc_html_e( 'Half Day', 'mjschool' ); ?></label>
+											</td>
+											<td class="padding_left_right_0">
+												<div class="form-group input mjschool-margin-bottom-0px">
+													<div class="col-md-12 form-control">
+														<input type="text" name="attendanace_comment_<?php echo esc_attr( $mjschool_user->ID ); ?>" class="form-control" value="<?php if ( ! empty( $check_attendance ) ) { echo esc_attr( $check_attendance->comment );} ?>">
+													</div>
+												</div>
+											</td>
+											<?php
+											echo '</tr>';
+											++$i;
 										}
 										?>
 									</table>

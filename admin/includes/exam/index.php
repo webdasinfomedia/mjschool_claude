@@ -696,9 +696,10 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 												$end_min         = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
 												$end_am_pm       = $end_time_data[2];
 												$end_time        = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
+												$obj_subject = new Mjschool_subjects();
 												?>
 												<tr>
-													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px mjschool_border_1px_white" ><?php echo esc_html( mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
+													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px mjschool_border_1px_white" ><?php echo esc_html( $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
 													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
 													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?></td>
 													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( $start_time ); ?></td>

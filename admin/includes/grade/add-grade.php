@@ -22,7 +22,8 @@ defined( 'ABSPATH' ) || exit;
 $edit = 0;
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) {
 	$edit       = 1;
-	$grade_data = mjschool_get_grade_by_id( intval( mjschool_decrypt_id( wp_unslash($_REQUEST['grade_id']) ) ) );
+	$obj_manage_marks = new Mjschool_Marks_Manage();
+	$grade_data = $obj_manage_marks->mjschool_get_grade_by_id( intval( mjschool_decrypt_id( wp_unslash($_REQUEST['grade_id']) ) ) );
 }
 ?>
 <div class="mjschool-panel-body mt-5 mjschool-padding-top-25px-res"><!-------- Panel body. -------->

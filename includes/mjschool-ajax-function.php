@@ -34,7 +34,7 @@ add_action( 'wp_ajax_mjschool_view_video', 'mjschool_view_video' );
  */
 function mjschool_view_video() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -42,21 +42,21 @@ function mjschool_view_video() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$link  = sanitize_text_field( wp_unslash($_REQUEST['link']));
-	$title = sanitize_text_field( wp_unslash($_REQUEST['title']) );
+	$link  = isset( $_REQUEST['link'] ) ? esc_url_raw( wp_unslash( $_REQUEST['link'] ) ) : '';
+	$title = isset( $_REQUEST['title'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['title'] ) ) : '';
 	?>
 	<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
 		
 		<a href="javascript:void(0);" id="close-popup" onclick="mjschool_stop_video()" class="mjschool-event-close-btn badge badge-success pull-right mjschool-dashboard-popup-design">
-			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>">
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>">
 		</a>
 		
-		<h4 id="myLargeModalLabel" class="modal-title"><?php echo esc_attr( $title ); ?></h4>
+		<h4 id="myLargeModalLabel" class="modal-title"><?php echo esc_html( $title ); ?></h4>
 	</div>
 	<div class="mjschool-border-panel-body mjschool-pop-header-p-20px mjschool-exercise-detail-popup">
 		<div class="row">
 			<div class="col-sm-12 col-md-12 col-xl-12 col-xs-12 mb-3">
-				<?php echo '<iframe id="video-frame" class="mjschool-video-width-height mjschool-video-frame-class" src="' . esc_url( $link ) . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';?>
+				<?php echo '<iframe id="video-frame" class="mjschool-video-width-height mjschool-video-frame-class" src="' . esc_url( $link ) . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'; ?>
 			</div>
 		</div>
 	</div>
@@ -73,8 +73,10 @@ function mjschool_view_video() {
  * @return string The complete HTML email template as a string.
  */
 function mjschool_get_mail_content_with_template_design( $message ) {
-	$logo         = get_option( 'mjschool_system_logo' );
-	$system_color = get_option( 'mjschool_system_color_code' );
+	$logo         = esc_url( get_option( 'mjschool_system_logo' ) );
+	$system_color = sanitize_hex_color( get_option( 'mjschool_system_color_code' ) );
+	$footer_desc  = wp_kses_post( get_option( 'mjschool_footer_description' ) );
+	$message      = wp_kses_post( $message );
 	 
 	$email_template = '
 	<html>
@@ -83,10 +85,10 @@ function mjschool_get_mail_content_with_template_design( $message ) {
 				<div style="background-color: aliceblue !important;font-family: \'Poppins\',Helvetica,Arial sans-serif;margin:0 auto;max-width:525px">
 					<table style="font-family: \'Poppins\',Helvetica,Arial sans-serif;float: left;width: 100%;">
 					<tbody>
-						<tr style="font-family: \'Poppins\',Helvetica,Arial sans-serif;background:' . $system_color . ';">
+						<tr style="font-family: \'Poppins\',Helvetica,Arial sans-serif;background:' . esc_attr( $system_color ) . ';">
 							<td style="font-family: \'Poppins\',Helvetica,Arial sans-serif;text-align:center ; padding-top: 12px;">
 								<p style="font-family: \'Poppins\',Helvetica,Arial sans-serif">
-									<img alt="WP-GYM" src="' . $logo . '" style="font-family: \'Poppins\',Helvetica,Arial sans-serif;max-width: 50%;" class="">
+									<img alt="WP-GYM" src="' . esc_url( $logo ) . '" style="font-family: \'Poppins\',Helvetica,Arial sans-serif;max-width: 50%;" class="">
 								</p>
 							</td>
 						</tr>
@@ -101,10 +103,10 @@ function mjschool_get_mail_content_with_template_design( $message ) {
 									</p>
 								</td>
 							</tr>
-							<tr style="font-family: \'Poppins\',Helvetica,Arial sans-serif;background:' . $system_color . ';">
+							<tr style="font-family: \'Poppins\',Helvetica,Arial sans-serif;background:' . esc_attr( $system_color ) . ';">
 								<td style="font-family: \'Poppins\',Helvetica,Arial sans-serif;color:#ffffff;">
 									<p style="font-family: \'Poppins\',Helvetica,Arial sans-serif;font-size:12px;text-align:center;margin-top:10px">
-									' . get_option( 'mjschool_footer_description' ) . '
+									' . $footer_desc . '
 									</p>
 								</td>
 							</tr>
@@ -129,7 +131,7 @@ add_action( 'wp_ajax_mjschool_load_subject_class_id_and_section_id', 'mjschool_l
  */
 function mjschool_load_subject_class_id_and_section_id() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -137,8 +139,8 @@ function mjschool_load_subject_class_id_and_section_id() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$class_id   = sanitize_text_field( wp_unslash($_POST['class_id']) );
-	$section_id = sanitize_text_field( wp_unslash($_POST['section_id']) );
+	$class_id   = isset( $_POST['class_id'] ) ? intval( wp_unslash( $_POST['class_id'] ) ) : 0;
+	$section_id = isset( $_POST['section_id'] ) ? intval( wp_unslash( $_POST['section_id'] ) ) : 0;
 	global $wpdb;
 	$table_name  = $wpdb->prefix . 'mjschool_subject';
 	$table_name2 = $wpdb->prefix . 'mjschool_teacher_subject';
@@ -153,19 +155,19 @@ function mjschool_load_subject_class_id_and_section_id() {
 		}
 	}
 	if ( 'teacher' === mjschool_get_roles( $user_id ) && isset( $data['own_data'] ) && $data['own_data'] === 1 ) {
-		if ( $section_id === '' ) {
+		if ( $section_id === 0 ) {
 			$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE teacher_id = %d AND class_id = %d", $user_id, $class_id );
 		} else {
 			$query = $wpdb->prepare( "SELECT p1.*, p2.* FROM $table_name p1 INNER JOIN $table_name2 p2 ON (p1.subid = p2.subject_id) WHERE p2.teacher_id = %d AND p1.class_id = %d AND p1.section_id = %d", $user_id, $class_id, $section_id );
 		}
 	} elseif ( mjschool_get_roles( $user_id ) === 'teacher' ) {
-		if ( $section_id != '' ) {
+		if ( $section_id !== 0 ) {
 			$query = $wpdb->prepare( "SELECT p1.*, p2.* FROM $table_name p1 INNER JOIN $table_name2 p2 ON (p1.subid = p2.subject_id) WHERE p2.teacher_id = %d AND p1.class_id = %d AND p1.section_id = %d", $user_id, $class_id, $section_id );
 		} else {
 			$query = $wpdb->prepare( "SELECT p1.*, p2.* FROM $table_name p1 INNER JOIN $table_name2 p2 ON (p1.subid = p2.subject_id) WHERE p2.teacher_id = %d AND p1.class_id = %d", $user_id, $class_id );
 		}
 	} elseif ( is_admin() ) {
-		if ( $section_id != '' ) {
+		if ( $section_id !== 0 ) {
 			$query = $wpdb->prepare( "SELECT p1.* FROM $table_name p1 WHERE p1.class_id = %d AND p1.section_id = %d", $class_id, $section_id );
 		} else {
 			$query = $wpdb->prepare( "SELECT p1.* FROM $table_name p1 WHERE p1.class_id = %d ", $class_id );
@@ -175,7 +177,7 @@ function mjschool_load_subject_class_id_and_section_id() {
 	}
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_results( $query );
-	$defaultmsg       = esc_attr__( 'Select subject', 'mjschool' );
+	$defaultmsg       = esc_html__( 'Select subject', 'mjschool' );
 	echo "<option value=''>" . esc_html( $defaultmsg ) . '</option>';
 	foreach ( $retrieve_subject as $retrieved_data ) {
 		echo "<option value='" . esc_attr( $retrieved_data->subid ) . "'> " . esc_html( $retrieved_data->sub_name . '-' . $retrieved_data->subject_code ) . '</option>';
@@ -194,7 +196,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_subject', 'mjschool_load_subject' );
  */
 function mjschool_load_subject() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -202,14 +204,14 @@ function mjschool_load_subject() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$class_id = sanitize_text_field( wp_unslash($_POST['class_list']) );
+	$class_id = isset( $_POST['class_list'] ) ? intval( wp_unslash( $_POST['class_list'] ) ) : 0;
 	global $wpdb;
 	$table_name  = $wpdb->prefix . 'mjschool_subject';
 	$table_name2 = $wpdb->prefix . 'mjschool_teacher_subject';
 	$user_id     = get_current_user_id();
 	if ( mjschool_get_roles( $user_id ) === 'teacher' ) {
 		// Prepare query for teacher role.
-		$query = $wpdb->prepare( "SELECT p1.*, p2.* FROM $table_name p1 INNER JOIN $table_name2 p2 ON (p1.subid = p2.subject_id) WHERE p2.teacher_id = %d AND p1.class_id = %d", $user_id, $class_id);
+		$query = $wpdb->prepare( "SELECT p1.*, p2.* FROM $table_name p1 INNER JOIN $table_name2 p2 ON (p1.subid = p2.subject_id) WHERE p2.teacher_id = %d AND p1.class_id = %d", $user_id, $class_id );
 	} else {
 		// Prepare query for non-teacher role.
 		$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d", $class_id );
@@ -218,7 +220,7 @@ function mjschool_load_subject() {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_results( $query );
 	// Default message.
-	$defaultmsg = esc_attr__( 'Select subject', 'mjschool' );
+	$defaultmsg = esc_html__( 'Select subject', 'mjschool' );
 	echo "<option value=''>" . esc_html( $defaultmsg ) . '</option>';
 	// Loop through the results and display them.
 	foreach ( $retrieve_subject as $retrieved_data ) {
@@ -236,11 +238,10 @@ add_action( 'wp_ajax_nopriv_mjschool_load_subject_by_exam', 'mjschool_load_subje
  * @since 1.0.0
  * @return void Outputs HTML option tags directly.
  */
-function mjschool_load_subject_by_exam()
-{
+function mjschool_load_subject_by_exam() {
 	global $wpdb;
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -248,24 +249,32 @@ function mjschool_load_subject_by_exam()
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$class_id = sanitize_text_field( wp_unslash($_POST['class_list']) );
-	$exam_id = sanitize_text_field( wp_unslash($_POST['exam_list']) );
+	$class_id           = isset( $_POST['class_list'] ) ? intval( wp_unslash( $_POST['class_list'] ) ) : 0;
+	$exam_id            = isset( $_POST['exam_list'] ) ? intval( wp_unslash( $_POST['exam_list'] ) ) : 0;
 	$subject_table_name = $wpdb->prefix . 'mjschool_subject';
 	$mjschool_exam_obj  = new Mjschool_exam();
-	$exam_data       = $mjschool_exam_obj->mjschool_exam_data($exam_id);
-	$all_exam_ids = []; // Default to an empty array.
-	if ( isset( $exam_data ) ) {
-		$all_exam_ids = json_decode($exam_data->subject_data, true);
-		$exam_subject_ids = array_column($all_exam_ids, 'subject_id' );
+	$exam_data          = $mjschool_exam_obj->mjschool_exam_data( $exam_id );
+	$all_exam_ids       = array(); // Default to an empty array.
+	$exam_subject_ids   = array();
+	if ( isset( $exam_data ) && ! empty( $exam_data->subject_data ) ) {
+		$all_exam_ids     = json_decode( $exam_data->subject_data, true );
+		$exam_subject_ids = array_column( $all_exam_ids, 'subject_id' );
 	}
+	
+	if ( empty( $exam_subject_ids ) ) {
+		$defaultmsg = esc_html__( 'Select subject', 'mjschool' );
+		echo "<option value=''>" . esc_html( $defaultmsg ) . '</option>';
+		die();
+	}
+	
 	$exam_subject_ids = array_map( 'intval', $exam_subject_ids );
-	$placeholders = implode( ',', array_fill( 0, count( $exam_subject_ids ), '%d' ) );
-	$query = "SELECT * FROM $subject_table_name WHERE subid IN ($placeholders)";
+	$placeholders     = implode( ',', array_fill( 0, count( $exam_subject_ids ), '%d' ) );
+	$query            = "SELECT * FROM $subject_table_name WHERE subid IN ($placeholders)";
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$retrieve_subject = $wpdb->get_results( $wpdb->prepare( $query, ...$exam_subject_ids ) );
 
 	// Default message.
-	$defaultmsg = esc_attr__( 'Select subject', 'mjschool' );
+	$defaultmsg = esc_html__( 'Select subject', 'mjschool' );
 	echo "<option value=''>" . esc_html( $defaultmsg ) . '</option>';
 	// Loop through the results and display them.
 	foreach ( $retrieve_subject as $retrieved_data ) {
@@ -286,7 +295,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_subject_by_section', 'mjschool_load_su
  */
 function mjschool_load_subject_by_section() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -294,8 +303,8 @@ function mjschool_load_subject_by_section() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$class_id   = sanitize_text_field( wp_unslash($_POST['class_list']) );
-	$section_id = sanitize_text_field( wp_unslash($_POST['section_list']) );
+	$class_id   = isset( $_POST['class_list'] ) ? intval( wp_unslash( $_POST['class_list'] ) ) : 0;
+	$section_id = isset( $_POST['section_list'] ) ? intval( wp_unslash( $_POST['section_list'] ) ) : 0;
 	global $wpdb;
 	$table_name  = $wpdb->prefix . 'mjschool_subject';
 	$table_name2 = $wpdb->prefix . 'mjschool_teacher_subject';
@@ -319,7 +328,7 @@ function mjschool_load_subject_by_section() {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_results( $query );
 	// Default message.
-	$defaultmsg = esc_attr__( 'Select subject', 'mjschool' );
+	$defaultmsg = esc_html__( 'Select subject', 'mjschool' );
 	echo "<option value=''>" . esc_html( $defaultmsg ) . '</option>';
 	// Loop through the results and display them.
 	foreach ( $retrieve_subject as $retrieved_data ) {
@@ -340,7 +349,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_membership_payment_report', 'mjschool_
  */
 function mjschool_load_membership_payment_report() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -349,11 +358,14 @@ function mjschool_load_membership_payment_report() {
 		wp_die( 'You must be logged in.' );
 	}
 	$month_val = isset( $_REQUEST['month_val'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['month_val'] ) ) : '';
-	$year_val = isset( $_REQUEST['year_val'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['year_val'] ) ) : '';
+	$year_val  = isset( $_REQUEST['year_val'] ) ? intval( wp_unslash( $_REQUEST['year_val'] ) ) : 0;
 	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_fee_payment_history';
+	$table_name      = $wpdb->prefix . 'mjschool_fee_payment_history';
+	$payment_array   = array();
+	$currency_symbol = mjschool_get_currency_symbol( get_option( 'mjschool_currency_code' ) );
+	
 	if ( $month_val === 'all_month' ) {
-		$month              = array(
+		$month               = array(
 			'1'  => esc_html__( 'January', 'mjschool' ),
 			'2'  => esc_html__( 'February', 'mjschool' ),
 			'3'  => esc_html__( 'March', 'mjschool' ),
@@ -367,10 +379,9 @@ function mjschool_load_membership_payment_report() {
 			'11' => esc_html__( 'November', 'mjschool' ),
 			'12' => esc_html__( 'December', 'mjschool' ),
 		);
-		$result             = array();
+		$result              = array();
 		$data_points_payment = array();
 		array_push( $data_points_payment, array( esc_html__( 'Month', 'mjschool' ), esc_html__( 'Payment', 'mjschool' ) ) );
-		$payment_array = array();
 		foreach ( $month as $key => $value ) {
 			$q = $wpdb->prepare( "SELECT * FROM $table_name WHERE YEAR(paid_by_date) = %d AND MONTH(paid_by_date) = %d", $year_val, $key );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -384,32 +395,33 @@ function mjschool_load_membership_payment_report() {
 			array_push( $data_points_payment, array( $value, $payment_amount ) );
 		}
 	} else {
-		$select_month       = isset($_REQUEST['month_val']) ? sanitize_text_field( wp_unslash($_REQUEST['month_val']) ) : '';
+		$select_month        = isset( $_REQUEST['month_val'] ) ? intval( wp_unslash( $_REQUEST['month_val'] ) ) : 0;
 		$data_points_payment = array();
-		if ( $month_val === '2' ) {
-			$max_d = '29';
-		} elseif ( $month_val === '4' || $month_val === '6' || $month_val === '9' || $month_val === '11' ) {
-			$max_d = '30';
+		$date_list           = array();
+		$day_date            = array();
+		
+		if ( $select_month === 2 ) {
+			$max_d = 29;
+		} elseif ( $select_month === 4 || $select_month === 6 || $select_month === 9 || $select_month === 11 ) {
+			$max_d = 30;
 		} else {
-			$max_d = '31';
+			$max_d = 31;
 		}
 		for ( $d = 1; $d <= $max_d; $d++ ) {
-			$time = mktime( 12, 0, 0, $month_val, $d, $year_val );
-			if ( date( 'm', $time ) == $month_val ) {
-				$date_list[] = date( 'Y-m-d', $time );
+			$time = mktime( 12, 0, 0, $select_month, $d, $year_val );
+			if ( (int) gmdate( 'm', $time ) === $select_month ) {
+				$date_list[] = gmdate( 'Y-m-d', $time );
 			}
-			$day_date[]       = date( 'd', $time );
-			$month_first_date = min( $date_list );
-			$month_last_date  = max( $date_list );
+			$day_date[] = gmdate( 'd', $time );
 		}
-		$month_val = array();
-		$i         = 1;
+		$month_val_arr = array();
+		$i             = 1;
 		foreach ( $day_date as $value ) {
-			$month_val[ $i ] = $value;
+			$month_val_arr[ $i ] = $value;
 			++$i;
 		}
 		array_push( $data_points_payment, array( esc_html__( 'Day', 'mjschool' ), esc_html__( 'Payment', 'mjschool' ) ) );
-		foreach ( $month_val as $key => $value ) {
+		foreach ( $month_val_arr as $key => $value ) {
 			// GET INCOME EXPENCE DATA.
 			$q = $wpdb->prepare( "SELECT * FROM $table_name WHERE YEAR(paid_by_date) = %d AND MONTH(paid_by_date) = %d AND DAY(paid_by_date) = %d", $year_val, $select_month, $value );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -424,7 +436,7 @@ function mjschool_load_membership_payment_report() {
 		}
 	}
 	$payment_filtered = array_filter( $payment_array );
-	$new_array    = $data_points_payment;
+	$new_array        = $data_points_payment;
 	if ( ! empty( $payment_filtered ) ) {
 		$labels = array_column( $new_array, 0 );
 		$values = array_column( $new_array, 1 );
@@ -433,14 +445,14 @@ function mjschool_load_membership_payment_report() {
 		array_shift( $labels );
 		array_shift( $values );
 		?>
-		<canvas id="mjschool-payment-bar-material" class="mjschool-payment-bar-material mjschool_chart_430pxmjschool_chart_430px" data-labels='<?php echo json_encode( $labels ); ?>' data-values='<?php echo json_encode( $values ); ?>' data-currency="<?php echo esc_attr( $currency_symbol ); ?>" data-color="<?php echo esc_js( get_option( 'mjschool_system_color_code' ) ); ?>"></canvas>
+		<canvas id="mjschool-payment-bar-material" class="mjschool-payment-bar-material mjschool_chart_430pxmjschool_chart_430px" data-labels='<?php echo esc_attr( wp_json_encode( $labels ) ); ?>' data-values='<?php echo esc_attr( wp_json_encode( $values ) ); ?>' data-currency="<?php echo esc_attr( $currency_symbol ); ?>" data-color="<?php echo esc_attr( sanitize_hex_color( get_option( 'mjschool_system_color_code' ) ) ); ?>"></canvas>
 		<?php
 	} else {
-		 ?>
+		?>
 		<div class="mjschool-calendar-event-new">
-			<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+			<img class="mjschool-no-data-img" src="<?php echo esc_url( MJSCHOOL_NODATA_IMG ); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 		</div>
-		<?php 
+		<?php
 	}
 	die();
 }
@@ -458,7 +470,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_income_expence_report', 'mjschool_load
  */
 function mjschool_load_income_expence_report() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -467,9 +479,13 @@ function mjschool_load_income_expence_report() {
 		wp_die( 'You must be logged in.' );
 	}
 	$month_val = isset( $_REQUEST['month_val'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['month_val'] ) ) : '';
-	$year_val = isset( $_REQUEST['year_val'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['year_val'] ) ) : '';
+	$year_val  = isset( $_REQUEST['year_val'] ) ? intval( wp_unslash( $_REQUEST['year_val'] ) ) : 0;
 	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_income_expense';
+	$table_name      = $wpdb->prefix . 'mjschool_income_expense';
+	$income_array    = array();
+	$expense_array   = array();
+	$currency_symbol = mjschool_get_currency_symbol( get_option( 'mjschool_currency_code' ) );
+	
 	// REPORT FOR PARTICULAR YEAR.
 	if ( $month_val === 'all_month' ) {
 		$month        = array(
@@ -489,9 +505,6 @@ function mjschool_load_income_expence_report() {
 		$result       = array();
 		$dataPoints_2 = array();
 		array_push( $dataPoints_2, array( esc_html__( 'Month', 'mjschool' ), esc_html__( 'Income', 'mjschool' ), esc_html__( 'Expense', 'mjschool' ), esc_html__( 'Net Profit', 'mjschool' ) ) );
-		$dataPoints_1    = array();
-		$expense_array   = array();
-		$currency_symbol = mjschool_get_currency_symbol( get_option( 'mjschool_currency_code' ) );
 		foreach ( $month as $key => $value ) {
 			// GET INCOME EXPENCE DATA.
 			$q  = $wpdb->prepare( "SELECT * FROM $table_name WHERE YEAR(income_create_date) = %d AND MONTH(income_create_date) = %d AND invoice_type = %s", $year_val, $key, 'income' );
@@ -525,35 +538,35 @@ function mjschool_load_income_expence_report() {
 			$net_profit_array = $income_amount - $expense_amount;
 			array_push( $dataPoints_2, array( $value, $income_amount, $expense_amount, $net_profit_array ) );
 		}
-	}
-	// REPORT FOR PARTICULAR MONTH WISE.
-	else {
-		$select_month = isset( $_REQUEST['month_val'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['month_val'] ) ) : '';
+	} else {
+		// REPORT FOR PARTICULAR MONTH WISE.
+		$select_month = isset( $_REQUEST['month_val'] ) ? intval( wp_unslash( $_REQUEST['month_val'] ) ) : 0;
 		$dataPoints_2 = array();
-		if ( $month_val === '2' ) {
-			$max_d = '29';
-		} elseif ( $month_val === '4' || $month_val === '6' || $month_val === '9' || $month_val === '11' ) {
-			$max_d = '30';
+		$date_list    = array();
+		$day_date     = array();
+		
+		if ( $select_month === 2 ) {
+			$max_d = 29;
+		} elseif ( $select_month === 4 || $select_month === 6 || $select_month === 9 || $select_month === 11 ) {
+			$max_d = 30;
 		} else {
-			$max_d = '31';
+			$max_d = 31;
 		}
 		for ( $d = 1; $d <= $max_d; $d++ ) {
-			$time = mktime( 12, 0, 0, $month_val, $d, $year_val );
-			if ( date( 'm', $time ) === $month_val ) {
-				$date_list[] = date( 'Y-m-d', $time );
+			$time = mktime( 12, 0, 0, $select_month, $d, $year_val );
+			if ( (int) gmdate( 'm', $time ) === $select_month ) {
+				$date_list[] = gmdate( 'Y-m-d', $time );
 			}
-			$day_date[]       = date( 'd', $time );
-			$month_first_date = min( $date_list );
-			$month_last_date  = max( $date_list );
+			$day_date[] = gmdate( 'd', $time );
 		}
-		$month_val = array();
-		$i         = 1;
+		$month_val_arr = array();
+		$i             = 1;
 		foreach ( $day_date as $value ) {
-			$month_val[ $i ] = $value;
+			$month_val_arr[ $i ] = $value;
 			++$i;
 		}
 		array_push( $dataPoints_2, array( esc_html__( 'Day', 'mjschool' ), esc_html__( 'Income', 'mjschool' ), esc_html__( 'Expense', 'mjschool' ), esc_html__( 'Net Profit', 'mjschool' ) ) );
-		foreach ( $month_val as $key => $value ) {
+		foreach ( $month_val_arr as $key => $value ) {
 			// GET INCOME EXPENCE DATA.
 			$q  = $wpdb->prepare( "SELECT * FROM $table_name WHERE YEAR(income_create_date) = %d AND MONTH(income_create_date) = %d AND DAY(income_create_date) = %d AND invoice_type = %s", $year_val, $select_month, $value, 'income' );
 			$q1 = $wpdb->prepare( "SELECT * FROM $table_name WHERE YEAR(income_create_date) = %d AND MONTH(income_create_date) = %d AND DAY(income_create_date) = %d AND invoice_type = %s", $year_val, $select_month, $value, 'expense' );
@@ -590,8 +603,7 @@ function mjschool_load_income_expence_report() {
 	$income_filtered  = array_filter( $income_array );
 	$expense_filtered = array_filter( $expense_array );
 	$new_array        = $dataPoints_2;
-	 if ( ! empty( $income_filtered ) || ! empty( $expense_filtered ) ) :
-		$new_currency_symbol = html_entity_decode( $currency_symbol );
+	if ( ! empty( $income_filtered ) || ! empty( $expense_filtered ) ) :
 		$labels       = array();
 		$income_data  = array();
 		$expense_data = array();
@@ -605,18 +617,18 @@ function mjschool_load_income_expence_report() {
 			$expense_data[] = $row[2];
 			$profit_data[]  = $row[3];
 		}
-		$chart_data = [
-			'labels'       => $labels,
-			'income'       => $income_data,
-			'expense'      => $expense_data,
-			'profit'       => $profit_data,
-			'currency'     => $currency_symbol
-		];
+		$chart_data = array(
+			'labels'   => $labels,
+			'income'   => $income_data,
+			'expense'  => $expense_data,
+			'profit'   => $profit_data,
+			'currency' => $currency_symbol,
+		);
 		?>
-		<canvas id="mjschool-barchart-material" class="mjschool-barchart-material mjschool_chart_430pxmjschool_chart_430px" data-chart='<?php echo wp_json_encode( $chart_data ); ?>'></canvas>
+		<canvas id="mjschool-barchart-material" class="mjschool-barchart-material mjschool_chart_430pxmjschool_chart_430px" data-chart='<?php echo esc_attr( wp_json_encode( $chart_data ) ); ?>'></canvas>
 	<?php else : ?>
 		<div class="mjschool-calendar-event-new">
-			<img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_html_e( 'No data', 'mjschool' ); ?>">
+			<img class="mjschool-no-data-img" src="<?php echo esc_url( MJSCHOOL_NODATA_IMG ); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
 		</div>
 	<?php endif;
 	die();
@@ -634,7 +646,7 @@ add_action( 'wp_ajax_nopriv_mjschool_payment_dashboard_report_content', 'mjschoo
  */
 function mjschool_payment_dashboard_report_content() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -642,7 +654,7 @@ function mjschool_payment_dashboard_report_content() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$type = isset($_REQUEST['type']) ? sanitize_text_field( wp_unslash($_REQUEST['type']) ) : '';
+	$type = isset( $_REQUEST['type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['type'] ) ) : '';
 	?>
 		<?php
 		$result       = mjschool_all_date_type_value( $type );
@@ -695,7 +707,7 @@ function mjschool_payment_dashboard_report_content() {
 			$stripe_amount = 0;
 		}
 		?>
-	<canvas id="chartJSContainerpayment" width="300" height="250" data-cash="<?php echo esc_js($cash_amount); ?>" data-cheque="<?php echo esc_js($cheque_amount); ?>" data-bank="<?php echo esc_js($bank_amount); ?>" data-paypal="<?php echo esc_js($paypal_amount); ?>" data-stripe="<?php echo esc_js($stripe_amount); ?>" data-symbol="<?php echo esc_js(html_entity_decode(mjschool_get_currency_symbol(get_option('mjschool_currency_code')))); ?>"></canvas>
+	<canvas id="chartJSContainerpayment" width="300" height="250" data-cash="<?php echo esc_attr( floatval( $cash_amount ) ); ?>" data-cheque="<?php echo esc_attr( floatval( $cheque_amount ) ); ?>" data-bank="<?php echo esc_attr( floatval( $bank_amount ) ); ?>" data-paypal="<?php echo esc_attr( floatval( $paypal_amount ) ); ?>" data-stripe="<?php echo esc_attr( floatval( $stripe_amount ) ); ?>" data-symbol="<?php echo esc_attr( html_entity_decode( mjschool_get_currency_symbol( get_option( 'mjschool_currency_code' ) ) ) ); ?>"></canvas>
 	<p class="percent">
 		<?php
 		$Total_amount    = $cash_amount + $cheque_amount + $bank_amount + $paypal_amount + $stripe_amount;
@@ -721,7 +733,7 @@ add_action( 'wp_ajax_nopriv_mjschool_attendance_dashboard_report_content', 'mjsc
  */
 function mjschool_attendance_dashboard_report_content() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -729,7 +741,7 @@ function mjschool_attendance_dashboard_report_content() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$type = isset($_REQUEST['type']) ? sanitize_text_field( wp_unslash($_REQUEST['type']) ) : '';
+	$type = isset( $_REQUEST['type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['type'] ) ) : '';
 	?>
 		<?php
 		$result     = mjschool_all_date_type_value( $type );
@@ -740,8 +752,8 @@ function mjschool_attendance_dashboard_report_content() {
 		$absent     = mjschool_attendance_data_by_status( $start_date, $end_date, 'Absent' );
 		$late       = mjschool_attendance_data_by_status( $start_date, $end_date, 'Late' );
 		$halfday    = mjschool_attendance_data_by_status( $start_date, $end_date, 'Half Day' );
-	?>
-	<canvas id="chartJSContainerattendance" width="300" height="250" data-present="<?php echo esc_js($present); ?>" data-absent="<?php echo esc_js($absent); ?>" data-late="<?php echo esc_js($late); ?>" data-halfday="<?php echo esc_js($halfday); ?>"></canvas>
+		?>
+	<canvas id="chartJSContainerattendance" width="300" height="250" data-present="<?php echo esc_attr( intval( $present ) ); ?>" data-absent="<?php echo esc_attr( intval( $absent ) ); ?>" data-late="<?php echo esc_attr( intval( $late ) ); ?>" data-halfday="<?php echo esc_attr( intval( $halfday ) ); ?>"></canvas>
 	<p class="percent">
 		<?php
 		$attendance = $present + $absent + $late + $halfday;
@@ -765,7 +777,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_teacher_by_subject', 'mjschool_load_te
  */
 function mjschool_load_teacher_by_subject() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -773,7 +785,13 @@ function mjschool_load_teacher_by_subject() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$subject = isset($_POST['subject']) ? sanitize_text_field( wp_unslash($_POST['subject']) ) : '';
+	$subject = isset($_POST['subject']) ? intval( wp_unslash($_POST['subject']) ) : 0;
+	
+	// Get current user role and ID (these were referenced but not defined)
+	$current_user_id = get_current_user_id();
+	$user = wp_get_current_user();
+	$current_role = ! empty( $user->roles ) ? $user->roles[0] : '';
+	
 	global $wpdb;
 	$mjschool_teacher_class = $wpdb->prefix . 'mjschool_teacher_subject';
 	// Fetch results from the database.
@@ -806,7 +824,7 @@ add_action( 'wp_ajax_nopriv_mjschool_fees_user_list', 'mjschool_fees_user_list' 
  */
 function mjschool_fees_user_list() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -861,7 +879,7 @@ function mjschool_fees_user_list() {
 			if ( $retrive_data != get_current_user_id() ) {
 				$check_data = mjschool_get_user_name_by_id( $retrive_data );
 				if ( $check_data != '' ) {
-					$user_string .= "<option value='" . $retrive_data . "'>" . esc_html( mjschool_get_user_name_by_id( $retrive_data ) ) . '</option>';
+					$user_string .= "<option value='" . esc_attr( $retrive_data ) . "'>" . esc_html( mjschool_get_user_name_by_id( $retrive_data ) ) . '</option>';
 				}
 			}
 		}
@@ -884,7 +902,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_siblings_dropdown', 'mjschool_load_sib
  */
 function mjschool_load_siblings_dropdown() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -892,7 +910,7 @@ function mjschool_load_siblings_dropdown() {
 	// if ( ! is_user_logged_in() ) {
 	// 	wp_die( 'You must be logged in.' );
 	// }
-	$x = isset($_REQUEST['click_val']) ? sanitize_text_field( wp_unslash($_REQUEST['click_val']) ) : '';
+	$x = isset($_REQUEST['click_val']) ? intval( wp_unslash($_REQUEST['click_val']) ) : 0;
 	$school_type = get_option( 'mjschool_custom_class' );
 	?>
 	<div class="form-body mjschool-user-form-for-sibling" data-sibling-id="<?php echo esc_attr($x); ?>">
@@ -946,7 +964,7 @@ add_action( 'wp_ajax_nopriv_mjschool_class_rootine_import', 'mjschool_class_root
  */
 function mjschool_class_rootine_import() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -963,8 +981,8 @@ function mjschool_class_rootine_import() {
 	</div>
 	<div class="mjschool-panel-body">
 		<form name="mjschool-upload-form" action="#" method="post" class="mjschool-form-horizontal" id="import_csv" enctype="multipart/form-data"><!--form div-->
-			<input type="hidden" name="class_id" value="<?php echo esc_attr( sanitize_text_field( wp_unslash($_REQUEST['class_id']) ) ); ?>">
-			<inpu t type="hidden" name="class_section" value="<?php echo esc_attr( sanitize_text_field( wp_unslash($_REQUEST['class_section']) ) ); ?>">
+			<input type="hidden" name="class_id" value="<?php echo esc_attr( intval( wp_unslash($_REQUEST['class_id']) ) ); ?>">
+			<input type="hidden" name="class_section" value="<?php echo esc_attr( sanitize_text_field( wp_unslash($_REQUEST['class_section']) ) ); ?>">
 			<div class="form-body mjschool-user-form">
 				<div class="row">
 					<div class="col-md-9 input mt-0">
@@ -1001,7 +1019,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_child_dropdown', 'mjschool_load_child_
  */
 function mjschool_load_child_dropdown() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1018,7 +1036,7 @@ function mjschool_load_child_dropdown() {
 				<select name="chield_list[]" id="student_list" class="form-control validate[required] mjschool-max-width-100px mjschool_heights_47px">
 					<option value=""><?php esc_html_e( 'Select Child', 'mjschool' ); ?></option>
 					<?php foreach ( $students as $label => $opt ) { ?>
-						<optgroup label="<?php echo 'Class : ' . esc_html( $label ); ?>">
+						<optgroup label="<?php echo 'Class : ' . esc_attr( $label ); ?>">
 							<?php foreach ( $opt as $id => $name ) : ?>
 								<option value="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $name ); ?></option>
 							<?php endforeach; ?>
@@ -1048,7 +1066,7 @@ add_action( 'wp_ajax_mjschool_import_student_attendance', 'mjschool_import_stude
  */
 function mjschool_import_student_attendance() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1103,7 +1121,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_class_section_document', 'mjschool_loa
  */ 
 function mjschool_load_class_section_document() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1111,7 +1129,7 @@ function mjschool_load_class_section_document() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$class_id   = sanitize_text_field(wp_unslash($_POST['class_id']));
+	$class_id   = isset($_POST['class_id']) ? sanitize_text_field(wp_unslash($_POST['class_id'])) : '';
 	$defaultmsg = esc_attr__( 'All Section', 'mjschool' );
 	if ( $class_id === 'all class' ) {
 		echo "<option value='all section'>" . esc_html( $defaultmsg ) . '</option>';
@@ -1140,7 +1158,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_class_wise_student_document', 'mjschoo
  */
 function mjschool_load_class_wise_student_document() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1149,7 +1167,7 @@ function mjschool_load_class_wise_student_document() {
 		wp_die( 'You must be logged in.' );
 	}
 	$exlude_id  = mjschool_approve_student_list();
-	$class_id   = sanitize_text_field( wp_unslash($_POST['class_id']) );
+	$class_id   = isset($_POST['class_id']) ? sanitize_text_field( wp_unslash($_POST['class_id']) ) : '';
 	$defaultmsg = esc_attr__( 'All Student', 'mjschool' );
 	if ( $class_id === 'all class' ) {
 		echo "<option value='all section'>" . esc_html( $defaultmsg ) . '</option>';
@@ -1178,7 +1196,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_section_user_list', 'mjschool_load_sec
  */
 function mjschool_load_section_user_list() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1186,8 +1204,8 @@ function mjschool_load_section_user_list() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$section_id = sanitize_text_field( wp_unslash($_POST['section_id']) );
-	$class_id   = sanitize_text_field( wp_unslash($_POST['class_id']) );
+	$section_id = isset($_POST['section_id']) ? sanitize_text_field( wp_unslash($_POST['section_id']) ) : '';
+	$class_id   = isset($_POST['class_id']) ? sanitize_text_field( wp_unslash($_POST['class_id']) ) : '';
 	$defaultmsg = esc_attr__( 'All Student', 'mjschool' );
 	if ( $section_id === 'all section' ) {
 		echo "<option value='all student'>" . esc_html( $defaultmsg ) . '</option>';
@@ -1238,7 +1256,7 @@ add_action( 'wp_ajax_mjschool_qr_code_take_attendance', 'mjschool_qr_code_take_a
  */
 function mjschool_qr_code_take_attendance() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1246,16 +1264,16 @@ function mjschool_qr_code_take_attendance() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$attendance_url         =  esc_url_raw( wp_unslash( $_REQUEST['attendance_url'] ) );
+	$attendance_url         = isset( $_REQUEST['attendance_url'] ) ? esc_url_raw( wp_unslash( $_REQUEST['attendance_url'] ) ) : '';
 	$obj_attend             = new Mjschool_Attendence_Manage();
 	$qrcode_attendance      = explode( '_', $attendance_url );
-	$user_id                = $qrcode_attendance[0];
-	$user_class_id          = $qrcode_attendance[1];
-	$curr_date              = $qrcode_attendance[2];
-	$user_section_id        = $qrcode_attendance[3];
-	$selected_class_id      = $qrcode_attendance[4];
-	$selected_class_subject = $qrcode_attendance[5];
-	$selected_class_section = $qrcode_attendance[6];
+	$user_id                = isset($qrcode_attendance[0]) ? intval($qrcode_attendance[0]) : 0;
+	$user_class_id          = isset($qrcode_attendance[1]) ? intval($qrcode_attendance[1]) : 0;
+	$curr_date              = isset($qrcode_attendance[2]) ? sanitize_text_field($qrcode_attendance[2]) : '';
+	$user_section_id        = isset($qrcode_attendance[3]) ? intval($qrcode_attendance[3]) : 0;
+	$selected_class_id      = isset($qrcode_attendance[4]) ? intval($qrcode_attendance[4]) : 0;
+	$selected_class_subject = isset($qrcode_attendance[5]) ? intval($qrcode_attendance[5]) : 0;
+	$selected_class_section = isset($qrcode_attendance[6]) ? intval($qrcode_attendance[6]) : 0;
 	$userdata               = get_userdata( $user_id );
 	$status                 = 'Present';
 	$attend_by              = get_current_user_id();
@@ -1283,7 +1301,7 @@ add_action( 'wp_ajax_nopriv_mjschool_teacher_attendance_graph_report_data', 'mjs
  */
 function mjschool_teacher_attendance_graph_report_data() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1353,7 +1371,7 @@ function mjschool_teacher_attendance_graph_report_data() {
 		$value      = 'Last Year';
 	}
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$report_2      = $wpdb->get_results( "SELECT  at.user_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent from $table_attendance as at where `attendence_date` BETWEEN '$start_date' AND '$end_date' AND at.user_id AND at.role_name = 'teacher' GROUP BY at.user_id" );
+	$report_2      = $wpdb->get_results( $wpdb->prepare( "SELECT  at.user_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent from $table_attendance as at where `attendence_date` BETWEEN %s AND %s AND at.user_id AND at.role_name = 'teacher' GROUP BY at.user_id", $start_date, $end_date ) );
 	$chart_array   = array();
 	$chart_array[] = array( esc_html__( 'teacher', 'mjschool' ), esc_html__( 'Present', 'mjschool' ), esc_html__( 'Absent', 'mjschool' ) );
 	if ( ! empty( $report_2 ) ) {
@@ -1458,7 +1476,7 @@ add_action( 'wp_ajax_nopriv_mjschool_student_attendance_graph_report_data', 'mjs
  */
 function mjschool_student_attendance_graph_report_data() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1466,7 +1484,7 @@ function mjschool_student_attendance_graph_report_data() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$filter_val = isset($_REQUEST['filter_val']) ? sanitize_text_field( wp_unslash($_REQUEST['filter_val']) ) : '';;
+	$filter_val = isset($_REQUEST['filter_val']) ? sanitize_text_field( wp_unslash($_REQUEST['filter_val']) ) : '';
 	global $wpdb;
 	$table_attendance = $wpdb->prefix . 'mjschool_sub_attendance';
 	$table_class      = $wpdb->prefix . 'mjschool_class';
@@ -1535,17 +1553,16 @@ function mjschool_student_attendance_graph_report_data() {
 		$unique_array = array();
 		if ( ! empty( $classes ) ) {
 			foreach ( $classes as $class ) {
-				$class_id = $class->class_id;
-				$query    = "SELECT at.class_id, SUM(CASE WHEN `status` ='Present' THEN 1 ELSE 0 END) AS Present, SUM(CASE WHEN `status` ='Absent' THEN 1 ELSE 0 END) AS Absent FROM $table_attendance AS at JOIN $table_class AS cl ON at.class_id = cl.class_id WHERE `attendance_date` BETWEEN '$start_date' AND '$end_date' AND at.class_id = $class_id AND at.role_name = 'student' GROUP BY at.class_id";
+				$class_id = intval( $class->class_id );
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$result       = $wpdb->get_results( $query );
+				$result       = $wpdb->get_results( $wpdb->prepare( "SELECT at.class_id, SUM(CASE WHEN `status` ='Present' THEN 1 ELSE 0 END) AS Present, SUM(CASE WHEN `status` ='Absent' THEN 1 ELSE 0 END) AS Absent FROM $table_attendance AS at JOIN $table_class AS cl ON at.class_id = cl.class_id WHERE `attendance_date` BETWEEN %s AND %s AND at.class_id = %d AND at.role_name = 'student' GROUP BY at.class_id", $start_date, $end_date, $class_id ) );
 				$unique_array = array_merge( $unique_array, $result );
 			}
 		}
 		$report_2 = array_unique( $unique_array, SORT_REGULAR );
 	} else {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$report_2 = $wpdb->get_results( "SELECT  at.class_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent from $table_attendance as at,$table_class as cl where `attendance_date` BETWEEN '$start_date' AND '$end_date' AND at.class_id = cl.class_id AND at.role_name = 'student' GROUP BY at.class_id" );
+		$report_2 = $wpdb->get_results( $wpdb->prepare( "SELECT  at.class_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent from $table_attendance as at,$table_class as cl where `attendance_date` BETWEEN %s AND %s AND at.class_id = cl.class_id AND at.role_name = 'student' GROUP BY at.class_id", $start_date, $end_date ) );
 	}
 	$chart_array   = array();
 	$chart_array[] = array( esc_html__( 'Class', 'mjschool' ), esc_html__( 'Present', 'mjschool' ), esc_html__( 'Absent', 'mjschool' ) );
@@ -1651,7 +1668,7 @@ add_action( 'wp_ajax_nopriv_mjschool_check_username_exit_or_not', 'mjschool_chec
  */
 function mjschool_check_username_exit_or_not() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1659,7 +1676,7 @@ function mjschool_check_username_exit_or_not() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$username = sanitize_text_field(wp_unslash($_POST['username']));
+	$username = isset($_POST['username']) ? sanitize_text_field(wp_unslash($_POST['username'])) : '';
 	if ( username_exists( $username ) ) {
 		$response = 1;
 	} else {
@@ -1669,7 +1686,7 @@ function mjschool_check_username_exit_or_not() {
 	die();
 }
 add_action( 'wp_ajax_mjschool_check_roll_exit_or_not', 'mjschool_check_roll_exit_or_not' );
-add_action( 'wp_ajax_nopriv_mjschool_check_add_actionroll_exit_or_not', 'mjschool_check_roll_exit_or_not' );
+add_action( 'wp_ajax_nopriv_mjschool_check_roll_exit_or_not', 'mjschool_check_roll_exit_or_not' );
 /**
  * Handles AJAX request to check whether a roll number already exists.
  *
@@ -1682,7 +1699,7 @@ add_action( 'wp_ajax_nopriv_mjschool_check_add_actionroll_exit_or_not', 'mjschoo
  */
 function mjschool_check_roll_exit_or_not() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1690,7 +1707,7 @@ function mjschool_check_roll_exit_or_not() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$roll = sanitize_text_field( wp_unslash($_POST['roll']) );
+	$roll = isset($_POST['roll']) ? sanitize_text_field( wp_unslash($_POST['roll']) ) : '';
 	
 	$user = get_users(array(
 		'meta_key' => 'roll_id',
@@ -1719,7 +1736,7 @@ add_action( 'wp_ajax_nopriv_mjschool_check_email_exit_or_not', 'mjschool_check_e
  */
 function mjschool_check_email_exit_or_not() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1727,7 +1744,7 @@ function mjschool_check_email_exit_or_not() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$email = sanitize_email(wp_unslash($_POST['email_id']));
+	$email = isset($_POST['email_id']) ? sanitize_email(wp_unslash($_POST['email_id'])) : '';
 	if ( email_exists( $email ) ) {
 		$response = 1;
 	} else {
@@ -1749,7 +1766,7 @@ add_action( 'wp_ajax_mjschool_load_exam', 'mjschool_load_exam' );
  */
 function mjschool_load_exam() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1782,7 +1799,7 @@ add_action( 'wp_ajax_mjschool_load_exam_by_section', 'mjschool_load_exam_by_sect
  */
 function mjschool_load_exam_by_section() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1825,7 +1842,7 @@ add_action( 'wp_ajax_mjschool_ajax_teacher_comment', 'mjschool_ajax_teacher_comm
  */
 function mjschool_ajax_teacher_comment() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1856,7 +1873,7 @@ function mjschool_ajax_teacher_comment() {
 				<div class="form-group input">
 					<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 						<div class="form-field">
-							<textarea id="teacherComment" name="exam_comment" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150" id="exam_comment"></textarea>
+							<textarea id="teacherComment" name="exam_comment" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150"></textarea>
 							<span class="mjschool-txt-title-label"></span>
 							<label class="text-area address active"><?php esc_html_e( 'Teacher Comment', 'mjschool' ); ?></label>
 						</div>
@@ -1897,7 +1914,7 @@ add_action( 'wp_ajax_mjschool_ajax_teacher_comment_merge', 'mjschool_ajax_teache
  */
 function mjschool_ajax_teacher_comment_merge() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -1928,7 +1945,7 @@ function mjschool_ajax_teacher_comment_merge() {
 				<div class="form-group input">
 					<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 						<div class="form-field">
-							<textarea id="teacherComment" name="exam_comment" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150" id="exam_comment"></textarea>
+							<textarea id="teacherComment" name="exam_comment" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150"></textarea>
 							<span class="mjschool-txt-title-label"></span>
 							<label class="text-area address active"><?php esc_html_e( 'Teacher Comment', 'mjschool' ); ?></label>
 						</div>
@@ -2001,7 +2018,7 @@ function mjschool_ajax_result() {
 		<div class="mjschool-panel-white">
 			<div class="modal-header modal_header_height mjschool-model-header-padding mjschool-dashboard-model-header">
 				<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
-				<h4 id="myLargeModalLabel" class="modal-title"><?php echo esc_html( mjschool_get_user_name_by_id($uid ) ); ?>'s <?php esc_html_e( 'Result', 'mjschool' ) ?></h4>
+				<h4 id="myLargeModalLabel" class="modal-title"><?php echo esc_html( mjschool_get_user_name_by_id($uid ) ); ?>'s <?php esc_html_e( 'Result', 'mjschool' ); ?></h4>
 				
 			</div>
 			<?php
@@ -2054,20 +2071,20 @@ function mjschool_ajax_result() {
 											<div class="col-md-5 mjschool-width-50px">
 												<?php
 												if ($roles != "parent" && $roles != "student") { ?>
-													<a href="#" student_id="<?php echo esc_js(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_js(mjschool_encrypt_id($class_id ) ); ?>" section_id="<?php echo esc_js(mjschool_encrypt_id($section_id ) ); ?>" exam_id="<?php echo esc_js(mjschool_encrypt_id($exam_id ) ); ?>" typeformat="pdf" class="mjschool-float-right show-popup-teacher-details" target="_blank">
+													<a href="#" student_id="<?php echo esc_attr(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_attr(mjschool_encrypt_id($class_id ) ); ?>" section_id="<?php echo esc_attr(mjschool_encrypt_id($section_id ) ); ?>" exam_id="<?php echo esc_attr(mjschool_encrypt_id($exam_id ) ); ?>" typeformat="pdf" class="mjschool-float-right show-popup-teacher-details" target="_blank">
 														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-pdf.png"); ?>">
 													</a>
 												<?php } else { ?>
-													<a href="?page=mjschool_student&print=pdf&student=<?php echo esc_attr( mjschool_encrypt_id($uid ) ); ?>&exam_id=<?php echo esc_attr( mjschool_encrypt_id($exam_id ) ); ?>" class="mjschool-float-right" target="_blank"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-pdf.png"); ?>"></a>
+													<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'mjschool_student', 'print' => 'pdf', 'student' => mjschool_encrypt_id($uid), 'exam_id' => mjschool_encrypt_id($exam_id) ), admin_url() ) ); ?>" class="mjschool-float-right" target="_blank"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-pdf.png"); ?>"></a>
 												<?php } ?>
 											</div>
 											<div class="col-md-4 mjschool-width-50px mjschool-rtl-margin-left-20px mjschool-exam-result-pdf-margin mjschool_margin_right_22px" >
 												<?php if ($roles != "parent" && $roles != "student") { ?>
-													<a href="#" student_id="<?php echo esc_js(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_js(mjschool_encrypt_id($class_id ) ); ?>" section_id="<?php echo esc_js(mjschool_encrypt_id($section_id ) ); ?>" exam_id="<?php echo esc_js(mjschool_encrypt_id($exam_id ) ); ?>" typeformat="print" class="mjschool-float-right show-popup-teacher-details" target="_blank">
+													<a href="#" student_id="<?php echo esc_attr(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_attr(mjschool_encrypt_id($class_id ) ); ?>" section_id="<?php echo esc_attr(mjschool_encrypt_id($section_id ) ); ?>" exam_id="<?php echo esc_attr(mjschool_encrypt_id($exam_id ) ); ?>" typeformat="print" class="mjschool-float-right show-popup-teacher-details" target="_blank">
 														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-print.png"); ?>">
 													</a>
 												<?php } else { ?>
-													<a href="?page=mjschool_student&print=print&student=<?php echo esc_attr( mjschool_encrypt_id($uid ) ); ?>&exam_id=<?php echo esc_attr( mjschool_encrypt_id($exam_id ) ); ?>" class="mjschool-float-right" target="_blank">
+													<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'mjschool_student', 'print' => 'print', 'student' => mjschool_encrypt_id($uid), 'exam_id' => mjschool_encrypt_id($exam_id) ), admin_url() ) ); ?>" class="mjschool-float-right" target="_blank">
 														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-print.png"); ?>">
 													</a>
 												<?php } ?>
@@ -2109,11 +2126,11 @@ function mjschool_ajax_result() {
 															<?php
 														}
 														?>
-														<th class="mjschool-view-result-table-heading mjschool-view-result-table-heading-responsive"> <?php esc_html_e( 'Total', 'mjschool' ) . ' ( ' . esc_html( $exam_marks ) . ' )'; ?> </th>
+														<th class="mjschool-view-result-table-heading mjschool-view-result-table-heading-responsive"> <?php echo esc_html__( 'Total', 'mjschool' ) . ' ( ' . esc_html( $exam_marks ) . ' )'; ?> </th>
 														<?php
 													} else {
 														?>
-														<th class="mjschool-view-result-table-heading mjschool-view-result-table-heading-responsive"> <?php esc_html_e( 'Total', 'mjschool' ) . ' ( ' . esc_html( $exam_marks ) . ' )'; ?> </th>
+														<th class="mjschool-view-result-table-heading mjschool-view-result-table-heading-responsive"> <?php echo esc_html__( 'Total', 'mjschool' ) . ' ( ' . esc_html( $exam_marks ) . ' )'; ?> </th>
 														<?php
 													}
 													?>
@@ -2180,7 +2197,7 @@ function mjschool_ajax_result() {
 														<td class="mjschool-view-result-table-value">
 															<?php
 															if ( ! empty( $percentage ) ) {
-																echo number_format( $percentage, 2, '.', '' );
+																echo esc_html( number_format( $percentage, 2, '.', '' ) );
 															} else {
 																echo '-';
 															}
@@ -2190,7 +2207,7 @@ function mjschool_ajax_result() {
 														<td class="mjschool-view-result-table-value">
 															<?php
 															$result = array();
-															$rest1  = array();
+															$result1  = array();
 															foreach ( $subject as $sub ) {
 																$obtain_marks = $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid );
 																if ( $contributions === 'yes' ) {
@@ -2258,7 +2275,7 @@ function mjschool_ajax_result() {
 		<div class="mjschool-panel-white">
 			<div class="modal-header modal_header_height mjschool-model-header-padding mjschool-dashboard-model-header">
 				<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
-				<h4 id="myLargeModalLabel" class="modal-title"><?php echo esc_html( mjschool_get_user_name_by_id($uid ) ); ?>'s <?php esc_html_e( 'Result', 'mjschool' ) ?></h4>
+				<h4 id="myLargeModalLabel" class="modal-title"><?php echo esc_html( mjschool_get_user_name_by_id($uid ) ); ?>'s <?php esc_html_e( 'Result', 'mjschool' ); ?></h4>
 				
 			</div>
 			<?php
@@ -2321,20 +2338,20 @@ function mjschool_ajax_result() {
 											?>
 											<div class="col-md-5 mjschool-width-50px">
 												<?php if ($roles != "parent" && $roles != "student") { ?>
-													<a href="#" student_id="<?php echo esc_js(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_js(mjschool_encrypt_id($exam_class_id ) ); ?>" section_id="<?php echo esc_js(mjschool_encrypt_id($exam_section_id ) ); ?>" exam_id="<?php echo esc_js(mjschool_encrypt_id($exam_id ) ); ?>" typeformat="pdf" class="mjschool-float-right show-popup-teacher-details" target="_blank">
+													<a href="#" student_id="<?php echo esc_attr(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_attr(mjschool_encrypt_id($exam_class_id ) ); ?>" section_id="<?php echo esc_attr(mjschool_encrypt_id($exam_section_id ) ); ?>" exam_id="<?php echo esc_attr(mjschool_encrypt_id($exam_id ) ); ?>" typeformat="pdf" class="mjschool-float-right show-popup-teacher-details" target="_blank">
 														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-pdf.png"); ?>">
 													</a>
 												<?php } else { ?>
-													<a href="?page=mjschool_student&print=pdf&student=<?php echo esc_attr( mjschool_encrypt_id($uid ) ); ?>&exam_id=<?php echo esc_attr( mjschool_encrypt_id($exam_id ) ); ?>" class="mjschool-float-right" target="_blank"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-pdf.png"); ?>"></a>
+													<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'mjschool_student', 'print' => 'pdf', 'student' => mjschool_encrypt_id($uid), 'exam_id' => mjschool_encrypt_id($exam_id) ), admin_url() ) ); ?>" class="mjschool-float-right" target="_blank"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-pdf.png"); ?>"></a>
 												<?php } ?>
 											</div>
 											<div class="col-md-4 mjschool-width-50px mjschool-rtl-margin-left-20px mjschool-exam-result-pdf-margin mjschool_margin_right_22px" >
 												<?php if ($roles != "parent" && $roles != "student") { ?>
-													<a href="#" student_id="<?php echo esc_js(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_js(mjschool_encrypt_id($exam_class_id ) ); ?>" section_id="<?php echo esc_js(mjschool_encrypt_id($exam_section_id ) ); ?>" exam_id="<?php echo esc_js(mjschool_encrypt_id($exam_id ) ); ?>" typeformat="print" class="mjschool-float-right show-popup-teacher-details" target="_blank">
+													<a href="#" student_id="<?php echo esc_attr(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_attr(mjschool_encrypt_id($exam_class_id ) ); ?>" section_id="<?php echo esc_attr(mjschool_encrypt_id($exam_section_id ) ); ?>" exam_id="<?php echo esc_attr(mjschool_encrypt_id($exam_id ) ); ?>" typeformat="print" class="mjschool-float-right show-popup-teacher-details" target="_blank">
 														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-print.png"); ?>">
 													</a>
 												<?php } else { ?>
-													<a href="?page=mjschool_student&print=print&student=<?php echo esc_attr( mjschool_encrypt_id($uid ) ); ?>&exam_id=<?php echo esc_attr( mjschool_encrypt_id($exam_id ) ); ?>" class="mjschool-float-right" target="_blank">
+													<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'mjschool_student', 'print' => 'print', 'student' => mjschool_encrypt_id($uid), 'exam_id' => mjschool_encrypt_id($exam_id) ), admin_url() ) ); ?>" class="mjschool-float-right" target="_blank">
 														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-print.png"); ?>">
 													</a>
 												<?php } ?>
@@ -2379,7 +2396,7 @@ function mjschool_ajax_result() {
 														<?php
 													} else {
 														?>
-														<th class="mjschool-view-result-table-heading mjschool-view-result-table-heading-responsive"> <?php echo esc_html__( 'Total', 'mjschool' ); ?> </th>
+														<th class="mjschool-view-result-table-heading mjschool-view-result-table-heading-responsive"> <?php esc_html_e( 'Total', 'mjschool' ); ?> </th>
 														<?php
 													}
 													?>
@@ -2490,7 +2507,7 @@ function mjschool_ajax_result() {
 														<td class="mjschool-view-result-table-value">
 															<?php
 															if ( ! empty( $percentage ) ) {
-																echo number_format($percentage, 2, '.', '' );
+																echo esc_html( number_format($percentage, 2, '.', '' ) );
 															} else {
 																echo '-';
 															}
@@ -2546,7 +2563,7 @@ function mjschool_ajax_result() {
 add_action( 'wp_ajax_mjschool_ajax_create_meeting', 'mjschool_ajax_create_meeting' );
 function mjschool_ajax_create_meeting() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-    if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+    if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
         wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
     }
 
@@ -2555,19 +2572,35 @@ function mjschool_ajax_create_meeting() {
         wp_die( 'You must be logged in.' );
     }
 	$obj_mark        = new Mjschool_Class_Routine();
-	$route_id        = sanitize_text_field( wp_unslash($_REQUEST['route_id']) );
+	$route_id        = isset($_REQUEST['route_id']) ? intval( wp_unslash($_REQUEST['route_id']) ) : 0;
 	$route_data      = mjschool_get_route_by_id( $route_id );
+	
+	// Validate route_data exists
+	if ( empty( $route_data ) ) {
+		wp_die( 'Invalid route data.' );
+	}
+	
 	$start_time_data = explode( ':', $route_data->start_time );
 	$end_time_data   = explode( ':', $route_data->end_time );
-	if ( $start_time_data[1] === 0 || $end_time_data[1] === 0 ) {
+	
+	// Validate time data structure
+	if ( count( $start_time_data ) < 3 || count( $end_time_data ) < 3 ) {
+		wp_die( 'Invalid time format.' );
+	}
+	
+	if ( $start_time_data[1] === '0' || $end_time_data[1] === '0' ) {
 		$start_time_minit = '00';
 		$end_time_minit   = '00';
 	} else {
 		$start_time_minit = $start_time_data[1];
 		$end_time_minit   = $end_time_data[1];
 	}
-	$start_time = date( 'h:i A', strtotime( "$start_time_data[0]:$start_time_minit $start_time_data[2]" ) );
-	$end_time   = date( 'h:i A', strtotime( "$end_time_data[0]:$end_time_minit $end_time_data[2]" ) );
+	$start_time = date( 'h:i A', strtotime( sanitize_text_field( $start_time_data[0] ) . ':' . sanitize_text_field( $start_time_minit ) . ' ' . sanitize_text_field( $start_time_data[2] ) ) );
+	$end_time   = date( 'h:i A', strtotime( sanitize_text_field( $end_time_data[0] ) . ':' . sanitize_text_field( $end_time_minit ) . ' ' . sanitize_text_field( $end_time_data[2] ) ) );
+	
+	// Initialize $duration variable that is used but not defined
+	$duration = '';
+	
 	?>
 	<div class="modal-header modal_header_height mjschool-import-csv-popup">
 		
@@ -2672,7 +2705,11 @@ function mjschool_ajax_create_meeting() {
 				<div class="form-body mjschool-user-form"><!--Mjschool-user-form div.-->
 					<div class="row">
 						<div class="col-sm-6">
-							<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Virtual Class', 'mjschool' ); } else { esc_html_e( 'Create Virtual Class', 'mjschool' ); } ?>" name="create_meeting" class="mjschool-save-btn btn btn-success" />
+							<?php
+							// Initialize $edit variable if not already set
+							$edit = isset( $edit ) ? $edit : false;
+							?>
+							<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Virtual Class', 'mjschool' ); } else { esc_attr_e( 'Create Virtual Class', 'mjschool' ); } ?>" name="create_meeting" class="mjschool-save-btn btn btn-success" />
 						</div>
 					</div>
 				</div><!--Mjschool-user-form div.-->
@@ -2697,7 +2734,7 @@ add_action( 'wp_ajax_mjschool_ajax_view_meeting_detail', 'mjschool_ajax_view_mee
  */
 function mjschool_ajax_view_meeting_detail() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-    if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+    if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
         wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
     }
 
@@ -2706,8 +2743,14 @@ function mjschool_ajax_view_meeting_detail() {
         wp_die( 'You must be logged in.' );
     }
 	$obj_virtual_classroom = new Mjschool_Virtual_Classroom();
-	$meeting_id            = sanitize_text_field( wp_unslash($_REQUEST['meeting_id']) );
+	$meeting_id            = isset($_REQUEST['meeting_id']) ? intval( wp_unslash($_REQUEST['meeting_id']) ) : 0;
 	$class_data            = $obj_virtual_classroom->mjschool_get_single_meeting_data_in_zoom( $meeting_id );
+	
+	// Validate class_data exists
+	if ( empty( $class_data ) ) {
+		wp_die( 'Invalid meeting data.' );
+	}
+	
 	?>
 	<div class="modal-header modal_header_height">
 		
@@ -2757,20 +2800,23 @@ function mjschool_ajax_view_meeting_detail() {
 				<label class="mjschool-popup-label-heading"><?php esc_html_e( 'Day', 'mjschool' ); ?></label><br>
 				<label class="mjschool-label-value">
 					<?php
-					if ( $class_data->weekday_id === 1 ) {
-						$day = esc_attr__( 'Monday', 'mjschool' );
-					} elseif ( $class_data->weekday_id === 2 ) {
-						$day = esc_attr__( 'Tuesday', 'mjschool' );
-					} elseif ( $class_data->weekday_id === 3 ) {
-						$day = esc_attr__( 'Wednesday', 'mjschool' );
-					} elseif ( $class_data->weekday_id === 4 ) {
-						$day = esc_attr__( 'Thursday', 'mjschool' );
-					} elseif ( $class_data->weekday_id === 5 ) {
-						$day = esc_attr__( 'Friday', 'mjschool' );
-					} elseif ( $class_data->weekday_id === 6 ) {
-						$day = esc_attr__( 'Saturday', 'mjschool' );
-					} elseif ( $class_data->weekday_id === 7 ) {
-						$day = esc_attr__( 'Sunday', 'mjschool' );
+					$weekday_id = isset( $class_data->weekday_id ) ? intval( $class_data->weekday_id ) : 0;
+					if ( $weekday_id === 1 ) {
+						$day = esc_html__( 'Monday', 'mjschool' );
+					} elseif ( $weekday_id === 2 ) {
+						$day = esc_html__( 'Tuesday', 'mjschool' );
+					} elseif ( $weekday_id === 3 ) {
+						$day = esc_html__( 'Wednesday', 'mjschool' );
+					} elseif ( $weekday_id === 4 ) {
+						$day = esc_html__( 'Thursday', 'mjschool' );
+					} elseif ( $weekday_id === 5 ) {
+						$day = esc_html__( 'Friday', 'mjschool' );
+					} elseif ( $weekday_id === 6 ) {
+						$day = esc_html__( 'Saturday', 'mjschool' );
+					} elseif ( $weekday_id === 7 ) {
+						$day = esc_html__( 'Sunday', 'mjschool' );
+					} else {
+						$day = esc_html__( 'N/A', 'mjschool' );
 					}
 					echo esc_html( $day );
 					?>
@@ -2781,25 +2827,41 @@ function mjschool_ajax_view_meeting_detail() {
 				<label class="mjschool-label-value">
 					<?php
 					$route_data  = mjschool_get_route_by_id( $class_data->route_id );
-					$stime       = explode( ':', $route_data->start_time );
-					$start_hour  = str_pad( $stime[0], 2, '0', STR_PAD_LEFT );
-					$start_min   = str_pad( $stime[1], 2, '0', STR_PAD_LEFT );
-					$start_am_pm = $stime[2];
-					$start_time  = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
-					$etime       = explode( ':', $route_data->end_time );
-					$end_hour    = str_pad( $etime[0], 2, '0', STR_PAD_LEFT );
-					$end_min     = str_pad( $etime[1], 2, '0', STR_PAD_LEFT );
-					$end_am_pm   = $etime[2];
-					$end_time    = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
+					if ( ! empty( $route_data ) && ! empty( $route_data->start_time ) && ! empty( $route_data->end_time ) ) {
+						$stime       = explode( ':', $route_data->start_time );
+						if ( count( $stime ) >= 3 ) {
+							$start_hour  = str_pad( sanitize_text_field( $stime[0] ), 2, '0', STR_PAD_LEFT );
+							$start_min   = str_pad( sanitize_text_field( $stime[1] ), 2, '0', STR_PAD_LEFT );
+							$start_am_pm = sanitize_text_field( $stime[2] );
+							$start_time  = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
+						} else {
+							$start_time = esc_html__( 'N/A', 'mjschool' );
+						}
+						
+						$etime       = explode( ':', $route_data->end_time );
+						if ( count( $etime ) >= 3 ) {
+							$end_hour    = str_pad( sanitize_text_field( $etime[0] ), 2, '0', STR_PAD_LEFT );
+							$end_min     = str_pad( sanitize_text_field( $etime[1] ), 2, '0', STR_PAD_LEFT );
+							$end_am_pm   = sanitize_text_field( $etime[2] );
+							$end_time    = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
+						} else {
+							$end_time = esc_html__( 'N/A', 'mjschool' );
+						}
+						
+						echo esc_html( mjschool_time_remove_colon_before_am_pm( $start_time ) );
+						echo ' ';
+						esc_html_e( 'To', 'mjschool' );
+						echo ' ';
+						echo esc_html( mjschool_time_remove_colon_before_am_pm( $end_time ) );
+					} else {
+						esc_html_e( 'N/A', 'mjschool' );
+					}
 					?>
-					<?php echo esc_attr( mjschool_time_remove_colon_before_am_pm( $start_time ) ); ?>
-					<?php esc_html_e( 'To', 'mjschool' ); ?>
-					<?php echo esc_html( mjschool_time_remove_colon_before_am_pm( $end_time ) ); ?>
 				</label>
 			</div>
 			<div class="col-md-6 mjschool-popup-padding-15px">
 				<label class="mjschool-popup-label-heading"><?php esc_html_e( 'Start To End Date', 'mjschool' ); ?></label><br>
-				<label class="mjschool-label-value"><?php echo esc_attr( mjschool_get_date_in_input_box( $class_data->start_date ) ) . ' ' . esc_html__( 'To', 'mjschool' ) . ' ' . esc_html( mjschool_get_date_in_input_box( $class_data->end_date ) ); ?></label>
+				<label class="mjschool-label-value"><?php echo esc_html( mjschool_get_date_in_input_box( $class_data->start_date ) ) . ' ' . esc_html__( 'To', 'mjschool' ) . ' ' . esc_html( mjschool_get_date_in_input_box( $class_data->end_date ) ); ?></label>
 			</div>
 			<div class="col-md-6 mjschool-popup-padding-15px">
 				<label class="mjschool-popup-label-heading"><?php esc_html_e( 'Password', 'mjschool' ); ?></label><br>
@@ -2808,7 +2870,7 @@ function mjschool_ajax_view_meeting_detail() {
 			<div class="col-md-6 mjschool-popup-padding-15px">
 				<label class="mjschool-popup-label-heading"><?php esc_html_e( 'Join Virtual Class Link', 'mjschool' ); ?></label><br>
 				<div class="copy_text">
-					<label class="mjschool-label-value mjschool-word-break"><?php echo esc_html( $class_data->meeting_join_link ); ?></label>
+					<label class="mjschool-label-value mjschool-word-break"><?php echo esc_url( $class_data->meeting_join_link ); ?></label>
 				</div>
 			</div>
 			<div class="col-md-12 mjschool-popup-padding-15px">
@@ -2845,7 +2907,7 @@ add_action( 'wp_ajax_mjschool_active_student', 'mjschool_active_student' );
  */
 function mjschool_active_student() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -2853,7 +2915,7 @@ function mjschool_active_student() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$uid = isset($_REQUEST['student_id']) ? sanitize_text_field( wp_unslash($_REQUEST['student_id']) ) : '';
+	$uid = isset($_REQUEST['student_id']) ? intval( wp_unslash($_REQUEST['student_id']) ) : 0;
 	?>
 	<div class="form-group mjschool-popup-header-marging">
 		
@@ -2893,7 +2955,7 @@ function mjschool_active_student() {
 								<div class="row mjschool-padding-radio">
 									<div>
 										<label class="mjschool-custom-top-label" for="mjschool_enable_homework_sms"><?php esc_html_e( 'Send SMS', 'mjschool' ); ?></label>
-										<input id="chk_mjschool_sent1"  type="checkbox" <?php $mjschool_student_sms_service_enable = 0; if ( $mjschool_student_sms_service_enable ) { echo 'checked'; } ?> value="1" name="mjschool_student_sms_service_enable"> &nbsp;<?php esc_html_e( 'Enable', 'mjschool' ); ?>
+										<input id="chk_mjschool_sent2"  type="checkbox" <?php $mjschool_student_sms_service_enable = 0; if ( $mjschool_student_sms_service_enable ) { echo 'checked'; } ?> value="1" name="mjschool_student_sms_service_enable"> &nbsp;<?php esc_html_e( 'Enable', 'mjschool' ); ?>
 									</div>
 								</div>
 							</div>
@@ -2904,7 +2966,7 @@ function mjschool_active_student() {
 			<div class="form-body mjschool-user-form mjschool-margin-top-15px"> <!--form Body div-->
 				<div class="row"><!--Row Div-->
 					<div class="col-sm-6">
-						<input type="submit" value="<?php esc_html_e( 'Active Student', 'mjschool' ); ?>" name="active_user" class="btn mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Active Student', 'mjschool' ); ?>" name="active_user" class="btn mjschool-save-btn" />
 					</div>
 				</div>
 			</div>
@@ -2913,7 +2975,7 @@ function mjschool_active_student() {
 	<?php
 	wp_die();
 }
-add_action( 'wp_mjschool_ajax_result_pdf', 'mjschool_ajax_result_pdf' );
+add_action( 'wp_ajax_mjschool_ajax_result_pdf', 'mjschool_ajax_result_pdf' );
 /**
  * Generates a PDF result sheet for a student via AJAX.
  *
@@ -2925,15 +2987,52 @@ add_action( 'wp_mjschool_ajax_result_pdf', 'mjschool_ajax_result_pdf' );
  * @return void Outputs PDF to file system and terminates execution.
  */
 function mjschool_ajax_result_pdf() {
+	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
+		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
+	}
+
+	// 2. CHECK IF USER IS LOGGED IN.
+	if ( ! is_user_logged_in() ) {
+		wp_die( 'You must be logged in.' );
+	}
+	
 	$obj_mark    = new Mjschool_Marks_Manage();
-	$uid         = isset($_REQUEST['student_id']) ? sanitize_text_field( $_REQUEST['student_id'] ) : '';
+	$uid         = isset($_REQUEST['student_id']) ? intval( wp_unslash( $_REQUEST['student_id'] ) ) : 0;
+	
+	// Validate user exists
+	if ( empty( $uid ) ) {
+		wp_die( 'Invalid student ID.' );
+	}
+	
 	$user        = get_userdata( $uid );
+	
+	// Validate user data
+	if ( ! $user ) {
+		wp_die( 'Invalid user data.' );
+	}
+	
 	$user_meta   = get_user_meta( $uid );
-	$class_id    = $user_meta['class_name'][0];
+	$class_id    = isset( $user_meta['class_name'][0] ) ? intval( $user_meta['class_name'][0] ) : 0;
+	
+	// Validate class ID
+	if ( empty( $class_id ) ) {
+		wp_die( 'Invalid class data.' );
+	}
+	
 	$subject     = $obj_mark->mjschool_student_subject( $class_id );
-	$exam_id     = mjschool_get_exam_id()->exam_id;
+	$exam_data   = mjschool_get_exam_id();
+	
+	// Validate exam data exists
+	if ( empty( $exam_data ) || ! isset( $exam_data->exam_id ) ) {
+		wp_die( 'Invalid exam data.' );
+	}
+	
+	$exam_id     = $exam_data->exam_id;
 	$total       = 0;
 	$grade_point = 0;
+	$total_subject = is_array( $subject ) || is_object( $subject ) ? count( $subject ) : 0;
+	
 	ob_start();
 	?>
 	<div class="panel mjschool-panel-white">
@@ -2958,34 +3057,37 @@ function mjschool_ajax_result_pdf() {
 						<th><?php esc_html_e( 'Comment', 'mjschool' ); ?></th>
 					</tr>
 					<?php
-					foreach ( $subject as $sub ) {
-						?>
-						<tr>
-							<td><?php echo esc_html( $sub->sub_name ); ?></td>
-							<td><?php echo esc_html( $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid ) ); ?>
-							</td>
-							<td><?php echo esc_html( $obj_mark->mjschool_get_grade( $exam_id, $class_id, $sub->subid, $uid ) ); ?>
-							</td>
-							<td><?php echo esc_html( $obj_mark->mjschool_get_attendance( $exam_id, $class_id, $sub->subid, $uid ) ); ?>
-							</td>
-							<td><?php echo esc_html( $obj_mark->mjschool_get_marks_comment( $exam_id, $class_id, $sub->subid, $uid ) ); ?>
-							</td>
-						</tr>
-						<?php
-						$total       += $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid );
-						$grade_point += $obj_mark->mjschool_get_grade_point( $exam_id, $class_id, $sub->subid, $uid );
+					if ( ! empty( $subject ) ) {
+						foreach ( $subject as $sub ) {
+							$obtained_marks = $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid );
+							$grade = $obj_mark->mjschool_get_grade( $exam_id, $class_id, $sub->subid, $uid );
+							$attendance = $obj_mark->mjschool_get_attendance( $exam_id, $class_id, $sub->subid, $uid );
+							$comment = $obj_mark->mjschool_get_marks_comment( $exam_id, $class_id, $sub->subid, $uid );
+							$grade_point_value = $obj_mark->mjschool_get_grade_point( $exam_id, $class_id, $sub->subid, $uid );
+							?>
+							<tr>
+								<td><?php echo esc_html( $sub->sub_name ); ?></td>
+								<td><?php echo esc_html( $obtained_marks ); ?></td>
+								<td><?php echo esc_html( $grade ); ?></td>
+								<td><?php echo esc_html( $attendance ); ?></td>
+								<td><?php echo esc_html( $comment ); ?></td>
+							</tr>
+							<?php
+							$total       += floatval( $obtained_marks );
+							$grade_point += floatval( $grade_point_value );
+						}
 					}
-					$GPA = $grade_point / $total_subject;
+					$GPA = ( $total_subject > 0 ) ? ( $grade_point / $total_subject ) : 0;
 					?>
 				</table>
 			</div>
 		</div>
 		<hr />
-		<?php echo 'GPA is' . esc_html( round( $GPA, 2 ) ); ?>
-		<p class="result_total"><?php esc_html_e( 'Total Marks', 'mjschool' ) . '=>' . $total; ?></p>
+		<?php echo esc_html( 'GPA is ' . round( $GPA, 2 ) ); ?>
+		<p class="result_total"><?php echo esc_html__( 'Total Marks', 'mjschool' ) . ' => ' . esc_html( $total ); ?></p>
 		<hr />
 		<p class="result_point">
-			<?php esc_html_e( 'GPA(grade point average)', 'mjschool' ) . '=> ' . $grade_point; ?>
+			<?php echo esc_html__( 'GPA(grade point average)', 'mjschool' ) . ' => ' . esc_html( $grade_point ); ?>
 		</p>
 		<hr />
 	</div>
@@ -3013,7 +3115,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_user', 'mjschool_load_user' );
  */
 function mjschool_load_user() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -3053,7 +3155,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_section_user', 'mjschool_load_section_
  */
 function mjschool_load_section_user() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -3061,8 +3163,8 @@ function mjschool_load_section_user() {
 	// if ( ! is_user_logged_in() ) {
 	// 	wp_die( 'You must be logged in.' );
 	// }
-	$section_id = isset( $_POST['section_id'] ) ? sanitize_text_field( wp_unslash( $_POST['section_id'] ) ) : 0;
-	$class_id   = isset( $_POST['class_id'] ) ? sanitize_text_field( wp_unslash( $_POST['class_id'] ) ) : 0;
+	$section_id = isset( $_POST['section_id'] ) ? intval( wp_unslash( $_POST['section_id'] ) ) : 0;
+	$class_id   = isset( $_POST['class_id'] ) ? sanitize_text_field( wp_unslash( $_POST['class_id'] ) ) : '';
 
 	if ( empty( $section_id ) ) {
 		global $wpdb;
@@ -3103,7 +3205,7 @@ add_action( 'wp_ajax_mjschool_load_books', 'mjschool_load_books' );
  */
 function mjschool_load_books() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -3111,7 +3213,7 @@ function mjschool_load_books() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$cat_id = sanitize_text_field( wp_unslash($_POST['bookcat_id']) );
+	$cat_id = isset($_POST['bookcat_id']) ? intval( wp_unslash($_POST['bookcat_id']) ) : 0;
 	global $wpdb;
 	$table_book = $wpdb->prefix . 'mjschool_library_book';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -3133,7 +3235,7 @@ add_action( 'wp_ajax_mjschool_load_class_fee_type', 'mjschool_load_class_fee_typ
  */
 function mjschool_load_class_fee_type() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -3141,7 +3243,7 @@ function mjschool_load_class_fee_type() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$class_list = sanitize_text_field( wp_unslash($_POST['class_list']) );
+	$class_list = isset($_POST['class_list']) ? sanitize_text_field( wp_unslash($_POST['class_list']) ) : '';
 	global $wpdb;
 	$table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -3150,8 +3252,6 @@ function mjschool_load_class_fee_type() {
 		foreach ( $result as $retrive_data ) {
 			echo '<option value="' . esc_attr( $retrive_data->fees_id ) . '">' . esc_html( get_the_title( $retrive_data->fees_title_id ) ) . '</option>';
 		}
-	} else {
-		return false;
 	}
 	die();
 }
@@ -3168,7 +3268,7 @@ add_action( 'wp_ajax_mjschool_load_section_fee_type', 'mjschool_load_section_fee
  */
 function mjschool_load_section_fee_type() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -3176,19 +3276,17 @@ function mjschool_load_section_fee_type() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$section_id = sanitize_text_field( wp_unslash($_POST['section_id']) );
+	$section_id = isset($_POST['section_id']) ? intval( wp_unslash($_POST['section_id']) ) : 0;
 	global $wpdb;
 	$table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result     = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees where section_id =%d", $section_id ) );
 	$defaultmsg = esc_attr__( 'Select Fee Type', 'mjschool' );
-	echo "<option value=' '>" . esc_html( $defaultmsg ) . '</option>';
+	echo "<option value=''>" . esc_html( $defaultmsg ) . '</option>';
 	if ( ! empty( $result ) ) {
 		foreach ( $result as $retrive_data ) {
 			echo '<option value="' . esc_attr( $retrive_data->fees_id ) . '">' . esc_html( get_the_title( $retrive_data->fees_title_id ) ) . '</option>';
 		}
-	} else {
-		return false;
 	}
 	die();
 }
@@ -3205,7 +3303,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_fee_type_amount', 'mjschool_load_fee_t
  */
 function mjschool_load_fee_type_amount() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -3213,16 +3311,25 @@ function mjschool_load_fee_type_amount() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$fees_id = sanitize_text_field(wp_unslash($_POST['fees_id']));
+	$fees_id_array = isset($_POST['fees_id']) ? $_POST['fees_id'] : array();
+	
+	// Validate that fees_id is an array
+	if ( ! is_array( $fees_id_array ) ) {
+		$fees_id_array = array();
+	}
+	
 	global $wpdb;
 	$table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
 	$fees_amount         = array();
-	if ( ! empty( $fees_id ) ) {
-		foreach ( $fees_id as $id ) {
+	
+	if ( ! empty( $fees_id_array ) ) {
+		foreach ( $fees_id_array as $id ) {
 			$fees_id = intval( $id );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$result        = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees where fees_id =%d", $fees_id ) );
-			$fees_amount[] = $result->fees_amount;
+			$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees where fees_id =%d", $fees_id ) );
+			if ( ! empty( $result ) && isset( $result->fees_amount ) ) {
+				$fees_amount[] = floatval( $result->fees_amount );
+			}
 		}
 	}
 	echo esc_html( array_sum( $fees_amount ) );
@@ -3242,7 +3349,7 @@ add_action( 'wp_ajax_mjschool_verify_pkey', 'mjschool_verify_pkey' );
  */
 function mjschool_verify_pkey() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -3257,6 +3364,7 @@ function mjschool_verify_pkey() {
 		$server_rerror = 'Down';
 	} else {
 		$server_rerror = 'up';
+		fclose( $fp ); // Close the connection
 	}
 	if ( $server_rerror === 'up' ) {
 		$domain_name         = isset($_SERVER['SERVER_NAME']) ? sanitize_text_field(wp_unslash($_SERVER['SERVER_NAME'])) : '';
@@ -3266,40 +3374,49 @@ function mjschool_verify_pkey() {
 		$data['mjschool_licence_key'] = $licence_key;
 		$data['enter_email'] = $email;
 		$result              = mjschool_check_product_key( $domain_name, $licence_key, $email );
+		
+		// Initialize session variables safely
+		if ( ! isset( $_SESSION ) ) {
+			session_start();
+		}
+		
 		if ( $result === 1 ) {
-			$message                 = esc_attr__( 'Please provide correct Envato purchase key.', 'mjschool' );
+			$message                 = esc_html__( 'Please provide correct Envato purchase key.', 'mjschool' );
 			$_SESSION['mjschool_verify'] = '1';
 		} elseif ( $result === 2 ) {
-			$message                 = 'This purchase key is already registered with the different domain. If have any issue please contact us at sales@mojoomla.com';
+			$message                 = esc_html__( 'This purchase key is already registered with a different domain. If you have any issue please contact us at sales@mojoomla.com', 'mjschool' );
 			$_SESSION['mjschool_verify'] = '2';
 		} elseif ( $result === 3 ) {
-			$message                 = 'There seems to be some problem please try after sometime or contact us on sales@mojoomla.com';
+			$message                 = esc_html__( 'There seems to be some problem. Please try after sometime or contact us at sales@mojoomla.com', 'mjschool' );
 			$_SESSION['mjschool_verify'] = '3';
 		} elseif ( $result === 4 ) {
-			$message                 = esc_attr__( 'Please provide correct Envato purchase key for this plugin.', 'mjschool' );
+			$message                 = esc_html__( 'Please provide correct Envato purchase key for this plugin.', 'mjschool' );
 			$_SESSION['mjschool_verify'] = '4';
 		} else {
 			update_option( 'domain_name', $domain_name, true );
 			update_option( 'mjschool_licence_key', $licence_key, true );
 			update_option( 'mjschool_setup_email', $email, true );
-			$message                 = 'Success fully register';
+			$message                 = esc_html__( 'Successfully registered', 'mjschool' );
 			$_SESSION['mjschool_verify'] = '0';
 		}
 		$result_array = array(
 			'message'      => $message,
-			'mjschool_verify'  => sanitize_text_field( $_SESSION['mjschool_verify'] ?? '' ),
+			'mjschool_verify'  => isset( $_SESSION['mjschool_verify'] ) ? sanitize_text_field( $_SESSION['mjschool_verify'] ) : '',
 			'location_url' => $location_url,
 		);
-		echo json_encode( $result_array );
+		echo wp_json_encode( $result_array );
 	} else {
-		$message                 = 'Server is down Please wait some time';
+		if ( ! isset( $_SESSION ) ) {
+			session_start();
+		}
+		$message                 = esc_html__( 'Server is down. Please wait some time.', 'mjschool' );
 		$_SESSION['mjschool_verify'] = '3';
 		$result_array            = array(
 			'message'      => $message,
-			'mjschool_verify'  => sanitize_text_field( $_SESSION['mjschool_verify'] ?? '' ),
+			'mjschool_verify'  => isset( $_SESSION['mjschool_verify'] ) ? sanitize_text_field( $_SESSION['mjschool_verify'] ) : '',
 			'location_url' => $location_url,
 		);
-		echo json_encode( $result_array );
+		echo wp_json_encode( $result_array );
 	}
 	die();
 }
@@ -3316,7 +3433,7 @@ add_action( 'wp_ajax_mjschool_view_notice', 'mjschool_ajax_view_notice' );
  */
 function mjschool_ajax_view_notice() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -3324,7 +3441,8 @@ function mjschool_ajax_view_notice() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$notice = get_post( sanitize_text_field($_REQUEST['notice_id']) );
+	$notice_id = isset($_REQUEST['notice_id']) ? intval( wp_unslash($_REQUEST['notice_id']) ) : 0;
+	$notice = get_post( $notice_id );
 	?>
 	<div class="form-group mjschool-popup-header-marging">
 		
@@ -3354,10 +3472,11 @@ function mjschool_ajax_view_notice() {
 				<label class="mjschool-popup-label-heading"><?php esc_html_e( 'Class Name', 'mjschool' ); ?></label><br>
 				<label class="mjschool-label-value">
 					<?php
-					if ( get_post_meta( $notice->ID, 'smgt_class_id', true ) != '' && get_post_meta( $notice->ID, 'smgt_class_id', true ) === 'all' ) {
+					$class_id_meta = get_post_meta( $notice->ID, 'smgt_class_id', true );
+					if ( ! empty( $class_id_meta ) && $class_id_meta === 'all' ) {
 						esc_html_e( 'All', 'mjschool' );
-					} elseif ( get_post_meta( $notice->ID, 'smgt_class_id', true ) != '' ) {
-						echo esc_html( mjschool_get_class_name( get_post_meta( $notice->ID, 'smgt_class_id', true ) ) );
+					} elseif ( ! empty( $class_id_meta ) ) {
+						echo esc_html( mjschool_get_class_name( $class_id_meta ) );
 					}
 					?>
 				</label>
@@ -3855,7 +3974,7 @@ function mjschool_student_add_payment() {
 						<div class="form-group input">
 							<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 								<div class="form-field">
-									<textarea name="payment_note" cols="50" rows="2" class="mjschool-textarea-height-47px form-control validate[required,custom[address_description_validation]]" maxlength="250"><?php echo esc_html( $fees_types ); ?></textarea>
+									<textarea name="payment_note" cols="50" rows="2" class="mjschool-textarea-height-47px form-control validate[required,custom[address_description_validation]]" maxlength="250"><?php echo esc_textarea( $fees_types ); ?></textarea>
 									<span class="mjschool-txt-title-label"></span>
 									<label class="text-area address active"> <?php esc_html_e( 'Note', 'mjschool' ); ?><span class="mjschool-require-field">*</span> </label>
 								</div>
@@ -3919,7 +4038,9 @@ function mjschool_student_view_payment_history() {
 	}
 	?>
 	<?php
-	$fees_pay_id                = intval(wp_unslash($_REQUEST['idtest']));
+	if ( isset( $_REQUEST['idtest'] ) ) {
+	   $fees_pay_id                = intval(wp_unslash($_REQUEST['idtest']));
+	}
 	$fees_detail_result         = mjschool_get_single_fees_payment_record( $fees_pay_id );
 	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
 	$obj_feespayment            = new Mjschool_Feespayment();
@@ -3946,24 +4067,24 @@ function mjschool_student_view_payment_history() {
 									<?php
 									$issue_date = 'DD-MM-YYYY';
 									$issue_date = $fees_detail_result->paid_by_date;
-									echo esc_attr__( 'Issue Date', 'mjschool' ) . ' : ' . esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) );
+									echo esc_html__( 'Issue Date', 'mjschool' ) . ' : ' . esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) );
 									?>
 								</h5>
 								<h5>
 									<?php
-									echo esc_attr__( 'Status', 'mjschool' ) . ' : ';
+									echo esc_html__( 'Status', 'mjschool' ) . ' : ';
 									$payment_status = mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
 									if ( $payment_status === 'Fully Paid' ) {
 										echo "<span class='btn btn-success btn-xs' style='color: green;'>";
-										echo esc_attr__( 'Fully Paid', 'mjschool' );
+										echo esc_html__( 'Fully Paid', 'mjschool' );
 									}
 									if ( $payment_status === 'Partially Paid' ) {
 										echo "<span class='btn partially_paid_button_color btn-xs' style='color: purple;'>";
-										echo esc_attr__( 'Partially Paid', 'mjschool' );
+										echo esc_html__( 'Partially Paid', 'mjschool' );
 									}
 									if ( $payment_status === 'Not Paid' ) {
 										echo "<span class='btn btn-danger btn-xs' style='color: red;'>";
-										echo esc_attr__( 'Not Paid', 'mjschool' );
+										echo esc_html__( 'Not Paid', 'mjschool' );
 									}
 									echo '</span>';
 									?>
@@ -4097,6 +4218,15 @@ function mjschool_student_view_payment_history() {
 				<?php } ?>
 			</div>
 			<div class="mjschool-print-button align-center">
+				<?php
+				$payment_id = '';
+
+				if ( isset( $_POST['idtest'] ) ) {
+					$payment_id = mjschool_encrypt_id(
+						absint( wp_unslash( $_POST['idtest'] ) )
+					);
+				}
+				?>
 				<input type="button" value="<?php esc_html_e( 'Print', 'mjschool' ); ?>" class="btn btn-success" onclick="mjschool_print_element( '#mjschool-invoice-print' )" />
 				&nbsp;&nbsp;&nbsp;
 				<a href="?page=mjschool_fees_payment&print=pdf&payment_id=<?php echo esc_attr( mjschool_encrypt_id( intval(wp_unslash($_POST['idtest'])) ) ); ?>&fee_paymenthistory=<?php echo 'fee_paymenthistory'; ?>" target="_blank" class="btn btn-success"><?php esc_html_e( 'PDF', 'mjschool' ); ?></a>

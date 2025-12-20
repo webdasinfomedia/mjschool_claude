@@ -284,62 +284,6 @@ if ( $active_tab === 'addstudent' ) {
 						foreach ( $sibling as $value ) {
 							?>
 							<div class="mjschool-sibling-trigger" data-id="<?php echo esc_attr($i); ?>"></div>
-							<!-- <script type="text/javascript">
-								jQuery(document).ready(function(jQuery) {
-									"use strict";
-									// When sibling class dropdown change.
-									jQuery(document).on( "change", "#sibling_class_change_<?php echo esc_js($i); ?>", function() {
-										var selection = jQuery(this).val();
-										// Clear sibling student list.
-										jQuery( '#sibling_student_list_<?php echo esc_js($i); ?>' ).empty();
-										// Prepare AJAX data to load users by class.
-										var curr_data = {
-											action: 'mjschool_load_user',
-											class_list: selection,
-											nonce: mjschool.nonce,
-											dataType: 'json'
-										};
-										// Load users in the selected class.
-										jQuery.post(mjschool.ajax, curr_data, function(response) {
-											jQuery( '#sibling_student_list_<?php echo esc_js($i); ?>' ).append(response);
-										});
-										// Clear sibling class section and show loading message.
-										var sectionSelect = jQuery( '#sibling_class_section_<?php echo esc_js($i); ?>' );
-										sectionSelect.empty().append( '<option value="remove">Loading..</option>' );
-										// Prepare AJAX data to load class sections.
-										var sectionData = {
-											action: 'mjschool_load_class_section',
-											class_id: selection,
-											nonce: mjschool.nonce,
-											dataType: 'json'
-										};
-										// Load sections of the selected class.
-										jQuery.post(mjschool.ajax, sectionData, function(response) {
-											sectionSelect.find( "option[value='remove']").remove();
-											sectionSelect.append(response);
-										});
-									});
-									// When sibling class section dropdown changes.
-									jQuery(document).on( "change", "#sibling_class_section_<?php echo esc_js($i); ?>", function() {
-										var selection = jQuery(this).val();
-										var class_id = jQuery( "#sibling_class_change_<?php echo esc_js($i); ?>").val();
-										// Clear sibling student list.
-										jQuery( '#sibling_student_list_<?php echo esc_js($i); ?>' ).empty();
-										// Prepare AJAX data to load users by section and class.
-										var curr_data = {
-											action: 'mjschool_load_section_user',
-											section_id: selection,
-											class_id: class_id,
-											nonce: mjschool.nonce,
-											dataType: 'json'
-										};
-										// Load users in the selected section and class.
-										jQuery.post(mjschool.ajax, curr_data, function(response) {
-											jQuery( '#sibling_student_list_<?php echo esc_js($i); ?>' ).append(response);
-										});
-									});
-								});
-							</script> -->
 							<input type="hidden" id="admission_sibling_id" name="admission_sibling_id" value="<?php echo esc_attr( $count_array ); ?>"  />
 							<div class="form-body mjschool-user-form">
 								<div class="row">

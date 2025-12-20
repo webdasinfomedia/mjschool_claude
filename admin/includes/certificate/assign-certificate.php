@@ -6,7 +6,7 @@
  * It includes the following key functionalities:
  * - Selecting a student and related class details  
  * - Choosing certificate type (static or dynamic from database)  
- * - Assigning class teacher and “checked by” teacher  
+ * - Assigning class teacher and "checked by" teacher  
  * - Generating certificates dynamically (e.g., Transfer Certificates)  
  * - Integration with Select2 and jQuery ValidationEngine for enhanced UX  
  * - Secure handling of form data and database interactions
@@ -20,6 +20,7 @@
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/certificate
  * @since      1.0.0
+ * @since      2.0.1 Security hardening - Added nonce field for CSRF protection
  */
 defined( 'ABSPATH' ) || exit;
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -49,6 +50,10 @@ $selected_teacher  = isset($_POST['teacher_id']) ? sanitize_text_field(wp_unslas
 $selected_teacher2 = isset($_POST['teacher_new_id']) ? sanitize_text_field(wp_unslash($_POST['teacher_new_id'])) : '';
 ?>
 <form name="certificate" action="" method="post" class="mjschool-form-horizontal" id="certificate" enctype="multipart/form-data">
+    <?php 
+    // SECURITY FIX: Add nonce field for CSRF protection
+    wp_nonce_field( 'mjschool_assign_certificate_nonce' ); 
+    ?>
     <input type="hidden" name="certificate_id" id="certificate_id" value="">
     <div class="form-body mjschool-user-form">
         <div class="row">

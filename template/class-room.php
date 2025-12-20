@@ -461,11 +461,12 @@ $active_tab = isset( $_REQUEST['tab'] ) ? sanitize_text_field( wp_unslash( $_REQ
 									<div class="col-md-6 rtl_mjschool-margin-top-15px mb-3 mjschool-teacher-list-multiselect">
 										<div class="col-sm-12 mjschool-multiselect-validation-class mjschool-multiple-select mjschool-rtl-padding-left-right-0px">
 											<?php
+											$obj_subject = new Mjschool_Subject();
 											$selected_subjects = array();
 											if ($edit && !empty($classroomdata->sub_id ) ) {
 												$selected_subjects = json_decode($classroomdata->sub_id, true);
 											}
-											$all_subjects = mjschool_get_all_subject(); // You need to have this function or replace with your subject fetch logic.
+											$all_subjects = $obj_subject->mjschool_get_all_subject(); // You need to have this function or replace with your subject fetch logic.
 											?>
 											<select name="mjschool-subject-list[]" multiple="multiple" id="mjschool-subject-list-front" class="form-control validate[required] teacher_list">
 												<?php foreach ($all_subjects as $subject) { ?>

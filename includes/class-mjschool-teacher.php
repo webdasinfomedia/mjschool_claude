@@ -278,26 +278,4 @@ class Mjschool_Teacher
             return false;
         }
     }
-    /**
-     * Retrieves an array of subject IDs assigned to a specific teacher.
-     *
-     * @global wpdb $wpdb WordPress database access abstraction object.
-     * @param  int $teacher_id The ID of the teacher.
-     * @return array A flat array containing the subject IDs, or an empty array if none are found.
-     * @since  1.0.0
-     */
-    function mjschool_get_teacher_subjects( $teacher_id )
-    {
-        global $wpdb;
-        $table = $wpdb->prefix . 'mjschool_teacher_subject';
-     	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-        $result   = $wpdb->get_results($wpdb->prepare('SELECT * FROM ' . $table . ' where teacher_id =%d', intval($teacher_id)));
-        $subjects = array();
-        if (! empty($result) ) {
-            foreach ( $result as $retrive_data ) {
-                $subjects[] = intval($retrive_data->subject_id);
-            }
-        }
-        return $subjects;
-    }
 }

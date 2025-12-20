@@ -335,4 +335,97 @@ jQuery(document).ready(function () {
         // Set QR code image.
         jQuery('.mjschool-id-card-barcode').attr('src', qrUrl);
     }
+    if (jQuery( '#mjschool_calendar_trigger' ).length > 0) {
+        // 🔹 Trigger element
+		const trigger = document.getElementById('mjschool_calendar_trigger');
+		if (!trigger) {
+			return; // ❌ Do nothing if PHP didn't trigger it
+		}
+
+		const calendarEl = document.getElementById('calendar');
+		if (!calendarEl || typeof FullCalendar === 'undefined') {
+			return;
+		}
+
+		// 🔹 Get data from PHP
+		const calendarLanguage = trigger.dataset.language;
+		const events = JSON.parse(trigger.dataset.events || '[]');
+
+		const calendar = new FullCalendar.Calendar(calendarEl, {
+			initialView: 'dayGridMonth',
+			dayMaxEventRows: 1,
+			locale: calendarLanguage,
+			headerToolbar: {
+				left: 'prev,today,next',
+				center: 'title',
+				right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+			},
+			events: events,
+
+			eventClick: function (event) {
+                // ---------- Notice section. ---------- //
+                if (event.event._def.extendedProps.description == 'notice' ) {
+                    jQuery( "#mjschool-event-booked-popup #notice_title").html(event.event._def.extendedProps.notice_title);
+                    jQuery( "#mjschool-event-booked-popup #start_to_end_date").html(event.event._def.extendedProps.start_to_end_date);
+                    jQuery( "#mjschool-event-booked-popup #discription").html(event.event._def.extendedProps.notice_comment);
+                    jQuery( "#mjschool-event-booked-popup #notice_for").html(event.event._def.extendedProps.notice_for);
+                    jQuery( "#mjschool-event-booked-popup #class_name_111").html(event.event._def.extendedProps.class_name);
+                    jQuery( "#mjschool-event-booked-popup").removeClass( "mjschool-display-none").dialog({
+                        modal: true,
+                        title: event.event._def.extendedProps.event_title,
+                        width: 550,
+                        height: 300
+                    });
+                }
+                // ---------- Holiday section.---------- //
+                if (event.event._def.extendedProps.description == 'holiday' ) {
+                    jQuery( "#mjschool-holiday-booked-popup #holiday_title").html(event.event._def.extendedProps.holiday_title);
+                    jQuery( "#mjschool-holiday-booked-popup #start_to_end_date").html(event.event._def.extendedProps.start_to_end_date);
+                    jQuery( "#mjschool-holiday-booked-popup #status").html(event.event._def.extendedProps.status);
+                    jQuery( "#mjschool-holiday-booked-popup #holiday_comment").html(event.event._def.extendedProps.holiday_comment);
+                    jQuery( "#mjschool-holiday-booked-popup").removeClass( "mjschool-display-none").dialog({
+                        modal: true,
+                        title: event.event._def.extendedProps.event_title,
+                        width: 550,
+                        height: 250
+                    });
+                }
+                // ---------- Exam section.---------- //
+                if (event.event._def.extendedProps.description == 'exam' ) {
+                    jQuery( "#mjschool-exam-booked-popup #exam_title").html(event.event._def.extendedProps.exam_title);
+                    jQuery( "#mjschool-exam-booked-popup #start_date").html(event.event._def.extendedProps.start_date);
+                    jQuery( "#mjschool-exam-booked-popup #end_date").html(event.event._def.extendedProps.end_date);
+                    jQuery( "#mjschool-exam-booked-popup #section_name_123").html(event.event._def.extendedProps.section_name);
+                    jQuery( "#mjschool-exam-booked-popup #class_name_123").html(event.event._def.extendedProps.class_name);
+                    jQuery( "#mjschool-exam-booked-popup #passing_mark").html(event.event._def.extendedProps.passing_mark);
+                    jQuery( "#mjschool-exam-booked-popup #total_mark").html(event.event._def.extendedProps.total_mark);
+                    jQuery( "#mjschool-exam-booked-popup #exam_term").html(event.event._def.extendedProps.exam_term);
+                    jQuery( "#mjschool-exam-booked-popup #comment").html(event.event._def.extendedProps.comment);
+                    jQuery( "#mjschool-exam-booked-popup").removeClass( "mjschool-display-none").dialog({
+                        modal: true,
+                        title: event.event._def.extendedProps.event_title,
+                        width: 550,
+                        height: 350
+                    });
+                }
+                // ---------- Event section.---------- //
+                if (event.event._def.extendedProps.description == 'event' ) {
+                    jQuery( "#mjschool-event-list-booked-popup #event_heading").html(event.event._def.extendedProps.event_heading);
+                    jQuery( "#mjschool-event-list-booked-popup #event_start_date_calender").html(event.event._def.extendedProps.event_start_date);
+                    jQuery( "#mjschool-event-list-booked-popup #event_end_date_calender").html(event.event._def.extendedProps.event_end_date);
+                    jQuery( "#mjschool-event-list-booked-popup #event_comment_calender").html(event.event._def.extendedProps.event_comment);
+                    jQuery( "#mjschool-event-list-booked-popup #event_start_time_calender").html(event.event._def.extendedProps.event_start_time);
+                    jQuery( "#mjschool-event-list-booked-popup #event_end_time_calender").html(event.event._def.extendedProps.event_end_time);
+                    jQuery( "#mjschool-event-list-booked-popup").removeClass( "mjschool-display-none").dialog({
+                        modal: true,
+                        title: event.event._def.extendedProps.event_title,
+                        width: 550,
+                        height: 350
+                    });
+                }
+            }
+		});
+
+		calendar.render();
+    }
 });

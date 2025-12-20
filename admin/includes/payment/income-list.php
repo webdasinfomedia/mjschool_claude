@@ -49,7 +49,7 @@ $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $mo
 $obj_invoice       = new Mjschool_Invoice();
 if ( $active_tab === 'incomelist' ) {
 	$income_data    = $obj_invoice->mjschool_get_all_income_data();
-	$retrieve_class_data = mjschool_get_payment_list();
+	$retrieve_class_data = $obj_invoice->mjschool_get_payment_list();
 	$merged_data    = array_merge( $income_data, $retrieve_class_data );
 	if ( ! empty( $merged_data ) ) {
 		?>

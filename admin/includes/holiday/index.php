@@ -114,7 +114,9 @@ if ( isset( $_POST['save_holiday'] ) ) {
 		$start_date = date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_REQUEST['date'] ) ) ) );
 		$end_date   = date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_REQUEST['end_date'] ) ) ) );
 		if ( $start_date > $end_date ) {
-			echo '<script type="text/javascript">alert( "' . esc_js( __( 'End Date should be greater than the Start Date', 'mjschool' ) ) . '");</script>';
+			?>
+			<div class="mjschool-date-error-trigger" data-error="1"></div>
+			<?php
 		} else {
 			$haliday_data = array(
 				'holiday_title' => sanitize_textarea_field( wp_unslash( $_POST['holiday_title'] ) ),

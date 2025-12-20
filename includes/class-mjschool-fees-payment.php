@@ -829,4 +829,20 @@ class Mjschool_Feespayment {
 		$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees_payment where class_id =%d", intval( $class_id ) ) );
 		return $result;
 	}
+
+	/**
+	 * Get a single payment history record.
+	 *
+	 * @since 1.0.0
+	 * @param int $id Payment history ID.
+	 * @return array Payment history details.
+	 */
+	public function mjschool_get_single_payment_history( $id ) {
+		global $wpdb;
+		$table_mjschool_fee_payment_history = $wpdb->prefix . 'mjschool_fee_payment_history';
+		$id                                 = intval( $id );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_fee_payment_history WHERE payment_history_id=%d", $id ) );
+		return $result;
+	}
 }

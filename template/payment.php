@@ -388,12 +388,12 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 					$merged_data     = array_merge( $all_income_data, $retrieve_class_data );
 				} else {
 					$all_income_data = $mjschool_obj_invoice->mjschool_get_all_income_data();
-					$retrieve_class_data  = mjschool_get_payment_list();
+					$retrieve_class_data  = $mjschool_obj_invoice->mjschool_get_payment_list();
 					$merged_data     = array_merge( $all_income_data, $retrieve_class_data );
 				}
 			} else {
 				$all_income_data = $mjschool_obj_invoice->mjschool_get_all_income_data();
-				$retrieve_class_data  = mjschool_get_payment_list();
+				$retrieve_class_data  = $mjschool_obj_invoice->mjschool_get_payment_list();
 				$merged_data     = array_merge( $all_income_data, $retrieve_class_data );
 			}
 			if ( ! empty( $merged_data ) ) {

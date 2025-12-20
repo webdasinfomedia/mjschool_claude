@@ -2,7 +2,7 @@
 /**
  * Admin Class Management Controller.
  *
- * This file manages class-related functionality within the Mjschool plugin’s admin interface.
+ * This file manages class-related functionality within the Mjschool plugin's admin interface.
  * It handles CRUD operations (Create, Read, Update, Delete) for classes, user access rights,
  * nonce security verification, and integrates DataTables for listing.
  *
@@ -18,9 +18,10 @@
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/class
  * @since      1.0.0
+ * @since      2.0.1 Security hardening - Fixed bulk delete nonce verification and array validation
  */
 defined( 'ABSPATH' ) || exit;
-$school_type === get_option( 'mjschool_custom_class' );
+$school_type = get_option( 'mjschool_custom_class' );
 // -------- Check browser javascript.. ----------//
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 mjschool_browser_javascript_check();
@@ -140,19 +141,33 @@ if ( isset( $_POST['save_class'] ) ) {
 	}
 }
 $tablename = 'mjschool_class';
+
 /*Delete selected Subject.*/
 if ( isset( $_REQUEST['delete_selected'] ) ) {
+	// SECURITY FIX: Verify nonce before bulk delete
+	if ( ! isset( $_POST['_wpnonce'] ) || 
+	     ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 
+	                       'mjschool_bulk_delete_class_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+	}
 	
-	if ( ! empty( $_REQUEST['id'] ) ) {
+	// SECURITY FIX: Validate array before iteration
+	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+		$deleted_count = 0;
 		foreach ( $_REQUEST['id'] as $id ) {
 			$result = mjschool_delete_class( $tablename, intval( $id ) );
+			if ( $result ) {
+				$deleted_count++;
+			}
+		}
+		
+		if ( $deleted_count > 0 ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_class&tab=classlist&message=3' ) );
+			exit;
 		}
 	}
-	if ( $result ) {
-		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_class&tab=classlist&message=3' ) );
-		die();
-	}
 }
+
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_GET['_wpnonce'])), 'delete_action' ) ) {
 		$result = mjschool_delete_class( $tablename, mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) ) );
@@ -214,6 +229,10 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 						<div class="mjschool-panel-body">
 							<div class="table-responsive">
 								<form id="mjschool-common-form" name="mjschool-common-form" method="post">
+									<?php 
+									// SECURITY FIX: Add nonce field for bulk delete
+									wp_nonce_field( 'mjschool_bulk_delete_class_nonce' ); 
+									?>
 									<table id="mjschool-class-list" class="display" cellspacing="0" width="100%">
 										<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 											<tr>

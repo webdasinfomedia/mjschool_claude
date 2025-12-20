@@ -3440,58 +3440,7 @@ if ( $message ) {
 							if ( ! empty( $sibling ) ) {
 								foreach ( $sibling as $value ) {
 									?>
-									<script type="text/javascript">
-										(function(jQuery){
-											"use strict";
-											jQuery(document).ready(function(){
-												// On class change – load students.
-												jQuery(document).on( "change", "#sibling_class_change_<?php echo esc_js( $i ); ?>", function() {
-													var selection = jQuery(this).val();
-													var $studentList = jQuery( '#sibling_student_list_<?php echo esc_js( $i ); ?>' );
-													$studentList.html( '' );
-													jQuery.post(mjschool.ajax, {
-														action: 'mjschool_load_user',
-														class_list: selection,
-														nonce: mjschool.nonce,
-														dataType: 'json'
-													}, function(response){
-														$studentList.append(response);
-													});
-												});
-												// On class change – load sections.
-												jQuery(document).on( "change", "#sibling_class_change_<?php echo esc_js( $i ); ?>", function(){
-													var $sectionSelect = jQuery( '#sibling_class_section_<?php echo esc_js( $i ); ?>' );
-													$sectionSelect.html( '' ).append( '<option value="remove">Loading..</option>' );
-													var selection = jQuery(this).val();
-													jQuery.post(mjschool.ajax, {
-														action: 'mjschool_load_class_section',
-														class_id: selection,
-														nonce: mjschool.nonce,
-														dataType: 'json'
-													}, function(response){
-														$sectionSelect.find( "option[value='remove']").remove();
-														$sectionSelect.append(response);
-													});
-												});
-												// On section change – load students.
-												jQuery( "#sibling_class_section_<?php echo esc_js( $i ); ?>").on( 'change', function() {
-													var selection = jQuery(this).val();
-													var class_id = jQuery( "#sibling_class_change_<?php echo esc_js( $i ); ?>").val();
-													var $studentList = jQuery( '#sibling_student_list_<?php echo esc_js( $i ); ?>' );
-													$studentList.html( '' );
-													jQuery.post(mjschool.ajax, {
-														action: 'mjschool_load_section_user',
-														section_id: selection,
-														class_id: class_id,
-														nonce: mjschool.nonce,
-														dataType: 'json'
-													}, function(response){
-														$studentList.append(response);
-													});
-												});
-											});
-										})(jQuery);
-									</script>
+									<div class="mjschool-sibling-trigger" data-id="<?php echo esc_attr($i); ?>"></div>
 									<input type="hidden" id="admission_sibling_id" name="admission_sibling_id" value="<?php echo esc_attr( $count_array ); ?>"  />
 									<div class="form-body mjschool-user-form">
 										<div class="row">

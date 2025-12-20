@@ -328,7 +328,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 											<div class="col-xl-4 col-md-4 col-sm-12 mjschool-margin-top-15px">
 												<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Subject', 'mjschool' ); ?> </label><br>
 												<?php
-												$subjectname = mjschool_get_subject_name_by_teacher( $teacher_data->ID );
+												$obj_subject = new Mjschool_Subject();
+												$subjectname = $obj_subject->mjschool_get_subject_name_by_teacher( $teacher_data->ID );
 												if ( $user_access_edit === '1' && empty( $subjectname ) ) {
 													$edit_url = admin_url( 'admin.php?page=mjschool_teacher&tab=addteacher&action=edit&teacher_id=' . esc_attr( mjschool_encrypt_id( $teacher_data->ID ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
 													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';

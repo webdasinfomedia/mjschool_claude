@@ -755,7 +755,7 @@ if (isset($_REQUEST['upload_csv_file']) ) {
                         $status      = 'Fail';
                         $log_message = "Student import fail for: $emails";
                         mjschool_append_csv_log($log_message, get_current_user_id(), $module, $status);
-                        echo '<script type="text/javascript">alert( "Problems with user: ' . esc_html($username) . ', we are going to skip");</script>';
+                        echo '<input type="hidden" id="mjschool_import_error" value="' . esc_attr( $username ) . '">';
                         continue;
                     }
                     if ($mjschool_role_name != 'administrator' ) {

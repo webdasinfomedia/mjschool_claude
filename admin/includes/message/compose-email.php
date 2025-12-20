@@ -19,7 +19,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 ?>
 <div class="mjschool-panel-body"><!-- Mjschool-panel-body. -->
 	<h2>
-		<?php
+       <?php
 		$edit = 0;
 		if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) {
 			echo esc_html__( 'Edit Message', 'mjschool' );
@@ -29,7 +29,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 	</h2>
 	<form name="class_form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-message-form" enctype="multipart/form-data"><!-- form div -->
 		<?php 
-		wp_nonce_field( 'mjschool_save_message', '_wpnonce' );
+	wp_nonce_field( 'mjschool_save_message', '_wpnonce' );
 		$mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; 
 		?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">

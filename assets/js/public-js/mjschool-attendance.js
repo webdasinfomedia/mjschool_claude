@@ -370,4 +370,7 @@ jQuery(document).ready(function () {
             ]
         });
     }
+    if (jQuery(".mjschool-date-error-trigger").length > 0) {
+        alert(mjschool_attendance_data.start_end_date_alert_text);
+    }
 });

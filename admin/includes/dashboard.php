@@ -292,92 +292,7 @@ if ( ! empty( $exam_list ) ) {
 	<?php
 	if ( $request_page === 'mjschool' ) {
 		?>
-		<script type="text/javascript">
-			(function (jQuery) {
-				"use strict";
-				var calendar_laungage = "<?php echo esc_js( mjschool_calender_laungage() ); ?>";
-				document.addEventListener( 'DOMContentLoaded', function () {
-					var calendarEl = document.getElementById( 'calendar' );
-					if (!calendarEl) {
-						return; // Prevent JS error if calendar element is missing.
-					}
-					var calendar = new FullCalendar.Calendar(calendarEl, {
-						initialView: 'dayGridMonth',
-						dayMaxEventRows: 1,
-						locale: calendar_laungage,
-						headerToolbar: {
-							left: 'prev,today,next ',
-							center: 'title',
-							right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
-						},
-						events: <?php echo wp_json_encode( $notive_array ); ?>,
-						eventClick: function (event) {
-							// ---------- Notice section. ---------- //
-							if (event.event._def.extendedProps.description == 'notice' ) {
-								jQuery( "#mjschool-event-booked-popup #notice_title").html(event.event._def.extendedProps.notice_title);
-								jQuery( "#mjschool-event-booked-popup #start_to_end_date").html(event.event._def.extendedProps.start_to_end_date);
-								jQuery( "#mjschool-event-booked-popup #discription").html(event.event._def.extendedProps.notice_comment);
-								jQuery( "#mjschool-event-booked-popup #notice_for").html(event.event._def.extendedProps.notice_for);
-								jQuery( "#mjschool-event-booked-popup #class_name_111").html(event.event._def.extendedProps.class_name);
-								jQuery( "#mjschool-event-booked-popup").removeClass( "mjschool-display-none").dialog({
-									modal: true,
-									title: event.event._def.extendedProps.event_title,
-									width: 550,
-									height: 300
-								});
-							}
-							// ---------- Holiday section.---------- //
-							if (event.event._def.extendedProps.description == 'holiday' ) {
-								jQuery( "#mjschool-holiday-booked-popup #holiday_title").html(event.event._def.extendedProps.holiday_title);
-								jQuery( "#mjschool-holiday-booked-popup #start_to_end_date").html(event.event._def.extendedProps.start_to_end_date);
-								jQuery( "#mjschool-holiday-booked-popup #status").html(event.event._def.extendedProps.status);
-								jQuery( "#mjschool-holiday-booked-popup #holiday_comment").html(event.event._def.extendedProps.holiday_comment);
-								jQuery( "#mjschool-holiday-booked-popup").removeClass( "mjschool-display-none").dialog({
-									modal: true,
-									title: event.event._def.extendedProps.event_title,
-									width: 550,
-									height: 250
-								});
-							}
-							// ---------- Exam section.---------- //
-							if (event.event._def.extendedProps.description == 'exam' ) {
-								jQuery( "#mjschool-exam-booked-popup #exam_title").html(event.event._def.extendedProps.exam_title);
-								jQuery( "#mjschool-exam-booked-popup #start_date").html(event.event._def.extendedProps.start_date);
-								jQuery( "#mjschool-exam-booked-popup #end_date").html(event.event._def.extendedProps.end_date);
-								jQuery( "#mjschool-exam-booked-popup #section_name_123").html(event.event._def.extendedProps.section_name);
-								jQuery( "#mjschool-exam-booked-popup #class_name_123").html(event.event._def.extendedProps.class_name);
-								jQuery( "#mjschool-exam-booked-popup #passing_mark").html(event.event._def.extendedProps.passing_mark);
-								jQuery( "#mjschool-exam-booked-popup #total_mark").html(event.event._def.extendedProps.total_mark);
-								jQuery( "#mjschool-exam-booked-popup #exam_term").html(event.event._def.extendedProps.exam_term);
-								jQuery( "#mjschool-exam-booked-popup #comment").html(event.event._def.extendedProps.comment);
-								jQuery( "#mjschool-exam-booked-popup").removeClass( "mjschool-display-none").dialog({
-									modal: true,
-									title: event.event._def.extendedProps.event_title,
-									width: 550,
-									height: 350
-								});
-							}
-							// ---------- Event section.---------- //
-							if (event.event._def.extendedProps.description == 'event' ) {
-								jQuery( "#mjschool-event-list-booked-popup #event_heading").html(event.event._def.extendedProps.event_heading);
-								jQuery( "#mjschool-event-list-booked-popup #event_start_date_calender").html(event.event._def.extendedProps.event_start_date);
-								jQuery( "#mjschool-event-list-booked-popup #event_end_date_calender").html(event.event._def.extendedProps.event_end_date);
-								jQuery( "#mjschool-event-list-booked-popup #event_comment_calender").html(event.event._def.extendedProps.event_comment);
-								jQuery( "#mjschool-event-list-booked-popup #event_start_time_calender").html(event.event._def.extendedProps.event_start_time);
-								jQuery( "#mjschool-event-list-booked-popup #event_end_time_calender").html(event.event._def.extendedProps.event_end_time);
-								jQuery( "#mjschool-event-list-booked-popup").removeClass( "mjschool-display-none").dialog({
-									modal: true,
-									title: event.event._def.extendedProps.event_title,
-									width: 550,
-									height: 350
-								});
-							}
-						}
-					});
-					calendar.render();
-				});
-			})(jQuery);
-		</script>
+		<div id="mjschool_calendar_trigger" data-language="<?php echo esc_attr( mjschool_calender_laungage() ); ?>" data-events="<?php echo esc_attr( wp_json_encode( $notive_array ) ); ?>"></div>
 		<?php
 	}
 	?>
@@ -2426,7 +2341,7 @@ if ( ! empty( $exam_list ) ) {
 												<div class="steps clearfix">
 													<ul role="tablist">
 														<li role="tab" class="first mjschool-wizard-responsive disabled <?php if ( $wizard_option['step1_general_setting'] === 'yes' ) { echo 'done';} ?>" aria-disabled="false" aria-selected="true">
-															<a id="form-total-t-0" href="admin.php?page=mjschool_general_settings" aria-controls="form-total-p-0">
+															<a id="form-total-t-0" href="<?php echo esc_url( admin_url('admin.php?page=mjschool_general_settings'));?>" aria-controls="form-total-p-0">
 																<span class="current-info audible"> </span>
 																<div class="title mjschool-wizard-title">
 																	<span class="mjschool-step-icon">
@@ -2447,7 +2362,7 @@ if ( ! empty( $exam_list ) ) {
 															</a>
 														</li>
 														<li role="tab" class="disabled mjschool-wizard-responsive mjschool-external-padding <?php if ( $wizard_option['step2_class'] === 'yes' ) { echo 'done';} ?>" aria-disabled="true">
-															<a id="form-total-t-1" href="admin.php?page=mjschool_class&tab=addclass" aria-controls="form-total-p-1">
+															<a id="form-total-t-1" href="<?php echo esc_url( admin_url('admin.php?page=mjschool_class&tab=addclass'));?>" aria-controls="form-total-p-1">
 																<div class="title mjschool-wizard-title">
 																	<span class="mjschool-step-icon">
 																		<img class="center mjschool-wizard-settinge" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-class.png"); ?>">
@@ -2467,7 +2382,7 @@ if ( ! empty( $exam_list ) ) {
 															</a>
 														</li>
 														<li role="tab" class="disabled mjschool-wizard-responsive mjschool-external-padding mjschool-wizard-title <?php if ( $wizard_option['step3_teacher'] === 'yes' ) { echo 'done';} ?>" aria-disabled="true">
-															<a id="form-total-t-2" href="admin.php?page=mjschool_teacher&tab=addteacher" aria-controls="form-total-p-2">
+															<a id="form-total-t-2" href="<?php echo esc_url( admin_url('admin.php?page=mjschool_teacher&tab=addteacher'));?>" aria-controls="form-total-p-2">
 																<div class="title">
 																	<span class="mjschool-step-icon">
 																		<img class="center mjschool-wizard-settinge" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/wizard/mjschool-wizard-teacher.png"); ?>">
@@ -2487,7 +2402,7 @@ if ( ! empty( $exam_list ) ) {
 															</a>
 														</li>
 														<li role="tab" class="disabled mjschool-wizard-responsive mjschool-wizard-title <?php if ( $wizard_option['step4_subject'] === 'yes' ) { echo 'done'; } ?>" aria-disabled="true">
-															<a id="form-total-t-2" href="admin.php?page=mjschool_Subject&tab=addsubject" aria-controls="form-total-p-2">
+															<a id="form-total-t-2" href="<?php echo esc_url( admin_url('admin.php?page=mjschool_Subject&tab=addsubject'));?>" aria-controls="form-total-p-2">
 																<div class="title">
 																	<span class="mjschool-step-icon">
 																		<img class="center mjschool-wizard-settinge" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/wizard/mjschool-wizard-subject.png"); ?>">
@@ -2507,7 +2422,7 @@ if ( ! empty( $exam_list ) ) {
 															</a>
 														</li>
 														<li role="tab" class="disabled mjschool-wizard-responsive mjschool-wizard-title last <?php if ( $wizard_option['step5_class_time_table'] === 'yes' ) { echo 'done';} ?>" aria-disabled="true">
-															<a id="form-total-t-2" href="admin.php?page=mjschool_route&tab=addroute" aria-controls="form-total-p-2">
+															<a id="form-total-t-2" href="<?php echo esc_url( admin_url('admin.php?page=mjschool_route&tab=addroute'));?>" aria-controls="form-total-p-2">
 																<div class="title">
 																	<span class="mjschool-step-icon">
 																		
@@ -2528,7 +2443,7 @@ if ( ! empty( $exam_list ) ) {
 															</a>
 														</li>
 														<li role="tab" class="disabled mjschool-wizard-responsive mjschool-wizard-title last <?php if ( $wizard_option['step6_student'] === 'yes' ) { echo 'done';} ?>" aria-disabled="true">
-															<a id="form-total-t-2" href="admin.php?page=mjschool_student&tab=addstudent" aria-controls="form-total-p-2">
+															<a id="form-total-t-2" href="<?php echo esc_url( admin_url('admin.php?page=mjschool_student&tab=addstudent')); ?>" aria-controls="form-total-p-2">
 																<div class="title">
 																	<span class="mjschool-step-icon">
 																		<img class="center mjschool-wizard-settinge" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/wizard/mjschool-wizard-student.png' ); ?>">
@@ -2547,7 +2462,7 @@ if ( ! empty( $exam_list ) ) {
 															</a>
 														</li>
 														<li role="tab" class="disabled mjschool-wizard-responsive mjschool-wizard-title last last_child <?php if ( isset( $wizard_option['step7_email_temp'] ) && $wizard_option['step7_email_temp'] === 'yes' ) { echo 'done'; } ?>" aria-disabled="true">
-															<a id="form-total-t-2" href="admin.php?page=mjschool_email_template" aria-controls="form-total-p-2">
+															<a id="form-total-t-2" href="<?php echo esc_url( admin_url('admin.php?page=mjschool_email_template')); ?>" aria-controls="form-total-p-2">
 																<div class="title">
 																	<span class="mjschool-step-icon">
 																		

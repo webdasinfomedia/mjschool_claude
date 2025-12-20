@@ -37,11 +37,11 @@ function mjschool_login_redirect( $redirect_to, $request, $user ) {
 	if ( isset( $user->roles ) && is_array( $user->roles ) ) {
 		$roles = array( 'student', 'teacher', 'parent', 'supportstaff' );
 		foreach ( $roles as $role ) {
-			if ( in_array( $role, $user->roles ) ) {
-				$redirect_to = home_url( '?dashboard=mjschool_user' );
+			if ( in_array( $role, $user->roles, true ) ) {
+				$redirect_to = esc_url_raw( home_url( '?dashboard=mjschool_user' ) );
 				break;
 			} else {
-				$redirect_to = admin_url();
+				$redirect_to = esc_url_raw( admin_url() );
 			}
 		}
 	}
@@ -59,12 +59,12 @@ function mjschool_login_redirect( $redirect_to, $request, $user ) {
  * @return array Modified action links.
  */
 function mjschool_custom_plugin_links( $links ) {
-	$addons_link  = admin_url() . 'admin.php?page=mjschool_system_addon';
+	$addons_link  = admin_url( 'admin.php?page=mjschool_system_addon' );
 	$plugin_links = array(
 		'<a href="https://mojoomlasoftware.github.io/wp-school-documentation/" target="_blank">Documentation</a>',
 		'<a href="https://youtu.be/34177nQsofw?si=idiHXGkywESeHLeS" target="_blank">Video Guide</a>',
 		'<a href="https://mojoomla.com/contact/" target="_blank">Community Support</a>',
-		'<a href="' . $addons_link . '" target="_blank">Addons</a>',
+		'<a href="' . esc_url( $addons_link ) . '" target="_blank">Addons</a>',
 	);
 	return array_merge( $links, $plugin_links );
 }
@@ -83,13 +83,13 @@ add_filter( 'plugin_action_links_' . MJSCHOOL_PLUGIN_BASENAME, 'mjschool_custom_
  * @return array Modified plugin meta links.
  */
 function mjschool_custom_plugin_row_meta( $links, $file ) {
-	$addons_link = admin_url() . 'admin.php?page=mjschool_system_addon';
 	if ( $file === MJSCHOOL_PLUGIN_BASENAME ) {
+		$addons_link = admin_url( 'admin.php?page=mjschool_system_addon' );
 		$custom_links = array(
-			'<a href="https://mojoomlasoftware.github.io/wp-school-documentation/" target="_blank">Documentation</a>',
-			'<a href="https://youtu.be/34177nQsofw?si=idiHXGkywESeHLeS" target="_blank">Video Guide</a>',
-			'<a href="https://mojoomla.com/contact/" target="_blank">Community Support</a>',
-			'<a href="' . $addons_link . '" target="_blank">Addons</a>',
+			'<a href="https://mojoomlasoftware.github.io/wp-school-documentation/" target="_blank" rel="noopener noreferrer">Documentation</a>',
+			'<a href="https://youtu.be/34177nQsofw?si=idiHXGkywESeHLeS" target="_blank" rel="noopener noreferrer">Video Guide</a>',
+			'<a href="https://mojoomla.com/contact/" target="_blank" rel="noopener noreferrer">Community Support</a>',
+			'<a href="' . esc_url( $addons_link ) . '" target="_blank" rel="noopener noreferrer">Addons</a>',
 		);
 		$links        = array_merge( $links, $custom_links );
 	}
@@ -110,48 +110,56 @@ add_filter( 'plugin_row_meta', 'mjschool_custom_plugin_row_meta', 10, 2 );
  * @return WP_Post[] List of notice posts.
  */
 function mjschool_student_notice_dashboard( $class_name, $class_section ) {
-	$arr1          = array( 'all' );
-	$arr2[]        = $class_name;
+	// Sanitize inputs to ensure they're treated as the correct type
+	$class_name    = is_numeric( $class_name ) ? absint( $class_name ) : sanitize_text_field( $class_name );
+	$class_section = is_numeric( $class_section ) ? absint( $class_section ) : sanitize_text_field( $class_section );
+	
+	$arr1              = array( 'all' );
+	$arr2              = array( $class_name );
 	$mjschool_class_id = array_merge( $arr1, $arr2 );
 
-	return $notice_list_student = get_posts(array(
-		'post_type' => 'notice',
-		'posts_per_page' => -1,
-		'meta_query' => array(
-			'relation' => 'OR',
-			array(
-				'key' => 'notice_for',
-				'value' => 'all',
-				'compare' => '='
-			),
-			array(
-				'relation' => 'AND',
+	$notice_list_student = get_posts(
+		array(
+			'post_type'      => 'notice',
+			'posts_per_page' => -1,
+			'meta_query'     => array(
+				'relation' => 'OR',
 				array(
-					'key' => 'smgt_class_id',
-					'value' => $mjschool_class_id,
-					'compare' => 'IN',
-				),
-				array(
-					'key' => 'smgt_section_id',
-					'value' => $class_section,
-					'compare' => '=',
-				)
-			),
-			array(
-				'relation' => 'AND',
-				array(
-					'key' => 'notice_for',
-					'value' => 'student',
+					'key'     => 'notice_for',
+					'value'   => 'all',
 					'compare' => '=',
 				),
 				array(
-					'key' => 'smgt_class_id',
-					'value' => $mjschool_class_id,
-					'compare' => 'IN',
-				)
-			)
+					'relation' => 'AND',
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => $mjschool_class_id,
+						'compare' => 'IN',
+					),
+					array(
+						'key'     => 'smgt_section_id',
+						'value'   => $class_section,
+						'compare' => '=',
+					),
+				),
+				array(
+					'relation' => 'AND',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'student',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => $mjschool_class_id,
+						'compare' => 'IN',
+					),
+				),
+			),
 		)
-	) );
+	);
+	
+	return $notice_list_student;
 }
 /**
  * Retrieves limited notices for students based on access rights.
@@ -166,49 +174,56 @@ function mjschool_student_notice_dashboard( $class_name, $class_section ) {
  * @return WP_Post[] List of notice posts.
  */
 function mjschool_student_notice_dashboard_with_access_right( $class_name, $class_section ) {
-	$arr1          = array( 'all' );
-	$arr2[]        = $class_name;
+	// Sanitize inputs to ensure they're treated as the correct type
+	$class_name    = is_numeric( $class_name ) ? absint( $class_name ) : sanitize_text_field( $class_name );
+	$class_section = is_numeric( $class_section ) ? absint( $class_section ) : sanitize_text_field( $class_section );
+	
+	$arr1              = array( 'all' );
+	$arr2              = array( $class_name );
 	$mjschool_class_id = array_merge( $arr1, $arr2 );
 
-	return $notice_list_student = get_posts(array(
-		'post_type' => 'notice',
-		'posts_per_page' => 4,
-		'meta_query' => array(
-			'relation' => 'OR',
-			array(
-				'key' => 'notice_for',
-				'value' => 'all',
-				'compare' => '='
-			),
-			array(
-				'relation' => 'AND',
+	$notice_list_student = get_posts(
+		array(
+			'post_type'      => 'notice',
+			'posts_per_page' => 4,
+			'meta_query'     => array(
+				'relation' => 'OR',
 				array(
-					'key' => 'smgt_class_id',
-					'value' => $mjschool_class_id,
-					'compare' => 'IN',
-				),
-				array(
-					'key' => 'smgt_section_id',
-					'value' => $class_section,
-					'compare' => '=',
-				)
-			),
-			array(
-				'relation' => 'AND',
-				array(
-					'key' => 'notice_for',
-					'value' => 'student',
+					'key'     => 'notice_for',
+					'value'   => 'all',
 					'compare' => '=',
 				),
 				array(
-					'key' => 'smgt_class_id',
-					'value' => $mjschool_class_id,
-					'compare' => 'IN',
-				)
-			)
+					'relation' => 'AND',
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => $mjschool_class_id,
+						'compare' => 'IN',
+					),
+					array(
+						'key'     => 'smgt_section_id',
+						'value'   => $class_section,
+						'compare' => '=',
+					),
+				),
+				array(
+					'relation' => 'AND',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'student',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => $mjschool_class_id,
+						'compare' => 'IN',
+					),
+				),
+			),
 		)
-	 ) );
-
+	);
+	
+	return $notice_list_student;
 }
 /**
  * Retrieves notice board items for teachers for all or matching classes.
@@ -222,36 +237,47 @@ function mjschool_student_notice_dashboard_with_access_right( $class_name, $clas
  * @return WP_Post[] List of notice posts.
  */
 function mjschool_teacher_notice_board( $class_name ) {
-	$arr1          = array( 'all' );
-	$arr2          = $class_name;
+	// Ensure $class_name is an array and sanitize values
+	if ( ! is_array( $class_name ) ) {
+		$class_name = array( $class_name );
+	}
+	$class_name = array_map( function( $value ) {
+		return is_numeric( $value ) ? absint( $value ) : sanitize_text_field( $value );
+	}, $class_name );
+	
+	$arr1              = array( 'all' );
+	$arr2              = $class_name;
 	$mjschool_class_id = array_merge( $arr1, $arr2 );
 
-	return $notice_list_teacher = get_posts(array(
-		'post_type' => 'notice',
-		'posts_per_page' => 4,
-		'meta_query' => array(
-			'relation' => 'OR',
-			array(
-				'key' => 'notice_for',
-				'value' => 'all',
-				'compare' => '='
-			),
-			array(
-				'relation' => 'AND',
+	$notice_list_teacher = get_posts(
+		array(
+			'post_type'      => 'notice',
+			'posts_per_page' => 4,
+			'meta_query'     => array(
+				'relation' => 'OR',
 				array(
-					'key' => 'notice_for',
-					'value' => 'teacher',
+					'key'     => 'notice_for',
+					'value'   => 'all',
 					'compare' => '=',
 				),
 				array(
-					'key' => 'smgt_class_id',
-					'value' => $mjschool_class_id,
-					'compare' => 'IN',
-				)
-			)
+					'relation' => 'AND',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'teacher',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => $mjschool_class_id,
+						'compare' => 'IN',
+					),
+				),
+			),
 		)
-	 ) );
-
+	);
+	
+	return $notice_list_teacher;
 }
 /**
  * Retrieves all teacher-specific notices based on their assigned class.
@@ -261,35 +287,51 @@ function mjschool_teacher_notice_board( $class_name ) {
  * @return WP_Post[] List of notice posts.
  */
 function mjschool_teacher_notice_dashbord() {
-	$class_name    = get_user_meta( get_current_user_id(), 'class_name', true );
-	$mjschool_class_id = array( 'all', $class_name[0] );
+	$class_name = get_user_meta( get_current_user_id(), 'class_name', true );
+	
+	// Ensure we have valid data
+	if ( empty( $class_name ) ) {
+		$class_name = array();
+	}
+	if ( ! is_array( $class_name ) ) {
+		$class_name = array( $class_name );
+	}
+	
+	// Get the first class or use 'all' as fallback
+	$first_class = ! empty( $class_name[0] ) ? $class_name[0] : 'all';
+	$first_class = is_numeric( $first_class ) ? absint( $first_class ) : sanitize_text_field( $first_class );
+	
+	$mjschool_class_id = array( 'all', $first_class );
 
-	return $notice_list_teacher = get_posts(array(
-		'post_type' => 'notice',
-		'numberposts'    => -1,
-		'meta_query' => array(
-			'relation' => 'OR',
-			array(
-				'key' => 'notice_for',
-				'value' => 'all',
-				'compare' => '='
-			),
-			array(
-				'relation' => 'AND',
+	$notice_list_teacher = get_posts(
+		array(
+			'post_type'   => 'notice',
+			'numberposts' => -1,
+			'meta_query'  => array(
+				'relation' => 'OR',
 				array(
-					'key' => 'notice_for',
-					'value' => 'teacher',
+					'key'     => 'notice_for',
+					'value'   => 'all',
 					'compare' => '=',
 				),
 				array(
-					'key' => 'smgt_class_id',
-					'value' => $mjschool_class_id,
-					'compare' => 'IN',
-				)
-			)
+					'relation' => 'AND',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'teacher',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => $mjschool_class_id,
+						'compare' => 'IN',
+					),
+				),
+			),
 		)
-	 ) );
-
+	);
+	
+	return $notice_list_teacher;
 }
 /**
  * Retrieves notice board items for parents.
@@ -302,26 +344,30 @@ function mjschool_teacher_notice_dashbord() {
  */
 function mjschool_parent_notice_board() {
 
-	return $notice_list_parent = get_posts(array(
-		'post_type' => 'notice',
-		'posts_per_page' => 3,
-		'meta_query' => array(
-			'relation' => 'AND',
-			array(
-				'relation' => 'OR',
+	$notice_list_parent = get_posts(
+		array(
+			'post_type'      => 'notice',
+			'posts_per_page' => 3,
+			'meta_query'     => array(
+				'relation' => 'AND',
 				array(
-					'key' => 'notice_for',
-					'value' => 'all',
-					'compare' => '='
+					'relation' => 'OR',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'all',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'parent',
+						'compare' => '=',
+					),
 				),
-				array(
-					'key' => 'notice_for',
-					'value' => 'parent',
-					'compare' => '=',
-				)
 			),
 		)
-	) );
+	);
+	
+	return $notice_list_parent;
 }
 /**
  * Retrieves all parent dashboard notices based on their children's classes.
@@ -335,76 +381,85 @@ function mjschool_parent_notice_board() {
 function mjschool_parent_notice_dashbord() {
 	$parents_child_list = get_user_meta( get_current_user_id(), 'child', true );
 	$class_array        = array();
-	if ( ! empty( $parents_child_list ) ) {
+	$unique             = array();
+	
+	if ( ! empty( $parents_child_list ) && is_array( $parents_child_list ) ) {
 		foreach ( $parents_child_list as $user ) {
-			$class_id      = get_user_meta( $user, 'class_name', true );
-			$class_array[] = $class_id;
+			$user_id   = absint( $user );
+			$class_id  = get_user_meta( $user_id, 'class_name', true );
+			if ( ! empty( $class_id ) ) {
+				$class_id      = is_numeric( $class_id ) ? absint( $class_id ) : sanitize_text_field( $class_id );
+				$class_array[] = $class_id;
+			}
 		}
 		$unique = array_unique( $class_array );
 	}
 
-	$notice_list_parent = get_posts(array(
-		'post_type' => 'notice',
-		'posts_per_page' => -1,
-		'meta_query' => array(
-			'relation' => 'OR',
-			//Notice for all parent and all class.//
-			array(
-				'relation' => 'AND',
+	$notice_list_parent = get_posts(
+		array(
+			'post_type'      => 'notice',
+			'posts_per_page' => -1,
+			'meta_query'     => array(
+				'relation' => 'OR',
+				// Notice for all parent and all class.
 				array(
-					'key' => 'smgt_class_id',
-					'value' => 'all',
-					'compare' => '='
+					'relation' => 'AND',
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => 'all',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'parent',
+						'compare' => '=',
+					),
+				),
+				// Notice for all class.
+				array(
+					'relation' => 'AND',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'all',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => 'all',
+						'compare' => '=',
+					),
+				),
+				// Notice for all own child class.
+				array(
+					'relation' => 'AND',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'all',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => $unique,
+						'compare' => 'IN',
+					),
 				),
 				array(
-					'key' => 'notice_for',
-					'value' => 'parent',
-					'compare' => '=',
-				)
-			),
-			//Notice for all class.//
-			array(
-				'relation' => 'AND',
-				array(
-					'key' => 'notice_for',
-					'value' => 'all',
-					'compare' => '='
+					'relation' => 'AND',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'student',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => $unique,
+						'compare' => 'IN',
+					),
 				),
-				array(
-					'key' => 'smgt_class_id',
-					'value' => 'all',
-					'compare' => '=',
-				)
-			),
-			//Notice for all own child class.//
-			array(
-				'relation' => 'AND',
-				array(
-					'key' => 'notice_for',
-					'value' => 'all',
-					'compare' => '=',
-				),
-				array(
-					'key' => 'smgt_class_id',
-					'value' => $unique,
-					'compare' => 'IN',
-				)
-			),
-			array(
-				'relation' => 'AND',
-				array(
-					'key' => 'notice_for',
-					'value' => 'student',
-					'compare' => '=',
-				),
-				array(
-					'key' => 'smgt_class_id',
-					'value' => $unique,
-					'compare' => 'IN',
-				)
 			),
 		)
-	) );
+	);
+	
 	return $notice_list_parent;
 }
 /**
@@ -419,76 +474,84 @@ function mjschool_parent_notice_dashbord() {
 function mjschool_parent_notice_dashboard_with_access_right() {
 	$parents_child_list = get_user_meta( get_current_user_id(), 'child', true );
 	$class_array        = array();
-	if ( ! empty( $parents_child_list ) ) {
+	$unique             = array();
+	
+	if ( ! empty( $parents_child_list ) && is_array( $parents_child_list ) ) {
 		foreach ( $parents_child_list as $user ) {
-			$class_id      = get_user_meta( $user, 'class_name', true );
-			$class_array[] = $class_id;
+			$user_id   = absint( $user );
+			$class_id  = get_user_meta( $user_id, 'class_name', true );
+			if ( ! empty( $class_id ) ) {
+				$class_id      = is_numeric( $class_id ) ? absint( $class_id ) : sanitize_text_field( $class_id );
+				$class_array[] = $class_id;
+			}
 		}
 		$unique = array_unique( $class_array );
 	}
 
-	$notice_list_parent = get_posts(array(
-		'post_type' => 'notice',
-		'posts_per_page' => 4,
-		'meta_query' => array(
-			'relation' => 'OR',
-			//Notice for all parent and all class.//
-			array(
-				'relation' => 'AND',
+	$notice_list_parent = get_posts(
+		array(
+			'post_type'      => 'notice',
+			'posts_per_page' => 4,
+			'meta_query'     => array(
+				'relation' => 'OR',
+				// Notice for all parent and all class.
 				array(
-					'key' => 'smgt_class_id',
-					'value' => 'all',
-					'compare' => '='
+					'relation' => 'AND',
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => 'all',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'parent',
+						'compare' => '=',
+					),
+				),
+				// Notice for all class.
+				array(
+					'relation' => 'AND',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'all',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => 'all',
+						'compare' => '=',
+					),
+				),
+				// Notice for all own child class.
+				array(
+					'relation' => 'AND',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'all',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => $unique,
+						'compare' => 'IN',
+					),
 				),
 				array(
-					'key' => 'notice_for',
-					'value' => 'parent',
-					'compare' => '=',
-				)
-			),
-			//Notice for all class.//
-			array(
-				'relation' => 'AND',
-				array(
-					'key' => 'notice_for',
-					'value' => 'all',
-					'compare' => '='
+					'relation' => 'AND',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'student',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'smgt_class_id',
+						'value'   => $unique,
+						'compare' => 'IN',
+					),
 				),
-				array(
-					'key' => 'smgt_class_id',
-					'value' => 'all',
-					'compare' => '=',
-				)
-			),
-			//Notice for all own child class.//
-			array(
-				'relation' => 'AND',
-				array(
-					'key' => 'notice_for',
-					'value' => 'all',
-					'compare' => '=',
-				),
-				array(
-					'key' => 'smgt_class_id',
-					'value' => $unique,
-					'compare' => 'IN',
-				)
-			),
-			array(
-				'relation' => 'AND',
-				array(
-					'key' => 'notice_for',
-					'value' => 'student',
-					'compare' => '=',
-				),
-				array(
-					'key' => 'smgt_class_id',
-					'value' => $unique,
-					'compare' => 'IN',
-				)
 			),
 		)
-	 ) );
+	);
 
 	return $notice_list_parent;
 }
@@ -503,27 +566,30 @@ function mjschool_parent_notice_dashboard_with_access_right() {
  */
 function mjschool_supportstaff_notice_board() {
 
-	return $notice_list_supportstaff = get_posts(array(
-		'post_type' => 'notice',
-		'posts_per_page' => 3,
-		'meta_query' => array(
-			'relation' => 'AND',
-			array(
-				'relation' => 'OR',
+	$notice_list_supportstaff = get_posts(
+		array(
+			'post_type'      => 'notice',
+			'posts_per_page' => 3,
+			'meta_query'     => array(
+				'relation' => 'AND',
 				array(
-					'key' => 'notice_for',
-					'value' => 'all',
-					'compare' => '='
+					'relation' => 'OR',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'all',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'supportstaff',
+						'compare' => '=',
+					),
 				),
-				array(
-					'key' => 'notice_for',
-					'value' => 'supportstaff',
-					'compare' => '=',
-				)
 			),
 		)
-	 ) );
-
+	);
+	
+	return $notice_list_supportstaff;
 }
 /**
  * Retrieves all support staff-related notices.
@@ -536,26 +602,29 @@ function mjschool_supportstaff_notice_board() {
  */
 function mjschool_supportstaff_notice_dashbord() {
 
-	return $notice_list_supportstaff = get_posts(array(
-		'post_type' => 'notice',
-		'meta_query' => array(
-			'relation' => 'AND',
-			array(
-				'relation' => 'OR',
+	$notice_list_supportstaff = get_posts(
+		array(
+			'post_type'  => 'notice',
+			'meta_query' => array(
+				'relation' => 'AND',
 				array(
-					'key' => 'notice_for',
-					'value' => 'all',
-					'compare' => '='
+					'relation' => 'OR',
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'all',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'notice_for',
+						'value'   => 'supportstaff',
+						'compare' => '=',
+					),
 				),
-				array(
-					'key' => 'notice_for',
-					'value' => 'supportstaff',
-					'compare' => '=',
-				)
 			),
 		)
-	 ) );
-
+	);
+	
+	return $notice_list_supportstaff;
 }
 /**
  * Checks whether the current user has access to a page based on role settings.
@@ -569,14 +638,19 @@ function mjschool_supportstaff_notice_dashbord() {
  */
 function mjschool_page_access_role_wise_and_accessright() {
 	$menu = get_option( 'mjschool_access_right' );
+	
 	global $current_user;
 	$user_roles = $current_user->roles;
 	$user_role  = array_shift( $user_roles );
 	$flage      = 0;
-	if ( ! empty( $menu ) ) {
+	
+	// Sanitize $_REQUEST['page'] before use
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	
+	if ( ! empty( $menu ) && is_array( $menu ) ) {
 		foreach ( $menu as $key => $value ) {
-			if ( $value['page_link'] === sanitize_text_field(wp_unslash($_REQUEST['page'])) ) {
-				if ( $value[ $user_role ] === 0 ) {
+			if ( isset( $value['page_link'] ) && $value['page_link'] === $current_page ) {
+				if ( isset( $value[ $user_role ] ) && $value[ $user_role ] === 0 ) {
 					$flage = 0;
 				} else {
 					$flage = 1;
@@ -596,12 +670,13 @@ function mjschool_page_access_role_wise_and_accessright() {
  * @return bool True if the server is reachable, false otherwise.
  */
 function mjschool_check_our_server() {
-	$api_server   = 'license.3dlif.com';
-	$fp           = @fsockopen( $api_server, 80, $errno, $errstr, 2 );
-	$location_url = admin_url() . 'admin.php?page=mjschool';
+	$api_server = 'license.3dlif.com';
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fsockopen -- External API check requires fsockopen
+	$fp = @fsockopen( $api_server, 80, $errno, $errstr, 2 );
 	if ( ! $fp ) {
 		return false; /*server down.*/
 	} else {
+		fclose( $fp );
 		return true; /*Server up.*/
 	}
 }
@@ -620,30 +695,41 @@ function mjschool_check_our_server() {
  * @return string              Status code ('0','1','2','3').
  */
 function mjschool_check_product_key( $domain_name, $licence_key, $email ) {
+	// Sanitize inputs at entry point
+	$domain_name = esc_url_raw( $domain_name );
+	$licence_key = sanitize_text_field( $licence_key );
+	$email       = sanitize_email( $email );
+	
 	$api_server = 'license.3dlif.com';
-	$fp = @fsockopen($api_server, 80, $errno, $errstr, 2 );
-	$location_url = admin_url() . 'admin.php?page=customcrm';
-	if (!$fp) {
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fsockopen -- External API check requires fsockopen
+	$fp = @fsockopen( $api_server, 80, $errno, $errstr, 2 );
+	
+	if ( ! $fp ) {
 		$server_rerror = 'Down';
 	} else {
-		$server_rerror = "up";
+		$server_rerror = 'up';
+		fclose( $fp );
 	}
-	if ($server_rerror === "up") {
-		$curl = curl_init();
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => 'https://license.3dlif.com/admin/api/license/register',
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => '',
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 0,
-			CURLOPT_FOLLOWLOCATION => true,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => 'POST',
-			CURLOPT_POSTFIELDS => array( 'pkey' => $licence_key, 'email' => $email, 'domain' => $domain_name),
-		 ) );
-		$response = curl_exec($curl);
-		curl_close($curl);
-		return mjschool_return_license_response($response);
+	
+	if ( $server_rerror === 'up' ) {
+		$response = wp_remote_post(
+			'https://license.3dlif.com/admin/api/license/register',
+			array(
+				'body'    => array(
+					'pkey'   => $licence_key,
+					'email'  => $email,
+					'domain' => $domain_name,
+				),
+				'timeout' => 30,
+			)
+		);
+		
+		if ( is_wp_error( $response ) ) {
+			return '3';
+		}
+		
+		$body = wp_remote_retrieve_body( $response );
+		return mjschool_return_license_response( $body );
 	} else {
 		return '3';
 	}
@@ -659,8 +745,14 @@ function mjschool_check_product_key( $domain_name, $licence_key, $email ) {
  */
 function mjschool_return_license_response( $response ) {
 	$response_data = json_decode( $response, true );
-	$error         = $response_data['error'];
-	$message       = $response_data['message'];
+	
+	if ( ! is_array( $response_data ) ) {
+		return '3';
+	}
+	
+	$error   = isset( $response_data['error'] ) ? $response_data['error'] : null;
+	$message = isset( $response_data['message'] ) ? sanitize_text_field( $response_data['message'] ) : '';
+	
 	if ( $error === false && $message === 'License already registered' ) {
 		return '2';
 	} elseif ( $error === false && $message === 'Invalid license' ) {
@@ -672,6 +764,8 @@ function mjschool_return_license_response( $response ) {
 	} elseif ( $error === false && $message === 'License already registered with the same domain' ) {
 		return '0';
 	}
+	
+	return '3'; // Default fallback
 }
 /**
  * Handles setup form submission for license verification and registration.
@@ -685,31 +779,35 @@ function mjschool_return_license_response( $response ) {
  * @return array Response array containing message and verification status.
  */
 function mjschool_submit_setup_form( $data ) {
-	$domain_name = sanitize_text_field($data['domain_name']);
-	$licence_key = sanitize_text_field($data['licence_key']);
-	$email       = sanitize_text_field($data['enter_email']);
-	$result      = mjschool_check_product_key( $domain_name, $licence_key, $email );
-	// var_dump($result); die;
+	// Sanitize inputs immediately
+	$domain_name = isset( $data['domain_name'] ) ? esc_url_raw( $data['domain_name'] ) : '';
+	$licence_key = isset( $data['licence_key'] ) ? sanitize_text_field( $data['licence_key'] ) : '';
+	$email       = isset( $data['enter_email'] ) ? sanitize_email( $data['enter_email'] ) : '';
+	
+	$result = mjschool_check_product_key( $domain_name, $licence_key, $email );
+	
 	if ( $result === '1' ) {
-		$message   = esc_html__( 'Please provide correct Envato purchase key.', 'mjschool' );
+		$message                     = esc_html__( 'Please provide correct Envato purchase key.', 'mjschool' );
 		$_SESSION['mjschool_verify'] = '1';
 	} elseif ( $result === '2' ) {
-		$message                 = esc_html__( 'This purchase key is already registered with the different domain.please contact us at sales@mojoomla.com', 'mjschool' );
+		$message                     = esc_html__( 'This purchase key is already registered with the different domain.please contact us at sales@mojoomla.com', 'mjschool' );
 		$_SESSION['mjschool_verify'] = '2';
 	} elseif ( $result === '3' ) {
-		$message                 = esc_html__( 'There seems to be some problem please try after sometime or contact us on sales@mojoomla.com', 'mjschool' );
+		$message                     = esc_html__( 'There seems to be some problem please try after sometime or contact us on sales@mojoomla.com', 'mjschool' );
 		$_SESSION['mjschool_verify'] = '3';
 	} else {
 		update_option( 'mjschool_domain_name', $domain_name, true );
 		update_option( 'mjschool_licence_key', $licence_key, true );
 		update_option( 'mjschool_setup_email', $email, true );
-		$message                 = esc_html__( 'License key successfully registered.', 'mjschool' );
+		$message                     = esc_html__( 'License key successfully registered.', 'mjschool' );
 		$_SESSION['mjschool_verify'] = '0';
 	}
+	
 	$result_array = array(
-		'message'     => $message,
-		'mjschool_verify' => sanitize_text_field( $_SESSION['mjschool_verify'] ?? '' ),
+		'message'         => $message,
+		'mjschool_verify' => isset( $_SESSION['mjschool_verify'] ) ? sanitize_text_field( $_SESSION['mjschool_verify'] ) : '',
 	);
+	
 	return $result_array;
 }
 /**
@@ -724,16 +822,21 @@ function mjschool_submit_setup_form( $data ) {
  * @return string The API response message.
  */
 function mjschool_reset_key_form( $data ) {
-	$licence_key   = sanitize_text_field(wp_unslash($data['licence_key']));
-	$email         = sanitize_text_field(wp_unslash($data['enter_email']));
+	// Sanitize inputs immediately
+	$licence_key = isset( $data['licence_key'] ) ? sanitize_text_field( wp_unslash( $data['licence_key'] ) ) : '';
+	$email       = isset( $data['enter_email'] ) ? sanitize_email( wp_unslash( $data['enter_email'] ) ) : '';
+	
 	$result        = mjschool_send_otp_for_license_reset( $licence_key, $email );
 	$response_data = json_decode( $result, true );
-	$message       = $response_data['message'];
+	
+	$message = isset( $response_data['message'] ) ? sanitize_text_field( $response_data['message'] ) : '';
+	
 	if ( $message === 'OTP sent to your email' ) {
 		$_SESSION['licence_key'] = $licence_key;
 		$_SESSION['enter_email'] = $email;
 		$_SESSION['send_otp']    = '1';
 	}
+	
 	return $message;
 }
 /**
@@ -747,27 +850,26 @@ function mjschool_reset_key_form( $data ) {
  * @return string JSON encoded response from API.
  */
 function mjschool_send_otp_for_license_reset( $licence_key, $email ) {
-	$curl = curl_init();
-	curl_setopt_array(
-		$curl,
+	// Sanitize inputs at entry
+	$licence_key = sanitize_text_field( $licence_key );
+	$email       = sanitize_email( $email );
+	
+	$response = wp_remote_post(
+		'https://license.3dlif.com/admin/api/license/send-otp',
 		array(
-			CURLOPT_URL            => 'https://license.3dlif.com/admin/api/license/send-otp',
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING       => '',
-			CURLOPT_MAXREDIRS      => 10,
-			CURLOPT_TIMEOUT        => 0,
-			CURLOPT_FOLLOWLOCATION => true,
-			CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST  => 'POST',
-			CURLOPT_POSTFIELDS     => array(
+			'body'    => array(
 				'email' => $email,
 				'pkey'  => $licence_key,
 			),
+			'timeout' => 30,
 		)
 	);
-	$response = curl_exec( $curl );
-	curl_close( $curl );
-	return $response;
+	
+	if ( is_wp_error( $response ) ) {
+		return wp_json_encode( array( 'message' => 'Error connecting to license server' ) );
+	}
+	
+	return wp_remote_retrieve_body( $response );
 }
 /**
  * Verifies OTP for license key reset and clears stored license details on success.
@@ -779,13 +881,18 @@ function mjschool_send_otp_for_license_reset( $licence_key, $email ) {
  * @return string The API response message.
  */
 function mjschool_reset_key_otp_verify_form( $data ) {
-	$licence_key = isset( $_SESSION['licence_key'] ) ? sanitize_text_field( wp_unslash( $_SESSION['licence_key'] ) ) : '';
-	$email = isset( $_SESSION['enter_email'] ) ? sanitize_email( wp_unslash( $_SESSION['enter_email'] ) ) : '';
-	// Sanitize OTP input from the form.
+	// Sanitize session data when reading
+	$licence_key = isset( $_SESSION['licence_key'] ) ? sanitize_text_field( $_SESSION['licence_key'] ) : '';
+	$email       = isset( $_SESSION['enter_email'] ) ? sanitize_email( $_SESSION['enter_email'] ) : '';
+	
+	// Sanitize OTP input from the form
 	$otp = isset( $data['verify_otp'] ) ? sanitize_text_field( wp_unslash( $data['verify_otp'] ) ) : '';
+	
 	$result        = mjschool_verify_otp_for_license_reset( $licence_key, $email, $otp );
 	$response_data = json_decode( $result, true );
+	
 	$message = isset( $response_data['message'] ) ? sanitize_text_field( $response_data['message'] ) : '';
+	
 	if ( $message === 'License has been reset successfully' ) {
 		unset( $_SESSION['licence_key'] );
 		unset( $_SESSION['enter_email'] );
@@ -794,6 +901,7 @@ function mjschool_reset_key_otp_verify_form( $data ) {
 		delete_option( 'mjschool_licence_key' );
 		delete_option( 'mjschool_setup_email' );
 	}
+	
 	return $message;
 }
 /**
@@ -808,28 +916,28 @@ function mjschool_reset_key_otp_verify_form( $data ) {
  * @return string JSON response from server.
  */
 function mjschool_verify_otp_for_license_reset( $licence_key, $email, $otp ) {
-	$curl = curl_init();
-	curl_setopt_array(
-		$curl,
+	// Sanitize inputs at entry.
+	$licence_key = sanitize_text_field( $licence_key );
+	$email       = sanitize_email( $email );
+	$otp         = sanitize_text_field( $otp );
+	
+	$response = wp_remote_post(
+		'https://license.3dlif.com/admin/api/license/verify-otp',
 		array(
-			CURLOPT_URL            => 'https://license.3dlif.com/admin/api/license/verify-otp',
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING       => '',
-			CURLOPT_MAXREDIRS      => 10,
-			CURLOPT_TIMEOUT        => 0,
-			CURLOPT_FOLLOWLOCATION => true,
-			CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST  => 'POST',
-			CURLOPT_POSTFIELDS     => array(
+			'body'    => array(
 				'email' => $email,
 				'otp'   => $otp,
 				'pkey'  => $licence_key,
 			),
+			'timeout' => 30,
 		)
 	);
-	$response = curl_exec( $curl );
-	curl_close( $curl );
-	return $response;
+	
+	if ( is_wp_error( $response ) ) {
+		return wp_json_encode( array( 'message' => 'Error connecting to license server' ) );
+	}
+	
+	return wp_remote_retrieve_body( $response );
 }
 /**
  * Handles setup form submission for Mobile App license verification.
@@ -843,10 +951,13 @@ function mjschool_verify_otp_for_license_reset( $licence_key, $email, $otp ) {
  * @return array Response array including message and verification status.
  */
 function mjschool_submit_setup_form_mobileapp( $data ) {
-	$domain_name = isset( $data['mjschool_app_domain_name'] ) ? sanitize_text_field( wp_unslash( $data['mjschool_app_domain_name'] ) ) : '';
-	$licence_key = isset( $data['mjschool_app_licence_key'] ) ? sanitize_text_field( wp_unslash( $data['mjschool_app_licence_key'] ) ) : '';
-	$email = isset( $data['mjschool_app_setup_email'] ) ? sanitize_email( wp_unslash( $data['mjschool_app_setup_email'] ) ) : '';
-	$result      = mjschool_check_product_key( $domain_name, $licence_key, $email );
+	// Sanitize inputs immediately.
+	$domain_name = isset( $data['mjschool_app_domain_name'] ) ? esc_url_raw( $data['mjschool_app_domain_name'] ) : '';
+	$licence_key = isset( $data['mjschool_app_licence_key'] ) ? sanitize_text_field( $data['mjschool_app_licence_key'] ) : '';
+	$email       = isset( $data['mjschool_app_setup_email'] ) ? sanitize_email( $data['mjschool_app_setup_email'] ) : '';
+	
+	$result = mjschool_check_product_key( $domain_name, $licence_key, $email );
+	
 	if ( $result === '1' ) {
 		$message                         = esc_html__( 'Please provide correct Envato purchase key.', 'mjschool' );
 		$_SESSION['mjschool_app_verify'] = '1';
@@ -863,10 +974,12 @@ function mjschool_submit_setup_form_mobileapp( $data ) {
 		$message                         = esc_html__( 'License key successfully registered.', 'mjschool' );
 		$_SESSION['mjschool_app_verify'] = '0';
 	}
+	
 	$result_array = array(
-		'message'         => $message,
-		'mjschool_app_verify' => $_SESSION['mjschool_app_verify'],
+		'message'             => $message,
+		'mjschool_app_verify' => isset( $_SESSION['mjschool_app_verify'] ) ? sanitize_text_field( $_SESSION['mjschool_app_verify'] ) : '',
 	);
+	
 	return $result_array;
 }
 /**
@@ -879,9 +992,11 @@ function mjschool_submit_setup_form_mobileapp( $data ) {
  * @return bool True when server is localhost.
  */
 function mjschool_check_server( $server_name ) {
+	$server_name = sanitize_text_field( $server_name );
 	if ( $server_name === 'localhost' ) {
 		return true;
 	}
+	return false;
 }
 /**
  * Checks if plugin pages should be accessible depending on license verification.
@@ -893,9 +1008,14 @@ function mjschool_check_server( $server_name ) {
  * @return bool True if page access is allowed.
  */
 function mjschool_check_verify_or_not( $result ) {
-	$server_name  = sanitize_text_field(wp_unslash($_SERVER['SERVER_NAME']));
-	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '';
-	$pos          = strrpos( $current_page, 'mjschool_' );
+	// Sanitize $_SERVER['SERVER_NAME']
+	$server_name = isset( $_SERVER['SERVER_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : '';
+	
+	// Sanitize $_REQUEST['page']
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	
+	$pos = strrpos( $current_page, 'mjschool_' );
+	
 	if ( $pos !== false ) {
 		if ( $server_name === 'localhost' ) {
 			return true;
@@ -904,6 +1024,8 @@ function mjschool_check_verify_or_not( $result ) {
 		}
 		return false;
 	}
+	
+	return false;
 }
 /**
  * Determines whether the current page belongs to the MJ School plugin.
@@ -913,11 +1035,14 @@ function mjschool_check_verify_or_not( $result ) {
  * @return bool True if current admin page is MJ School-related.
  */
 function mjschool_is_smgt_page() {
-	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '';
+	// Sanitize $_REQUEST['page']
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
 	$pos          = strrpos( $current_page, 'mjschool_' );
+	
 	if ( $pos !== false ) {
 		return true;
 	}
+	
 	return false;
 }
 /**
@@ -956,7 +1081,8 @@ function mjschool_datatable_multi_language() {
 			'sSortDescending' => esc_html__( ': activate to sort column descending', 'mjschool' ),
 		),
 	);
-	return $data    = $datatable_attr;
+	
+	return $datatable_attr;
 }
 /**
  * Returns translated menu title based on the given key and user role.
@@ -968,11 +1094,14 @@ function mjschool_datatable_multi_language() {
  * @return string Localized menu label.
  */
 function mjschool_change_menu_title( $key ) {
+	$key        = sanitize_key( $key );
 	$school_obj = new MJSchool_Management( get_current_user_id() );
 	$role       = $school_obj->role;
+	
 	if ( $role === 'parent' && $key === 'student' ) {
 		$key = 'child';
 	}
+	
 	$menu_titlearray = array(
 		'general_settings'  => esc_html__( 'General Settings', 'mjschool' ),
 		'email_template'    => esc_html__( 'Email Template', 'mjschool' ),
@@ -1008,7 +1137,8 @@ function mjschool_change_menu_title( $key ) {
 		'report'            => esc_html__( 'Report', 'mjschool' ),
 		'homework'          => esc_html__( 'Homework', 'mjschool' ),
 	);
-	return $menu_titlearray[ $key ];
+	
+	return isset( $menu_titlearray[ $key ] ) ? $menu_titlearray[ $key ] : '';
 }
 /**
  * Retrieves a list of inactive/approval-pending student user IDs.
@@ -1018,8 +1148,12 @@ function mjschool_change_menu_title( $key ) {
  * @return array List of student IDs pending approval.
  */
 function mjschool_approve_student_list() {
-
-	$studentdata = get_users(array( 'meta_key' => 'hash', 'role' => 'student' ) );
+	$studentdata = get_users(
+		array(
+			'meta_key' => 'hash',
+			'role'     => 'student',
+		)
+	);
 
 	$inactive_student_id = wp_list_pluck( $studentdata, 'ID' );
 	return $inactive_student_id;
@@ -1035,13 +1169,22 @@ function mjschool_approve_student_list() {
  * @return string|false File content on success, false on failure.
  */
 function mjschool_get_remote_file( $url, $timeout = 30 ) {
-	$ch = curl_init();
-	curl_setopt( $ch, CURLOPT_URL, $url );
-	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
-	curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, $timeout );
-	$file_contents = curl_exec( $ch );
-	curl_close( $ch );
-	return ( $file_contents ) ? $file_contents : false;
+	// Use WordPress HTTP API instead of curl
+	$url     = esc_url_raw( $url );
+	$timeout = absint( $timeout );
+	
+	$response = wp_remote_get(
+		$url,
+		array(
+			'timeout' => $timeout,
+		)
+	);
+	
+	if ( is_wp_error( $response ) ) {
+		return false;
+	}
+	
+	return wp_remote_retrieve_body( $response );
 }
 /**
  * Marks a message as read by updating its status in the database.
@@ -1056,9 +1199,11 @@ function mjschool_change_read_status( $id ) {
 	global $wpdb;
 	$table_name            = $wpdb->prefix . 'mjschool_message';
 	$data['status']        = 1;
-	$whereid['message_id'] = intval( $id );
+	$whereid['message_id'] = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_message_status = $wpdb->update( $table_name, $data, $whereid );
+	
 	return $retrieve_message_status;
 }
 /**
@@ -1072,12 +1217,14 @@ function mjschool_change_read_status( $id ) {
  */
 function mjschool_change_read_status_reply( $id ) {
 	global $wpdb;
-	$mjschool_message_replies = $wpdb->prefix . 'mjschool_message_replies';
-	$data['status']           = 1;
-	$whereid['message_id']    = intval( $id );
-	$whereid['receiver_id']   = get_current_user_id();
+	$mjschool_message_replies      = $wpdb->prefix . 'mjschool_message_replies';
+	$data['status']                = 1;
+	$whereid['message_id']         = absint( $id );
+	$whereid['receiver_id']        = absint( get_current_user_id() );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_message_reply_status = $wpdb->update( $mjschool_message_replies, $data, $whereid );
+	
 	return $retrieve_message_reply_status;
 }
 /**
@@ -1092,10 +1239,12 @@ function mjschool_change_read_status_reply( $id ) {
 function mjschool_get_subject_class( $subject_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_subject';
-	$id         = intval( $subject_id );
+	$id         = absint( $subject_id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT class_id FROM $table_name where subid=%d", $id ) );
-	return $result->class_id;
+	$result = $wpdb->get_row( $wpdb->prepare( "SELECT class_id FROM $table_name WHERE subid=%d", $id ) );
+	
+	return isset( $result->class_id ) ? $result->class_id : 0;
 }
 /**
  * Gets all subjects assigned to a specific teacher.
@@ -1109,9 +1258,11 @@ function mjschool_get_subject_class( $subject_id ) {
 function mjschool_get_teachers_subjects( $tid ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_subject';
-	$teacher_id = intval( $tid );
+	$teacher_id = absint( $tid );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name where teacher_id=%d", $teacher_id ) );
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE teacher_id=%d", $teacher_id ) );
+	
 	return $result;
 }
 /**
@@ -1141,12 +1292,12 @@ function mjschool_get_all_student_list() {
  * @return array List of WP_User classmate objects.
  */
 function mjschool_get_teacher_class_student( $id ) {
-	$student_id = intval( $id );
+	$student_id = absint( $id );
 	$meta_val   = get_user_meta( $student_id, 'class_name', true );
 
 	$meta_query_result = get_users(
 		array(
-			'meta_key' => 'class_name',
+			'meta_key'   => 'class_name',
 			'meta_value' => $meta_val,
 		)
 	);
@@ -1163,18 +1314,21 @@ function mjschool_get_teacher_class_student( $id ) {
  * @return array List of teacher IDs.
  */
 function mjschool_check_class_exits_in_teacher_class( $id ) {
+	$id          = absint( $id );
 	$TeacherData = get_users( array( 'role' => 'teacher' ) );
 	$Teacher     = array();
+	
 	if ( ! empty( $TeacherData ) ) {
 		foreach ( $TeacherData as $teacher ) {
 			$TeacherClass = get_user_meta( $teacher->ID, 'class_name', true );
 			if ( is_array( $TeacherClass ) ) {
-				if ( in_array( $id, $TeacherClass ) ) {
+				if ( in_array( $id, array_map( 'absint', $TeacherClass ), true ) ) {
 					$Teacher[] = $teacher->ID;
 				}
 			}
 		}
 	}
+	
 	return $Teacher;
 }
 /**
@@ -1217,12 +1371,14 @@ function mjschool_get_all_user_in_message() {
 	);
 	$supportstaff       = get_users( array( 'role' => 'supportstaff' ) );
 	$parents_child_list = get_user_meta( get_current_user_id(), 'child', true );
-	$all_user           = array(
+	
+	$all_user = array(
 		'student'      => $student,
 		'teacher'      => $teacher,
 		'parent'       => $parent,
 		'supportstaff' => $supportstaff,
 	);
+	
 	if ( $school_obj->role === 'administrator' || $school_obj->role === 'teacher' ) {
 		$all_user = array(
 			'student'      => $student,
@@ -1231,23 +1387,31 @@ function mjschool_get_all_user_in_message() {
 			'supportstaff' => $supportstaff,
 		);
 	}
+	
 	if ( $school_obj->role === 'parent' ) {
 		if ( get_option( 'mjschool_parent_send_message' ) ) {
-			if ( ! empty( $parents_child_list ) ) {
+			if ( ! empty( $parents_child_list ) && is_array( $parents_child_list ) ) {
 				$class_array = array();
 				foreach ( $parents_child_list as $user ) {
-					$class_id      = get_user_meta( $user, 'class_name', true );
+					$user_id       = absint( $user );
+					$class_id      = get_user_meta( $user_id, 'class_name', true );
 					$class_array[] = $class_id;
 				}
 				$unique  = array_unique( $class_array );
 				$student = array();
+				
 				if ( ! empty( $unique ) ) {
 					foreach ( $unique as $class_id ) {
-
-						$student[] = get_users(array( 'role' => 'student', 'meta_key' => 'class_name', 'meta_value' => $class_id ) );
-                    }
-            	}
-
+						$class_id  = absint( $class_id );
+						$student[] = get_users(
+							array(
+								'role'       => 'student',
+								'meta_key'   => 'class_name',
+								'meta_value' => $class_id,
+							)
+						);
+					}
+				}
 			}
 			$all_user = array(
 				'student'      => $student,
@@ -1263,6 +1427,7 @@ function mjschool_get_all_user_in_message() {
 			);
 		}
 	}
+	
 	if ( get_option( 'mjschool_student_send_message' ) ) {
 		if ( $school_obj->role === 'student' ) {
 			$school_obj->class_info = $school_obj->mjschool_get_user_class_id( get_current_user_id() );
@@ -1270,23 +1435,34 @@ function mjschool_get_all_user_in_message() {
 			$all_user               = array( 'student' => $student );
 		}
 	}
+	
 	$return_array = array();
 	foreach ( $all_user as $key => $value ) {
 		if ( ! empty( $value ) ) {
-			echo '<optgroup label="' . esc_attr( $key ) . '" style = "text-transform: capitalize;">';
+			echo '<optgroup label="' . esc_attr( $key ) . '" style="text-transform: capitalize;">';
+			
 			foreach ( $value as $user ) {
 				if ( get_option( 'mjschool_parent_send_message' ) ) {
 					if ( $key === 'student' && $school_obj->role === 'parent' ) {
-						foreach ( $user as $student_class ) {
-							echo '<option value="' . esc_attr( $student_class->ID ) . '">' . esc_html( $student_class->display_name ) . '</option>';
+						if ( is_array( $user ) ) {
+							foreach ( $user as $student_class ) {
+								if ( isset( $student_class->ID ) && isset( $student_class->display_name ) ) {
+									echo '<option value="' . esc_attr( $student_class->ID ) . '">' . esc_html( $student_class->display_name ) . '</option>';
+								}
+							}
 						}
 					} else {
-						echo '<option value="' . esc_attr( $user->ID ) . '">' . esc_html( $user->display_name ) . '</option>';
+						if ( isset( $user->ID ) && isset( $user->display_name ) ) {
+							echo '<option value="' . esc_attr( $user->ID ) . '">' . esc_html( $user->display_name ) . '</option>';
+						}
 					}
 				} else {
-					echo '<option value="' . esc_attr( $user->ID ) . '">' . esc_html( $user->display_name ) . '</option>';
+					if ( isset( $user->ID ) && isset( $user->display_name ) ) {
+						echo '<option value="' . esc_attr( $user->ID ) . '">' . esc_html( $user->display_name ) . '</option>';
+					}
 				}
 			}
+			echo '</optgroup>';
 		}
 	}
 }
@@ -1304,71 +1480,91 @@ function mjschool_send_replay_message( $data ) {
 	global $wpdb;
 	$table_name        = $wpdb->prefix . 'mjschool_message_replies';
 	$upload_docs_array = array();
-	if ( ! empty( $_FILES['message_attachment']['name'] ) ) {
+	
+	// Validate and sanitize file uploads
+	if ( ! empty( $_FILES['message_attachment']['name'] ) && is_array( $_FILES['message_attachment']['name'] ) ) {
 		$count_array = count( $_FILES['message_attachment']['name'] );
+		
 		for ( $a = 0; $a < $count_array; $a++ ) {
-			foreach ( $_FILES['message_attachment'] as $image_key => $image_val ) {
-				$document_array[ $a ] = array(
-					'name'     => $_FILES['message_attachment']['name'][ $a ],
-					'type'     => $_FILES['message_attachment']['type'][ $a ],
-					'tmp_name' => $_FILES['message_attachment']['tmp_name'][ $a ],
-					'error'    => $_FILES['message_attachment']['error'][ $a ],
-					'size'     => $_FILES['message_attachment']['size'][ $a ],
+			// Validate file exists and has no error
+			if ( isset( $_FILES['message_attachment']['error'][ $a ] ) && 
+			     $_FILES['message_attachment']['error'][ $a ] === UPLOAD_ERR_OK ) {
+				
+				$document_array = array(
+					'name'     => isset( $_FILES['message_attachment']['name'][ $a ] ) ? sanitize_file_name( $_FILES['message_attachment']['name'][ $a ] ) : '',
+					'type'     => isset( $_FILES['message_attachment']['type'][ $a ] ) ? sanitize_mime_type( $_FILES['message_attachment']['type'][ $a ] ) : '',
+					'tmp_name' => isset( $_FILES['message_attachment']['tmp_name'][ $a ] ) ? $_FILES['message_attachment']['tmp_name'][ $a ] : '',
+					'error'    => isset( $_FILES['message_attachment']['error'][ $a ] ) ? absint( $_FILES['message_attachment']['error'][ $a ] ) : UPLOAD_ERR_NO_FILE,
+					'size'     => isset( $_FILES['message_attachment']['size'][ $a ] ) ? absint( $_FILES['message_attachment']['size'][ $a ] ) : 0,
 				);
-			}
-		}
-		foreach ( $document_array as $key => $value ) {
-			$get_file_name = $document_array[ $key ]['name'];
-			if ( ! empty( $value['name'] ) ) {
-				$upload_docs_array[] = mjschool_load_documets_new( $value, $value, $get_file_name );
-			}
-		}
-	}
-	$upload_docs_array_filter = array_filter( $upload_docs_array );
-	if ( ! empty( $upload_docs_array_filter ) ) {
-		$attachment = implode( ',', $upload_docs_array_filter );
-	} else {
-		$attachment = '';
-	}
-	$result = '';
-	if ( ! empty( $data['receiver_id'] ) ) {
-		foreach ( $data['receiver_id'] as $receiver_id ) {
-			$messagedata['message_id']         = sanitize_text_field( $data['message_id'] );
-			$messagedata['sender_id']          = sanitize_text_field( $data['user_id'] );
-			$messagedata['receiver_id']        = $receiver_id;
-			$messagedata['message_comment']    = sanitize_text_field(wp_unslash( $data['replay_message_body'] ) );
-			$messagedata['message_attachment'] = $attachment;
-			$messagedata['status']             = 0;
-			$messagedata['created_date']       = date( 'Y-m-d h:i:s' );
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$result = $wpdb->insert( $table_name, $messagedata );
-			if ( $result ) {
-				$mjschool_name                 = sanitize_text_field( get_option( 'mjschool_name' ) );
-				$SubArr['{{school_name}}']     = $mjschool_name;
-				$SubArr['{{from_mail}}']       = mjschool_get_display_name( $data['user_id'] );
-				$MailSub                       = mjschool_string_replacement( $SubArr, get_option( 'mjschool_message_received_mailsubject' ) );
-				$user_info                     = get_userdata( $receiver_id );
-				$to                            = $user_info->user_email;
-				$MailBody                      = get_option( 'mjschool_message_received_mailcontent' );
-				$MesArr['{{receiver_name}}']   = mjschool_get_display_name( $receiver_id );
-				$MesArr['{{message_content}}'] = sanitize_text_field(wp_unslash( $data['replay_message_body'] ) );
-				$MesArr['{{school_name}}']     = $mjschool_name;
-				$messg                         = mjschool_string_replacement( $MesArr, $MailBody );
-				$headers                       = '';
-				$headers                      .= 'From: ' . $mjschool_name . ' <noreplay@gmail.com>' . "\r\n";
-				$headers                      .= "MIME-Version: 1.0\r\n";
-				$headers                      .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
-				// MAIL CONTEMNT WITH TEMPLATE DESIGN.
-				$email_template = mjschool_get_mail_content_with_template_design( $messg );
-				if ( get_option( 'mjschool_mail_notification' ) === 1 ) {
-					wp_mail( $to, $MailSub, $email_template, $headers );
+				
+				$get_file_name = $document_array['name'];
+				
+				if ( ! empty( $document_array['name'] ) ) {
+					$upload_result = mjschool_load_documets_new( $document_array, $document_array, $get_file_name );
+					if ( $upload_result ) {
+						$upload_docs_array[] = $upload_result;
+					}
 				}
 			}
 		}
 	}
-	if ( $result ) {
-		return $result;
+	
+	$upload_docs_array_filter = array_filter( $upload_docs_array );
+	$attachment               = ! empty( $upload_docs_array_filter ) ? implode( ',', $upload_docs_array_filter ) : '';
+	
+	$result = '';
+	
+	if ( ! empty( $data['receiver_id'] ) && is_array( $data['receiver_id'] ) ) {
+		foreach ( $data['receiver_id'] as $receiver_id ) {
+			$receiver_id = absint( $receiver_id );
+			
+			$messagedata = array(
+				'message_id'         => isset( $data['message_id'] ) ? absint( $data['message_id'] ) : 0,
+				'sender_id'          => isset( $data['user_id'] ) ? absint( $data['user_id'] ) : 0,
+				'receiver_id'        => $receiver_id,
+				'message_comment'    => isset( $data['replay_message_body'] ) ? sanitize_textarea_field( wp_unslash( $data['replay_message_body'] ) ) : '',
+				'message_attachment' => $attachment,
+				'status'             => 0,
+				'created_date'       => current_time( 'mysql' ),
+			);
+			
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+			$result = $wpdb->insert( $table_name, $messagedata );
+			
+			if ( $result ) {
+				$mjschool_name             = sanitize_text_field( get_option( 'mjschool_name' ) );
+				$SubArr['{{school_name}}'] = $mjschool_name;
+				$SubArr['{{from_mail}}']   = mjschool_get_display_name( isset( $data['user_id'] ) ? absint( $data['user_id'] ) : 0 );
+				$MailSub                   = mjschool_string_replacement( $SubArr, get_option( 'mjschool_message_received_mailsubject' ) );
+				
+				$user_info = get_userdata( $receiver_id );
+				if ( $user_info ) {
+					$to = sanitize_email( $user_info->user_email );
+					
+					$MailBody                      = get_option( 'mjschool_message_received_mailcontent' );
+					$MesArr['{{receiver_name}}']   = mjschool_get_display_name( $receiver_id );
+					$MesArr['{{message_content}}'] = isset( $data['replay_message_body'] ) ? sanitize_textarea_field( wp_unslash( $data['replay_message_body'] ) ) : '';
+					$MesArr['{{school_name}}']     = $mjschool_name;
+					$messg                         = mjschool_string_replacement( $MesArr, $MailBody );
+					
+					$headers  = '';
+					$headers .= 'From: ' . $mjschool_name . ' <noreplay@gmail.com>' . "\r\n";
+					$headers .= "MIME-Version: 1.0\r\n";
+					$headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
+					
+					// MAIL CONTENT WITH TEMPLATE DESIGN.
+					$email_template = mjschool_get_mail_content_with_template_design( $messg );
+					
+					if ( absint( get_option( 'mjschool_mail_notification' ) ) === 1 ) {
+						wp_mail( $to, $MailSub, $email_template, $headers );
+					}
+				}
+			}
+		}
 	}
+	
+	return $result;
 }
 /**
  * Get phone code for a given country from XML file.
@@ -1378,6 +1574,7 @@ function mjschool_send_replay_message( $data ) {
  * @return string|null Phone code if found, otherwise null.
  */
 function mjschool_get_country_phonecode( $country_name ) {
+	$country_name = sanitize_text_field( $country_name );
 	$url = MJSCHOOL_PLUGIN_URL . "/assets/xml/mjschool-country-list.xml";
 	$xml = simplexml_load_file( $url ) or wp_die( 'Error: Cannot create object' );
 	foreach ( $xml as $country ) {
@@ -1394,13 +1591,15 @@ function mjschool_get_country_phonecode( $country_name ) {
  * @return string|null User role slug.
  */
 function mjschool_get_roles( $user_id ) {
-	$roles = array();
-	$user  = new WP_User( $user_id );
+	$user_id = absint( $user_id );
+	$user    = new WP_User( $user_id );
+	
 	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
 		foreach ( $user->roles as $role ) {
-			return $role;
+			return sanitize_key( $role );
 		}
-	}
+	}	
+	return '';
 }
 /**
  * Get parent IDs linked to a student.
@@ -1410,14 +1609,16 @@ function mjschool_get_roles( $user_id ) {
  * @return array Array of parent IDs.
  */
 function mjschool_get_student_parent_id( $student_id ) {
-	$id             = intval( $student_id );
+	$id             = absint( $student_id );
 	$parent         = get_user_meta( $id, 'parent_id' );
 	$parent_idarray = array();
-	if ( ! empty( $parent ) ) {
+	
+	if ( ! empty( $parent ) && is_array( $parent ) && isset( $parent[0] ) && is_array( $parent[0] ) ) {
 		foreach ( $parent[0] as $parent_id ) {
-			$parent_idarray[] = $parent_id;
+			$parent_idarray[] = absint( $parent_id );
 		}
 	}
+	
 	return $parent_idarray;
 }
 /**
@@ -1428,14 +1629,16 @@ function mjschool_get_student_parent_id( $student_id ) {
  * @return array Array of child IDs.
  */
 function mjschool_get_parents_child_id( $id ) {
-	$parent_id      = intval( $id );
+	$parent_id      = absint( $id );
 	$parent         = get_user_meta( $parent_id, 'child' );
 	$parent_idarray = array();
-	if ( ! empty( $parent ) ) {
-		foreach ( $parent[0] as $parent_id ) {
-			$parent_idarray[] = $parent_id;
+	
+	if ( ! empty( $parent ) && is_array( $parent ) && isset( $parent[0] ) && is_array( $parent[0] ) ) {
+		foreach ( $parent[0] as $child_id ) {
+			$parent_idarray[] = absint( $child_id );
 		}
 	}
+	
 	return $parent_idarray;
 }
 /**
@@ -1448,36 +1651,50 @@ function mjschool_get_parents_child_id( $id ) {
  * @return array List of user objects.
  */
 function mjschool_get_user_notice( $role, $class_id, $section_id = 0 ) {
+	// Sanitize inputs
+	$role       = sanitize_key( $role );
+	$class_id   = is_numeric( $class_id ) ? absint( $class_id ) : sanitize_text_field( $class_id );
+	$section_id = absint( $section_id );
+	
 	if ( $role === 'all' ) {
 		$userdata = array();
 		$roles    = array( 'teacher', 'student', 'parent', 'supportstaff' );
-		foreach ( $roles as $role ) :
+		
+		foreach ( $roles as $user_role ) :
 			$users_query = new WP_User_Query(
 				array(
 					'fields'  => 'all_with_meta',
-					'role'    => $role,
+					'role'    => $user_role,
 					'orderby' => 'display_name',
 				)
 			);
 			$results     = $users_query->get_results();
+			
 			if ( $results ) {
 				$userdata = array_merge( $userdata, $results );
 			}
 		endforeach;
 	} elseif ( $role === 'parent' ) {
 		$new = array();
+		
 		if ( $class_id === 'all' ) {
 			$userdata = get_users( array( 'role' => $role ) );
 		} else {
-
-			$userdata = get_users(array( 'role' => 'student', 'meta_key' => 'class_name', 'meta_value' => $class_id ) );
+			$userdata = get_users(
+				array(
+					'role'       => 'student',
+					'meta_key'   => 'class_name',
+					'meta_value' => $class_id,
+				)
+			);
 
 			if ( ! empty( $userdata ) ) {
 				foreach ( $userdata as $users ) {
 					$parent = get_user_meta( $users->ID, 'parent_id', true );
-					if ( ! empty( $parent ) ) {
+					
+					if ( ! empty( $parent ) && is_array( $parent ) ) {
 						foreach ( $parent as $p ) {
-							$new[] = array( 'ID' => $p );
+							$new[] = array( 'ID' => absint( $p ) );
 						}
 					}
 				}
@@ -1487,17 +1704,31 @@ function mjschool_get_user_notice( $role, $class_id, $section_id = 0 ) {
 	} elseif ( $role === 'administrator' ) {
 		$userdata = get_users( array( 'role' => $role ) );
 	} else {
-		if ($class_id === 'all' ) {
-			$userdata = get_users(array( 'role' => $role ) );
-		} elseif ($section_id != 0) {
-			$userdata = get_users(array(
-				'meta_key' => 'class_section',
-				'meta_value' => $section_id,
-				'meta_query' => array(array( 'key' => 'class_name', 'value' => $class_id, 'compare' => '=' ) ),
-				'role' => 'student'
-			) );
+		if ( $class_id === 'all' ) {
+			$userdata = get_users( array( 'role' => $role ) );
+		} elseif ( $section_id !== 0 ) {
+			$userdata = get_users(
+				array(
+					'meta_key'   => 'class_section',
+					'meta_value' => $section_id,
+					'meta_query' => array(
+						array(
+							'key'     => 'class_name',
+							'value'   => $class_id,
+							'compare' => '=',
+						),
+					),
+					'role'       => 'student',
+				)
+			);
 		} else {
-			$userdata = get_users(array( 'role' => $role, 'meta_key' => 'class_name', 'meta_value' => $class_id ) );
+			$userdata = get_users(
+				array(
+					'role'       => $role,
+					'meta_key'   => 'class_name',
+					'meta_value' => $class_id,
+				)
+			);
 		}
 	}
 	return $userdata;
@@ -1511,8 +1742,10 @@ function mjschool_get_user_notice( $role, $class_id, $section_id = 0 ) {
  * @return int Inserted record ID.
  */
 function mjschool_insert_record( $mjschool_table_name, $records ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . $mjschool_table_name;
+	global $wpdb;	
+	// Sanitize table name.
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->insert( $table_name, $records );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -1529,9 +1762,13 @@ function mjschool_insert_record( $mjschool_table_name, $records ) {
  */
 function mjschool_add_class_section( $mjschool_table_name, $sectiondata ) {
 	global $wpdb;
-	$table_name = $wpdb->prefix . $mjschool_table_name;
+	// Sanitize table name.
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $result = $wpdb->insert( $table_name, $sectiondata );
+	$result = $wpdb->insert( $table_name, $sectiondata );	
+	return $result;
 }
 /**
  * Get all sections under a class.
@@ -1546,12 +1783,15 @@ function mjschool_get_class_sections( $id ) {
 	if ( ! empty( $id ) ) {
 		if ( $id === 'all' ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			return $result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name where class_id=%s", $id ) );
+			$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id=%s", $id ) );
 		} else {
+			$id = absint( $id );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			return $result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name where class_id=%d", $id ) );
+			$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id=%d", $id ) );
 		}
+		return $result;
 	}
+	return array();
 }
 /**
  * Get class section name by ID.
@@ -1563,7 +1803,7 @@ function mjschool_get_class_sections( $id ) {
 function mjschool_get_class_sections_name( $id ) {
 	global $wpdb;
 	$table_name       = $wpdb->prefix . 'mjschool_class_section';
-	$class_section_id = intval( $id );
+	$class_section_id = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$class_sections_name = $wpdb->get_row( $wpdb->prepare( "SELECT section_name FROM $table_name WHERE id=%d", $class_section_id ) );
 	if ( ! empty( $class_sections_name ) ) {
@@ -1572,6 +1812,7 @@ function mjschool_get_class_sections_name( $id ) {
 		return ' ';
 	}
 }
+
 /**
  * Get section name by ID.
  *
@@ -1582,15 +1823,17 @@ function mjschool_get_class_sections_name( $id ) {
 function mjschool_get_section_name( $id ) {
 	global $wpdb;
 	$table_name       = $wpdb->prefix . 'mjschool_class_section';
-	$class_section_id = intval( $id );
+	$class_section_id = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT *FROM $table_name where id=%d", $class_section_id ) );
+	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id=%d", $class_section_id ) );
+	
 	if ( isset( $result->section_name ) ) {
 		return $result->section_name;
 	} else {
 		return '';
 	}
 }
+
 /**
  * Delete a class section and log audit.
  *
@@ -1601,12 +1844,17 @@ function mjschool_get_section_name( $id ) {
 function mjschool_delete_class_section( $section_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_class_section';
-	$id         = intval( $section_id );
-	mjschool_append_audit_log( '' . esc_html__( 'Class Section Deleted', 'mjschool' ) . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field(wp_unslash($_REQUEST['page'])) );
+	$id         = absint( $section_id );
+	
+	// Sanitize $_REQUEST['page'] with isset() check
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	mjschool_append_audit_log( esc_html__( 'Class Section Deleted', 'mjschool' ), get_current_user_id(), get_current_user_id(), 'delete', $current_page );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name where id = %d ", $id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE id = %d", $id ) );
+	
 	return $result;
 }
+
 /**
  * Update a record in a custom table.
  *
@@ -1618,11 +1866,15 @@ function mjschool_delete_class_section( $section_id ) {
  */
 function mjschool_update_record( $mjschool_table_name, $data, $record_id ) {
 	global $wpdb;
-	$table_name = $wpdb->prefix . $mjschool_table_name;
+	// Sanitize table name
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->update( $table_name, $data, $record_id );
 	return $result;
 }
+
 /**
  * Delete a class and log audit entry.
  *
@@ -1633,14 +1885,21 @@ function mjschool_update_record( $mjschool_table_name, $data, $record_id ) {
  */
 function mjschool_delete_class( $mjschool_table_name, $id ) {
 	global $wpdb;
-	$table_name = $wpdb->prefix . $mjschool_table_name;
-	$record_id  = intval( $id );
+	// Sanitize table name.
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	$record_id           = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$event = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name where class_id=%d", $record_id ) );
-	$class = $event->class_name;
-	mjschool_append_audit_log( '' . esc_html__( 'Class Deleted', 'mjschool' ) . '( ' . $class . ' )' . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field(wp_unslash($_REQUEST['page'])) );
+	$event = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id=%d", $record_id ) );
+	$class = isset( $event->class_name ) ? $event->class_name : '';
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	mjschool_append_audit_log( esc_html__( 'Class Deleted', 'mjschool' ) . '( ' . $class . ' )', get_current_user_id(), get_current_user_id(), 'delete', $current_page );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE class_id= %d", $record_id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE class_id = %d", $record_id ) );
+	
+	return $result;
 }
 /**
  * Delete a grade entry.
@@ -1651,13 +1910,22 @@ function mjschool_delete_class( $mjschool_table_name, $id ) {
  * @return int Rows affected.
  */
 function mjschool_delete_grade( $mjschool_table_name, $id ) {
-	mjschool_append_audit_log( '' . esc_html__( 'Grade Deleted', 'mjschool' ) . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field(wp_unslash($_REQUEST['page'])) );
+	// Sanitize $_REQUEST['page'] with isset() check
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	mjschool_append_audit_log( esc_html__( 'Grade Deleted', 'mjschool' ), get_current_user_id(), get_current_user_id(), 'delete', $current_page );
+	
 	global $wpdb;
-	$record_id  = intval( $id );
-	$table_name = $wpdb->prefix . $mjschool_table_name;
+	$record_id = absint( $id );
+	// Sanitize table name
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE grade_id= %d", $record_id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE grade_id = %d", $record_id ) );
+	
+	return $result;
 }
+
 /**
  * Delete an exam and all related records (receipt & timetable).
  *
@@ -1668,24 +1936,33 @@ function mjschool_delete_grade( $mjschool_table_name, $id ) {
  */
 function mjschool_delete_exam( $mjschool_table_name, $id ) {
 	global $wpdb;
-	$table_name = $wpdb->prefix . $mjschool_table_name;
-	$record_id  = intval( $id );
+	// Sanitize table name
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	$record_id           = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$event = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name where exam_id=%d", $record_id ) );
-	if ( ! empty( $event ) ) {
+	$event = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_id=%d", $record_id ) );
+	
+	if ( ! empty( $event ) && isset( $event->exam_name ) ) {
 		$exam = $event->exam_name;
-		mjschool_append_audit_log( '' . esc_html__( 'Exam Deleted', 'mjschool' ) . '( ' . $exam . ' )' . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field(wp_unslash($_REQUEST['page'])) );
+		$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+		mjschool_append_audit_log( esc_html__( 'Exam Deleted', 'mjschool' ) . '( ' . $exam . ' )', get_current_user_id(), get_current_user_id(), 'delete', $current_page );
 	}
+	
 	$mjschool_exam_hall_receipt = $wpdb->prefix . 'mjschool_exam_hall_receipt';
-	$mjschool_exam_time_table       = $wpdb->prefix . 'mjschool_exam_time_table';
+	$mjschool_exam_time_table   = $wpdb->prefix . 'mjschool_exam_time_table';
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE exam_id= %d", $record_id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE exam_id = %d", $record_id ) );
+	
 	if ( $result ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result_receipt_delete = $wpdb->query( $wpdb->prepare( "DELETE FROM $mjschool_exam_hall_receipt WHERE exam_id= %d", $record_id ) );
+		$result_receipt_delete = $wpdb->query( $wpdb->prepare( "DELETE FROM $mjschool_exam_hall_receipt WHERE exam_id = %d", $record_id ) );
+		
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result_timetable_delete = $wpdb->query( $wpdb->prepare( "DELETE FROM $mjschool_exam_time_table WHERE exam_id= %d", $record_id ) );
-	}
+		$result_timetable_delete = $wpdb->query( $wpdb->prepare( "DELETE FROM $mjschool_exam_time_table WHERE exam_id = %d", $record_id ) );
+	}	
 	return $result;
 }
 /**
@@ -1698,20 +1975,30 @@ function mjschool_delete_exam( $mjschool_table_name, $id ) {
 function mjschool_delete_usedata( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'usermeta';
-	$record_id  = intval( $id );
+	$record_id  = absint( $id );
 	$user_data  = get_userdata( $record_id );
+	$user = '';
 	if ( $user_data ) {
 		$user = mjschool_get_user_name_by_id( $user_data->ID );
 	}
-	mjschool_append_audit_log( '' . esc_html__( 'User Deleted', 'mjschool' ) . '( ' . $user . ' )' . '', $record_id, get_current_user_id(), 'delete', sanitize_text_field(wp_unslash($_REQUEST['page'])) );
+	
+	// Sanitize $_REQUEST['page'] with isset() check
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	
+	mjschool_append_audit_log( esc_html__( 'User Deleted', 'mjschool' ) . '( ' . $user . ' )', $record_id, get_current_user_id(), 'delete', $current_page );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE user_id= %d", $record_id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE user_id = %d", $record_id ) );
+	
 	if ( ! current_user_can( 'delete_user', $record_id ) ) {
 		return new WP_Error( 'permission_denied', 'You are not allowed to delete this user' );
 	}
+	
 	$retuenval = wp_delete_user( $record_id );
+	
 	return $retuenval;
 }
+
 /**
  * Delete a message by ID.
  *
@@ -1721,13 +2008,22 @@ function mjschool_delete_usedata( $id ) {
  * @return int Rows affected.
  */
 function mjschool_delete_message( $tablenm, $id ) {
-	mjschool_append_audit_log( '' . esc_html__( 'Message Deleted', 'mjschool' ) . '', null, get_current_user_id(), 'delete', sanitize_text_field(wp_unslash($_REQUEST['page'])) );
+	// Sanitize $_REQUEST['page'] with isset() check
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	
+	mjschool_append_audit_log( esc_html__( 'Message Deleted', 'mjschool' ), null, get_current_user_id(), 'delete', $current_page );
+	
 	global $wpdb;
-	$record_id  = intval( $id );
+	$record_id = absint( $id );
+	// Sanitize table name.
+	$tablenm    = sanitize_key( $tablenm );
 	$table_name = $wpdb->prefix . $tablenm;
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE message_id= %d", $record_id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE message_id = %d", $record_id ) );
+	
+	return $result;
 }
+
 /**
  * Get class name by ID.
  *
@@ -1738,15 +2034,18 @@ function mjschool_delete_message( $tablenm, $id ) {
 function mjschool_get_class_name( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_class';
-	$cid        = intval( $id );
+	$cid        = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$classname = $wpdb->get_row( $wpdb->prepare( "SELECT class_name FROM $table_name WHERE class_id=%d", $cid ) );
-	if ( ! empty( $classname ) ) {
+	
+	if ( ! empty( $classname ) && isset( $classname->class_name ) ) {
 		return $classname->class_name;
 	} else {
 		return 'N/A';
 	}
 }
+
 /**
  * Get fee term name by fee ID.
  *
@@ -1757,29 +2056,16 @@ function mjschool_get_class_name( $id ) {
 function mjschool_get_fees_term_name( $id ) {
 	global $wpdb;
 	$table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
-	$fees_id             = intval( $id );
+	$fees_id             = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$classname = $wpdb->get_row( $wpdb->prepare( "SELECT fees_title_id FROM $table_mjschool_fees WHERE fees_id=%d", $fees_id ) );
-	if ( ! empty( $classname ) ) {
+	
+	if ( ! empty( $classname ) && isset( $classname->fees_title_id ) ) {
 		return get_the_title( $classname->fees_title_id );
 	} else {
 		return ' ';
 	}
-}
-/**
- * Get full fee details from database.
- *
- * @since 1.0.0
- * @param int $id Fee ID.
- * @return object Fee row object.
- */
-function mjschool_get_fees_details( $id ) {
-	global $wpdb;
-	$table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
-	$fees_id             = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$classname = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees WHERE fees_id=%d", $fees_id ) );
-	return $classname;
 }
 /**
  * Determine payment status (Not Paid / Partially Paid / Fully Paid).
@@ -1791,12 +2077,14 @@ function mjschool_get_fees_details( $id ) {
 function mjschool_get_payment_status( $id ) {
 	global $wpdb;
 	$table_mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
-	$fees_pay_id                 = intval( $id );
+	$fees_pay_id                 = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees_payment WHERE fees_pay_id=%d", $fees_pay_id ) );
+	
 	if ( ! empty( $result ) ) {
-		if ( $result->total_amount > 0 ) {
-			if ( $result->fees_paid_amount === 0 ) {
+		if ( isset( $result->total_amount ) && $result->total_amount > 0 ) {
+			if ( ! isset( $result->fees_paid_amount ) || $result->fees_paid_amount === 0 ) {
 				return 'Not Paid';
 			} elseif ( $result->fees_paid_amount < $result->total_amount ) {
 				return 'Partially Paid';
@@ -1815,16 +2103,18 @@ function mjschool_get_payment_status( $id ) {
  *
  * @since 1.0.0
  * @param int $id Payment ID.
- * @return object Payment row.
+ * @return object|null Payment row.
  */
 function mjschool_get_single_fees_payment_record( $id ) {
 	global $wpdb;
 	$table_mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
-	$fees_pay_id                 = intval( $id );
+	$fees_pay_id                 = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees_payment WHERE fees_pay_id=%d", $fees_pay_id ) );
 	return $result;
 }
+
 /**
  * Get all payment history entries for a fees_pay_id.
  *
@@ -1835,24 +2125,11 @@ function mjschool_get_single_fees_payment_record( $id ) {
 function mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id ) {
 	global $wpdb;
 	$table_mjschool_fee_payment_history = $wpdb->prefix . 'mjschool_fee_payment_history';
-	$fees_pay_id                        = intval( $fees_pay_id );
+	$fees_pay_id                        = absint( $fees_pay_id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_fee_payment_history WHERE fees_pay_id=%d", $fees_pay_id ) );
-	return $result;
-}
-/**
- * Get a single payment history record.
- *
- * @since 1.0.0
- * @param int $id Payment history ID.
- * @return array Payment history details.
- */
-function mjschool_get_single_payment_history( $id ) {
-	global $wpdb;
-	$table_mjschool_fee_payment_history = $wpdb->prefix . 'mjschool_fee_payment_history';
-	$id                                 = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_fee_payment_history WHERE payment_history_id=%d", $id ) );
+	
 	return $result;
 }
 /**
@@ -1863,13 +2140,16 @@ function mjschool_get_single_payment_history( $id ) {
  * @return string Username.
  */
 function mjschool_get_user_name_by_id( $user_id ) {
+	$user_id   = absint( $user_id );
 	$user_info = get_userdata( $user_id );
+	
 	if ( $user_info ) {
 		return $user_info->display_name;
 	} else {
 		return 'N/A';
 	}
 }
+
 /**
  * Get display name of a user by ID.
  *
@@ -1878,21 +2158,25 @@ function mjschool_get_user_name_by_id( $user_id ) {
  * @return string Username.
  */
 function mjschool_get_display_name( $user_id ) {
-	$user = get_userdata( $user_id );
+	$user_id = absint( $user_id );
+	$user    = get_userdata( $user_id );
+	
 	if ( ! $user ) {
 		return 'N/A';
-	}
+	}	
 	return $user->display_name;
 }
 /**
  * Get user email address by ID.
  *
  * @since 1.0.0
- * @param int $id User ID.
+ * @param int $user_id User ID.
  * @return string|false Email address.
  */
 function mjschool_get_email_id_by_user_id( $user_id ) {
-	$user = get_userdata( $user_id );
+	$user_id = absint( $user_id );
+	$user    = get_userdata( $user_id );
+	
 	if ( ! $user ) {
 		return false;
 	}
@@ -1906,25 +2190,19 @@ function mjschool_get_email_id_by_user_id( $user_id ) {
  * @return string Full name.
  */
 function mjschool_get_teacher( $id ) {
-	$user_info = get_userdata( $id );
+	$id        = absint( $id );
+	$user_info = get_userdata( $id );	
 	if ( $user_info ) {
-		return $user_info->first_name . ' ' . $user_info->middle_name . ' ' . $user_info->last_name;
+		$first  = isset( $user_info->first_name ) ? $user_info->first_name : '';
+		$middle = isset( $user_info->middle_name ) ? $user_info->middle_name : '';
+		$last   = isset( $user_info->last_name ) ? $user_info->last_name : '';
+		
+		return trim( $first . ' ' . $middle . ' ' . $last );
 	}
+	
+	return '';
 }
-/**
- * Get all payment list records joined with user table.
- *
- * @since 1.0.0
- * @return array Payment list.
- */
-function mjschool_get_payment_list() {
-	global $wpdb;
-	$table_users   = $wpdb->prefix . 'users';
-	$table_payment = $wpdb->prefix . 'mjschool_payment';
-	$query         = "SELECT * FROM {$table_users} AS u INNER JOIN {$table_payment} AS p ON u.ID = p.student_id";
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $wpdb->get_results( $wpdb->prepare( $query ) );
-}
+
 /**
  * Get all records from a custom table.
  *
@@ -1934,11 +2212,13 @@ function mjschool_get_payment_list() {
  */
 function mjschool_get_all_data( $mjschool_table_name ) {
 	global $wpdb;
-	$table_name = $wpdb->prefix . $mjschool_table_name;
-	$user_id    = get_current_user_id();
-	$school_obj = new MJSchool_Management( $user_id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subjects = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM ' . $table_name ) );
+	// Sanitize table name
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;	
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Safe direct query with sanitized table name
+	$retrieve_subjects = $wpdb->get_results( "SELECT * FROM {$table_name}" );
+	
+	return $retrieve_subjects;
 }
 /**
  * Retrieves all certificates owned by the logged-in student.
@@ -1949,12 +2229,17 @@ function mjschool_get_all_data( $mjschool_table_name ) {
  */
 function mjschool_get_all_certificate_owns( $mjschool_table_name ) {
 	global $wpdb;
-	$user_id    = get_current_user_id();
-	$school_obj = new MJSchool_Management( $user_id );
-	$table_name = $wpdb->prefix . $mjschool_table_name;
+	$user_id = get_current_user_id();
+	// Sanitize table name
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subjects = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name where student_id=%d", $user_id ) );
+	$retrieve_subjects = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE student_id=%d", $user_id ) );
+	
+	return $retrieve_subjects;
 }
+
 /**
  * Retrieves all certificates for a specific student or the logged-in user.
  *
@@ -1964,13 +2249,15 @@ function mjschool_get_all_certificate_owns( $mjschool_table_name ) {
  */
 function mjschool_get_all_certificate_parents( $student_id = null ) {
 	global $wpdb;
-	$user_id    = $student_id ? $student_id : get_current_user_id();
+	$user_id    = $student_id ? absint( $student_id ) : absint( get_current_user_id() );
 	$table_name = $wpdb->prefix . 'mjschool_certificate';
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	return $wpdb->get_results(
 		$wpdb->prepare( "SELECT * FROM $table_name WHERE student_id = %d", $user_id )
 	);
 }
+
 /**
  * Retrieves all subject data created by the current user.
  *
@@ -1980,12 +2267,17 @@ function mjschool_get_all_certificate_parents( $student_id = null ) {
  */
 function mjschool_get_all_own_subject_data( $mjschool_table_name ) {
 	global $wpdb;
-	$user_id    = get_current_user_id();
-	$school_obj = new MJSchool_Management( $user_id );
-	$table_name = $wpdb->prefix . $mjschool_table_name;
+	$user_id = get_current_user_id();
+	// Sanitize table name
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subjects = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name where created_by=%d", $user_id ) );
+	$retrieve_subjects = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE created_by=%d", $user_id ) );
+	
+	return $retrieve_subjects;
 }
+
 /**
  * Retrieves certificate data by student ID.
  *
@@ -1996,25 +2288,14 @@ function mjschool_get_all_own_subject_data( $mjschool_table_name ) {
 function mjschool_get_certificate_by_student_id( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_certificate';
-	$class_id   = intval( $id );
+	$class_id   = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE student_id=%d", $class_id ) );
+	
 	return $retrieve_subject;
 }
-/**
- * Retrieves all subjects assigned to a teacher.
- *
- * @param int $id Teacher ID.
- * @return array Subject list.
- * @since 1.0.0
- */
-function mjschool_get_teacher_subjects( $id ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_teacher_subject';
-	$teacher_id = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subjects = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name where teacher_id=%d", $teacher_id ) );
-}
+
 /**
  * Retrieves subjects by class ID.
  *
@@ -2025,11 +2306,14 @@ function mjschool_get_teacher_subjects( $id ) {
 function mjschool_get_subject_by_class_id( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_subject';
-	$class_id   = intval( $id );
+	$class_id   = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id=%d", $class_id ) );
+	
 	return $retrieve_subject;
 }
+
 /**
  * Retrieves subject details by subject ID.
  *
@@ -2040,39 +2324,14 @@ function mjschool_get_subject_by_class_id( $id ) {
 function mjschool_get_subject( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_subject';
-	$sid        = intval( $id );
+	$sid        = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE subid=%d", $sid ) );
+	
 	return $retrieve_subject;
 }
-/**
- * Retrieves all subjects stored in the system.
- *
- * @return array List of subjects.
- * @since 1.0.0
- */
-function mjschool_get_all_subject() {
-	global $wpdb;
-	$table_name= $wpdb->prefix . 'mjschool_subject';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$retrive_subject = $wpdb->get_results($wpdb->prepare( "SELECT * FROM $table_name " ) );
-	return $retrive_subject;
-}
-/**
- * Retrieves a book record by ID.
- *
- * @param int $id Book ID.
- * @return object|null Book details.
- * @since 1.0.0
- */
-function mjschool_get_book( $id ) {
-	global $wpdb;
-	$table_book = $wpdb->prefix . 'mjschool_library_book';
-	$b_id       = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_book where id=%d", $b_id ) );
-	return $result;
-}
+
 /**
  * Retrieves subject name and code for a given subject ID.
  *
@@ -2083,89 +2342,18 @@ function mjschool_get_book( $id ) {
 function mjschool_get_single_subject_name( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_subject';
-	$subject_id = intval( $id );
+	$subject_id = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT sub_name,subject_code  FROM $table_name WHERE subid=%d", $subject_id ) );
-	if ( ! empty( $retrieve_subject ) ) {
+	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT sub_name, subject_code FROM $table_name WHERE subid=%d", $subject_id ) );
+	
+	if ( ! empty( $retrieve_subject ) && isset( $retrieve_subject->sub_name ) && isset( $retrieve_subject->subject_code ) ) {
 		return $retrieve_subject->sub_name . '-' . $retrieve_subject->subject_code;
 	} else {
 		return '';
 	}
 }
-/**
- * Retrieves only the subject code by ID.
- *
- * @param int $id Subject ID.
- * @return string|null Subject code.
- * @since 1.0.0
- */
-function mjschool_get_single_subject_code( $id ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_subject';
-	$subject_id = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_var( $wpdb->prepare( "SELECT subject_code FROM $table_name WHERE subid=%d", $subject_id ) );
-}
-/**
- * Retrieves subject names assigned to a teacher.
- *
- * @param int $id Teacher ID.
- * @return string Comma-separated subject names.
- * @since 1.0.0
- */
-function mjschool_get_subject_name_by_teacher( $id ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_teacher_subject';
-	$teacher_id = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE teacher_id=%d", $teacher_id ) );
-	$subjec           = '';
-	if ( ! empty( $retrieve_subject ) ) {
-		foreach ( $retrieve_subject as $retrive_data ) {
-			$sub_name = mjschool_get_single_subject_name( $retrive_data->subject_id );
-			$subjec  .= $sub_name . ', ';
-		}
-	}
-	return $subjec;
-}
-/**
- * Retrieves subject IDs assigned to a teacher.
- *
- * @param int $id Teacher ID.
- * @return array List of subject IDs.
- * @since 1.0.0
- */
-function mjschool_get_subject_id_by_teacher( $id ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_teacher_subject';
-	$teacher_id = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE teacher_id=%d", $teacher_id ) );
-	$subjects         = array();
-	if ( ! empty( $retrieve_subject ) ) {
-		foreach ( $retrieve_subject as $retrive_data ) {
-			$count = mjschool_is_subject_check( $retrive_data->subject_id );
-			if ( $count > 0 ) {
-				$subjects[] = $retrive_data->subject_id;
-			}
-		}
-	}
-	return $subjects;
-}
-/**
- * Checks if a subject exists.
- *
- * @param int $id Subject ID.
- * @return int Number of matching records.
- * @since 1.0.0
- */
-function mjschool_is_subject_check( $id ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_subject';
-	$subject_id = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $table_name WHERE subid=%d", $subject_id ) );
-}
+
 /**
  * Retrieves class details using class ID.
  *
@@ -2176,11 +2364,14 @@ function mjschool_is_subject_check( $id ) {
 function mjschool_get_class_by_id( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_class';
-	$sid        = intval( $id );
+	$sid        = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id=%d", $sid ) );
+	
 	return $retrieve_subject;
 }
+
 /**
  * Retrieves class name by class ID.
  *
@@ -2191,11 +2382,18 @@ function mjschool_get_class_by_id( $id ) {
 function mjschool_get_class_name_by_id( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_class';
-	$sid        = intval( $id );
+	$sid        = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id=%d", $sid ) );
-	return $retrieve_subject->class_name;
+	
+	if ( isset( $retrieve_subject->class_name ) ) {
+		return $retrieve_subject->class_name;
+	}
+	
+	return '';
 }
+
 /**
  * Retrieves class ID based on class name.
  *
@@ -2206,39 +2404,15 @@ function mjschool_get_class_name_by_id( $id ) {
 function mjschool_get_class_id_by_name( $class_name ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_class';
-	// Use prepare to safely inject the dynamic value.
-	$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE class_name = %s", $class_name );
+	$class_name = sanitize_text_field( $class_name );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$retrieve_subject = $wpdb->get_row( $query );
-	return $retrieve_subject->class_id;
+	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_name = %s", $class_name ) );	
+	if ( isset( $retrieve_subject->class_id ) ) {
+		return absint( $retrieve_subject->class_id );
+	}	
+	return 0;
 }
-/**
- * Retrieves grade details by ID.
- *
- * @param int $id Grade ID.
- * @return object|null Grade record.
- * @since 1.0.0
- */
-function mjschool_get_grade_by_id( $id ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_grade';
-	$gid        = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE grade_id =%d", $gid ) );
-}
-/**
- * Retrieves grade details by grade name.
- *
- * @param string $grade_name Grade name.
- * @return object|null Grade record.
- * @since 1.0.0
- */
-function mjschool_get_grade_by_name( $grade_name ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_grade';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE grade_name =%s", $grade_name ) );
-}
+
 /**
  * Retrieves exam details by exam ID.
  *
@@ -2249,41 +2423,12 @@ function mjschool_get_grade_by_name( $grade_name ) {
 function mjschool_get_exam_by_id( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_exam';
-	$eid        = intval( $id );
+	$eid        = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_id =%d", $eid ) );
+	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE exam_id = %d", $eid ) );
 	return $retrieve_subject;
 }
-/**
- * Retrieves exam details by class ID.
- *
- * @param int $id Class ID.
- * @return object|null Exam record.
- * @since 1.0.0
- */
-function mjschool_get_exam_by_class_id( $id ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_exam';
-	$class_id   = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id =%d", $class_id ) );
-}
-/**
- * Retrieves all exams for a class where section_id = 0.
- *
- * @param int $id Class ID.
- * @return array List of exams.
- * @since 1.0.0
- */
-function mjschool_get_all_exam_by_class_id( $id ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_exam';
-	$class_id   = intval( $id );
-	// Use prepare to safely include the dynamic value.
-	$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d AND section_id = %s", $class_id, '0' );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $wpdb->get_results( $query );
-}
+
 /**
  * Retrieves all exams by class ID.
  *
@@ -2294,9 +2439,10 @@ function mjschool_get_all_exam_by_class_id( $id ) {
 function mjschool_get_all_exam_by_class_id_all( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_exam';
-	$class_id   = intval( $id );
+	$class_id   = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_data = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id =%d", $class_id ) );
+	$retrieve_data = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d", $class_id ) );
+	return $retrieve_data;
 }
 /**
  * Retrieves class data for multiple class IDs.
@@ -2307,10 +2453,23 @@ function mjschool_get_all_exam_by_class_id_all( $id ) {
  */
 function mjschool_get_all_class_data_by_class_array( $class_id ) {
 	global $wpdb;
-	$user_id    = get_current_user_id();
+	$user_id    = absint( get_current_user_id() );
 	$table_name = $wpdb->prefix . 'mjschool_class';
+	// Sanitize array of class IDs
+	if ( ! is_array( $class_id ) ) {
+		return array();
+	}
+	$class_id = array_map( 'absint', $class_id );
+	if ( empty( $class_id ) ) {
+		return array();
+	}
+	$placeholders = implode( ', ', array_fill( 0, count( $class_id ), '%d' ) );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_data = $wpdb->get_results( "SELECT * FROM $table_name WHERE class_id IN ( " . implode( ',', $class_id ) . ") OR creater_id=$user_id" );
+	$retrieve_data = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM $table_name WHERE class_id IN ($placeholders) OR creater_id = %d", array_merge( $class_id, array( $user_id ) ) )
+	);
+	
+	return $retrieve_data;
 }
 /**
  * Retrieves all classes created by a specific user.
@@ -2322,9 +2481,10 @@ function mjschool_get_all_class_data_by_class_array( $class_id ) {
 function mjschool_get_all_class_created_by( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_class';
-	$user_id    = intval( $id );
+	$user_id    = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_data = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE create_by=%d", $user_id ) );
+	$retrieve_data = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE create_by=%d", $user_id ) );
+	return $retrieve_data;
 }
 /**
  * Retrieves all exams for given class IDs (section = 0).
@@ -2336,8 +2496,19 @@ function mjschool_get_all_class_created_by( $id ) {
 function mjschool_get_all_exam_by_class_id_array( $class_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_exam';
+	// Sanitize array of class IDs.
+	if ( ! is_array( $class_id ) ) {
+		return array();
+	}
+	$class_id = array_map( 'absint', $class_id );
+	if ( empty( $class_id ) ) {
+		return array();
+	}
+	$placeholders = implode( ', ', array_fill( 0, count( $class_id ), '%d' ) );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$retrieve_data = $wpdb->get_results( "SELECT * FROM $table_name WHERE class_id IN ( " . implode( ',', $class_id ) . ") and section_id='0'" );
+	$retrieve_data = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM $table_name WHERE class_id IN ($placeholders) AND section_id = %d", array_merge( $class_id, array( 0 ) ) )
+	);
 	return $retrieve_data;
 }
 /**
@@ -2351,12 +2522,14 @@ function mjschool_get_all_exam_by_class_id_array( $class_id ) {
 function mjschool_get_all_exam_by_class_id_and_section_id_array( $class_id, $section_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_exam';
-	// Prepare the SQL query with placeholders for safety.
+	$class_id   = absint( $class_id );
+	$section_id = absint( $section_id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d AND (section_id = %d OR section_id = 0)", $class_id, $section_id );
-	// Execute the query and return the results.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $wpdb->get_results( $query );
+	$result = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d AND (section_id = %d OR section_id = 0)", $class_id, $section_id )
+	);
+	return $result;
 }
 /**
  * Converts date into WP date format.
@@ -2366,6 +2539,7 @@ function mjschool_get_all_exam_by_class_id_and_section_id_array( $class_id, $sec
  * @since 1.0.0
  */
 function mjschool_change_dateformat( $date ) {
+	$date = sanitize_text_field( $date );
 	return mysql2date( get_option( 'date_format' ), $date );
 }
 /**
@@ -2379,8 +2553,22 @@ function mjschool_change_dateformat( $date ) {
 function mjschool_get_all_exam_by_class_id_and_section_id_array_parent( $class_id, $section_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_exam';
+	// Sanitize arrays.
+	if ( ! is_array( $class_id ) || ! is_array( $section_id ) ) {
+		return array();
+	}
+	$class_id   = array_map( 'absint', $class_id );
+	$section_id = array_map( 'absint', $section_id );
+	if ( empty( $class_id ) || empty( $section_id ) ) {
+		return array();
+	}
+	$class_placeholders   = implode( ', ', array_fill( 0, count( $class_id ), '%d' ) );
+	$section_placeholders = implode( ', ', array_fill( 0, count( $section_id ), '%d' ) );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_data = $wpdb->get_results( "SELECT * FROM $table_name WHERE class_id IN ( " . implode( ',', $class_id ) . ' ) and section_id IN ( ' . implode( ',', $section_id ) . ' )' );
+	$retrieve_data = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM $table_name WHERE class_id IN ($class_placeholders) AND section_id IN ($section_placeholders)", array_merge( $class_id, $section_id ) )
+	);
+	return $retrieve_data;
 }
 /**
  * Retrieves exam name using exam ID.
@@ -2392,9 +2580,10 @@ function mjschool_get_all_exam_by_class_id_and_section_id_array_parent( $class_i
 function mjschool_get_exam_name_id( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_exam';
-	$eid        = intval( $id );
+	$eid        = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_var( $wpdb->prepare( "SELECT exam_name FROM $table_name WHERE exam_id =%d", $eid ) );
+	$retrieve_subject = $wpdb->get_var( $wpdb->prepare( "SELECT exam_name FROM $table_name WHERE exam_id = %d", $eid ) );
+	return $retrieve_subject;
 }
 /**
  * Retrieves transport details by ID.
@@ -2406,9 +2595,10 @@ function mjschool_get_exam_name_id( $id ) {
 function mjschool_get_transport_by_id( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_transport';
-	$tid        = intval( $id );
+	$tid        = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE transport_id = %d", $tid ) );
+	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE transport_id = %d", $tid ) );
+	return $retrieve_subject;
 }
 /**
  * Retrieves hall details by ID.
@@ -2420,9 +2610,10 @@ function mjschool_get_transport_by_id( $id ) {
 function mjschool_get_hall_by_id( $hall_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_hall';
-	$id         = intval( $hall_id );
+	$id         = absint( $hall_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE hall_id = %d", $id ) );
+	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE hall_id = %d", $id ) );
+	return $retrieve_subject;
 }
 /**
  * Retrieves holiday details by ID.
@@ -2434,9 +2625,10 @@ function mjschool_get_hall_by_id( $hall_id ) {
 function mjschool_get_holiday_by_id( $haliday_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_holiday';
-	$id         = intval( $haliday_id );
+	$id         = absint( $haliday_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE holiday_id = %d", $id ) );
+	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE holiday_id = %d", $id ) );
+	return $retrieve_subject;
 }
 /**
  * Retrieves route details by ID.
@@ -2448,10 +2640,12 @@ function mjschool_get_holiday_by_id( $haliday_id ) {
 function mjschool_get_route_by_id( $route_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_time_table';
-	$id         = intval( $route_id );
+	$id         = absint( $route_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE route_id = %d", $id ) );
+	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE route_id = %d", $id ) );
+	return $retrieve_subject;
 }
+
 /**
  * Retrieves payment record by ID.
  *
@@ -2462,9 +2656,10 @@ function mjschool_get_route_by_id( $route_id ) {
 function mjschool_get_payment_by_id( $payment_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_payment';
-	$id         = intval( $payment_id );
+	$id         = absint( $payment_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE payment_id = %d", $id ) );
+	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE payment_id = %d", $id ) );
+	return $retrieve_subject;
 }
 /**
  * Deletes a payment record.
@@ -2475,12 +2670,17 @@ function mjschool_get_payment_by_id( $payment_id ) {
  * @since 1.0.0
  */
 function mjschool_delete_payment( $mjschool_table_name, $id ) {
-	mjschool_append_audit_log( '' . esc_html__( 'Payment Deleted', 'mjschool' ) . '', null, get_current_user_id(), 'delete', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
+	// Sanitize $_REQUEST['page'] with isset() check
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	mjschool_append_audit_log( esc_html__( 'Payment Deleted', 'mjschool' ), null, get_current_user_id(), 'delete', $current_page );
 	global $wpdb;
-	$table_name = $wpdb->prefix . $mjschool_table_name;
-	$tid        = intval( $id );
+	// Sanitize table name
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	$tid                 = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE payment_id= %d", $tid ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE payment_id = %d", $tid ) );
+	return $result;
 }
 /**
  * Deletes transport data.
@@ -2491,12 +2691,17 @@ function mjschool_delete_payment( $mjschool_table_name, $id ) {
  * @since 1.0.0
  */
 function mjschool_delete_transport( $mjschool_table_name, $id ) {
-	mjschool_append_audit_log( '' . esc_html__( 'Trasport Deleted', 'mjschool' ) . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
+	// Sanitize $_REQUEST['page'] with isset() check
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	mjschool_append_audit_log( esc_html__( 'Transport Deleted', 'mjschool' ), get_current_user_id(), get_current_user_id(), 'delete', $current_page );
 	global $wpdb;
-	$table_name = $wpdb->prefix . $mjschool_table_name;
-	$tid        = intval( $id );
+	// Sanitize table name
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	$tid                 = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE transport_id= %d", $tid ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE transport_id = %d", $tid ) );
+	return $result;
 }
 /**
  * Deletes exam hall.
@@ -2507,12 +2712,18 @@ function mjschool_delete_transport( $mjschool_table_name, $id ) {
  * @since 1.0.0
  */
 function mjschool_delete_hall( $mjschool_table_name, $hall_id ) {
-	mjschool_append_audit_log( '' . esc_html__( 'Exam Hall Deleted', 'mjschool' ) . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
+	// Sanitize $_REQUEST['page'] with isset() check
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	mjschool_append_audit_log( esc_html__( 'Exam Hall Deleted', 'mjschool' ), get_current_user_id(), get_current_user_id(), 'delete', $current_page );
 	global $wpdb;
-	$table_name = $wpdb->prefix . $mjschool_table_name;
-	$id         = intval( $hall_id );
+	// Sanitize table name
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	$id                  = absint( $hall_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE hall_id= %d", $id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE hall_id = %d", $id ) );
+	
+	return $result;
 }
 /**
  * Deletes a holiday record.
@@ -2523,12 +2734,17 @@ function mjschool_delete_hall( $mjschool_table_name, $hall_id ) {
  * @since 1.0.0
  */
 function mjschool_delete_holiday( $mjschool_table_name, $holiday_id ) {
-	mjschool_append_audit_log( '' . esc_html__( 'Holiday Deleted', 'mjschool' ) . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
+	// Sanitize $_REQUEST['page'] with isset() check
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	mjschool_append_audit_log( esc_html__( 'Holiday Deleted', 'mjschool' ), get_current_user_id(), get_current_user_id(), 'delete', $current_page );
 	global $wpdb;
-	$table_name = $wpdb->prefix . $mjschool_table_name;
-	$id         = intval( $holiday_id );
+	// Sanitize table name
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	$id                  = absint( $holiday_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE holiday_id= %d", $id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE holiday_id = %d", $id ) );
+	return $result;
 }
 /**
  * Deletes a route and associated Zoom meeting (if exists).
@@ -2539,16 +2755,21 @@ function mjschool_delete_holiday( $mjschool_table_name, $holiday_id ) {
  * @since 1.0.0
  */
 function mjschool_delete_route( $mjschool_table_name, $route_id ) {
-	mjschool_append_audit_log( '' . esc_html__( 'Route Deleted', 'mjschool' ) . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
+	// Sanitize $_REQUEST['page'] with isset() check
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	mjschool_append_audit_log( esc_html__( 'Route Deleted', 'mjschool' ), get_current_user_id(), get_current_user_id(), 'delete', $current_page );
 	global $wpdb;
 	$obj_virtual_classroom = new mjschool_virtual_classroom();
-	$table_name            = $wpdb->prefix . $mjschool_table_name;
-	$id                    = intval( $route_id );
+	// Sanitize table name
+	$mjschool_table_name = sanitize_key( $mjschool_table_name );
+	$table_name          = $wpdb->prefix . $mjschool_table_name;
+	$id                  = absint( $route_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE route_id= %d", $id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE route_id = %d", $id ) );
+	
 	if ( $result ) {
 		$meeting_data = $obj_virtual_classroom->mjschool_get_single_meeting_by_route_data_in_zoom( $id );
-		if ( ! empty( $meeting_data ) ) {
+		if ( ! empty( $meeting_data ) && isset( $meeting_data->meeting_id ) ) {
 			$obj_virtual_classroom->mjschool_delete_meeting_in_zoom( $meeting_data->meeting_id );
 		}
 	}
@@ -2565,16 +2786,22 @@ function mjschool_get_teacher_id_by_subject_id( $subject_id ) {
 	global $wpdb;
 	$teacher    = array();
 	$table_name = $wpdb->prefix . 'mjschool_teacher_subject';
-	$id         = intval( $subject_id );
+	$id         = absint( $subject_id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT teacher_id FROM $table_name WHERE subject_id = %d", $id ) );
+	
 	if ( ! empty( $retrieve_subject ) ) {
 		foreach ( $retrieve_subject as $subject ) {
-			$teacher[] = $subject->teacher_id;
+			if ( isset( $subject->teacher_id ) ) {
+				$teacher[] = absint( $subject->teacher_id );
+			}
 		}
 	}
+	
 	return $teacher;
 }
+
 /**
  * Retrieves classes assigned to a teacher.
  *
@@ -2585,13 +2812,15 @@ function mjschool_get_teacher_id_by_subject_id( $subject_id ) {
 function mjschool_get_teachers_class( $teacher_id ) {
 	global $wpdb;
 	$table = $wpdb->prefix . 'mjschool_teacher_class';
-	$id    = intval( $teacher_id );
+	$id    = absint( $teacher_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result   = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM '.$table.' where teacher_id =%d", $id ) );
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} WHERE teacher_id = %d", $id ) );
 	$return_r = array();
 	if ( ! empty( $result ) ) {
 		foreach ( $result as $retrive_data ) {
-			$return_r[] = $retrive_data->class_id;
+			if ( isset( $retrive_data->class_id ) ) {
+				$return_r[] = absint( $retrive_data->class_id );
+			}
 		}
 	}
 	if ( ! empty( $return_r ) ) {
@@ -2614,34 +2843,43 @@ function mjschool_get_all_class( $user_id = 0 ) {
 	if ( $user_id === 0 ) {
 		$user_id = get_current_user_id();
 	}
+	$user_id = absint( $user_id );
+	
 	if ( is_user_logged_in() ) {
-		// ------------------------TEACHER ACCESS.---------------------------------//
-		$teacher_access = get_option( 'mjschool_access_right_teacher' );
-		$page_1         = 'class';
-		$data           = mjschool_get_user_role_wise_filter_access_right_array( $page_1 );
-		// ------------------------TEACHER ACCESS END.---------------------------------//
-		// ------------------------TEACHER ACCESS.---------------------------------//
+		$page_1 = 'class';
+		$data   = mjschool_get_user_role_wise_filter_access_right_array( $page_1 );
+		
 		if ( ( isset( $data['own_data'] ) && $data['own_data'] === '1' ) && mjschool_get_roles( $user_id ) === 'teacher' ) {
-			$class_id = get_user_meta( $user_id, 'c.lass_name', true );
+			$class_id = get_user_meta( $user_id, 'class_name', true );
+			
 			// Ensure $class_id is an array
 			if ( is_array( $class_id ) ) {
-				// Sanitize and format $class_id for SQL.
-				$class_id_list = implode( ',', array_map( 'intval', $class_id ) );
-				// Use the sanitized list in your query.
+				// Sanitize array values
+				$class_id = array_map( 'absint', $class_id );
+				if ( empty( $class_id ) ) {
+					return array();
+				}
+				// Use prepare with placeholders
+				$placeholders = implode( ', ', array_fill( 0, count( $class_id ), '%d' ) );
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$classdata = $wpdb->get_results( "SELECT * FROM $table_name WHERE class_id IN ($class_id_list)", ARRAY_A );
+				$classdata = $wpdb->get_results(
+					$wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id IN ({$placeholders})", $class_id ), ARRAY_A
+				);	
 				return $classdata;
 			} else {
-				// Handle the case where $class_id is not an array.
 				return array();
 			}
 		} else {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			return $classdata = $wpdb->get_results( "SELECT * FROM $table_name", ARRAY_A );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Safe direct query with no user input
+			$classdata = $wpdb->get_results( "SELECT * FROM {$table_name}", ARRAY_A );
+			
+			return $classdata;
 		}
 	} else {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		return $classdata = $wpdb->get_results( "SELECT * FROM $table_name", ARRAY_A );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Safe direct query with no user input
+		$classdata = $wpdb->get_results( "SELECT * FROM {$table_name}", ARRAY_A );
+		
+		return $classdata;
 	}
 }
 /**
@@ -2652,8 +2890,12 @@ function mjschool_get_all_class( $user_id = 0 ) {
  * @since 1.0.0
  */
 function mjschool_get_role( $user_id ) {
-	$user_meta         = get_userdata( $user_id );
-	return $user_roles = $user_meta->roles;
+	$user_id   = absint( $user_id );
+	$user_meta = get_userdata( $user_id );
+	if ( ! $user_meta ) {
+		return array();
+	}
+	return isset( $user_meta->roles ) ? $user_meta->roles : array();
 }
 /**
  * Checks attendance holiday status by date.
@@ -2665,12 +2907,15 @@ function mjschool_get_role( $user_id ) {
 function mjschool_get_attendace_status( $AttDate ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_holiday';
-	// Prepare the SQL query to prevent SQL injection.
-	$sql = $wpdb->prepare( "SELECT * FROM $tbl_name WHERE %s BETWEEN date AND end_date", $AttDate );
-	// Execute the query and return the result.
+	// Sanitize date input.
+	$AttDate = sanitize_text_field( $AttDate );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $wpdb->get_results( $sql );
+	$result = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE %s BETWEEN date AND end_date", $AttDate )
+	);
+	return $result;
 }
+
 /**
  * Checks whether user has read specific type/status.
  *
@@ -2683,9 +2928,19 @@ function mjschool_get_attendace_status( $AttDate ) {
 function mjschool_check_type_status( $user_id, $type, $type_id ) {
 	global $wpdb;
 	$tbl_mjschool_check_status = $wpdb->prefix . 'mjschool_check_status';
+	
+	// Sanitize all inputs
+	$user_id = absint( $user_id );
+	$type    = sanitize_key( $type );
+	$type_id = absint( $type_id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$rowcount = $wpdb->get_var( "SELECT COUNT(*) FROM $tbl_mjschool_check_status WHERE user_id =$user_id AND type ='$type' AND type_id=$type_id" );
-	if ( $rowcount === 0 ) {
+	$rowcount = $wpdb->get_var(
+		$wpdb->prepare(
+			"SELECT COUNT(*) FROM {$tbl_mjschool_check_status} WHERE user_id = %d AND type = %s AND type_id = %d", $user_id, $type, $type_id
+		)
+	);
+	if ( absint( $rowcount ) === 0 ) {
 		$status = 'Unread';
 	} else {
 		$status = 'Read';
@@ -2702,13 +2957,15 @@ function mjschool_check_type_status( $user_id, $type, $type_id ) {
 function mjschool_get_student_payment_list( $id ) {
 	global $wpdb;
 	$table_payment = $wpdb->prefix . 'mjschool_payment';
-	$std_id        = intval( $id );
-	// Prepare the SQL query to prevent SQL injection.
-	$sql = $wpdb->prepare( "SELECT * FROM $table_payment WHERE student_id = %d", $std_id );
-	// Execute the query and return the result.
+	$std_id        = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $wpdb->get_results( $sql );
+	$result = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_payment} WHERE student_id = %d", $std_id )
+	);
+	return $result;
 }
+
 /**
  * Retrieves all class records assigned to a teacher.
  *
@@ -2719,13 +2976,15 @@ function mjschool_get_student_payment_list( $id ) {
 function mjschool_get_all_teacher_data( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_teacher_class';
-	$teacher_id = intval( $id );
-	// Prepare the SQL query to prevent SQL injection.
-	$sql = $wpdb->prepare( "SELECT * FROM $table_name WHERE teacher_id IN (%d)", $teacher_id );
-	// Execute the query and return the result.
+	$teacher_id = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $wpdb->get_results( $sql );
+	$result = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_name} WHERE teacher_id = %d", $teacher_id )
+	);
+	return $result;
 }
+
 /**
  * Retrieves all users based on role.
  *
@@ -2734,10 +2993,12 @@ function mjschool_get_all_teacher_data( $id ) {
  * @since 1.0.0
  */
 function mjschool_get_users_data( $role ) {
-	global $wpdb;
+	$role               = sanitize_key( $role );
 	$users_of_this_role = get_users( array( 'role' => $role ) );
+	
 	return $users_of_this_role;
 }
+
 /**
  * Retrieves user data of current user filtered by specific role.
  *
@@ -2746,17 +3007,25 @@ function mjschool_get_users_data( $role ) {
  * @since 1.0.0
  */
 function mjschool_get_own_users_data( $role ) {
-	$get_current_user_id = get_current_user_id();
+	$get_current_user_id = absint( get_current_user_id() );
+	$role                = sanitize_key( $role );
+	
 	global $wpdb;
 	$capabilities = $wpdb->prefix . 'capabilities';
-	$this_role    = "'[[:<:]]" . $role . "[[:>:]]'";
-	$query        = "SELECT * FROM $wpdb->users WHERE ID = ANY (SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '$capabilities' AND meta_value RLIKE $this_role AND ID=$get_current_user_id)";
+	
+	// Use LIKE with proper escaping instead of RLIKE
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$users_of_this_role = $wpdb->get_results( $query );
+	$users_of_this_role = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT * FROM {$wpdb->users} WHERE ID = ANY ( SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key = %s AND meta_value LIKE %s AND user_id = %d )", $capabilities, '%' . $wpdb->esc_like( $role ) . '%', $get_current_user_id
+		)
+	);
 	if ( ! empty( $users_of_this_role ) ) {
 		return $users_of_this_role;
 	}
+	return array();
 }
+
 /**
  * Retrieves all users assigned to a specific role.
  *
@@ -2767,8 +3036,10 @@ function mjschool_get_own_users_data( $role ) {
  * @return array List of WP_User objects.
  */
 function mjschool_get_users_by_role( $role ) {
+	$role = sanitize_key( $role );
 	return get_users( array( 'role' => $role ) );
 }
+
 /**
  * Retrieves a list of students grouped by their class name.
  *
@@ -2778,29 +3049,40 @@ function mjschool_get_users_by_role( $role ) {
  */
 function mjschool_get_student_group_by_class() {
 	global $wpdb;
-	$role_name  = mjschool_get_user_role( get_current_user_id() );
-	$user_id    = get_current_user_id();
+	$user_id    = absint( get_current_user_id() );
+	$role_name  = mjschool_get_user_role( $user_id );
 	$school_obj = new MJSchool_Management( $user_id );
+	
 	if ( $role_name === 'teacher' ) {
 		$class_id     = get_user_meta( $user_id, 'class_name', true );
 		$student_list = $school_obj->mjschool_get_teacher_student_list( $class_id );
 	} else {
 		$student_list = mjschool_get_all_student_list( 'student' );
 	}
+	
 	$students = array();
 	if ( ! empty( $student_list ) ) {
 		foreach ( $student_list as $student_obj ) {
-			$class_id     = get_user_meta( $student_obj->ID, 'class_name', true );
-			$student      = mjschool_get_user_name_by_id( $student_obj->ID );
+			if ( ! isset( $student_obj->ID ) ) {
+				continue;
+			}
+			
+			$student_id   = absint( $student_obj->ID );
+			$class_id     = get_user_meta( $student_id, 'class_name', true );
+			$student      = mjschool_get_user_name_by_id( $student_id );
 			$student_name = str_replace( "'", '', $student );
-			if ( $class_id != '' ) {
-				$classname                                  = mjschool_get_class_name( $class_id );
-				$students[ $classname ][ $student_obj->ID ] = $student_name . '( ' . get_user_meta( $student_obj->ID, 'roll_id', true ) . ' )';
+			$roll_id      = get_user_meta( $student_id, 'roll_id', true );
+			
+			if ( $class_id !== '' ) {
+				$classname                     = mjschool_get_class_name( $class_id );
+				$students[ $classname ][ $student_id ] = $student_name . '( ' . esc_html( $roll_id ) . ' )';
 			}
 		}
 	}
+	
 	return $students;
 }
+
 /**
  * Retrieves the stored avatar/image of a user.
  *
@@ -2810,12 +3092,13 @@ function mjschool_get_student_group_by_class() {
  *
  * @return string|false Image filename or false if not found.
  */
-
 function mjschool_get_user_image( $uid ) {
-	global $wpdb;
+	$uid       = absint( $uid );
 	$usersdata = get_user_meta( $uid, 'mjschool_user_avatar', true );
+	
 	return $usersdata;
 }
+
 /**
  * Fetches driver image from the transport table based on transport ID.
  *
@@ -2828,14 +3111,15 @@ function mjschool_get_user_image( $uid ) {
 function mjschool_get_user_driver_image( $tid ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_transport';
-	$query      = "SELECT smgt_user_avatar FROM $table_name WHERE transport_id = $tid";
+	$tid        = absint( $tid );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$usersdata = $wpdb->get_results( $query, ARRAY_A );
+	$usersdata = $wpdb->get_results(
+		$wpdb->prepare( "SELECT smgt_user_avatar FROM {$table_name} WHERE transport_id = %d", $tid ), ARRAY_A
+	);
 	if ( ! empty( $usersdata ) ) {
-		foreach ( $usersdata as $data ) {
-			return $data;
-		}
+		return $usersdata[0];
 	}
+	return null;
 }
 /**
  * Creates a new WordPress user with additional metadata and triggers related email notifications.
@@ -2855,26 +3139,30 @@ function mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlenam
 	$Schoolname = get_option( 'mjschool_name' );
 	$MailSub    = get_option( 'mjschoool_student_assign_to_teacher_subject' );
 	$MailCon    = get_option( 'mjschool_student_assign_to_teacher_content' );
-	$returnval;
 	$user_id = wp_insert_user( $userdata );
-	$user    = new WP_User( $user_id );
+	if ( is_wp_error( $user_id ) ) {
+		return $user_id;
+	}
+	$user = new WP_User( $user_id );
 	// Set the primary role (only if it's not already assigned).
-	if ( ! in_array( $role, $user->roles ) ) {
+	if ( ! in_array( $role, $user->roles, true ) ) {
 		$user->set_role( $role );
 	}
-	if ( in_array( $role, array( 'student', 'parent', 'student_temp' ) ) ) {
-		if ( ! in_array( 'subscriber', $user->roles ) ) {
-			$user->add_role( 'subscriber' ); // Ensure 'subscriber' role is added.
+	if ( in_array( $role, array( 'student', 'parent', 'student_temp' ), true ) ) {
+		if ( ! in_array( 'subscriber', $user->roles, true ) ) {
+			$user->add_role( 'subscriber' );
 		}
-	} elseif ( in_array( $role, array( 'teacher', 'supportstaff' ) ) ) {
-		if ( ! in_array( 'author', $user->roles ) ) {
-			$user->add_role( 'author' ); // Ensure 'author' role is added.
+	} elseif ( in_array( $role, array( 'teacher', 'supportstaff' ), true ) ) {
+		if ( ! in_array( 'author', $user->roles, true ) ) {
+			$user->add_role( 'author' );
 		}
 	}
-	$user_name = $userdata['display_name'];
-	mjschool_append_audit_log( '' . esc_html__( 'User Added', 'mjschool' ) . '( ' . $user_name . ' )' . '', $user_id, get_current_user_id(), 'insert', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
+	$user_name = isset( $userdata['display_name'] ) ? $userdata['display_name'] : '';
+	// Sanitize $_REQUEST['page'] with isset() check
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	mjschool_append_audit_log( esc_html__( 'User Added', 'mjschool' ) . '( ' . esc_html( $user_name ) . ' )', $user_id, get_current_user_id(), 'insert', $current_page );
 	foreach ( $usermetadata as $key => $val ) {
-		$returnans = add_user_meta( $user_id, $key, $val, true );
+		add_user_meta( $user_id, $key, $val, true );
 	}
 	if ( $user_id ) {
 		$string                    = array();
@@ -2882,105 +3170,102 @@ function mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlenam
 		$string['{{school_name}}'] = get_option( 'mjschool_name' );
 		$string['{{role}}']        = $role;
 		$string['{{login_link}}']  = site_url() . '/index.php/mjschool-login-page';
-		$string['{{username}}']    = $userdata['user_email'];
-		$string['{{Password}}']    = $userdata['user_pass'];
-		$MsgContent                = get_option( 'mjschool_add_user_mail_content' );
-		$MsgSubject                = get_option( 'mjschool_add_user_mail_subject' );
-		$message                   = mjschool_string_replacement( $string, $MsgContent );
-		$MsgSubject                = mjschool_string_replacement( $string, $MsgSubject );
-		$email                     = $userdata['user_email'];
+		$string['{{username}}']    = isset( $userdata['user_email'] ) ? $userdata['user_email'] : '';
+		$string['{{Password}}']    = isset( $userdata['user_pass'] ) ? $userdata['user_pass'] : '';
+		
+		$MsgContent = get_option( 'mjschool_add_user_mail_content' );
+		$MsgSubject = get_option( 'mjschool_add_user_mail_subject' );
+		$message    = mjschool_string_replacement( $string, $MsgContent );
+		$MsgSubject = mjschool_string_replacement( $string, $MsgSubject );
+		$email      = isset( $userdata['user_email'] ) ? $userdata['user_email'] : '';
+		
 		mjschool_send_mail( $email, $MsgSubject, $message );
-		// send mail when student assin to teacher.
-		if ( $role === 'student' ) {
-			$TeacherIDs                 = mjschool_check_class_exits_in_teacher_class( $usermetadata['class_name'] );
-			$TeacherEmail               = array();
+		
+		// Send mail when student assigned to teacher
+		if ( $role === 'student' && isset( $usermetadata['class_name'] ) ) {
+			$TeacherIDs = mjschool_check_class_exits_in_teacher_class( $usermetadata['class_name'] );
+			
 			$string['{{school_name}}']  = $Schoolname;
 			$string['{{student_name}}'] = mjschool_get_display_name( $user_id );
 			$subject                    = get_option( 'mjschool_student_assign_teacher_mail_subject' );
 			$MessageContent             = get_option( 'mjschool_student_assign_teacher_mail_content' );
 			if ( ! empty( $TeacherIDs ) ) {
 				foreach ( $TeacherIDs as $teacher ) {
-					$TeacherData = get_userdata( $teacher );
-					// $TeacherData->user_email;
-					$string['{{teacher_name}}'] = mjschool_get_display_name( $TeacherData->ID );
-					$message                    = mjschool_string_replacement( $string, $MessageContent );
-					mjschool_send_mail( $TeacherData->user_email, $subject, $message );
+					$TeacherData = get_userdata( absint( $teacher ) );
+					if ( $TeacherData ) {
+						$string['{{teacher_name}}'] = mjschool_get_display_name( $TeacherData->ID );
+						$message                    = mjschool_string_replacement( $string, $MessageContent );
+						mjschool_send_mail( $TeacherData->user_email, $subject, $message );
+					}
 				}
 			}
 		}
 	}
-	$returnval = update_user_meta( $user_id, 'first_name', $firstname );
-	$returnval = update_user_meta( $user_id, 'last_name', $lastname );
+	
+	update_user_meta( $user_id, 'first_name', $firstname );
+	update_user_meta( $user_id, 'last_name', $lastname );
+	
 	if ( $role === 'parent' ) {
-		$child_list = sanitize_text_field(wp_unslash($_REQUEST['chield_list']));
+		$child_list = isset( $_REQUEST['chield_list'] ) && is_array( $_REQUEST['chield_list'] ) ? array_map( 'absint', $_REQUEST['chield_list'] ) : array();
+		
 		if ( ! empty( $child_list ) ) {
 			foreach ( $child_list as $child_id ) {
+				$child_id     = absint( $child_id );
 				$student_data = get_user_meta( $child_id, 'parent_id', true );
 				$parent_data  = get_user_meta( $user_id, 'child', true );
-				if ( $student_data ) {
-					if ( ! in_array( $user_id, $student_data ) ) {
-						$update    = array_push( $student_data, $user_id );
-						$returnans = update_user_meta( $child_id, 'parent_id', $student_data );
-						if ( $returnans ) {
-							$returnval = $returnans;
-						}
+				
+				if ( $student_data && is_array( $student_data ) ) {
+					if ( ! in_array( $user_id, $student_data, true ) ) {
+						$student_data[] = $user_id;
+						update_user_meta( $child_id, 'parent_id', $student_data );
 					}
 				} else {
-					$parant_id = array( $user_id );
-					$returnans = update_user_meta( $child_id, 'parent_id', $parant_id );
-					if ( $returnans ) {
-						$returnval = $returnans;
-					}
+					update_user_meta( $child_id, 'parent_id', array( $user_id ) );
 				}
-				if ( $parent_data ) {
-					if ( ! in_array( $child_id, $parent_data ) ) {
-						$update    = array_push( $parent_data, $child_id );
-						$returnans = update_user_meta( $user_id, 'child', $parent_data );
-						if ( $returnans ) {
-							$returnval = $returnans;
-						}
+				
+				if ( $parent_data && is_array( $parent_data ) ) {
+					if ( ! in_array( $child_id, $parent_data, true ) ) {
+						$parent_data[] = $child_id;
+						update_user_meta( $user_id, 'child', $parent_data );
 					}
 				} else {
-					$child_id  = array( $child_id );
-					$returnans = add_user_meta( $user_id, 'child', $child_id );
-					if ( $returnans ) {
-						$returnval = $returnans;
-					}
+					add_user_meta( $user_id, 'child', array( $child_id ) );
 				}
 			}
 		}
 	}
-	if ( $role === 'teacher' ) {
+	
+	if ( $role === 'teacher' && isset( $usermetadata['class_name'] ) ) {
 		$Schoolname = get_option( 'mjschool_name' );
 		$MailSub    = get_option( 'mjschoool_student_assign_to_teacher_subject' );
 		$MailCon    = get_option( 'mjschool_student_assign_to_teacher_content' );
 		if ( ! empty( $usermetadata['class_name'] ) ) {
-			$std          = array();
-			$std          = array_merge( mjschool_get_student_by_class_id( $usermetadata['class_name'] ), $std );
+			$std          = mjschool_get_student_by_class_id( $usermetadata['class_name'] );
 			$student_name = '';
 			if ( ! empty( $std ) ) {
-				foreach ( $std as $studentdata ) {
-					if ( ! empty( $studentdata ) ) {
-						foreach ( $studentdata as $key => $student ) {
-							if ( isset( $student ) && ! empty( $student ) && $userdata['user_email'] === $student->user_email ) {
-								$student_name                = mjschool_get_display_name( $student->ID );
-								$MailArr['{{school_name}}']  = $Schoolname;
-								$MailArr['{{teacher_name}}'] = mjschool_get_display_name( $user_id );
-								$MailArr['{{class_name}}']   = mjschool_get_class_name( get_user_meta( $student->ID, 'class_name', true ) );
-								$MailArr['{{student_name}}'] = $student_name;
-								$MailSub                     = mjschool_string_replacement( $MailArr, $MailSub );
-								$MailCon                     = mjschool_string_replacement( $MailArr, $MailCon );
-								mjschool_send_mail( $student->user_email, $MailSub, $MailCon );
-							}
-						}
+				foreach ( $std as $student ) {
+					if ( isset( $student->ID ) && isset( $student->user_email ) && 
+					     isset( $userdata['user_email'] ) && 
+					     $userdata['user_email'] === $student->user_email ) {
+						
+						$student_name                = mjschool_get_display_name( $student->ID );
+						$MailArr['{{school_name}}']  = $Schoolname;
+						$MailArr['{{teacher_name}}'] = mjschool_get_display_name( $user_id );
+						$MailArr['{{class_name}}']   = mjschool_get_class_name( get_user_meta( $student->ID, 'class_name', true ) );
+						$MailArr['{{student_name}}'] = $student_name;
+						$MailSub                     = mjschool_string_replacement( $MailArr, $MailSub );
+						$MailCon                     = mjschool_string_replacement( $MailArr, $MailCon );
+						
+						mjschool_send_mail( $student->user_email, $MailSub, $MailCon );
 					}
 				}
 			}
 		}
 	}
+	
 	return $user_id;
-	die();
 }
+
 /**
  * Handles file upload for a single document and stores it in the school assets directory.
  *
@@ -2990,29 +3275,62 @@ function mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlenam
  * @param string $type File type key.
  * @param string $nm   Custom name part for file.
  *
- * @return string Uploaded filename.
+ * @return string|false Uploaded filename or false on failure.
  */
 function mjschool_load_documets( $file, $type, $nm ) {
-	$check_document = mjschool_wp_check_file_type_and_ext( $_FILES[ $type ]['tmp_name'], $_FILES[ $type ]['name'] );
-	if ( $check_document ) {
-		$parts              = pathinfo( $_FILES[ $type ]['name'] );
-		$inventoryimagename = 'mjschool_' . time() . '-' . $nm . '-' . 'in' . '.' . $parts['extension'];
-		$document_dir       = WP_CONTENT_DIR;
-		$document_dir      .= '/uploads/school_assets/';
-		$document_path      = $document_dir;
-		if ( ! file_exists( $document_path ) ) {
-			mkdir( $document_path, 0777, true );
-		}
-		if ( is_uploaded_file( $_FILES[ $type ]['tmp_name'] ) ) {
-			if ( move_uploaded_file( $_FILES[ $type ]['tmp_name'], $document_path . $inventoryimagename ) ) {
-				$imagepath = $inventoryimagename;
-			}
-		}
-		return $imagepath;
-	} else {
+	// Validate file exists and no upload error
+	if ( ! isset( $_FILES[ $type ] ) || $_FILES[ $type ]['error'] !== UPLOAD_ERR_OK ) {
+		return false;
+	}
+	
+	// Sanitize all file data
+	$file_name = isset( $_FILES[ $type ]['name'] ) ? sanitize_file_name( $_FILES[ $type ]['name'] ) : '';
+	$file_tmp  = isset( $_FILES[ $type ]['tmp_name'] ) ? $_FILES[ $type ]['tmp_name'] : '';
+	$file_size = isset( $_FILES[ $type ]['size'] ) ? absint( $_FILES[ $type ]['size'] ) : 0;
+	
+	// Validate file type
+	$check_document = mjschool_wp_check_file_type_and_ext( $file_tmp, $file_name );
+	if ( ! $check_document ) {
 		wp_die( esc_html__( 'File type is not allowed.', 'mjschool' ) );
 	}
+	
+	// Get file info securely
+	$file_info = wp_check_filetype( $file_name );
+	if ( ! $file_info['ext'] || ! $file_info['type'] ) {
+		wp_die( esc_html__( 'Invalid file type.', 'mjschool' ) );
+	}
+	
+	// Sanitize custom name
+	$nm = sanitize_file_name( $nm );
+	
+	// Generate secure filename
+	$inventoryimagename = 'mjschool_' . time() . '-' . $nm . '-in.' . $file_info['ext'];
+	
+	// Validate file size (5MB max)
+	$max_size = 5 * 1024 * 1024;
+	if ( $file_size > $max_size ) {
+		wp_die( esc_html__( 'File size exceeds maximum allowed (5MB).', 'mjschool' ) );
+	}
+	
+	// Set secure upload path
+	$document_dir = WP_CONTENT_DIR . '/uploads/school_assets/';
+	if ( ! file_exists( $document_dir ) ) {
+		wp_mkdir_p( $document_dir );
+	}
+	
+	// Move file securely
+	if ( is_uploaded_file( $file_tmp ) ) {
+		$upload_path = $document_dir . $inventoryimagename;
+		if ( move_uploaded_file( $file_tmp, $upload_path ) ) {
+			// Set proper file permissions
+			chmod( $upload_path, 0644 );
+			return $inventoryimagename;
+		}
+	}
+	
+	return false;
 }
+
 /**
  * Uploads a single document using direct file array input.
  *
@@ -3022,30 +3340,66 @@ function mjschool_load_documets( $file, $type, $nm ) {
  * @param array  $type Uploaded file array (name, tmp_name).
  * @param string $nm   Custom name identifier.
  *
- * @return string Uploaded filename.
+ * @return string|false Uploaded filename or false on failure.
  */
 function mjschool_load_documets_new( $file, $type, $nm ) {
-	$check_document = mjschool_wp_check_file_type_and_ext( $type['tmp_name'], $type['name'] );
-	if ( $check_document ) {
-		$parts              = pathinfo( $type['name'] );
-		$inventoryimagename = 'mjschool_' . time() . '-' . $nm . '-' . 'in' . '.' . $parts['extension'];
-		$document_dir       = WP_CONTENT_DIR;
-		$document_dir      .= '/uploads/school_assets/';
-		$document_path      = $document_dir;
-		if ( ! file_exists( $document_path ) ) {
-			mkdir( $document_path, 0777, true );
-		}
-		$imagepath = '';
-		if ( is_uploaded_file( $type['tmp_name'] ) ) {
-			if ( move_uploaded_file( $type['tmp_name'], $document_path . $inventoryimagename ) ) {
-				$imagepath = $inventoryimagename;
-			}
-		}
-		return $imagepath;
-	} else {
+	// Validate array structure
+	if ( ! is_array( $type ) || ! isset( $type['tmp_name'] ) || ! isset( $type['name'] ) ) {
+		return false;
+	}
+	
+	// Validate upload error
+	if ( isset( $type['error'] ) && $type['error'] !== UPLOAD_ERR_OK ) {
+		return false;
+	}
+	
+	// Sanitize file data
+	$file_name = sanitize_file_name( $type['name'] );
+	$file_tmp  = $type['tmp_name'];
+	$file_size = isset( $type['size'] ) ? absint( $type['size'] ) : 0;
+	
+	// Validate file type
+	$check_document = mjschool_wp_check_file_type_and_ext( $file_tmp, $file_name );
+	if ( ! $check_document ) {
 		wp_die( esc_html__( 'File type is not allowed.', 'mjschool' ) );
 	}
+	
+	// Get file info
+	$file_info = wp_check_filetype( $file_name );
+	if ( ! $file_info['ext'] || ! $file_info['type'] ) {
+		wp_die( esc_html__( 'Invalid file type.', 'mjschool' ) );
+	}
+	
+	// Sanitize custom name
+	$nm = sanitize_file_name( $nm );
+	
+	// Generate secure filename
+	$inventoryimagename = 'mjschool_' . time() . '-' . $nm . '-in.' . $file_info['ext'];
+	
+	// Validate file size (5MB max)
+	$max_size = 5 * 1024 * 1024;
+	if ( $file_size > $max_size ) {
+		wp_die( esc_html__( 'File size exceeds maximum allowed (5MB).', 'mjschool' ) );
+	}
+	
+	// Set upload path
+	$document_dir = WP_CONTENT_DIR . '/uploads/school_assets/';
+	if ( ! file_exists( $document_dir ) ) {
+		wp_mkdir_p( $document_dir );
+	}
+	
+	// Move file
+	if ( is_uploaded_file( $file_tmp ) ) {
+		$upload_path = $document_dir . $inventoryimagename;
+		if ( move_uploaded_file( $file_tmp, $upload_path ) ) {
+			chmod( $upload_path, 0644 );
+			return $inventoryimagename;
+		}
+	}
+	
+	return false;
 }
+
 /**
  * Uploads multiple documents and generates a random filename.
  *
@@ -3055,30 +3409,63 @@ function mjschool_load_documets_new( $file, $type, $nm ) {
  * @param array  $type Uploaded file array.
  * @param string $nm   Custom identifier.
  *
- * @return string Uploaded file name.
+ * @return string|false Uploaded file name or false on failure.
  */
 function mjschool_load_multiple_documets( $file, $type, $nm ) {
-	$check_document = mjschool_wp_check_file_type_and_ext( $type['tmp_name'], $type['name'] );
-	if ( $check_document ) {
-		$parts              = pathinfo( $type['name'] );
-		$inventoryimagename = 'mjschool_' . time() . '-' . rand();
-		$document_dir       = WP_CONTENT_DIR;
-		$document_dir      .= '/uploads/school_assets/';
-		$document_path      = $document_dir;
-		if ( ! file_exists( $document_path ) ) {
-			mkdir( $document_path, 0777, true );
-		}
-		$imagepath = '';
-		if ( is_uploaded_file( $type['tmp_name'] ) ) {
-			if ( move_uploaded_file( $type['tmp_name'], $document_path . $inventoryimagename ) ) {
-				$imagepath = $inventoryimagename;
-			}
-		}
-		return $imagepath;
-	} else {
+	// Validate array structure
+	if ( ! is_array( $type ) || ! isset( $type['tmp_name'] ) || ! isset( $type['name'] ) ) {
+		return false;
+	}
+	
+	// Validate upload error
+	if ( isset( $type['error'] ) && $type['error'] !== UPLOAD_ERR_OK ) {
+		return false;
+	}
+	
+	// Sanitize file data
+	$file_name = sanitize_file_name( $type['name'] );
+	$file_tmp  = $type['tmp_name'];
+	$file_size = isset( $type['size'] ) ? absint( $type['size'] ) : 0;
+	
+	// Validate file type
+	$check_document = mjschool_wp_check_file_type_and_ext( $file_tmp, $file_name );
+	if ( ! $check_document ) {
 		wp_die( esc_html__( 'File type is not allowed.', 'mjschool' ) );
 	}
+	
+	// Get file info
+	$file_info = wp_check_filetype( $file_name );
+	if ( ! $file_info['ext'] || ! $file_info['type'] ) {
+		wp_die( esc_html__( 'Invalid file type.', 'mjschool' ) );
+	}
+	
+	// Generate secure filename with random component
+	$inventoryimagename = 'mjschool_' . time() . '-' . wp_rand( 1000, 9999 ) . '.' . $file_info['ext'];
+	
+	// Validate file size (5MB max)
+	$max_size = 5 * 1024 * 1024;
+	if ( $file_size > $max_size ) {
+		wp_die( esc_html__( 'File size exceeds maximum allowed (5MB).', 'mjschool' ) );
+	}
+	
+	// Set upload path
+	$document_dir = WP_CONTENT_DIR . '/uploads/school_assets/';
+	if ( ! file_exists( $document_dir ) ) {
+		wp_mkdir_p( $document_dir );
+	}
+	
+	// Move file
+	if ( is_uploaded_file( $file_tmp ) ) {
+		$upload_path = $document_dir . $inventoryimagename;
+		if ( move_uploaded_file( $file_tmp, $upload_path ) ) {
+			chmod( $upload_path, 0644 );
+			return $inventoryimagename;
+		}
+	}
+	
+	return false;
 }
+
 /**
  * Updates WordPress user fields and metadata.
  *
@@ -3087,16 +3474,22 @@ function mjschool_load_multiple_documets( $file, $type, $nm ) {
  * @param array $userdata     User data fields.
  * @param array $usermetadata Meta fields to update.
  *
- * @return bool True on success, false on failure.
+ * @return bool|int User ID on success, false on failure.
  */
 function mjschool_update_user_profile( $userdata, $usermetadata ) {
-	$returnans = '';
-	$user_id   = wp_update_user( $userdata );
-	foreach ( $usermetadata as $key => $val ) {
-		$returnans = update_user_meta( $user_id, $key, $val );
+	$user_id = wp_update_user( $userdata );
+	
+	if ( is_wp_error( $user_id ) ) {
+		return false;
 	}
-	return $returnans;
+	
+	foreach ( $usermetadata as $key => $val ) {
+		update_user_meta( $user_id, $key, $val );
+	}
+	
+	return $user_id;
 }
+
 /**
  * Returns a readable label for a leave duration type.
  *
@@ -3107,18 +3500,17 @@ function mjschool_update_user_profile( $userdata, $usermetadata ) {
  * @return string Human-readable leave label.
  */
 function mjschool_leave_duration_label( $id ) {
-	$lable = '';
-	if ( $id === 'half_day' ) {
-		$lable = 'Half Day';
-	}
-	if ( $id === 'full_day' ) {
-		$lable = 'Full Day';
-	}
-	if ( $id === 'more_then_day' ) {
-		$lable = 'More Then One Day';
-	}
-	return $lable;
+	$id = sanitize_key( $id );
+	
+	$labels = array(
+		'half_day'      => 'Half Day',
+		'full_day'      => 'Full Day',
+		'more_then_day' => 'More Then One Day',
+	);
+	
+	return isset( $labels[ $id ] ) ? $labels[ $id ] : '';
 }
+
 /**
  * Retrieves all plugin-specific users (student, teacher, support staff, parent).
  *
@@ -3127,19 +3519,14 @@ function mjschool_leave_duration_label( $id ) {
  * @return array List of WP_User objects.
  */
 function mjschool_get_all_user_in_plugin() {
-	$all_user     = array();
 	$student      = get_users( array( 'role' => 'student' ) );
 	$teacher      = get_users( array( 'role' => 'teacher' ) );
 	$supportstaff = get_users( array( 'role' => 'supportstaff' ) );
 	$parent       = get_users( array( 'role' => 'parent' ) );
-	$all_role     = array_merge( $student, $teacher, $supportstaff, $parent );
-	$all_user     = array( $all_role );
-	if ( ! empty( $all_user ) ) {
-		foreach ( $all_user as $key => $values ) {
-			return $values;
-		}
-	}
+	
+	return array_merge( $student, $teacher, $supportstaff, $parent );
 }
+
 /**
  * Updates an existing WordPress user with role, metadata, and validation checks.
  *
@@ -3155,35 +3542,41 @@ function mjschool_get_all_user_in_plugin() {
  * @return int Updated user ID.
  */
 function mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $role ) {
-	// Ensure the user is logged in.
+	// Ensure the user is logged in
 	if ( ! is_user_logged_in() ) {
 		wp_die( esc_html__( 'Security check failed! You are not logged in.', 'mjschool' ), 'Error', array( 'response' => 403 ) );
 	}
-	// Verify nonce for CSRF protection.
-	if ( ! isset( $_POST['security'] ) || ! wp_verify_nonce( $_POST['security'], 'mjschool_nonce' ) ) {
+	if ( ! isset( $_POST['security'] ) || 
+		! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'mjschool_nonce' ) ) {
 		wp_die( esc_html__( 'Security check failed! Invalid security token.', 'mjschool' ), 'Error', array( 'response' => 403 ) );
 	}
-	// Get current user ID and role.
+	
+	// Get current user ID and role
 	$current_user_id = get_current_user_id();
 	$current_role    = mjschool_get_user_role( $current_user_id );
-	// Prevent unauthorized role changes.
+	
+	// Prevent unauthorized role changes
 	$allowed_roles = array( 'administrator', 'management', 'supportstaff', 'teacher' );
-	if ( ! in_array( $current_role, $allowed_roles ) ) {
+	if ( ! in_array( $current_role, $allowed_roles, true ) ) {
 		wp_die( esc_html__( 'Permission denied! You do not have the required access.', 'mjschool' ), 'Error', array( 'response' => 403 ) );
 	}
-	// Prevent non-admins from assigning the 'administrator' role.
+	
+	// Prevent non-admins from assigning the 'administrator' role
 	if ( $role === 'administrator' && $current_role !== 'administrator' ) {
 		wp_die( esc_html__( 'You are not allowed to assign the administrator role.', 'mjschool' ), 'Error', array( 'response' => 403 ) );
 	}
-	// Validate user ID.
+	
+	// Validate user ID
 	if ( ! isset( $userdata['ID'] ) || ! is_numeric( $userdata['ID'] ) ) {
 		wp_die( esc_html__( 'Invalid user ID! Please check the input.', 'mjschool' ), 'Error', array( 'response' => 400 ) );
 	}
-	$returnval;
+	
 	$user_id = wp_update_user( $userdata );
-	if ( ! is_wp_error( $user_id ) ) {
+	
+	if ( ! is_wp_error( $user_id ) && isset( $userdata['user_login'] ) ) {
 		global $wpdb;
 		$new_email = sanitize_email( $userdata['user_login'] );
+		
 		// phpcs:disable
 		$wpdb->update(
 			$wpdb->users,
@@ -3194,62 +3587,88 @@ function mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename
 		);
 		// phpcs:enable
 	}
-	$users   = new WP_User( $user_id );
-	// Set the primary role (only if it's not already assigned).
-	if ( ! in_array( $role, $users->roles ) ) {
+	
+	$users = new WP_User( $user_id );
+	
+	// Set the primary role
+	if ( ! in_array( $role, $users->roles, true ) ) {
 		$users->set_role( $role );
 	}
-	if ( in_array( $role, array( 'student', 'parent', 'student_temp' ) ) ) {
-		if ( ! in_array( 'subscriber', $users->roles ) ) {
-			$users->add_role( 'subscriber' ); // Ensure 'subscriber' role is added.
+	
+	if ( in_array( $role, array( 'student', 'parent', 'student_temp' ), true ) ) {
+		if ( ! in_array( 'subscriber', $users->roles, true ) ) {
+			$users->add_role( 'subscriber' );
 		}
-	} elseif ( in_array( $role, array( 'teacher', 'supportstaff' ) ) ) {
-		if ( ! in_array( 'author', $users->roles ) ) {
-			$users->add_role( 'author' ); // Ensure 'author' role is added.
+	} elseif ( in_array( $role, array( 'teacher', 'supportstaff' ), true ) ) {
+		if ( ! in_array( 'author', $users->roles, true ) ) {
+			$users->add_role( 'author' );
 		}
 	}
-	$returnval = update_user_meta( $user_id, 'first_name', $firstname );
-	$returnval = update_user_meta( $user_id, 'last_name', $lastname );
-	$user      = $userdata['display_name'];
-	mjschool_append_audit_log( '' . esc_html__( 'User updated', 'mjschool' ) . '( ' . $user . ' )' . '', $user_id, get_current_user_id(), 'edit', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
+	
+	update_user_meta( $user_id, 'first_name', $firstname );
+	update_user_meta( $user_id, 'last_name', $lastname );
+	
+	$user = isset( $userdata['display_name'] ) ? $userdata['display_name'] : '';
+	
+	// Sanitize $_REQUEST['page'] with isset() check
+	$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+	
+	mjschool_append_audit_log(
+		esc_html__( 'User updated', 'mjschool' ) . '( ' . esc_html( $user ) . ' )',
+		$user_id,
+		get_current_user_id(),
+		'edit',
+		$current_page
+	);
+	
 	foreach ( $usermetadata as $key => $val ) {
-		$returnans = update_user_meta( $user_id, $key, $val );
-		if ( $returnans ) {
-			$returnval = $returnans;
-		}
+		update_user_meta( $user_id, $key, $val );
 	}
+	
 	if ( $role === 'parent' ) {
-		$child_list = sanitize_text_field(wp_unslash($_REQUEST['chield_list']));
-		$old_child  = get_user_meta( $user_id, 'child', true );
-		if ( ! empty( $old_child ) ) {
+		$child_list = isset( $_REQUEST['chield_list'] ) && is_array( $_REQUEST['chield_list'] )
+			? array_map( 'absint', $_REQUEST['chield_list'] )
+			: array();
+		
+		$old_child = get_user_meta( $user_id, 'child', true );
+		
+		if ( ! empty( $old_child ) && is_array( $old_child ) ) {
 			$different_insert_child = array_diff( $child_list, $old_child );
 			$different_delete_child = array_diff( $old_child, $child_list );
+			
 			if ( ! empty( $different_insert_child ) ) {
-				foreach ( $different_insert_child as $key => $child ) {
-					$parent    = array();
+				foreach ( $different_insert_child as $child ) {
+					$child     = absint( $child );
 					$parent    = get_user_meta( $child, 'parent_id', true );
 					$old_child = get_user_meta( $user_id, 'child', true );
-					array_push( $old_child, $child );
-					$update = update_user_meta( $user_id, 'child', $old_child );
+					
+					if ( is_array( $old_child ) ) {
+						$old_child[] = $child;
+						update_user_meta( $user_id, 'child', $old_child );
+					}
+					
 					if ( empty( $parent ) ) {
-						$parent1[] = $user_id;
-						update_user_meta( $child, 'parent_id', $parent1 );
-					} else {
-						array_push( $parent, $user_id );
+						update_user_meta( $child, 'parent_id', array( $user_id ) );
+					} elseif ( is_array( $parent ) ) {
+						$parent[] = $user_id;
 						update_user_meta( $child, 'parent_id', $parent );
 					}
 				}
 			}
+			
 			if ( ! empty( $different_delete_child ) ) {
 				$child     = get_user_meta( $user_id, 'child', true );
-				$childdata = array_diff( $child, $different_delete_child );
+				$childdata = is_array( $child ) ? array_diff( $child, $different_delete_child ) : array();
 				update_user_meta( $user_id, 'child', $childdata );
-				foreach ( $different_delete_child as $del_key => $del_child ) {
-					$parent = array();
-					$parent = get_user_meta( $del_child, 'parent_id', true );
-					if ( ! empty( $parent ) ) {
-						if ( in_array( $user_id, $parent ) ) {
-							unset( $parent[ array_search( $user_id, $parent ) ] );
+				
+				foreach ( $different_delete_child as $del_child ) {
+					$del_child = absint( $del_child );
+					$parent    = get_user_meta( $del_child, 'parent_id', true );
+					
+					if ( ! empty( $parent ) && is_array( $parent ) ) {
+						$key = array_search( $user_id, $parent, true );
+						if ( $key !== false ) {
+							unset( $parent[ $key ] );
 							update_user_meta( $del_child, 'parent_id', $parent );
 						}
 					}
@@ -3257,42 +3676,31 @@ function mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename
 			}
 		} elseif ( ! empty( $child_list ) ) {
 			foreach ( $child_list as $child_id ) {
+				$child_id     = absint( $child_id );
 				$student_data = get_user_meta( $child_id, 'parent_id', true );
 				$parent_data  = get_user_meta( $user_id, 'child', true );
-
-				if ( $student_data ) {
-					if ( ! in_array( $user_id, $student_data ) ) {
-						$update    = array_push( $student_data, $user_id );
-						$returnans = update_user_meta( $child_id, 'parent_id', $student_data );
-						if ( $returnans ) {
-							$returnval = $returnans;
-						}
+				
+				if ( $student_data && is_array( $student_data ) ) {
+					if ( ! in_array( $user_id, $student_data, true ) ) {
+						$student_data[] = $user_id;
+						update_user_meta( $child_id, 'parent_id', $student_data );
 					}
 				} else {
-					$parant_id = array( $user_id );
-					$returnans = add_user_meta( $child_id, 'parent_id', $parant_id );
-					if ( $returnans ) {
-						$returnval = $returnans;
-					}
+					update_user_meta( $child_id, 'parent_id', array( $user_id ) );
 				}
-				if ( $parent_data ) {
-					if ( ! in_array( $child_id, $parent_data ) ) {
-						$update    = array_push( $parent_data, $child_id );
-						$returnans = update_user_meta( $user_id, 'child', $parent_data );
-						if ( $returnans ) {
-							$returnval = $returnans;
-						}
+				
+				if ( $parent_data && is_array( $parent_data ) ) {
+					if ( ! in_array( $child_id, $parent_data, true ) ) {
+						$parent_data[] = $child_id;
+						update_user_meta( $user_id, 'child', $parent_data );
 					}
 				} else {
-					$child_id  = array( $child_id );
-					$returnans = update_user_meta( $user_id, 'child', $child_id );
-					if ( $returnans ) {
-						$returnval = $returnans;
-					}
+					update_user_meta( $user_id, 'child', array( $child_id ) );
 				}
 			}
 		}
 	}
+	
 	return $user_id;
 }
 /**
@@ -3331,6 +3739,7 @@ function mjschool_day_list_callback() {
 		'6' => 'Saturday',
 		'7' => 'Sunday',
 	);
+	
 	return $day_list;
 }
 /**
@@ -3343,8 +3752,8 @@ function mjschool_day_list_callback() {
 function mjschool_get_exam_list() {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_exam';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$exam = $wpdb->get_results( $wpdb->prepare( "SELECT *  FROM $tbl_name" ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Safe direct query with no user input
+	$exam = $wpdb->get_results( "SELECT * FROM {$tbl_name}" );
 	return $exam;
 }
 /**
@@ -3357,8 +3766,8 @@ function mjschool_get_exam_list() {
 function mjschool_get_exam_id() {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_exam';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$exam = $wpdb->get_row( $wpdb->prepare( "SELECT *  FROM $tbl_name" ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Safe direct query with no user input
+	$exam = $wpdb->get_row( "SELECT * FROM {$tbl_name}" );
 	return $exam;
 }
 /**
@@ -3373,11 +3782,13 @@ function mjschool_get_exam_id() {
 function mjschool_get_subject_by_id( $sid ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_subject';
-	$id       = intval( $sid );
+	$id       = absint( $sid );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $tbl_name where subid=%d", $id ) );
-	if ( ! empty( $subject ) ) {
-		return $subject->sub_name . '-' . $subject->subject_code . '';
+	$subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE subid = %d", $id ) );
+	
+	if ( ! empty( $subject ) && isset( $subject->sub_name ) && isset( $subject->subject_code ) ) {
+		return esc_html( $subject->sub_name ) . '-' . esc_html( $subject->subject_code );
 	} else {
 		return 'N/A';
 	}
@@ -3392,10 +3803,13 @@ function mjschool_get_subject_by_id( $sid ) {
  * @return array List of WP_User students.
  */
 function mjschool_get_student_by_class_id( $id ) {
-	global $wpdb;
-
-	$student = get_users(array( 'meta_key' => 'class_name', 'meta_value' => $id ) );
-
+	$id = sanitize_text_field( $id );
+	$student = get_users(
+		array(
+			'meta_key'   => 'class_name',
+			'meta_value' => $id,
+		)
+	);
 	return $student;
 }
 /**
@@ -3410,22 +3824,27 @@ function mjschool_get_student_by_class_id( $id ) {
  * @return int 1 if available, 0 if duplicate.
  */
 function mjschool_check_student_roll_no_exist_or_not( $r_no, $class_id, $student_id ) {
-	global $wpdb;
-
+	$r_no       = sanitize_text_field( $r_no );
+	$class_id   = sanitize_text_field( $class_id );
+	$student_id = absint( $student_id );
 	$student = get_users(
 		array(
-			'meta_query' =>
+			'meta_query' => array(
+				'relation' => 'AND',
 				array(
-					'relation' => 'AND',
-					array( 'key' => 'class_name', 'value' => $class_id),
-					array( 'key' => 'roll_id', 'value' => mjschool_strip_tags_and_stripslashes($r_no ) )
+					'key'   => 'class_name',
+					'value' => $class_id,
 				),
-			'role' => 'student'
+				array(
+					'key'   => 'roll_id',
+					'value' => mjschool_strip_tags_and_stripslashes( $r_no ),
+				),
+			),
+			'role'       => 'student',
 		)
 	);
-
-	if ( ! empty( $student ) ) {
-		if ( $student[0]->ID === $student_id ) {
+	if ( ! empty( $student ) && isset( $student[0]->ID ) ) {
+		if ( absint( $student[0]->ID ) === $student_id ) {
 			$status = 1;
 		} else {
 			$status = 0;
@@ -3433,6 +3852,7 @@ function mjschool_check_student_roll_no_exist_or_not( $r_no, $class_id, $student
 	} else {
 		$status = 1;
 	}
+	
 	return $status;
 }
 /**
@@ -3449,49 +3869,71 @@ function mjschool_check_student_roll_no_exist_or_not( $r_no, $class_id, $student
  */
 function mjschool_fail_student_list( $current_class, $next_class, $exam_id, $passing_marks ) {
 	global $wpdb;
+	
 	$table_users      = $wpdb->prefix . 'users';
 	$table_usermeta   = $wpdb->prefix . 'usermeta';
 	$table_marks      = $wpdb->prefix . 'mjschool_marks';
-	$capabilities_key = $wpdb->prefix . 'capabilities'; // Correcting the meta_key.
-	$current_class    = esc_sql( $current_class ); // Secure input.
-	$passing_marks    = (int) $passing_marks;
-	$exam_id          = (int) $exam_id;
-	$exam_obj         = new mjschool_exam();
-	$exam_data        = $exam_obj->mjschool_exam_data( $exam_id );
-	$contributions    = $exam_data->contributions;
-	$failed_students  = array();
+	$capabilities_key = $wpdb->prefix . 'capabilities';
+	
+	// Sanitize inputs
+	$current_class = sanitize_text_field( $current_class );
+	$next_class    = sanitize_text_field( $next_class );
+	$passing_marks = absint( $passing_marks );
+	$exam_id       = absint( $exam_id );
+	
+	$exam_obj      = new mjschool_exam();
+	$exam_data     = $exam_obj->mjschool_exam_data( $exam_id );
+	$contributions = isset( $exam_data->contributions ) ? $exam_data->contributions : '';
+	
+	$failed_students = array();
+	
 	if ( $contributions === 'yes' ) {
-		// Query to fetch student marks.
-		$sql = $wpdb->prepare( "SELECT u.ID, u.user_login, um.meta_value AS class_name, m.class_marks FROM $table_users AS u INNER JOIN $table_usermeta AS um ON u.ID = um.user_id INNER JOIN $table_usermeta AS cap ON u.ID = cap.user_id INNER JOIN $table_marks AS m ON u.ID = m.student_id WHERE um.meta_key = 'class_name' AND um.meta_value = %s AND cap.meta_key = %s AND cap.meta_value LIKE '%%student%%' AND m.exam_id = %d", $current_class, $capabilities_key, $exam_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$student_data = $wpdb->get_results( $sql );
-		// Process student marks.
+		$student_data = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT u.ID, u.user_login, um.meta_value AS class_name, m.class_marks 
+				FROM {$table_users} AS u 
+				INNER JOIN {$table_usermeta} AS um ON u.ID = um.user_id 
+				INNER JOIN {$table_usermeta} AS cap ON u.ID = cap.user_id 
+				INNER JOIN {$table_marks} AS m ON u.ID = m.student_id 
+				WHERE um.meta_key = 'class_name' 
+				AND um.meta_value = %s 
+				AND cap.meta_key = %s 
+				AND cap.meta_value LIKE %s 
+				AND m.exam_id = %d",
+				$current_class,
+				$capabilities_key,
+				'%' . $wpdb->esc_like( 'student' ) . '%',
+				$exam_id
+			)
+		);
 		foreach ( $student_data as $student ) {
+			if ( ! isset( $student->class_marks ) || ! isset( $student->ID ) ) {
+				continue;
+			}
+			
 			$marks = json_decode( $student->class_marks, true );
-			// Ensure JSON decoding was successful.
+			
 			if ( is_array( $marks ) && json_last_error() === JSON_ERROR_NONE ) {
 				$total_marks = array_sum( $marks );
-				// Add student to failed list if below passing marks.
+				
 				if ( $total_marks < $passing_marks ) {
-					$failed_students[] = $student->ID;
+					$failed_students[] = absint( $student->ID );
 				}
 			}
 		}
 	} else {
-		// Query to directly fetch students who failed.
-		$sql = $wpdb->prepare( "SELECT u.ID FROM $table_users AS u INNER JOIN $table_usermeta AS um ON u.ID = um.user_id INNER JOIN $table_usermeta AS cap ON u.ID = cap.user_id INNER JOIN $table_marks AS m ON u.ID = m.student_id WHERE um.meta_key = 'class_name' AND um.meta_value = %s AND cap.meta_key = %s AND cap.meta_value LIKE '%%student%%' AND m.marks < %d AND m.exam_id = %d", $current_class, $capabilities_key, $passing_marks, $exam_id );
-		// Store failed student IDs.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$failed_students = $wpdb->get_col( $sql );
+		$failed_students = $wpdb->get_col(
+			$wpdb->prepare( "SELECT u.ID FROM {$table_users} AS u INNER JOIN {$table_usermeta} AS um ON u.ID = um.user_id INNER JOIN {$table_usermeta} AS cap ON u.ID = cap.user_id INNER JOIN {$table_marks} AS m ON u.ID = m.student_id WHERE um.meta_key = 'class_name' AND um.meta_value = %s AND cap.meta_key = %s AND cap.meta_value LIKE %s AND m.marks < %d AND m.exam_id = %d", $current_class, $capabilities_key, '%' . $wpdb->esc_like( 'student' ) . '%', $passing_marks, $exam_id )
+		);
+		// Sanitize IDs
+		$failed_students = array_map( 'absint', $failed_students );
 	}
-	// Output failed student list.
 	return $failed_students;
 }
 /**
  * Migrate students from current class to next class based on exam result.
- *
- * Updates usermeta `class_name` and logs migration details including
- * passed and failed students.
  *
  * @since 1.0.0
  *
@@ -3503,51 +3945,86 @@ function mjschool_fail_student_list( $current_class, $next_class, $exam_id, $pas
  */
 function mjschool_migration( $current_class, $next_class, $exam_id, $fail_list, $passing_marks ) {
 	global $wpdb;
+	
+	// Sanitize inputs
+	$current_class = sanitize_text_field( $current_class );
+	$next_class    = sanitize_text_field( $next_class );
+	$exam_id       = absint( $exam_id );
+	$passing_marks = absint( $passing_marks );
+	$fail_list     = is_array( $fail_list ) ? array_map( 'absint', $fail_list ) : array();
+	
 	$exlude_id = mjschool_approve_student_list();
-
-	$studentdata = get_users(array( 'role' => 'student', 'meta_key' => 'class_name', 'meta_value' => $current_class, 'exclude' => $exlude_id ) );
-
-	$table_usermeta     = $wpdb->prefix . 'usermeta';
+	
+	$studentdata = get_users(
+		array(
+			'role'       => 'student',
+			'meta_key'   => 'class_name',
+			'meta_value' => $current_class,
+			'exclude'    => $exlude_id,
+		)
+	);
+	
+	$table_usermeta         = $wpdb->prefix . 'usermeta';
 	$mjschool_migration_log = $wpdb->prefix . 'mjschool_migration_log';
-	$ip_address         = getHostByName( getHostName() );
+	$ip_address             = sanitize_text_field( gethostbyname( gethostname() ) );
+	
 	if ( ! empty( $studentdata ) ) {
 		$pass_students = array();
 		$fail_students = array();
+		
 		foreach ( $studentdata as $retrieved_data ) {
-			if ( ! in_array( $retrieved_data->ID, $fail_list ) ) {
-				$sql_update = "UPDATE $table_usermeta set meta_value = '$next_class' where user_id = $retrieved_data->ID AND meta_value = '$current_class' AND meta_key = 'class_name'";
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$student         = $wpdb->query( $sql_update );
-				$pass_students[] =array(
-					'student_id' => $retrieved_data->ID,
+			if ( ! isset( $retrieved_data->ID ) ) {
+				continue;
+			}
+			
+			$student_id = absint( $retrieved_data->ID );
+			
+			if ( ! in_array( $student_id, $fail_list, true ) ) {
+				$result = $wpdb->update(
+					$table_usermeta,
+					array( 'meta_value' => $next_class ),
+					array(
+						'user_id'    => $student_id,
+						'meta_value' => $current_class,
+						'meta_key'   => 'class_name',
+					),
+					array( '%s' ),
+					array( '%d', '%s', '%s' )
+				);
+				
+				$pass_students[] = array(
+					'student_id' => $student_id,
 					'reason'     => 'Pass',
 				);
 			} else {
-				$fail_students[] =array(
-					'student_id' => $retrieved_data->ID,
+				$fail_students[] = array(
+					'student_id' => $student_id,
 					'reason'     => 'Failed',
 				);
 			}
 		}
-		$migration_log['ip_address']     = $ip_address;
-		$migration_log['created_by']     = get_current_user_id();
-		$migration_log['current_class']  = $current_class;
-		$migration_log['next_class']     = $next_class;
-		$migration_log['exam_name']      = $exam_id;
-		$migration_log['pass_mark']      = $passing_marks;
-		$migration_log['created_at']     = date( 'Y-m-d' );
-		$migration_log['date_time']      = date( 'Y-m-d H:i:s' );
-		$migration_log['deleted_status'] = 0;
-		$migration_log['pass_students']  = json_encode( $pass_students );
-		$migration_log['fail_students']  = json_encode( $fail_students );
+		
+		$migration_log = array(
+			'ip_address'     => $ip_address,
+			'created_by'     => get_current_user_id(),
+			'current_class'  => $current_class,
+			'next_class'     => $next_class,
+			'exam_name'      => $exam_id,
+			'pass_mark'      => $passing_marks,
+			'created_at'     => current_time( 'Y-m-d' ),
+			'date_time'      => current_time( 'Y-m-d H:i:s' ),
+			'deleted_status' => 0,
+			'pass_students'  => wp_json_encode( $pass_students ),
+			'fail_students'  => wp_json_encode( $fail_students ),
+		);
+		
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->insert( $mjschool_migration_log, $migration_log );
+		$wpdb->insert( $mjschool_migration_log, $migration_log );
 	}
 }
+
 /**
  * Migrate students from current class to next class without exam evaluation.
- *
- * Updates usermeta `class_name` and stores the migration log.
  *
  * @since 1.0.0
  *
@@ -3556,46 +4033,67 @@ function mjschool_migration( $current_class, $next_class, $exam_id, $fail_list, 
  */
 function mjschool_migration_without_exam( $current_class, $next_class ) {
 	global $wpdb;
-	$ip_address = getHostByName( getHostName() );
+	// Sanitize inputs.
+	$current_class = sanitize_text_field( $current_class );
+	$next_class    = sanitize_text_field( $next_class );
+	$ip_address = sanitize_text_field( gethostbyname( gethostname() ) );
 	$exlude_id  = mjschool_approve_student_list();
-
-	$studentdata = get_users(array( 'role' => 'student', 'meta_key' => 'class_name', 'meta_value' => $current_class, 'exclude' => $exlude_id ) );
-
-	$table_usermeta     = $wpdb->prefix . 'usermeta';
+	$studentdata = get_users(
+		array(
+			'role'       => 'student',
+			'meta_key'   => 'class_name',
+			'meta_value' => $current_class,
+			'exclude'    => $exlude_id,
+		)
+	);
+	$table_usermeta         = $wpdb->prefix . 'usermeta';
 	$mjschool_migration_log = $wpdb->prefix . 'mjschool_migration_log';
 	if ( ! empty( $studentdata ) ) {
 		$pass_students = array();
 		$fail_students = array();
 		foreach ( $studentdata as $retrieved_data ) {
-			$sql_update = "UPDATE $table_usermeta set meta_value = '$next_class' where user_id = $retrieved_data->ID AND meta_value = '$current_class' AND meta_key = 'class_name'";
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$student = $wpdb->query( $sql_update );
-			$student = true;
-			if ( $student ) {
-				$pass_students[] =array(
-					'student_id' => $retrieved_data->ID,
-					'reason'     => 'Something went wrong',
+			if ( ! isset( $retrieved_data->ID ) ) {
+				continue;
+			}
+			$student_id = absint( $retrieved_data->ID );
+			$student = $wpdb->update(
+				$table_usermeta,
+				array( 'meta_value' => $next_class ),
+				array(
+					'user_id'    => $student_id,
+					'meta_value' => $current_class,
+					'meta_key'   => 'class_name',
+				),
+				array( '%s' ),
+				array( '%d', '%s', '%s' )
+			);
+			if ( $student !== false ) {
+				$pass_students[] = array(
+					'student_id' => $student_id,
+					'reason'     => 'Migrated without exam',
 				);
 			} else {
 				$fail_students[] = array(
-					'student_id' => $retrieved_data->ID,
-					'reason'     => 'Something went wrong',
+					'student_id' => $student_id,
+					'reason'     => 'Migration failed',
 				);
 			}
 		}
-		$migration_log['ip_address']     = $ip_address;
-		$migration_log['created_by']     = get_current_user_id();
-		$migration_log['current_class']  = $current_class;
-		$migration_log['next_class']     = $next_class;
-		$migration_log['exam_name']      = '';
-		$migration_log['pass_mark']      = '';
-		$migration_log['created_at']     = date( 'Y-m-d' );
-		$migration_log['date_time']      = date( 'Y-m-d H:i:s' );
-		$migration_log['deleted_status'] = 0;
-		$migration_log['pass_students']  = json_encode( $pass_students );
-		$migration_log['fail_students']  = json_encode( $fail_students );
+		$migration_log = array(
+			'ip_address'     => $ip_address,
+			'created_by'     => get_current_user_id(),
+			'current_class'  => $current_class,
+			'next_class'     => $next_class,
+			'exam_name'      => '',
+			'pass_mark'      => '',
+			'created_at'     => current_time( 'Y-m-d' ),
+			'date_time'      => current_time( 'Y-m-d H:i:s' ),
+			'deleted_status' => 0,
+			'pass_students'  => wp_json_encode( $pass_students ),
+			'fail_students'  => wp_json_encode( $fail_students ),
+		);
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->insert( $mjschool_migration_log, $migration_log );
+		$wpdb->insert( $mjschool_migration_log, $migration_log );
 	}
 }
 /**
@@ -3609,10 +4107,14 @@ function mjschool_migration_without_exam( $current_class, $next_class ) {
 function mjschool_count_inbox_item( $id ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_message';
+	$id       = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$inbox = $wpdb->get_results( "SELECT *  FROM $tbl_name where receiver = $id" );
+	$inbox = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE receiver = %d", $id )
+	);
 	return $inbox;
 }
+
 /**
  * Count unread messages for a user from both main messages and replies.
  *
@@ -3625,10 +4127,15 @@ function mjschool_count_unread_message( $user_id ) {
 	global $wpdb;
 	$tbl_name                 = $wpdb->prefix . 'mjschool_message';
 	$mjschool_message_replies = $wpdb->prefix . 'mjschool_message_replies';
+	$user_id                  = absint( $user_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$inbox = $wpdb->get_results( "SELECT *  FROM $tbl_name where ((receiver = $user_id) AND (sender != $user_id ) ) AND (status=0)" );
+	$inbox = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE receiver = %d AND sender != %d AND status = %d", $user_id, $user_id, 0 )
+	);
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$reply_msg           = $wpdb->get_results( "SELECT *  FROM $mjschool_message_replies where (receiver_id = $user_id) AND ((status=0) OR (status IS NULL ) )" );
+	$reply_msg = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$mjschool_message_replies} WHERE receiver_id = %d AND (status = %d OR status IS NULL)", $user_id, 0 )
+	);
 	$count_total_message = count( $inbox ) + count( $reply_msg );
 	return $count_total_message;
 }
@@ -3644,16 +4151,15 @@ function mjschool_count_unread_message_current_user( $post_id ) {
 	global $wpdb;
 	$tbl_name_message      = $wpdb->prefix . 'mjschool_message';
 	$wpcrm_message_replies = $wpdb->prefix . 'mjschool_message_replies';
-	// Use $wpdb->prepare for better security.
+	$post_id               = absint( $post_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$inbox = $wpdb->get_results(
-		$wpdb->prepare( "SELECT * FROM $tbl_name_message WHERE (post_id = %d) AND (status = %s)", $post_id, 0 )
+		$wpdb->prepare( "SELECT * FROM {$tbl_name_message} WHERE post_id = %d AND status = %d", $post_id, 0 )
 	);
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$reply_msg = $wpdb->get_results(
-		$wpdb->prepare( "SELECT * FROM $wpcrm_message_replies WHERE (message_id = %d) AND ((status = %s) OR (status IS NULL ) )", $post_id, 0 )
+		$wpdb->prepare( "SELECT * FROM {$wpcrm_message_replies} WHERE message_id = %d AND (status = %d OR status IS NULL)", $post_id, 0 )
 	);
-	// Use count() directly on the result sets instead of creating separate variables.
 	$count_total_message = count( $inbox ) + count( $reply_msg );
 	return $count_total_message;
 }
@@ -3669,10 +4175,20 @@ function mjschool_count_unread_message_current_user( $post_id ) {
  */
 function mjschool_get_inbox_message( $user_id, $p = 0, $lpm1 = 10 ) {
 	global $wpdb;
+	
 	$tbl_name                 = $wpdb->prefix . 'mjschool_message';
 	$tbl_name_message_replies = $wpdb->prefix . 'mjschool_message_replies';
+	
+	// Sanitize all inputs
+	$user_id = absint( $user_id );
+	$p       = absint( $p );
+	$lpm1    = absint( $lpm1 );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$inbox = $wpdb->get_results( "SELECT DISTINCT b.message_id, a.* FROM $tbl_name a LEFT JOIN $tbl_name_message_replies b ON a.post_id = b.message_id WHERE ( a.receiver = $user_id OR b.receiver_id =$user_id) AND (a.receiver = $user_id OR a.sender = $user_id) ORDER BY date DESC limit $p , $lpm1" );
+	$inbox = $wpdb->get_results(
+		$wpdb->prepare( "SELECT DISTINCT b.message_id, a.* FROM {$tbl_name} a LEFT JOIN {$tbl_name_message_replies} b ON a.post_id = b.message_id WHERE (a.receiver = %d OR b.receiver_id = %d) AND (a.receiver = %d OR a.sender = %d) ORDER BY date DESC LIMIT %d, %d", $user_id, $user_id, $user_id, $user_id, $p, $lpm1 )
+	);
+	
 	return $inbox;
 }
 /**
@@ -3686,16 +4202,18 @@ function mjschool_get_inbox_message( $user_id, $p = 0, $lpm1 = 10 ) {
  * @return array        Sent messages.
  */
 function mjschool_get_send_message( $user_id, $max = 10, $offset = 0 ) {
-	global $wpdb;
-	$tbl_name               = $wpdb->prefix . 'mjschool_message';
-	$class_obj              = new MJSchool_Management( $user_id );
-	$args['post_type']      = 'message';
-	$args['posts_per_page'] = $max;
-	$args['offset']         = $offset;
-	$args['post_status']    = 'public';
-	$args['author']         = $user_id;
-	$q                      = new WP_Query();
-	$sent_message           = $q->query( $args );
+	$user_id = absint( $user_id );
+	$max     = absint( $max );
+	$offset  = absint( $offset );
+	$args = array(
+		'post_type'      => 'message',
+		'posts_per_page' => $max,
+		'offset'         => $offset,
+		'post_status'    => 'publish',
+		'author'         => $user_id,
+	);
+	$q            = new WP_Query();
+	$sent_message = $q->query( $args );
 	return $sent_message;
 }
 /**
@@ -3709,9 +4227,13 @@ function mjschool_get_send_message( $user_id, $max = 10, $offset = 0 ) {
 function mjschool_count_send_item( $id ) {
 	global $wpdb;
 	$posts = $wpdb->prefix . 'posts';
+	$id    = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$total = $wpdb->get_var( 'SELECT Count(*) FROM ' . $posts . " Where post_type = 'message' AND post_author = $id" );
-	return $total;
+	$total = $wpdb->get_var(
+		$wpdb->prepare( "SELECT COUNT(*) FROM {$posts} WHERE post_type = %s AND post_author = %d", 'message', $id )
+	);
+	
+	return absint( $total );
 }
 /**
  * Generate pagination HTML for message listing.
@@ -3726,25 +4248,43 @@ function mjschool_count_send_item( $id ) {
  * @return string         Pagination HTML.
  */
 function mjschool_pagination( $totalposts, $p, $lpm1, $prev, $next ) {
-	$adjacents  = 1;
-	$page_order = '';
+	$totalposts = absint( $totalposts );
+	$p          = absint( $p );
+	$lpm1       = absint( $lpm1 );
+	$prev       = absint( $prev );
+	$next       = absint( $next );
 	$pagination = '';
 	$form_id    = 1;
+	$page_order = '';
 	if ( isset( $_REQUEST['form_id'] ) ) {
-		$form_id = sanitize_text_field(wp_unslash($_REQUEST['form_id']));
+		$form_id = absint( $_REQUEST['form_id'] );
 	}
-	if ( isset( $_GET['orderby'] ) ) {
-		$page_order = '&orderby=' . sanitize_text_field(wp_unslash($_GET['orderby'])) . '&order=' . sanitize_text_field(wp_unslash($_GET['order']));
+	if ( isset( $_GET['orderby'] ) && isset( $_GET['order'] ) ) {
+		$orderby    = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
+		$order      = sanitize_text_field( wp_unslash( $_GET['order'] ) );
+		$page_order = '&orderby=' . esc_attr( $orderby ) . '&order=' . esc_attr( $order );
 	}
 	if ( $totalposts > 1 ) {
 		$pagination .= '<div class="btn-group">';
 		if ( $p > 1 ) {
-			$pagination .= "<a href=\"?page=mjschool_message&tab=sentbox&form_id=$form_id&pg=$prev$page_order\" class=\"btn btn-default\"><i class=\"fa fa-angle-left\"></i></a> ";
+			$url         = esc_url( add_query_arg( array(
+				'page'    => 'mjschool_message',
+				'tab'     => 'sentbox',
+				'form_id' => $form_id,
+				'pg'      => $prev,
+			) ) );
+			$pagination .= '<a href="' . $url . esc_attr( $page_order ) . '" class="btn btn-default"><i class="fa fa-angle-left"></i></a> ';
 		} else {
 			$pagination .= '<a class="btn btn-default disabled"><i class="fa fa-angle-left"></i></a> ';
 		}
 		if ( $p < $totalposts ) {
-			$pagination .= " <a href=\"?page=mjschool_message&tab=sentbox&form_id=$form_id&pg=$next\" class=\"btn btn-default next-page\"><i class=\"fa fa-angle-right\"></i></a>";
+			$url         = esc_url( add_query_arg( array(
+				'page'    => 'mjschool_message',
+				'tab'     => 'sentbox',
+				'form_id' => $form_id,
+				'pg'      => $next,
+			) ) );
+			$pagination .= ' <a href="' . $url . '" class="btn btn-default next-page"><i class="fa fa-angle-right"></i></a>';
 		} else {
 			$pagination .= ' <a class="btn btn-default disabled"><i class="fa fa-angle-right"></i></a>';
 		}
@@ -3753,7 +4293,7 @@ function mjschool_pagination( $totalposts, $p, $lpm1, $prev, $next ) {
 	return $pagination;
 }
 /**
- * Generate pagination HTML for message listing.
+ * Generate pagination HTML for frontend sentbox.
  *
  * @since 1.0.0
  *
@@ -3765,25 +4305,43 @@ function mjschool_pagination( $totalposts, $p, $lpm1, $prev, $next ) {
  * @return string         Pagination HTML.
  */
 function mjschool_frontend_sentbox_pagination( $totalposts, $p, $lpm1, $prev, $next ) {
-	$adjacents  = 1;
-	$page_order = '';
+	$totalposts = absint( $totalposts );
+	$p          = absint( $p );
+	$lpm1       = absint( $lpm1 );
+	$prev       = absint( $prev );
+	$next       = absint( $next );
 	$pagination = '';
 	$form_id    = 1;
+	$page_order = '';
 	if ( isset( $_REQUEST['form_id'] ) ) {
-		$form_id = sanitize_text_field(wp_unslash($_REQUEST['form_id']));
+		$form_id = absint( $_REQUEST['form_id'] );
 	}
-	if ( isset( $_GET['orderby'] ) ) {
-		$page_order = '&orderby=' . sanitize_text_field(wp_unslash($_GET['orderby'])) . '&order=' . sanitize_text_field(wp_unslash($_GET['order']));
+	if ( isset( $_GET['orderby'] ) && isset( $_GET['order'] ) ) {
+		$orderby    = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
+		$order      = sanitize_text_field( wp_unslash( $_GET['order'] ) );
+		$page_order = '&orderby=' . esc_attr( $orderby ) . '&order=' . esc_attr( $order );
 	}
 	if ( $totalposts > 1 ) {
 		$pagination .= '<div class="btn-group">';
 		if ( $p > 1 ) {
-			$pagination .= "<a href=\"?dashboard=mjschool_user&page=message&tab=sentbox&pg=$prev$page_order\" class=\"btn btn-default\"><i class=\"fa fa-angle-left\"></i></a> ";
+			$url         = esc_url( add_query_arg( array(
+				'dashboard' => 'mjschool_user',
+				'page'      => 'message',
+				'tab'       => 'sentbox',
+				'pg'        => $prev,
+			) ) );
+			$pagination .= '<a href="' . $url . esc_attr( $page_order ) . '" class="btn btn-default"><i class="fa fa-angle-left"></i></a> ';
 		} else {
 			$pagination .= '<a class="btn btn-default disabled"><i class="fa fa-angle-left"></i></a> ';
 		}
 		if ( $p < $totalposts ) {
-			$pagination .= " <a href=\"?dashboard=mjschool_user&page=message&tab=sentbox&pg=$next\" class=\"btn btn-default next-page\"><i class=\"fa fa-angle-right\"></i></a>";
+			$url         = esc_url( add_query_arg( array(
+				'dashboard' => 'mjschool_user',
+				'page'      => 'message',
+				'tab'       => 'sentbox',
+				'pg'        => $next,
+			) ) );
+			$pagination .= ' <a href="' . $url . '" class="btn btn-default next-page"><i class="fa fa-angle-right"></i></a>';
 		} else {
 			$pagination .= ' <a class="btn btn-default disabled"><i class="fa fa-angle-right"></i></a>';
 		}
@@ -3792,7 +4350,7 @@ function mjschool_frontend_sentbox_pagination( $totalposts, $p, $lpm1, $prev, $n
 	return $pagination;
 }
 /**
- * Generate pagination HTML for message listing.
+ * Generate pagination HTML for inbox.
  *
  * @since 1.0.0
  *
@@ -3804,25 +4362,43 @@ function mjschool_frontend_sentbox_pagination( $totalposts, $p, $lpm1, $prev, $n
  * @return string         Pagination HTML.
  */
 function mjschool_inbox_pagination( $totalposts, $p, $lpm1, $prev, $next ) {
-	$adjacents  = 1;
-	$page_order = '';
+	$totalposts = absint( $totalposts );
+	$p          = absint( $p );
+	$lpm1       = absint( $lpm1 );
+	$prev       = absint( $prev );
+	$next       = absint( $next );
 	$pagination = '';
 	$form_id    = 1;
+	$page_order = '';
 	if ( isset( $_REQUEST['form_id'] ) ) {
-		$form_id = sanitize_text_field(wp_unslash($_REQUEST['form_id']));
+		$form_id = absint( $_REQUEST['form_id'] );
 	}
-	if ( isset( $_GET['orderby'] ) ) {
-		$page_order = '&orderby=' . sanitize_text_field(wp_unslash($_GET['orderby'])) . '&order=' . sanitize_text_field(wp_unslash($_GET['order']));
+	if ( isset( $_GET['orderby'] ) && isset( $_GET['order'] ) ) {
+		$orderby    = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
+		$order      = sanitize_text_field( wp_unslash( $_GET['order'] ) );
+		$page_order = '&orderby=' . esc_attr( $orderby ) . '&order=' . esc_attr( $order );
 	}
 	if ( $totalposts > 1 ) {
 		$pagination .= '<div class="btn-group">';
 		if ( $p > 1 ) {
-			$pagination .= "<a href=\"?dashboard=mjschool_user&page=message&tab=inbox&pg=$prev\" class=\"btn btn-default\"><i class=\"fa fa-angle-left\"></i></a> ";
+			$url         = esc_url( add_query_arg( array(
+				'dashboard' => 'mjschool_user',
+				'page'      => 'message',
+				'tab'       => 'inbox',
+				'pg'        => $prev,
+			) ) );
+			$pagination .= '<a href="' . $url . '" class="btn btn-default"><i class="fa fa-angle-left"></i></a> ';
 		} else {
 			$pagination .= '<a class="btn btn-default disabled"><i class="fa fa-angle-left"></i></a> ';
 		}
 		if ( $p < $totalposts ) {
-			$pagination .= " <a href=\"?dashboard=mjschool_user&page=message&tab=inbox&pg=$next\" class=\"btn btn-default next-page\"><i class=\"fa fa-angle-right\"></i></a>";
+			$url         = esc_url( add_query_arg( array(
+				'dashboard' => 'mjschool_user',
+				'page'      => 'message',
+				'tab'       => 'inbox',
+				'pg'        => $next,
+			) ) );
+			$pagination .= ' <a href="' . $url . '" class="btn btn-default next-page"><i class="fa fa-angle-right"></i></a>';
 		} else {
 			$pagination .= ' <a class="btn btn-default disabled"><i class="fa fa-angle-right"></i></a>';
 		}
@@ -3830,6 +4406,7 @@ function mjschool_inbox_pagination( $totalposts, $p, $lpm1, $prev, $next ) {
 	}
 	return $pagination;
 }
+
 /**
  * Retrieve a single message by message ID.
  *
@@ -3840,11 +4417,18 @@ function mjschool_inbox_pagination( $totalposts, $p, $lpm1, $prev, $next ) {
  */
 function mjschool_get_message_by_id( $id ) {
 	global $wpdb;
+	
 	$table_name = $wpdb->prefix . 'mjschool_message';
-	$qry        = $wpdb->prepare( "SELECT * FROM $table_name WHERE message_id= %d", $id );
+	$id         = absint( $id );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $retrieve_subject = $wpdb->get_row( $qry );
+	$retrieve_subject = $wpdb->get_row(
+		$wpdb->prepare( "SELECT * FROM {$table_name} WHERE message_id = %d", $id )
+	);
+	
+	return $retrieve_subject;
 }
+
 /**
  * Handle login failure and redirect user with error message.
  *
@@ -3853,27 +4437,30 @@ function mjschool_get_message_by_id( $id ) {
  * @param WP_User|null $user User object or null.
  */
 function mjschool_login_failed( $user ) {
-	// check what page the login attempt is coming from.
 	$referrer = isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '';
-	$curr_args      = array(
+	
+	$curr_args = array(
 		'page_id' => get_option( 'mjschool_login_page' ),
 		'login'   => 'failed',
 	);
+	
 	$referrer_faild = add_query_arg( $curr_args, get_permalink( get_option( 'mjschool_login_page' ) ) );
-	// check that were not on the default login page.
-	if ( ! empty( $referrer ) && ! strstr( $referrer, 'wp-login' ) && ! strstr( $referrer, 'wp-admin' ) && $user != null ) {
-		// make sure we don't already have a failed login attempt.
+	
+	if ( ! empty( $referrer ) && 
+	     ! strstr( $referrer, 'wp-login' ) && 
+	     ! strstr( $referrer, 'wp-admin' ) && 
+	     $user !== null ) {
+		
 		if ( ! strstr( $referrer, '&login=failed' ) ) {
-			// Redirect to the login page and append a querystring of login failed.
-			wp_redirect( $referrer_faild );
-			die();
+			wp_safe_redirect( $referrer_faild );
+			exit;
 		} else {
-			wp_redirect( $referrer );
-			die();
+			wp_safe_redirect( $referrer );
+			exit;
 		}
-		die();
 	}
 }
+
 /**
  * Handle login attempts with empty fields and redirect with proper error.
  *
@@ -3882,26 +4469,32 @@ function mjschool_login_failed( $user ) {
  * @param WP_User|null $user User object or null.
  */
 function mjschool_custom_blank_login( $user ) {
-	// Check what page the login attempt is coming from.
 	$referrer = isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '';
 	$error    = false;
-	if ( sanitize_text_field(wp_unslash($_POST['log'])) === '' || sanitize_text_field(wp_unslash($_POST['pwd'])) === '' ) {
+	
+	// Check for empty credentials with isset() checks
+	$log = isset( $_POST['log'] ) ? sanitize_text_field( wp_unslash( $_POST['log'] ) ) : '';
+	$pwd = isset( $_POST['pwd'] ) ? sanitize_text_field( wp_unslash( $_POST['pwd'] ) ) : '';
+	
+	if ( $log === '' || $pwd === '' ) {
 		$error = true;
 	}
-	// Check that were not on the default login page.
-	if ( ! empty( $referrer ) && ! strstr( $referrer, 'wp-login' ) && ! strstr( $referrer, 'wp-admin' ) && $error ) {
-		// Make sure we don't already have a failed login attempt.
+	
+	if ( ! empty( $referrer ) && 
+	     ! strstr( $referrer, 'wp-login' ) && 
+	     ! strstr( $referrer, 'wp-admin' ) && 
+	     $error ) {
+		
 		if ( ! strstr( $referrer, '&login=failed' ) ) {
-			// Redirect to the login page and append a querystring of login failed.
-			wp_redirect( $referrer . '&login=failed' );
-			die();
+			wp_safe_redirect( $referrer . '&login=failed' );
+			exit;
 		} else {
-			wp_redirect( site_url() );
-			die();
+			wp_safe_redirect( site_url() );
+			exit;
 		}
-		die();
 	}
 }
+
 /**
  * Add custom nonce field to WordPress login form for security.
  *
@@ -3911,23 +4504,17 @@ function mjschool_custom_blank_login( $user ) {
  * @return string           Modified form HTML.
  */
 function mjschool_add_nonce_to_wp_login_form( $form_html ) {
-	// Generate the nonce field.
-	$nonce_field = '<input type="hidden" name="custom_login_form_nonce_field" value="' . wp_create_nonce( 'custom_login_form_nonce' ) . '" />';
-	// Append the nonce to the middle of the form.
+	$nonce_field = '<input type="hidden" name="custom_login_form_nonce_field" value="' . esc_attr( wp_create_nonce( 'custom_login_form_nonce' ) ) . '" />';
 	return $form_html . $nonce_field;
 }
 add_filter( 'login_form_middle', 'mjschool_add_nonce_to_wp_login_form' );
 /**
  * Render custom styled login form and handle all login-related UI.
  *
- * Adds additional HTML, theme-based styling and error messages.
- *
  * @since 1.0.0
  */
 function mjschool_login_link() {
-
 	wp_enqueue_style( 'mjschool-fix-theme-css', plugins_url( '/assets/css/theme/mjschool-fix-login.css', __FILE__ ) );
-
 	$theme_name = get_template();
 	if ( $theme_name === 'Divi' ) {
 		wp_enqueue_style( 'mjschool-divi-theme-css', plugins_url( '/assets/css/theme/mjschool-divi.css', __FILE__ ) );
@@ -3935,29 +4522,27 @@ function mjschool_login_link() {
 	if ( $theme_name === 'Twenty Twenty-Four' || $theme_name === 'Twenty Twenty-Five' ) {
 		wp_enqueue_style( 'mjschool-theme-css', plugins_url( '/assets/css/theme/mjschool-twenty-twenty-four-five.css', __FILE__ ) );
 	}
-
 	if ( is_rtl() ) {
 		wp_enqueue_style( 'mjschool-theme-rtl-css', plugins_url( '/assets/css/theme/mjschool-theme-rtl.css', __FILE__ ) );
 	}
-	$args = array( 'redirect' => site_url() );
-	if ( isset( $_GET['login'] ) && sanitize_text_field(wp_unslash($_GET['login'])) === 'failed' ) {
-		?>
-		<div id="login-error " class="mjschool_login_error">
-			<p class="mjschool-para-margin">Login failed: You have entered an incorrect Username or password, please try again.</p>
-		</div>
-		<?php
-	}
-	if ( isset( $_GET['login'] ) && sanitize_text_field(wp_unslash($_GET['login'])) === 'empty' ) {
-		?>
-		<div id="login-error" class="login-error mjschool_login_error" >
-			<p class="mjschool-para-margin"> <?php esc_html_e( 'Login Failed: Username and/or Password is empty, please try again.', 'mjschool' ); ?></p>
-		</div>
-		<?php
-	}
-	if ( isset( $_GET['mjschool_activate'] ) && sanitize_text_field(wp_unslash($_GET['mjschool_activate'])) === 'mjschool_activate' ) {
+	if ( isset( $_GET['login'] ) && sanitize_text_field( wp_unslash( $_GET['login'] ) ) === 'failed' ) {
 		?>
 		<div id="login-error" class="mjschool_login_error">
-			<p class="mjschool-para-margin"> <?php esc_html_e( 'Login failed: Your account is inactive. Contact your administrator to activate it.', 'mjschool' ); ?> </p>
+			<p class="mjschool-para-margin"><?php esc_html_e( 'Login failed: You have entered an incorrect Username or password, please try again.', 'mjschool' ); ?></p>
+		</div>
+		<?php
+	}
+	if ( isset( $_GET['login'] ) && sanitize_text_field( wp_unslash( $_GET['login'] ) ) === 'empty' ) {
+		?>
+		<div id="login-error" class="login-error mjschool_login_error">
+			<p class="mjschool-para-margin"><?php esc_html_e( 'Login Failed: Username and/or Password is empty, please try again.', 'mjschool' ); ?></p>
+		</div>
+		<?php
+	}
+	if ( isset( $_GET['mjschool_activate'] ) && sanitize_text_field( wp_unslash( $_GET['mjschool_activate'] ) ) === 'mjschool_activate' ) {
+		?>
+		<div id="login-error" class="mjschool_login_error">
+			<p class="mjschool-para-margin"><?php esc_html_e( 'Login failed: Your account is inactive. Contact your administrator to activate it.', 'mjschool' ); ?></p>
 		</div>
 		<?php
 	}
@@ -3965,15 +4550,14 @@ function mjschool_login_link() {
 	$mjschool_reg_errors = new WP_Error();
 	if ( is_wp_error( $mjschool_reg_errors ) ) {
 		foreach ( $mjschool_reg_errors->get_error_messages() as $error ) {
-			echo '<div>';
-			echo '<strong>ERROR</strong>:';
-			echo esc_html( $error ) . '<br/>';
-			echo '</div>';
+			echo '<div><strong>' . esc_html__( 'ERROR', 'mjschool' ) . '</strong>: ' . esc_html( $error ) . '</div>';
 		}
 	}
+	// Sanitize REQUEST_URI.
+	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 	$args = array(
 		'echo'           => true,
-		'redirect'       => site_url( $_SERVER['REQUEST_URI'] ),
+		'redirect'       => site_url( $request_uri ),
 		'form_id'        => 'loginform',
 		'label_username' => esc_attr__( 'Username', 'mjschool' ),
 		'label_password' => esc_attr__( 'Password', 'mjschool' ),
@@ -3987,32 +4571,26 @@ function mjschool_login_link() {
 		'value_username' => null,
 		'value_remember' => false,
 	);
-	$args = array( 'redirect' => site_url( '/?dashboard=mjschool_user' ) );
 	if ( is_user_logged_in() ) {
-		$curent_theme = wp_get_theme();
-		if ( $curent_theme === 'Twenty Twenty-Two' ) {
-			$style = 'position: absolute!important;
-			top: 500px!important;
-			left: 13%!important;';
-		} elseif ( $curent_theme === 'Twenty Twenty-Four' ) {
-			$style = 'position: absolute!important;
-			top: 60%!important;
-			left: 35%!important;';
-		} elseif ( $curent_theme === 'Twenty Twenty-Five' ) {
-			$style = 'position: absolute!important;
-			top: 60%!important;
-			left: 35%!important;';
-		} elseif ( $curent_theme === 'Twenty Twenty-Three' ) {
-			$style = 'position: absolute!important;
-			top: 70%!important;
-			left: 30%!important;';
-		} else {
-			$style = 'float: left!important;
-			margin-left: 7%!important;';
+		$curent_theme = wp_get_theme()->get( 'Name' );
+		$style        = '';
+		switch ( $curent_theme ) {
+			case 'Twenty Twenty-Two':
+				$style = 'position: absolute!important; top: 500px!important; left: 13%!important;';
+				break;
+			case 'Twenty Twenty-Four':
+			case 'Twenty Twenty-Five':
+				$style = 'position: absolute!important; top: 60%!important; left: 35%!important;';
+				break;
+			case 'Twenty Twenty-Three':
+				$style = 'position: absolute!important; top: 70%!important; left: 30%!important;';
+				break;
+			default:
+				$style = 'float: left!important; margin-left: 7%!important;';
 		}
 		?>
 		<div style="<?php echo esc_attr( $style ); ?>">
-			<a href="<?php echo esc_url( home_url( '/' ) . '?dashboard=mjschool_user' ); ?>"> <?php esc_html_e( 'Dashboard', 'mjschool' ); ?> </a>
+			<a href="<?php echo esc_url( home_url( '/?dashboard=mjschool_user' ) ); ?>"><?php esc_html_e( 'Dashboard', 'mjschool' ); ?></a>
 			<br />
 			<a href="<?php echo esc_url( wp_logout_url() ); ?>"><?php esc_html_e( 'Logout', 'mjschool' ); ?></a>
 		</div>
@@ -4022,12 +4600,13 @@ function mjschool_login_link() {
 		<div class="mjschool-custom-login-form">
 			<?php
 			wp_login_form( $args );
-			echo '<a class="mjschool-forgot-link" href="' . esc_url( wp_lostpassword_url() ) . '" title="Lost Password"> ' . esc_html__( 'Forgot your password?', 'mjschool' ) . ' </a>';
+			echo '<a class="mjschool-forgot-link" href="' . esc_url( wp_lostpassword_url() ) . '" title="' . esc_attr__( 'Lost Password', 'mjschool' ) . '">' . esc_html__( 'Forgot your password?', 'mjschool' ) . '</a>';
 			?>
 		</div>
 		<?php
 	}
 }
+
 /**
  * Retrieves attendance records for a student within a given date range.
  *
@@ -4041,14 +4620,20 @@ function mjschool_login_link() {
  */
 function mjschool_view_student_attendance( $start_date, $end_date, $id ) {
 	global $wpdb;
-	$tbl_name = $wpdb->prefix . 'mjschool_attendence';
-	$user_id  = intval( $id );
-	// Prepare the SQL query to prevent SQL injection.
-	$sql = $wpdb->prepare( "SELECT * FROM $tbl_name WHERE user_id = %d AND role_name = %s AND attendence_date BETWEEN %s AND %s", $user_id, 'student', $start_date, $end_date );
-	// Execute the query and return the result.
+	
+	$tbl_name   = $wpdb->prefix . 'mjschool_attendence';
+	$user_id    = absint( $id );
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $wpdb->get_results( $sql );
+	$result = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE user_id = %d AND role_name = %s AND attendence_date BETWEEN %s AND %s", $user_id, 'student', $start_date, $end_date )
+	);
+	
+	return $result;
 }
+
 /**
  * Retrieves attendance status for a student on a specific date.
  *
@@ -4061,12 +4646,19 @@ function mjschool_view_student_attendance( $start_date, $end_date, $id ) {
  */
 function mjschool_get_attendence( $id, $curr_date ) {
 	global $wpdb;
+	
 	$table_name = $wpdb->prefix . 'mjschool_attendence';
-	$userid     = intval( $id );
+	$userid     = absint( $id );
+	$curr_date  = sanitize_text_field( $curr_date );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_var( $wpdb->prepare( "SELECT status FROM $table_name WHERE attendence_date=%s AND user_id=%d", $curr_date, $userid ) );
+	$result = $wpdb->get_var(
+		$wpdb->prepare( "SELECT status FROM {$table_name} WHERE attendence_date = %s AND user_id = %d", $curr_date, $userid )
+	);
+	
 	return $result;
 }
+
 /**
  * Retrieves subject-wise attendance status for a student on a specific date.
  *
@@ -4080,13 +4672,20 @@ function mjschool_get_attendence( $id, $curr_date ) {
  */
 function mjschool_get_sub_attendence( $id, $curr_date, $sid ) {
 	global $wpdb;
+	
 	$table_name = $wpdb->prefix . 'mjschool_sub_attendance';
-	$userid     = intval( $id );
-	$sub_id     = intval( $sid );
+	$userid     = absint( $id );
+	$sub_id     = absint( $sid );
+	$curr_date  = sanitize_text_field( $curr_date );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_var( $wpdb->prepare( "SELECT status FROM $table_name WHERE attendance_date=%s AND user_id=%d AND sub_id=%d", $curr_date, $userid, $sub_id ) );
+	$result = $wpdb->get_var(
+		$wpdb->prepare( "SELECT status FROM {$table_name} WHERE attendance_date = %s AND user_id = %d AND sub_id = %d", $curr_date, $userid, $sub_id )
+	);
+	
 	return $result;
 }
+
 /**
  * Retrieves attendance comment for a student on a specific date.
  *
@@ -4100,14 +4699,16 @@ function mjschool_get_sub_attendence( $id, $curr_date, $sid ) {
 function mjschool_get_attendence_comment( $id, $curr_date ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_attendence';
-	$userid     = intval( $id );
+	$userid     = absint( $id );
+	$curr_date  = sanitize_text_field( $curr_date );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT comment FROM $table_name WHERE attendence_date=%s and user_id=%d", $curr_date, $userid ) );
-	if ( ! empty( $result ) ) {
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT comment FROM {$table_name} WHERE attendence_date = %s AND user_id = %d", $curr_date, $userid )
+	);
+	if ( ! empty( $result ) && isset( $result->comment ) ) {
 		return $result->comment;
-	} else {
-		return '';
 	}
+	return '';
 }
 /**
  * Retrieves subject-wise attendance comment for a student on a specific date.
@@ -4123,15 +4724,17 @@ function mjschool_get_attendence_comment( $id, $curr_date ) {
 function mjschool_get_sub_attendence_comment( $id, $curr_date, $sid ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_sub_attendance';
-	$userid     = intval( $id );
-	$sub_id     = intval( $sid );
+	$userid     = absint( $id );
+	$sub_id     = absint( $sid );
+	$curr_date  = sanitize_text_field( $curr_date );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT comment FROM $table_name WHERE attendance_date=%s  AND user_id=%d AND sub_id=%d", $curr_date, $userid, $sub_id ) );
-	if ( ! empty( $result ) ) {
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT comment FROM {$table_name} WHERE attendance_date = %s AND user_id = %d AND sub_id = %d", $curr_date, $userid, $sub_id )
+	);
+	if ( ! empty( $result ) && isset( $result->comment ) ) {
 		return $result->comment;
-	} else {
-		return '';
 	}
+	return '';
 }
 /**
  * Deletes a notification record by its ID.
@@ -4145,9 +4748,11 @@ function mjschool_get_sub_attendence_comment( $id, $curr_date, $sid ) {
 function mjschool_delete_notification( $sid ) {
 	global $wpdb;
 	$mjschool_notification = $wpdb->prefix . 'mjschool_notification';
-	$notification_id       = intval( $sid );
+	$notification_id       = absint( $sid );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $mjschool_notification WHERE notification_id=%d", $notification_id ) );
+	$result = $wpdb->query(
+		$wpdb->prepare( "DELETE FROM {$mjschool_notification} WHERE notification_id = %d", $notification_id )
+	);
 	return $result;
 }
 /**
@@ -4162,15 +4767,15 @@ function mjschool_delete_notification( $sid ) {
 function mjschool_check_book_issued( $sid ) {
 	global $wpdb;
 	$table_issuebook = $wpdb->prefix . 'mjschool_library_book_issue';
-	$student_id      = intval( $sid );
-	// Prepare the SQL query to prevent SQL injection.
-	$sql = $wpdb->prepare( "SELECT * FROM $table_issuebook WHERE student_id = %d AND (status = %s OR status = %s)", $student_id, 'Issue', 'Submitted' );
-	// Execute the query and return the result if not empty.
+	$student_id      = absint( $sid );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$booklist = $wpdb->get_results( $sql );
+	$booklist = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_issuebook} WHERE student_id = %d AND (status = %s OR status = %s)", $student_id, 'Issue', 'Submitted' )
+	);
 	if ( ! empty( $booklist ) ) {
 		return $booklist;
 	}
+	return null;
 }
 /**
  * Retrieves all teacher IDs assigned to a specific subject.
@@ -4185,97 +4790,142 @@ function mjschool_teacher_by_subject( $subject_id ) {
 	global $wpdb;
 	$teacher_rows = array();
 	if ( isset( $subject_id->subid ) ) {
-		$subid              = (int) $subject_id->subid;
+		$subid                    = absint( $subject_id->subid );
 		$table_mjschool_subject = $wpdb->prefix . 'mjschool_teacher_subject';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_results( "SELECT * FROM $table_mjschool_subject where subject_id = $subid" );
+		$result = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$table_mjschool_subject} WHERE subject_id = %d", $subid
+			)
+		);
+		
 		foreach ( $result as $tch_result ) {
-			$teacher_rows[] = $tch_result->teacher_id;
+			if ( isset( $tch_result->teacher_id ) ) {
+				$teacher_rows[] = absint( $tch_result->teacher_id );
+			}
 		}
 	}
+	
 	return $teacher_rows;
-	die();
 }
 /**
  * Handles inventory image upload for subject syllabus files.
- *
- * Validates file type, creates upload directory if missing,
- * removes old file if exists, and uploads the new file.
  *
  * @since 1.0.0
  *
  * @param string $file Existing file path to be replaced (optional).
  *
- * @return string Uploaded file name or path.
- *
- * @throws WP_Error If file type is not allowed.
+ * @return string|false Uploaded file name or false on failure.
  */
 function mjschool_inventory_image_upload( $file ) {
-	$type           = 'subject_syllabus';
-	$check_document = mjschool_wp_check_file_type_and_ext( $_FILES[ $type ]['tmp_name'], $_FILES[ $type ]['name'] );
-	if ( $check_document ) {
-		$imagepath          = $file;
-		$parts              = pathinfo( $_FILES[ $type ]['name'] );
-		$inventoryimagename = 'mjschool_' . mktime( time() ) . '-' . 'in' . '.' . $parts['extension'];
-		$document_dir       = WP_CONTENT_DIR;
-		$document_dir      .= '/uploads/school_assets/';
-		$document_path      = $document_dir;
-		if ( $imagepath != '' ) {
-			if ( file_exists( WP_CONTENT_DIR . $imagepath ) ) {
-				unlink( WP_CONTENT_DIR . $imagepath );
-			}
-		}
-		if ( ! file_exists( $document_path ) ) {
-			mkdir( $document_path, 0777, true );
-		}
-		if ( is_uploaded_file( $_FILES[ $type ]['tmp_name'] ) ) {
-			if ( move_uploaded_file( $_FILES[ $type ]['tmp_name'], $document_path . $inventoryimagename ) ) {
-				$imagepath = $inventoryimagename;
-			}
-		}
-		return $imagepath;
-	} else {
+	$type = 'subject_syllabus';
+	
+	// Validate file exists and no error
+	if ( ! isset( $_FILES[ $type ] ) || $_FILES[ $type ]['error'] !== UPLOAD_ERR_OK ) {
+		return false;
+	}
+	
+	$file_name = isset( $_FILES[ $type ]['name'] ) ? sanitize_file_name( $_FILES[ $type ]['name'] ) : '';
+	$file_tmp  = isset( $_FILES[ $type ]['tmp_name'] ) ? $_FILES[ $type ]['tmp_name'] : '';
+	$file_size = isset( $_FILES[ $type ]['size'] ) ? absint( $_FILES[ $type ]['size'] ) : 0;
+	
+	// Validate file type
+	$check_document = mjschool_wp_check_file_type_and_ext( $file_tmp, $file_name );
+	if ( ! $check_document ) {
 		wp_die( esc_html__( 'File type is not allowed.', 'mjschool' ) );
 	}
+	
+	// Get file info
+	$file_info = wp_check_filetype( $file_name );
+	if ( ! $file_info['ext'] || ! $file_info['type'] ) {
+		wp_die( esc_html__( 'Invalid file type.', 'mjschool' ) );
+	}
+	
+	// Generate secure filename
+	$inventoryimagename = 'mjschool_' . time() . '-in.' . $file_info['ext'];
+	
+	// Validate file size (5MB max)
+	$max_size = 5 * 1024 * 1024;
+	if ( $file_size > $max_size ) {
+		wp_die( esc_html__( 'File size exceeds maximum allowed (5MB).', 'mjschool' ) );
+	}
+	
+	$document_dir  = WP_CONTENT_DIR . '/uploads/school_assets/';
+	$document_path = $document_dir;
+	
+	// Remove old file if exists
+	$file = sanitize_text_field( $file );
+	if ( ! empty( $file ) && file_exists( WP_CONTENT_DIR . '/' . $file ) ) {
+		wp_delete_file( WP_CONTENT_DIR . '/' . $file );
+	}
+	
+	if ( ! file_exists( $document_path ) ) {
+		wp_mkdir_p( $document_path );
+	}
+	
+	if ( is_uploaded_file( $file_tmp ) ) {
+		$upload_path = $document_path . $inventoryimagename;
+		if ( move_uploaded_file( $file_tmp, $upload_path ) ) {
+			chmod( $upload_path, 0644 );
+			return $inventoryimagename;
+		}
+	}
+	
+	return false;
 }
 /**
  * Uploads a teacher signature image to the school assets directory.
- *
- * Validates the file type, generates a unique file name,
- * creates directory if needed, and moves the file to uploads.
  *
  * @since 1.0.0
  *
  * @param array $file Uploaded signature file array from $_FILES.
  *
- * @return string Relative path to the uploaded signature image.
- *
- * @throws WP_Error If the file type is not allowed.
+ * @return string|false Relative path to the uploaded signature image or false on failure.
  */
 function mjschool_upload_teacher_signature( $file ) {
-	// Optional: You can still validate file types if needed.
-	$check_document = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'] );
-	if ( $check_document ) {
-		$parts              = pathinfo( $file['name'] );
-		$inventoryimagename = time() . '-signature.' . $parts['extension'];
-		$document_dir       = WP_CONTENT_DIR . '/uploads/school_assets/';
-		$imagepath          = $document_dir . $inventoryimagename;
-		if ( ! file_exists( $document_dir ) ) {
-			mkdir( $document_dir, 0777, true );
-		}
-		if ( is_uploaded_file( $file['tmp_name'] ) ) {
-			if ( move_uploaded_file( $file['tmp_name'], $imagepath ) ) {
-				return 'uploads/school_assets/' . $inventoryimagename;
-			}
+	// Validate array structure
+	if ( ! is_array( $file ) || ! isset( $file['tmp_name'] ) || ! isset( $file['name'] ) ) {
+		return false;
+	}
+	// Validate upload error
+	if ( isset( $file['error'] ) && $file['error'] !== UPLOAD_ERR_OK ) {
+		return false;
+	}
+	$file_name = sanitize_file_name( $file['name'] );
+	$file_tmp  = $file['tmp_name'];
+	$file_size = isset( $file['size'] ) ? absint( $file['size'] ) : 0;
+	// Validate file type
+	$check_document = wp_check_filetype_and_ext( $file_tmp, $file_name );
+	if ( ! $check_document || ! $check_document['ext'] ) {
+		wp_die( esc_html__( 'File type is not allowed.', 'mjschool' ) );
+	}
+	// Get file info
+	$file_info = wp_check_filetype( $file_name );
+	if ( ! $file_info['ext'] || ! $file_info['type'] ) {
+		wp_die( esc_html__( 'Invalid file type.', 'mjschool' ) );
+	}
+	// Generate secure filename
+	$inventoryimagename = time() . '-signature.' . $file_info['ext'];
+	// Validate file size (5MB max)
+	$max_size = 5 * 1024 * 1024;
+	if ( $file_size > $max_size ) {
+		wp_die( esc_html__( 'File size exceeds maximum allowed (5MB).', 'mjschool' ) );
+	}
+	$document_dir = WP_CONTENT_DIR . '/uploads/school_assets/';
+	$imagepath    = $document_dir . $inventoryimagename;
+	if ( ! file_exists( $document_dir ) ) {
+		wp_mkdir_p( $document_dir );
+	}
+	if ( is_uploaded_file( $file_tmp ) ) {
+		if ( move_uploaded_file( $file_tmp, $imagepath ) ) {
+			chmod( $imagepath, 0644 );
+			return 'uploads/school_assets/' . $inventoryimagename;
 		}
 	}
-	wp_die( esc_html__( 'File type is not allowed.', 'mjschool' ) );
+	return false;
 }
 /**
  * Registers the custom post type for internal messaging.
- *
- * Registers 'message' as a non-public post type used by the system
- * for storing user-to-user internal messages.
  *
  * @since 1.0.0
  *
@@ -4289,6 +4939,7 @@ function mjschool_register_post() {
 				'name'          => esc_attr__( 'Message', 'mjschool' ),
 				'singular_name' => 'message',
 			),
+			'public'    => false,
 			'rewrite'   => false,
 			'query_var' => false,
 		)
@@ -4296,10 +4947,6 @@ function mjschool_register_post() {
 }
 /**
  * Generates the HTML structure for the student fees receipt history PDF.
- *
- * Fetches invoice details, student information, payment history,
- * applies invoice formatting, loads custom fields, and displays
- * the final printable receipt view.
  *
  * @since 1.0.0
  *
@@ -4309,32 +4956,33 @@ function mjschool_register_post() {
  * @return void Outputs styled HTML which is then used for PDF generation.
  */
 function mjschool_student_receipt_history_pdf( $id, $receipt ) {
+	$mjschool_obj_feespayment = new Mjschool_Feespayment();
 	$format             = get_option( 'mjschool_invoice_option' );
 	$fees_pay_id        = mjschool_decrypt_id( $id );
+	$fees_pay_id        = absint( $fees_pay_id );
 	$invoice_number     = mjschool_generate_invoice_number( $fees_pay_id );
 	$fees_detail_result = mjschool_get_single_fees_payment_record( $fees_pay_id );
 	$fee_pay_id         = intval( mjschool_decrypt_id( $receipt ) );
-	$fees_history       = mjschool_get_single_payment_history( $fee_pay_id );
+	$fees_history       = $mjschool_obj_feespayment->mjschool_get_single_payment_history( $fee_pay_id );
+	// Validate data exists.
+	if ( empty( $fees_detail_result ) || empty( $fees_history ) ) {
+		return;
+	}
 	?>
-
-	<?php
-	if ( $format != 1 ) {
-		if ( is_rtl() ) {
-			?>
-			<h3 ><?php echo esc_html( get_option( 'mjschool_name' ) ); ?></h3>
+	<?php if ( $format != 1 ) : ?>
+		<?php if ( is_rtl() ) : ?>
+			<h3><?php echo esc_html( get_option( 'mjschool_name' ) ); ?></h3>
 			<table style="float: right;position: absolute;vertical-align: top;background-repeat: no-repeat;">
 				<tbody>
 					<tr>
 						<td>
-							<img class=" mjschool-invoice-image mjschool-float-left mjschool-invoice-image-model" src="<?php echo esc_url( plugins_url( '/mjschool/assets/images/listpage_icon/invoice_rtl.png' ) ); ?>" width="100%">
+							<img class="mjschool-invoice-image mjschool-float-left mjschool-invoice-image-model" src="<?php echo esc_url( plugins_url( '/mjschool/assets/images/listpage_icon/invoice_rtl.png' ) ); ?>" width="100%">
 						</td>
 					</tr>
 				</tbody>
 			</table>
-			<?php
-		} else {
-			?>
-			<h3 ><?php echo esc_html( get_option( 'mjschool_name' ) ); ?></h3>
+		<?php else : ?>
+			<h3><?php echo esc_html( get_option( 'mjschool_name' ) ); ?></h3>
 			<table style="float: left;position: absolute;vertical-align: top;background-repeat: no-repeat;">
 				<tbody>
 					<tr>
@@ -4344,22 +4992,27 @@ function mjschool_student_receipt_history_pdf( $id, $receipt ) {
 					</tr>
 				</tbody>
 			</table>
-			<?php
-		}
-	}
-	?>
+		<?php endif; ?>
+	<?php endif; ?>
 	<div class="mjschool-width-print" style="border: 2px solid;float:left;width:96%;margin: 0px 0px 0px 0px;padding:20px;padding-top: 4px;padding-bottom: 5px;margin-bottom: 0px !important">
 		<div style="float:left;width:100%;">
 			<div style="float:left;width:25%;">
 				<div class="mjschool-custom-logo-class mjschool_left_border_redius_50">
-					<img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>" class="mjschool_main_logo_class" />
+					<img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>" class="mjschool_main_logo_class" alt="<?php echo esc_attr( get_option( 'mjschool_name' ) ); ?>" />
 				</div>
 			</div>
 			<div style="float:left; width:75%;padding-top:10px;">
-				<p style="margin:0px;width:100%;font-weight:bold;color:#1B1B8D;font-size:24px;text-align:center;"> <?php echo esc_html( get_option( 'mjschool_name' ) ); ?></p>
-				<p style="margin:0px;font-size:17px;text-align:center;"> <?php echo esc_html( get_option( 'mjschool_address' ) ); ?></p>
+				<p style="margin:0px;width:100%;font-weight:bold;color:#1B1B8D;font-size:24px;text-align:center;">
+					<?php echo esc_html( get_option( 'mjschool_name' ) ); ?>
+				</p>
+				<p style="margin:0px;font-size:17px;text-align:center;">
+					<?php echo esc_html( get_option( 'mjschool_address' ) ); ?>
+				</p>
 				<div style="margin:0px;width:100%;text-align:center;">
-					<p style="margin: 0px;width: fit-content;font-size: 17px;display: inline-block;"> <?php esc_html_e( 'E-mail', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_email' ) ); ?>&nbsp;&nbsp;<?php esc_html_e( 'Phone', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_contact_number' ) ); ?></p>
+					<p style="margin: 0px;width: fit-content;font-size: 17px;display: inline-block;">
+						<?php esc_html_e( 'E-mail', 'mjschool' ); ?>: <?php echo esc_html( get_option( 'mjschool_email' ) ); ?>&nbsp;&nbsp;
+						<?php esc_html_e( 'Phone', 'mjschool' ); ?>: <?php echo esc_html( get_option( 'mjschool_contact_number' ) ); ?>
+					</p>
 				</div>
 			</div>
 		</div>
@@ -4368,26 +5021,21 @@ function mjschool_student_receipt_history_pdf( $id, $receipt ) {
 	<div class="mjschool-width-print" style="border: 2px solid;margin-bottom:8px;float:left;width:96%;padding:20px;padding-top: 5px;padding-bottom: 5px;margin-bottom: 0px !important;margin-top: 0px !important">
 		<div style="float:left;width:100%;">
 			<?php
-			$student_id = $fees_detail_result->student_id;
+			$student_id = isset( $fees_detail_result->student_id ) ? absint( $fees_detail_result->student_id ) : 0;
 			$patient    = get_userdata( $student_id );
-			if ( $patient ) {
-				$display_name         = isset( $patient->display_name ) ? $patient->display_name : '';
-				$escaped_display_name = esc_html( ucwords( $display_name ) );
-				$split_display_name   = chunk_split( $escaped_display_name, 30, '<br>' );
-			} else {
-				esc_html_e( 'N/A', 'mjschool' );
-			}
 			?>
-			<div  class="mjschool_padding_10px">
-				<div style="float:left;width:65%;"><b><?php esc_html_e( 'Bill To', 'mjschool' ); ?>:</b> <?php echo esc_html( mjschool_student_display_name_with_roll( $student_id ) ); ?></div>
-				<div style="float:left;width:35%;"><b><?php esc_html_e( 'Receipt Number', 'mjschool' ); ?>:</b> <?php echo esc_html( mjschool_generate_receipt_number( $fee_pay_id ) ); ?> </div>
+			<div class="mjschool_padding_10px">
+				<div style="float:left;width:65%;">
+					<b><?php esc_html_e( 'Bill To', 'mjschool' ); ?>:</b> <?php echo esc_html( mjschool_student_display_name_with_roll( $student_id ) ); ?>
+				</div>
+				<div style="float:left;width:35%;">
+					<b><?php esc_html_e( 'Receipt Number', 'mjschool' ); ?>:</b> <?php echo esc_html( mjschool_generate_receipt_number( $fee_pay_id ) ); ?>
+				</div>
 			</div>
 		</div>
 		<div style="float:left; width:64%;">
-			<?php
-			$student_id = $fees_detail_result->student_id;
-			$patient    = get_userdata( $student_id );
-			if ( $patient ) {
+			<?php if ( $patient ) : ?>
+				<?php
 				$address = esc_html( get_user_meta( $student_id, 'address', true ) );
 				$city    = esc_html( get_user_meta( $student_id, 'city', true ) );
 				$zip     = esc_html( get_user_meta( $student_id, 'zip_code', true ) );
@@ -4398,38 +5046,45 @@ function mjschool_student_receipt_history_pdf( $id, $receipt ) {
 					</div>
 					<div><?php echo esc_html( $city ) . ', ' . esc_html( $zip ); ?></div>
 				</div>
-			<?php } ?>
+			<?php endif; ?>
 		</div>
 		<div style="float:right;width: 35.3%;">
 			<?php
-			$issue_date = 'DD-MM-YYYY';
-			$issue_date = isset( $fees_history[0] ) ? $fees_history[0]->paid_by_date : '';
+			$issue_date = isset( $fees_history[0]->paid_by_date ) ? $fees_history[0]->paid_by_date : '';
+			$issue_date = sanitize_text_field( $issue_date );
 			?>
 			<div style="padding:5px 0;">
 				<div class="mjschool_float_left_width_100">
-					<b><?php esc_html_e( 'Issue Date', 'mjschool' ); ?>:</b> <?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
+					<b><?php esc_html_e( 'Issue Date', 'mjschool' ); ?>:</b> 
+					<?php
+					if ( ! empty( $issue_date ) ) {
+						echo esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) );
+					}
+					?>
 				</div>
 			</div>
 			<div style="float:right;width: 100%;">
 				<div style="padding:5px 0;">
 					<div class="mjschool_float_left_width_100">
-						<b><?php esc_html_e( 'Payment Method', 'mjschool' ); ?>:</b> <?php echo esc_html( $fees_history[0]->payment_method ); ?>
+						<b><?php esc_html_e( 'Payment Method', 'mjschool' ); ?>:</b> <?php echo isset( $fees_history[0]->payment_method ) ? esc_html( $fees_history[0]->payment_method ) : ''; ?>
 					</div>
 				</div>
 			</div>
 			<div style="float:right;width: 100%;">
 				<div style="padding:5px 0;">
 					<div style="float:left;width:100%;">
-						<b><?php esc_html_e( 'Invoice Refrence', 'mjschool' ); ?>:</b> <?php echo esc_html( $invoice_number ); ?>
+						<b><?php esc_html_e( 'Invoice Reference', 'mjschool' ); ?>:</b> <?php echo esc_html( $invoice_number ); ?>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-	<p style="font-size: 20px;font-weight: 700;color: black;text-align: center;"> <?php esc_html_e( 'Payment History', 'mjschool' ); ?></p>
+	<p style="font-size: 20px;font-weight: 700;color: black;text-align: center;">
+		<?php esc_html_e( 'Payment History', 'mjschool' ); ?>
+	</p>
 	<div style="padding:10px 0;" class="mb-3">
 		<div style="float:left;width:100%;">
-			<b><?php esc_html_e( 'Transaction Id', 'mjschool' ); ?>:</b> <?php echo esc_html( $fees_history[0]->trasaction_id ); ?>
+			<b><?php esc_html_e( 'Transaction Id', 'mjschool' ); ?>:</b> <?php echo isset( $fees_history[0]->trasaction_id ) ? esc_html( $fees_history[0]->trasaction_id ) : ''; ?>
 		</div>
 	</div>
 	<?php
@@ -4441,7 +5096,7 @@ function mjschool_student_receipt_history_pdf( $id, $receipt ) {
 		<thead style="background-color: #b8daff !important;">
 			<tr>
 				<th style="text-align: center; font-weight: 700; color: black; padding: 10px; border: 1px solid black;background-color: #b8daff !important;">
-					<?php esc_html_e( 'Discription', 'mjschool' ); ?>
+					<?php esc_html_e( 'Description', 'mjschool' ); ?>
 				</th>
 				<th style="text-align: center; font-weight: 700; color: black; padding: 10px; border: 1px solid black;background-color: #b8daff !important;">
 					<?php echo esc_html__( 'Amount', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
@@ -4452,10 +5107,10 @@ function mjschool_student_receipt_history_pdf( $id, $receipt ) {
 			<?php foreach ( $fees_history as $retrive_date ) : ?>
 				<tr>
 					<td style="text-align: left; font-weight: 600; color: #333333; padding: 10px 10px 130px 10px; border: 1px solid black;">
-						<?php echo esc_html( $retrive_date->payment_note ); ?>
+						<?php echo isset( $retrive_date->payment_note ) ? esc_html( $retrive_date->payment_note ) : ''; ?>
 					</td>
 					<td style="text-align: right; font-weight: 600; color: #333333; padding: 10px 10px 130px 10px; border: 1px solid black;">
-						<?php echo esc_html( $retrive_date->amount ); ?>
+						<?php echo isset( $retrive_date->amount ) ? esc_html( $retrive_date->amount ) : ''; ?>
 					</td>
 				</tr>
 				<tr>
@@ -4463,17 +5118,28 @@ function mjschool_student_receipt_history_pdf( $id, $receipt ) {
 						<?php echo esc_html__( 'Total', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
 					</th>
 					<th style="border: 1px solid black; width: 30%; text-align: left;padding: 10px;">
-						<?php echo esc_html( number_format( $retrive_date->amount, 2, '.', '' ) ); ?>
+						<?php
+						if ( isset( $retrive_date->amount ) ) {
+							echo esc_html( number_format( floatval( $retrive_date->amount ), 2, '.', '' ) );
+						}
+						?>
 					</th>
 				</tr>
 			<?php endforeach; ?>
 		</tbody>
 	</table>
-	<p class="mt-2" style="font-size: 16px;font-weight: 700;"> <?php echo esc_html( ucfirst( mjschool_convert_number_to_words( $retrive_date->amount ) ) . ' Only' ); ?></p>
-	<div  style="border: 2px solid; width:100%; float: left; margin-bottom:12px; padding: 15px 10px; overflow: hidden;margin-top: 4px;">
-		<!-- Teacher Signature (Middle) -->
+	
+	<p class="mt-2" style="font-size: 16px;font-weight: 700;">
+		<?php
+		if ( isset( $retrive_date->amount ) ) {
+			echo esc_html( ucfirst( mjschool_convert_number_to_words( $retrive_date->amount ) ) . ' Only' );
+		}
+		?>
+	</p>
+	
+	<div style="border: 2px solid; width:100%; float: left; margin-bottom:12px; padding: 15px 10px; overflow: hidden;margin-top: 4px;">
 		<div style="float: right; width: 33.33%; text-align: center;">
-			<div> <img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" style="width:100px;" /> </div>
+			<div> <img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" style="width:100px;" alt="<?php esc_attr_e( 'Principal Signature', 'mjschool' ); ?>" /> </div>
 			<div style="border-top: 1px solid #000; width: 150px; margin: 5px auto;"></div>
 			<div style="margin-top: 5px;"> <?php esc_html_e( 'Principal Signature', 'mjschool' ); ?> </div>
 		</div>
@@ -4492,8 +5158,11 @@ function mjschool_student_receipt_history_pdf( $id, $receipt ) {
 function mjschool_get_student_library_book_list( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_library_book_issue';
+	$id         = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$results = $wpdb->get_results( "select *from $table_name where student_id=$id" );
+	$results = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_name} WHERE student_id = %d", $id )
+	);
 	return $results;
 }
 /**
@@ -4511,6 +5180,9 @@ function mjschool_get_student_library_book_list( $id ) {
  * @return void Outputs HTML directly and terminates with wp_die().
  */
 function mjschool_add_category_type( $model, $class_id ) {
+	// Sanitize inputs.
+	$model    = sanitize_key( $model );
+	$class_id = absint( $class_id );
 	$title              = 'Title here';
 	$table_header_title = 'Table head';
 	$button_text        = 'Button Text';
@@ -4546,11 +5218,13 @@ function mjschool_add_category_type( $model, $class_id ) {
 		$label_text         = esc_attr__( 'Section Name', 'mjschool' );
 	}
 	?>
-	<!-- Trigger for JS -->
-    <div id="mjschool-category-popup-trigger" data-trigger="1"></div>
+	<!-- Trigger for JS. -->
+	<div id="mjschool-category-popup-trigger" data-trigger="1"></div>
 	<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
-		<a href="javascript:void(0);" class="mjschool-event-close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
-		<h4 id="myLargeModalLabel" class="modal-title"><?php echo esc_html( $title); ?></h4>
+		<a href="javascript:void(0);" class="mjschool-event-close-btn badge badge-success pull-right mjschool-dashboard-popup-design">
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>" alt="<?php esc_attr_e( 'Close', 'mjschool' ); ?>">
+		</a>
+		<h4 id="myLargeModalLabel" class="modal-title"><?php echo esc_html( $title ); ?></h4>
 	</div>
 	<div class="mjschool-panel-white">
 		<div class="mjschool-category-listbox">
@@ -4559,58 +5233,58 @@ function mjschool_add_category_type( $model, $class_id ) {
 				<input type="hidden" id="mjschool_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_nonce' ) ); ?>">
 				<div class="form-body mjschool-user-form">
 					<div class="row">
-						<?php
-						if ( $model === 'period_type' ) {
-							?>
+						<?php if ( $model === 'period_type' ) : ?>
 							<div class="col-md-8">
 								<div class="form-group input">
 									<div class="col-md-12 form-control">
-										<input id="fees_type_val" class="form-control text-input validate[required]" maxlength="3" type="number" value="" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" name="txtfee_type" placeholder="<?php esc_html_e( 'Must Be Enter Number of Days', 'mjschool' ); ?>">
-										<label for="userinput1" class="active"> <?php esc_html_e( 'Section Name', 'mjschool' ); ?><span class="required">*</span> </label>
+										<input id="fees_type_val" class="form-control text-input validate[required]" maxlength="3" type="number" value="" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" name="txtfee_type" placeholder="<?php esc_attr_e( 'Must Be Enter Number of Days', 'mjschool' ); ?>">
+										<label for="userinput1" class="active"><?php esc_html_e( 'Section Name', 'mjschool' ); ?><span class="required">*</span></label>
 									</div>
 								</div>
 							</div>
-							<?php
-						} else {
-							?>
+						<?php else : ?>
 							<div class="col-md-8">
 								<div class="form-group input">
 									<div class="col-md-12 form-control">
 										<input id="fees_type_val" class="form-control text-input validate[required,custom[popup_category_validation]]" maxlength="50" type="text" value="" name="txtfee_type">
-										<label for="userinput1"> <?php esc_html_e( 'Section Name', 'mjschool' ); ?><span class="required">*</span> </label>
+										<label for="userinput1"><?php esc_html_e( 'Section Name', 'mjschool' ); ?><span class="required">*</span></label>
 									</div>
 								</div>
 							</div>
-							<?php
-						}
-						?>
+						<?php endif; ?>
 						<div class="col-md-4">
-							<input type="button" <?php if ( $model === 'class_sec' ) { ?> class_id= <?php echo esc_attr( $class_id ); } ?> value="<?php echo esc_attr( $button_text ); ?>" name="save_category" class="btn mjschool-save-btn<?php echo esc_attr( $model ); ?> mjschool-btn-top btn-success" model=" <?php echo esc_attr( $model ); ?>" id="btn-add-cat" />
+							<input type="button" <?php if ( $model === 'class_sec' ) : ?> class_id="<?php echo esc_attr( $class_id ); ?>" <?php endif; ?> value="<?php echo esc_attr( $button_text ); ?>" name="save_category" class="btn mjschool-save-btn<?php echo esc_attr( $model ); ?> mjschool-btn-top btn-success" model="<?php echo esc_attr( $model ); ?>" id="btn-add-cat" />
 						</div>
 					</div>
 				</div>
 			</form>
 			<div class="mjschool-category-listbox_new mjschool-admission-pop-up-new">
-				<div class="class_detail_append col-lg-12 col-md-12 col-xs-12 col-sm-12"><!---TABLE-RESPONSIVE----->
-					<?php
-					$i = 1;
-					?>
+				<div class="class_detail_append col-lg-12 col-md-12 col-xs-12 col-sm-12">
+					<?php $i = 1; ?>
 					<div class="div_new_1">
 						<?php
 						if ( $model === 'class_sec' ) {
 							$section_result = mjschool_get_class_sections( $class_id );
 							if ( ! empty( $section_result ) ) {
 								foreach ( $section_result as $retrieved_data ) {
+									if ( ! isset( $retrieved_data->id ) || ! isset( $retrieved_data->section_name ) ) {
+										continue;
+									}
 									?>
-									<div class="row mjschool-new-popup-padding" id="<?php echo 'cat-' . esc_attr( $retrieved_data->id ) . ''; ?>">
-										<div class="col-md-10 mjschool-width-70px"> <?php echo esc_html( $retrieved_data->section_name ); ?> </div>
-
-										<div class="row col-md-2 mjschool-padding-left-0-res mjschool-width-30px" id="<?php echo esc_attr($retrieved_data->id); ?>">
+									<div class="row mjschool-new-popup-padding" id="<?php echo 'cat-' . esc_attr( $retrieved_data->id ); ?>">
+										<div class="col-md-10 mjschool-width-70px">
+											<?php echo esc_html( $retrieved_data->section_name ); ?>
+										</div>
+										<div class="row col-md-2 mjschool-padding-left-0-res mjschool-width-30px" id="<?php echo esc_attr( $retrieved_data->id ); ?>">
 											<div class="col-md-6 mjschool-width-50-res mjschool-padding-left-0">
-												<a href="#" class="btn-delete-cat" model="<?php echo esc_attr($model); ?>" id="<?php echo esc_attr($retrieved_data->id); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage_icon/Delete.png"); ?>"></a>
+												<a href="#" class="btn-delete-cat" model="<?php echo esc_attr( $model ); ?>" id="<?php echo esc_attr( $retrieved_data->id ); ?>">
+													<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage_icon/Delete.png' ); ?>" alt="<?php esc_attr_e( 'Delete', 'mjschool' ); ?>">
+												</a>
 											</div>
 											<div class="col-md-6 mjschool-edit-btn-padding-left-25px-res mjschool-width-50-res mjschool-padding-right-0">
-												<a class="mjschool-btn-edit-cat" model="<?php echo esc_attr($model); ?>" href="#" id="<?php echo esc_attr($retrieved_data->id); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage_icon/mjschool-edit.png"); ?>"></a>
+												<a class="mjschool-btn-edit-cat" model="<?php echo esc_attr( $model ); ?>" href="#" id="<?php echo esc_attr( $retrieved_data->id ); ?>">
+													<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage_icon/mjschool-edit.png' ); ?>" alt="<?php esc_attr_e( 'Edit', 'mjschool' ); ?>">
+												</a>
 											</div>
 										</div>
 									</div>
@@ -4620,24 +5294,27 @@ function mjschool_add_category_type( $model, $class_id ) {
 							}
 						} else {
 							if ( ! empty( $cat_result ) ) {
-								foreach ($cat_result as $retrieved_data) {
+								foreach ( $cat_result as $retrieved_data ) {
+									if ( ! isset( $retrieved_data->ID ) || ! isset( $retrieved_data->post_title ) ) {
+										continue;
+									}
 									?>
-									<div class="row mjschool-new-popup-padding" id="<?php echo "cat-" . esc_attr($retrieved_data->ID) . ""; ?>">
+									<div class="row mjschool-new-popup-padding" id="<?php echo 'cat-' . esc_attr( $retrieved_data->ID ); ?>">
 										<div class="col-md-11 mjschool-width-80px mjschool-mt-7px">
 											<?php
-											if ($model === 'period_type' ) {
-												echo esc_html( $retrieved_data->post_title);
-												echo esc_attr__( "Days", "mjschool" );
+											if ( $model === 'period_type' ) {
+												echo esc_html( $retrieved_data->post_title ) . ' ' . esc_html__( 'Days', 'mjschool' );
 											} else {
-												echo esc_html( $retrieved_data->post_title);
+												echo esc_html( $retrieved_data->post_title );
 											}
 											?>
 										</div>
-										<div class="row col-md-1 mjschool-rs-popup-width-20px" id="<?php echo esc_attr($retrieved_data->ID); ?>">
+										<div class="row col-md-1 mjschool-rs-popup-width-20px" id="<?php echo esc_attr( $retrieved_data->ID ); ?>">
 											<div class="col-md-12">
-												<a href="#" class="btn-delete-cat" model="<?php echo esc_attr($model); ?>" id="<?php echo esc_attr($retrieved_data->ID); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage_icon/Delete.png"); ?>"></a>
+												<a href="#" class="btn-delete-cat" model="<?php echo esc_attr( $model ); ?>" id="<?php echo esc_attr( $retrieved_data->ID ); ?>">
+													<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage_icon/Delete.png' ); ?>" alt="<?php esc_attr_e( 'Delete', 'mjschool' ); ?>">
+												</a>
 											</div>
-
 										</div>
 									</div>
 									<?php
@@ -4648,38 +5325,6 @@ function mjschool_add_category_type( $model, $class_id ) {
 						?>
 					</div>
 				</div>
-				<!-- <table class="table">
-					<?php
-					$i = 1;
-					if ( $model === 'class_sec' ) {
-						$section_result = mjschool_get_class_sections( $class_id );
-						if ( ! empty( $section_result ) ) {
-							foreach ( $section_result as $retrieved_data ) {
-								echo '<tr id="cat-' . esc_html( $retrieved_data->id ) . '">';
-								echo '<td>' . esc_html( $retrieved_data->section_name ) . '</td>';
-								echo '<td id=' . esc_html( $retrieved_data->id ) . '>
-								<a class="btn-delete-cat badge badge-delete" model=' . esc_attr( $model ) . ' href="#" id=' . esc_attr( $retrieved_data->id ) . '>X</a>
-								<a class="mjschool-btn-edit-cat badge badge-edit" model=' . esc_attr( $model ) . ' href="#" id=' . esc_attr( $retrieved_data->id ) . '><i class="fas fa-edit" aria-hidden="true"></i></a>
-								</td>';
-								echo '</tr>';
-								++$i;
-							}
-						}
-					} elseif ( ! empty( $cat_result ) ) {
-						foreach ( $cat_result as $retrieved_data ) {
-							echo '<tr id="cat-' . esc_attr( $retrieved_data->ID ) . '">';
-							if ( $model === 'period_type' ) {
-								echo '<td>' . esc_attr( $retrieved_data->post_title ) . ' ' . esc_attr__( 'Days', 'mjschool' ) . '</td>';
-							} else {
-								echo '<td>' . esc_attr( $retrieved_data->post_title ) . '</td>';
-							}
-							echo '<td id=' . esc_attr( $retrieved_data->ID ) . '><a class="btn-delete-cat badge badge-delete" model=' . esc_attr( $model ) . ' href="#" id=' . esc_attr( $retrieved_data->ID ) . '>X</a></td>';
-							echo '</tr>';
-							++$i;
-						}
-					}
-					?>
-				</table> -->
 			</div>
 		</div>
 	</div>
@@ -4698,11 +5343,13 @@ function mjschool_add_category_type( $model, $class_id ) {
 function mjschool_single_section( $section_id ) {
 	global $wpdb;
 	$mjschool_class_section = $wpdb->prefix . 'mjschool_class_section';
+	$section_id             = absint( $section_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( 'Select * from ' . $mjschool_class_section . ' where id = ' . $section_id );
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT * FROM {$mjschool_class_section} WHERE id = %d", $section_id )
+	);
 	return $result;
 }
-
 
 /**
  * Generates and prints the student fees payment receipt.
@@ -4719,16 +5366,27 @@ function mjschool_single_section( $section_id ) {
  */
 function mjschool_student_fees_receipt_print( $fees_pay_id ) {
 	wp_print_styles();
-	$fees_pay_id        = intval( mjschool_decrypt_id( $fees_pay_id ) );
+	
+	$fees_pay_id = absint( mjschool_decrypt_id( $fees_pay_id ) );
+	
+	// Validate receipt_id with isset() check
+	$receipt_id = isset( $_REQUEST['receipt_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['receipt_id'] ) ) : '';
+	if ( empty( $receipt_id ) ) {
+		return;
+	}
+	
+	$fee_pay_id = absint( mjschool_decrypt_id( $receipt_id ) );
+	
 	$fees_detail_result = mjschool_get_single_fees_payment_record( $fees_pay_id );
 	$invoice_number     = mjschool_generate_invoice_number( $fees_pay_id );
-	$fee_pay_id         = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['receipt_id'])) ) );
 	$fees_history       = mjschool_get_single_payment_history( $fee_pay_id );
-	$obj_feespayment    = new mjschool_feespayment();
+	
+	// Validate required data exists
+	if ( empty( $fees_detail_result ) || empty( $fees_history ) ) {
+		return;
+	}
 	?>
-	<?php
-	if ( is_rtl() ) {
-		?>
+	<?php if ( is_rtl() ) : ?>
 		<style>
 			.rtl_billto {
 				margin-right: -18px;
@@ -4741,9 +5399,7 @@ function mjschool_student_fees_receipt_print( $fees_pay_id ) {
 				margin-left: 2% !important;
 			}
 		</style>
-		<?php
-	}
-	?>
+	<?php endif; ?>
 	<style>
 		body,
 		body * {
@@ -4754,9 +5410,7 @@ function mjschool_student_fees_receipt_print( $fees_pay_id ) {
 		}
 		.mjschool-invoice-table-grand-total {
 			-webkit-print-color-adjust: exact;
-			background-color:
-				<?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>
-			;
+			background-color: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>;
 		}
 		@media print {
 			* {
@@ -4777,23 +5431,27 @@ function mjschool_student_fees_receipt_print( $fees_pay_id ) {
 		<div class="modal-body mjschool-margin-top-15px-rs mjschool-invoice-model-body mjschool-float-left-width-100px mjschool-custom-padding-0_res height_1000px">
 			<div id="mjschool-invoice-print" class="mjschool-main-div mjschool-float-left-width-100px mjschool-payment-invoice-popup-main-div">
 				<div class="mjschool-invoice-width-100px mjschool-float-left" border="0">
-					<div class="row mjschool_margin_right_0px" >
+					<div class="row mjschool_margin_right_0px">
 						<div class="mjschool-width-print mjschool_border_print_width_98">
 							<div class="mjschool_float_left_width_100">
 								<div class="mjschool_float_left_width_25">
 									<div class="mjschool-custom-logo-class mjschool_left_border_redius_50">
-										<img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>" class="mjschool_main_logo_class" />
+										<img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>" class="mjschool_main_logo_class" alt="<?php echo esc_attr( get_option( 'mjschool_name' ) ); ?>" />
 									</div>
 								</div>
 								<div class="mjschool_float_left_width_75">
-									<p class="mjschool_fees_widht_100_fonts_24px"> <?php echo esc_html( get_option( 'mjschool_name' ) ); ?></p>
-									<p class="mjschool_print_invoice_line_height_30px"> <?php echo esc_html( get_option( 'mjschool_address' ) ); ?> </p>
+									<p class="mjschool_fees_widht_100_fonts_24px">
+										<?php echo esc_html( get_option( 'mjschool_name' ) ); ?>
+									</p>
+									<p class="mjschool_print_invoice_line_height_30px">
+										<?php echo esc_html( get_option( 'mjschool_address' ) ); ?>
+									</p>
 									<div class="mjschool_fees_center_margin_0px">
 										<p class="mjschool_receipt_print_margin_0px">
-											<?php esc_html_e( 'E-mail', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_email' ) ); ?>
+											<?php esc_html_e( 'E-mail', 'mjschool' ); ?>: <?php echo esc_html( get_option( 'mjschool_email' ) ); ?>
 										</p>
 										<p class="mjschool_receipt_print_margin_0px">
-											&nbsp;&nbsp;<?php esc_html_e( 'Phone', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_contact_number' ) ); ?>
+											&nbsp;&nbsp;<?php esc_html_e( 'Phone', 'mjschool' ); ?>: <?php echo esc_html( get_option( 'mjschool_contact_number' ) ); ?>
 										</p>
 									</div>
 								</div>
@@ -4804,17 +5462,18 @@ function mjschool_student_fees_receipt_print( $fees_pay_id ) {
 						<div class="mjschool-width-print rtl_billto mjschool_print_padding_bottom_top_border_2px">
 							<div class="mjschool_float_left_width_100">
 								<?php
-								$student_id = $fees_detail_result->student_id;
+								$student_id = isset( $fees_detail_result->student_id ) ? absint( $fees_detail_result->student_id ) : 0;
 								$patient    = get_userdata( $student_id );
-								if ( $patient ) {
-									$display_name         = isset( $patient->display_name ) ? $patient->display_name : '';
+								
+								if ( $patient && isset( $patient->display_name ) ) {
+									$display_name         = $patient->display_name;
 									$escaped_display_name = esc_html( ucwords( $display_name ) );
 									$split_display_name   = chunk_split( $escaped_display_name, 30, '<br>' );
 								} else {
-									esc_html_e( 'N/A', 'mjschool' );
+									$split_display_name = esc_html__( 'N/A', 'mjschool' );
 								}
 								?>
-								<div  class="mjschool_padding_10px">
+								<div class="mjschool_padding_10px">
 									<div class="mjschool_float_left_width_65">
 										<b><?php esc_html_e( 'Bill To', 'mjschool' ); ?>:</b>
 										<?php echo esc_html( mjschool_student_display_name_with_roll( $student_id ) ); ?>
@@ -4826,10 +5485,8 @@ function mjschool_student_fees_receipt_print( $fees_pay_id ) {
 								</div>
 							</div>
 							<div class="mjschool_float_left_width_65">
-								<?php
-								$student_id = $fees_detail_result->student_id;
-								$patient    = get_userdata( $student_id );
-								if ( $patient ) {
+								<?php if ( $patient ) : ?>
+									<?php
 									$address = esc_html( get_user_meta( $student_id, 'address', true ) );
 									$city    = esc_html( get_user_meta( $student_id, 'city', true ) );
 									$zip     = esc_html( get_user_meta( $student_id, 'zip_code', true ) );
@@ -4840,30 +5497,37 @@ function mjschool_student_fees_receipt_print( $fees_pay_id ) {
 										</div>
 										<div><?php echo esc_html( $city ) . ', ' . esc_html( $zip ); ?></div>
 									</div>
-								<?php } ?>
+								<?php endif; ?>
 							</div>
 							<div class="mjschool_float_right_width_35">
 								<?php
-								$issue_date = 'DD-MM-YYYY';
-								$issue_date = isset( $fees_history[0] ) ? $fees_history[0]->paid_by_date : '';
+								$issue_date = isset( $fees_history[0]->paid_by_date ) ? $fees_history[0]->paid_by_date : '';
+								$issue_date = sanitize_text_field( $issue_date );
 								?>
-								<div  class="mjschool_padding_0_10px">
+								<div class="mjschool_padding_0_10px">
 									<div class="mjschool_float_left_width_100">
-										<b><?php esc_html_e( 'Issue Date', 'mjschool' ); ?>:</b> <?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
+										<b><?php esc_html_e( 'Issue Date', 'mjschool' ); ?>:</b>
+										<?php
+										if ( ! empty( $issue_date ) ) {
+											echo esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) );
+										}
+										?>
 									</div>
 								</div>
 							</div>
 							<div class="mjschool_float_right_width_35">
 								<div class="mjschool_fees_padding_10px">
 									<div class="mjschool_float_left_width_100">
-										<b><?php esc_html_e( 'Payment Method', 'mjschool' ); ?>:</b> <?php echo esc_html( $fees_history[0]->payment_method ); ?>
+										<b><?php esc_html_e( 'Payment Method', 'mjschool' ); ?>:</b>
+										<?php echo isset( $fees_history[0]->payment_method ) ? esc_html( $fees_history[0]->payment_method ) : ''; ?>
 									</div>
 								</div>
 							</div>
 							<div class="mjschool_float_right_width_35">
 								<div class="mjschool_fees_padding_10px">
 									<div class="mjschool_float_left_width_100">
-										<b><?php esc_html_e( 'Invoice Refrence', 'mjschool' ); ?>:</b> <?php echo esc_html( $invoice_number ); ?>
+										<b><?php esc_html_e( 'Invoice Reference', 'mjschool' ); ?>:</b>
+										<?php echo esc_html( $invoice_number ); ?>
 									</div>
 								</div>
 							</div>
@@ -4873,15 +5537,17 @@ function mjschool_student_fees_receipt_print( $fees_pay_id ) {
 						<tbody>
 							<tr>
 								<td>
-									<h3 class="display_name mjschool-res-pay-his-mt-10px mjschool_fees_center_font_24px" > <?php esc_html_e( 'Payment Receipt', 'mjschool' ); ?></h3>
-								<td>
+									<h3 class="display_name mjschool-res-pay-his-mt-10px mjschool_fees_center_font_24px">
+										<?php esc_html_e( 'Payment Receipt', 'mjschool' ); ?>
+									</h3>
+								</td>
 							</tr>
 						</tbody>
 					</table>
-					<div class="mjschool_fees_padding_10px" class="mb-3">
+					<div class="mjschool_fees_padding_10px mb-3">
 						<div class="mjschool_float_left_width_100">
 							<b><?php esc_html_e( 'Transaction Id', 'mjschool' ); ?>:</b>
-							<?php echo esc_html( $fees_history[0]->trasaction_id ); ?>
+							<?php echo isset( $fees_history[0]->trasaction_id ) ? esc_html( $fees_history[0]->trasaction_id ) : ''; ?>
 						</div>
 					</div>
 					<?php
@@ -4890,10 +5556,10 @@ function mjschool_student_fees_receipt_print( $fees_pay_id ) {
 					$custom_field_obj->mjschool_show_inserted_customfield_receipt( $module );
 					?>
 					<div class="table-responsive mjschool-rtl-padding-left-40px">
-						<table class="table table-bordered mjschool-model-invoice-table mjschool_fees_collapse_width_100 " >
+						<table class="table table-bordered mjschool-model-invoice-table mjschool_fees_collapse_width_100">
 							<thead class="mjschool-entry-heading mjschool-invoice-model-entry-heading mjschool_white_black_color">
 								<tr>
-									<th class="mjschool-entry-table-heading mjschool-align-left mjschool_border_print_width_70" >
+									<th class="mjschool-entry-table-heading mjschool-align-left mjschool_border_print_width_70">
 										<?php esc_html_e( 'Description', 'mjschool' ); ?>
 									</th>
 									<th class="mjschool-entry-table-heading mjschool-align-left mjschool_border_print_width_30">
@@ -4904,28 +5570,40 @@ function mjschool_student_fees_receipt_print( $fees_pay_id ) {
 							<tbody>
 								<?php
 								foreach ( $fees_history as $retrive_date ) {
+									if ( ! isset( $retrive_date->payment_note ) || ! isset( $retrive_date->amount ) ) {
+										continue;
+									}
 									?>
 									<tr class="mjschool_height_150px">
 										<td class="mjschool_print_vertical_align_70">
-											<?php
-											$data = $retrive_date->payment_note;
-											echo esc_html( $data );
-											?>
+											<?php echo esc_html( $retrive_date->payment_note ); ?>
 										</td>
 										<td class="mjschool_print_vertical_align_30">
-											<?php echo esc_html( number_format( $retrive_date->amount, 2, '.', '' ) ); ?>
+											<?php echo esc_html( number_format( floatval( $retrive_date->amount ), 2, '.', '' ) ); ?>
 										</td>
 									</tr>
-									<?php
-								}
-								?>
+								<?php } ?>
 								<tr>
-									<th class="mjschool_right_width_70"> <?php echo esc_html__( 'Total', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?> </th>
-									<th class="mjschool_left_width_30"> <?php echo esc_html( number_format( $retrive_date->amount, 2, '.', '' ) ); ?> </th>
+									<th class="mjschool_right_width_70">
+										<?php echo esc_html__( 'Total', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
+									</th>
+									<th class="mjschool_left_width_30">
+										<?php
+										if ( isset( $retrive_date->amount ) ) {
+											echo esc_html( number_format( floatval( $retrive_date->amount ), 2, '.', '' ) );
+										}
+										?>
+									</th>
 								</tr>
 							</tbody>
 						</table>
-						<p class="mt-2 mjschool_width_700_font_16px" > <?php echo esc_html( ucfirst( mjschool_convert_number_to_words( $retrive_date->amount ) ) . ' Only' ); ?> </p>
+						<p class="mt-2 mjschool_width_700_font_16px">
+							<?php
+							if ( isset( $retrive_date->amount ) ) {
+								echo esc_html( ucfirst( mjschool_convert_number_to_words( $retrive_date->amount ) ) . ' Only' );
+							}
+							?>
+						</p>
 					</div>
 					<?php
 					if ( is_rtl() ) {
@@ -4935,10 +5613,9 @@ function mjschool_student_fees_receipt_print( $fees_pay_id ) {
 					}
 					?>
 					<div class="rtl_sings mjschool_print_boder_2px_margin_float_left">
-						<!-- Teacher Signature (Middle) -->
 						<div class="mjschool_fees_center_width_33">
 							<div>
-								<img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" class="mjschool_width_100px" />
+								<img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" class="mjschool_width_100px" alt="<?php esc_attr_e( 'Principal Signature', 'mjschool' ); ?>" />
 							</div>
 							<div class="mjschool_fees_width_150px"></div>
 							<div class="mjschool_margin_top_5px">
@@ -5028,20 +5705,16 @@ function mjschool_student_invoice_pdf( $invoice_id, $invoice_type ) {
 				<div style="float:left;width:100%; ">
 					<div style="float:left;width:25%;">
 						<div class="asasa" style="float:letf;border-radius:50px;">
-							<img src="<?php echo esc_url(get_option('mjschool_school_logo')) ?>"
-								style="height: 130px;border-radius:50%;background-repeat:no-repeat;background-size:cover;margin-top: 3px;" />
+							<img src="<?php echo esc_url(get_option('mjschool_school_logo')); ?>" style="height: 130px;border-radius:50%;background-repeat:no-repeat;background-size:cover;margin-top: 3px;" />
 						</div>
 					</div>
 					<div style="float:left; width:75%;padding-top:10px;">
-						<p style="margin:0px;width:100%;font-weight:bold;color:#1B1B8D;font-size:24px;text-align:center;">
-							<?php echo esc_html(get_option('mjschool_school_name')); ?></p>
-						<p style="margin:0px;font-size:17px;text-align:center;">
-							<?php echo esc_html(get_option('mjschool_school_address')); ?></p>
+						<p style="margin:0px;width:100%;font-weight:bold;color:#1B1B8D;font-size:24px;text-align:center;"> <?php echo esc_html(get_option('mjschool_school_name')); ?></p>
+						<p style="margin:0px;font-size:17px;text-align:center;"> <?php echo esc_html(get_option('mjschool_school_address')); ?></p>
 						<div style="margin:0px;width:100%;text-align:center;">
 							<p style="margin: 0px;width: fit-content;font-size: 17px;display: inline-block;">
-								<?php esc_html_e('E-mail', 'mjschool'); ?> :
-								<?php echo esc_html(get_option('mjschool_email')); ?>&nbsp;&nbsp;<?php esc_html_e('Phone', 'mjschool'); ?>
-								: <?php echo esc_html(get_option('mjschool_contact_number')); ?></p>
+								<?php esc_html_e('E-mail', 'mjschool'); ?> : <?php echo esc_html(get_option('mjschool_email')); ?>&nbsp;&nbsp;<?php esc_html_e('Phone', 'mjschool'); ?> : <?php echo esc_html(get_option('mjschool_contact_number')); ?>
+							</p>
 						</div>
 					</div>
 				</div>
@@ -5055,15 +5728,12 @@ function mjschool_student_invoice_pdf( $invoice_id, $invoice_type ) {
 								<tbody>
 									<tr>
 										<td width="22%">
-											<img class="system_logo"
-												src="<?php echo esc_url(get_option('mjschool_school_logo')); ?>">
+											<img class="system_logo" src="<?php echo esc_url(get_option('mjschool_school_logo')); ?>">
 										</td>
 										<?php // @codingStandardsIgnoreEnd ?>
 										<td width="80%" style="padding-left: 10px;">
-											<label
-												class="popup_label_heading"><?php esc_html_e( 'Address', 'mjschool' ); ?></label><br>
-											<label for="" class="label_value word_break_all"
-												style="color: #333333 !important;font-weight: 400;">
+											<label class="popup_label_heading"><?php esc_html_e( 'Address', 'mjschool' ); ?></label><br>
+											<label for="" class="label_value word_break_all" style="color: #333333 !important;font-weight: 400;">
 												<?php
 												$school_address  = get_option( 'mjschool_school_address' );
 												$escaped_address = esc_html( $school_address );
@@ -5071,16 +5741,10 @@ function mjschool_student_invoice_pdf( $invoice_id, $invoice_type ) {
 												echo wp_kses_post( $split_address );
 												?>
 												</label><br>
-											<label
-												class="popup_label_heading"><?php esc_html_e( 'Email', 'mjschool' ); ?>
-											</label><br>
-											<label for="" style="color: #333333 !important;font-weight: 400;"
-												class="label_value word_break_all"><?php echo esc_html( get_option( 'mjschool_email' ) ), '<BR>'; ?></label><br>
-											<label
-												class="popup_label_heading"><?php esc_html_e( 'Phone', 'mjschool' ); ?>
-											</label><br>
-											<label for="" style="color: #333333 !important;font-weight: 400;"
-												class="label_value"><?php echo esc_html( get_option( 'mjschool_contact_number' ) ) . '<br>'; ?></label>
+											<label class="popup_label_heading"><?php esc_html_e( 'Email', 'mjschool' ); ?> </label><br>
+											<label for="" style="color: #333333 !important;font-weight: 400;" class="label_value word_break_all"><?php echo esc_html( get_option( 'mjschool_email' ) ), '<BR>'; ?></label><br>
+											<label class="popup_label_heading"><?php esc_html_e( 'Phone', 'mjschool' ); ?> </label><br>
+											<label for="" style="color: #333333 !important;font-weight: 400;" class="label_value"><?php echo esc_html( get_option( 'mjschool_contact_number' ) ) . '<br>'; ?></label>
 										</td>
 									</tr>
 								</tbody>
@@ -5513,25 +6177,43 @@ function mjschool_student_invoice_pdf( $invoice_id, $invoice_type ) {
  * @return void
  */
 function mjschool_print_invoice() {
-	if ( isset( $_REQUEST['print'] ) && sanitize_text_field(wp_unslash($_REQUEST['print'])) === 'print' && sanitize_text_field(wp_unslash($_REQUEST['page'])) === 'mjschool_payment' ) {
-		if ( is_rtl() ) 
-		{
-			wp_enqueue_style( 'bootstrap-rtl', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap.rtl.min.css', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-custome-rtl', plugins_url( '/assets/css/mjschool-custome-rtl.css', __FILE__ ) );
-			wp_enqueue_style( 'mjschool-newdesign-rtl', plugins_url( '/assets/css/mjschool-new-design-rtl.css', __FILE__ ) );
-		}
-		wp_enqueue_style( 'mjschool-style', plugins_url( '/assets/css/mjschool-style.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-new-design', plugins_url( '/assets/css/mjschool-smgt-new-design.css', __FILE__ ) );
-		wp_enqueue_style( 'bootstrap', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap.min.css', __FILE__ ) );
-		wp_enqueue_style( 'buttons-dataTables', plugins_url( '/assets/css/third-party-css/buttons.dataTables.min.css', __FILE__ ) );
-		wp_enqueue_style( 'mjschool-poppins-fontfamily', plugins_url( '/assets/css/mjschool-popping-font.css', __FILE__ ) );
-
-		// Trigger for JS.
-		echo '<div id="mjschool-print-invoice-trigger" data-print="1"></div>';
-
-		mjschool_student_invoice_print( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['invoice_id'])) ) );
-		die();
+	// Check with isset() for all required parameters
+	if ( ! isset( $_REQUEST['print'] ) || ! isset( $_REQUEST['page'] ) ) {
+		return;
 	}
+	
+	$print = sanitize_text_field( wp_unslash( $_REQUEST['print'] ) );
+	$page  = sanitize_text_field( wp_unslash( $_REQUEST['page'] ) );
+	
+	if ( $print !== 'print' || $page !== 'mjschool_payment' ) {
+		return;
+	}
+	
+	// Enqueue styles
+	if ( is_rtl() ) {
+		wp_enqueue_style( 'bootstrap-rtl', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap.rtl.min.css', __FILE__ ) );
+		wp_enqueue_style( 'mjschool-custome-rtl', plugins_url( '/assets/css/mjschool-custome-rtl.css', __FILE__ ) );
+		wp_enqueue_style( 'mjschool-newdesign-rtl', plugins_url( '/assets/css/mjschool-new-design-rtl.css', __FILE__ ) );
+	}
+	
+	wp_enqueue_style( 'mjschool-style', plugins_url( '/assets/css/mjschool-style.css', __FILE__ ) );
+	wp_enqueue_style( 'mjschool-new-design', plugins_url( '/assets/css/mjschool-smgt-new-design.css', __FILE__ ) );
+	wp_enqueue_style( 'bootstrap', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap.min.css', __FILE__ ) );
+	wp_enqueue_style( 'buttons-dataTables', plugins_url( '/assets/css/third-party-css/buttons.dataTables.min.css', __FILE__ ) );
+	wp_enqueue_style( 'mjschool-poppins-fontfamily', plugins_url( '/assets/css/mjschool-popping-font.css', __FILE__ ) );
+	
+	// Trigger for JS
+	echo '<div id="mjschool-print-invoice-trigger" data-print="1"></div>';
+	
+	// Validate invoice_id exists
+	if ( ! isset( $_REQUEST['invoice_id'] ) ) {
+		wp_die( esc_html__( 'Invoice ID is required.', 'mjschool' ) );
+	}
+	
+	$invoice_id = sanitize_text_field( wp_unslash( $_REQUEST['invoice_id'] ) );
+	
+	mjschool_student_invoice_print( mjschool_decrypt_id( $invoice_id ) );
+	exit;
 }
 add_action( 'init', 'mjschool_print_invoice' );
 
@@ -5555,7 +6237,7 @@ add_action( 'init', 'mjschool_print_invoice' );
 function mjschool_install_tables() {
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 	global $wpdb;
-	$table_attendence = $wpdb->prefix . 'mjschool_attendence'; // Register attendence table.
+	$table_attendence = $wpdb->prefix . 'mjschool_attendence';
 	$sql              = 'CREATE TABLE IF NOT EXISTS ' . $table_attendence . ' (
 	`attendence_id` int(50) NOT NULL AUTO_INCREMENT,
 	`user_id` int(50) NOT NULL,
@@ -5569,14 +6251,18 @@ function mjschool_install_tables() {
 	) DEFAULT CHARSET=utf8';
 	dbDelta( $sql );
 	$table_attendence = $wpdb->prefix . 'mjschool_attendence';
-	$attendence_type  = 'attendence_type';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $attendence_type, $wpdb->get_col( 'DESC ' . $table_attendence, 0 ) ) ) {
+	$attendence_type = 'attendence_type';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $attendence_type, $wpdb->get_col( "DESC {$table_attendence}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_attendence ADD $attendence_type text" );
+		$result = $wpdb->query( "ALTER TABLE {$table_attendence} ADD {$attendence_type} text" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		
+		if ( false === $result ) {
+			error_log( "MJSchool: Failed to add column {$attendence_type} to table {$table_attendence}" );
+		}
 	}
-	$table_exam = $wpdb->prefix . 'mjschool_exam'; // Register exam table.
+	$table_exam = $wpdb->prefix . 'mjschool_exam';
 	$sql        = 'CREATE TABLE IF NOT EXISTS ' . $table_exam . ' (
 	`exam_id` int(11) NOT NULL AUTO_INCREMENT,
 	`exam_name` varchar(200) NOT NULL,
@@ -5591,15 +6277,15 @@ function mjschool_install_tables() {
 	PRIMARY KEY (`exam_id`)
 	)DEFAULT CHARSET=utf8';
 	dbDelta( $sql );
-	$subject_data =  'subject_data';
+	$subject_data = 'subject_data';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	if (!in_array($subject_data, $wpdb->get_col( "DESC " . $table_exam, 0 ) ) ) {
+	if ( ! in_array( $subject_data, $wpdb->get_col( "DESC {$table_exam}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_exam ADD $subject_data text" );
+		$wpdb->query( "ALTER TABLE {$table_exam} ADD {$subject_data} text" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$daynamic_certificate = $wpdb->prefix . 'mjschool_daynamic_certificate';
-	$sql                  = "CREATE TABLE IF NOT EXISTS $daynamic_certificate (
+	$sql                  = "CREATE TABLE IF NOT EXISTS {$daynamic_certificate} (
 	id INT(11) NOT NULL AUTO_INCREMENT,
 	certificate_name VARCHAR(100) NOT NULL,
 	certificate_content LONGTEXT NOT NULL,
@@ -5609,23 +6295,23 @@ function mjschool_install_tables() {
 	) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 	dbDelta( $sql );
 	$contributions      = 'contributions';
-	$contributions_data = 'contributions_data';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $contributions, $wpdb->get_col( 'DESC ' . $table_exam, 0 ) ) ) {
+	$contributions_data = 'contributions_data';	
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $contributions, $wpdb->get_col( "DESC {$table_exam}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_exam ADD $contributions varchar(10) NULL" );
+		$wpdb->query( "ALTER TABLE {$table_exam} ADD {$contributions} varchar(10) NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $contributions_data, $wpdb->get_col( 'DESC ' . $table_exam, 0 ) ) ) {
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $contributions_data, $wpdb->get_col( "DESC {$table_exam}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_exam ADD $contributions_data text NULL" );
+		$wpdb->query( "ALTER TABLE {$table_exam} ADD {$contributions_data} text NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$result = $wpdb->query( "ALTER TABLE $table_exam MODIFY $contributions varchar(10) NULL" );
+	$wpdb->query( "ALTER TABLE {$table_exam} MODIFY {$contributions} varchar(10) NULL" );
 	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$table_grade = $wpdb->prefix . 'mjschool_grade'; // Register grade table.
+	$table_grade = $wpdb->prefix . 'mjschool_grade';
 	$sql         = 'CREATE TABLE IF NOT EXISTS ' . $table_grade . ' (
 	`grade_id` int(11) NOT NULL AUTO_INCREMENT,
 	`grade_name` varchar(20) NOT NULL,
@@ -5641,8 +6327,8 @@ function mjschool_install_tables() {
 	$mark_from = 'mark_from';
 	$mark_upto = 'mark_upto';
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$result = $wpdb->query( "ALTER TABLE $table_grade MODIFY $mark_from float NOT NULL" );
-	$result = $wpdb->query( "ALTER TABLE $table_grade MODIFY $mark_upto float NOT NULL" );
+	$wpdb->query( "ALTER TABLE $table_grade MODIFY $mark_from float NOT NULL" );
+	$wpdb->query( "ALTER TABLE $table_grade MODIFY $mark_upto float NOT NULL" );
 	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$table_event = $wpdb->prefix . 'mjschool_event'; // register grade table.
 	$sql         = 'CREATE TABLE IF NOT EXISTS ' . $table_event . ' (
@@ -5659,7 +6345,7 @@ function mjschool_install_tables() {
 	PRIMARY KEY (`event_id`)
 	)DEFAULT CHARSET=utf8';
 	dbDelta( $sql );
-	$table_hall = $wpdb->prefix . 'mjschool_hall'; // register hall table.
+	$table_hall = $wpdb->prefix . 'mjschool_hall';
 	$sql        = 'CREATE TABLE IF NOT EXISTS ' . $table_hall . ' (
 	`hall_id` int(11) NOT NULL AUTO_INCREMENT,
 	`hall_name` varchar(200) NOT NULL,
@@ -5683,9 +6369,9 @@ function mjschool_install_tables() {
 	dbDelta( $sql );
 	$certificate_id = 'certificate_id';
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	if ( ! in_array( $certificate_id, $wpdb->get_col( 'DESC ' . $table_exprience_letter, 0 ) ) ) {
+	if ( ! in_array( $certificate_id, $wpdb->get_col( "DESC {$table_exprience_letter}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_exprience_letter ADD $certificate_id int(20) NOT NULL" );
+		$wpdb->query( "ALTER TABLE {$table_exprience_letter} ADD {$certificate_id} int(20) NOT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_holiday = $wpdb->prefix . 'mjschool_holiday'; // register holiday table.
@@ -5719,18 +6405,18 @@ function mjschool_install_tables() {
 	) DEFAULT CHARSET=utf8 ';
 	dbDelta( $sql );
 	$class_marks = 'class_marks';
-	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	if ( ! in_array( $class_marks, $wpdb->get_col( 'DESC ' . $table_marks, 0 ) ) ) {
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $class_marks, $wpdb->get_col( "DESC {$table_marks}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_marks ADD $class_marks text NULL" );
+		$wpdb->query( "ALTER TABLE {$table_marks} ADD {$class_marks} text NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$contributions = 'contributions';
-	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	if ( ! in_array( $contributions, $wpdb->get_col( 'DESC ' . $table_marks, 0 ) ) ) {
-		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $contributions, $wpdb->get_col( "DESC {$table_marks}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_marks ADD $contributions varchar(25) NULL" );
+		$wpdb->query( "ALTER TABLE {$table_marks} ADD {$contributions} varchar(25) NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$table_mjschool_class = $wpdb->prefix . 'mjschool_class'; // register smgt_class table.
@@ -5748,18 +6434,16 @@ function mjschool_install_tables() {
 	dbDelta( $sql );
 	$class_description = 'class_description';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	if(!in_array($class_description , $wpdb->get_col( "DESC" . $table_mjschool_class, 0 ) ) )
-	{
+	if ( ! in_array( $class_description, $wpdb->get_col( "DESC {$table_mjschool_class}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_class ADD $class_description TEXT NULL");
+		$wpdb->query( "ALTER TABLE {$table_mjschool_class} ADD {$class_description} TEXT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	}
+	}	
 	$academic_year = 'academic_year';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	if(!in_array($academic_year , $wpdb->get_col( "DESC" . $table_mjschool_class,0 ) ) )
-	{
+	if ( ! in_array( $academic_year, $wpdb->get_col( "DESC {$table_mjschool_class}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_class ADD $academic_year VARCHAR(20) NULL");
+		$wpdb->query( "ALTER TABLE {$table_mjschool_class} ADD {$academic_year} VARCHAR(20) NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_mjschool_class_room = $wpdb->prefix . 'mjschool_class_room';
@@ -5776,9 +6460,9 @@ function mjschool_install_tables() {
 	dbDelta($sql);
 	$subid = 'sub_id';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	if (!in_array($subid, $wpdb->get_col( "DESC " . $table_mjschool_class_room, 0 ) ) ) {
+	if ( ! in_array( $subid, $wpdb->get_col( "DESC {$table_mjschool_class_room}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_class_room ADD $subid TEXT NULL" );
+		$wpdb->query( "ALTER TABLE {$table_mjschool_class_room} ADD {$subid} TEXT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_custom_class = $wpdb->prefix . 'mjschool_custom_class'; //register subject table.
@@ -5794,9 +6478,9 @@ function mjschool_install_tables() {
 	dbDelta($sql);
 	$subject_ids = 'sub_id';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	if (!in_array($subject_ids, $wpdb->get_col( "DESC " . $table_custom_class, 0 ) ) ) {
+	if ( ! in_array( $subject_ids, $wpdb->get_col( "DESC {$table_custom_class}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_custom_class ADD $subject_ids TEXT NULL" );
+		$wpdb->query( "ALTER TABLE {$table_custom_class} ADD {$subject_ids} TEXT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_mjschool_fees = $wpdb->prefix . 'mjschool_fees'; // register smgt_class table.
@@ -5813,7 +6497,7 @@ function mjschool_install_tables() {
 	dbDelta( $sql );
 	$class_id = 'class_id';
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$result = $wpdb->query( "ALTER TABLE $table_mjschool_fees MODIFY $class_id varchar(20) NOT NULL" );
+	$result = $wpdb->query( "ALTER TABLE {$table_mjschool_fees} MODIFY {$class_id} varchar(20) NOT NULL" );
 	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$table_mjschool_taxes = $wpdb->prefix . 'mjschool_taxes';
 	$sql              = 'CREATE TABLE IF NOT EXISTS ' . $table_mjschool_taxes . ' (
@@ -5845,58 +6529,58 @@ function mjschool_install_tables() {
 	dbDelta( $sql );
 	$tax = 'tax';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $tax, $wpdb->get_col( 'DESC ' . $table_mjschool_fees_payment, 0 ) ) ) {
+	if ( ! in_array( $tax, $wpdb->get_col( "DESC {$table_mjschool_fees_payment}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_fees_payment ADD $tax varchar(100) NULL" );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_fees_payment} ADD {$tax} varchar(100) NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$tax_amount = 'tax_amount';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $tax_amount, $wpdb->get_col( 'DESC ' . $table_mjschool_fees_payment, 0 ) ) ) {
+	if ( ! in_array( $tax_amount, $wpdb->get_col( "DESC {$table_mjschool_fees_payment}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_fees_payment ADD $tax_amount double DEFAULT 0" );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_fees_payment} ADD {$tax_amount} double DEFAULT 0" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$discount = 'discount';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $discount, $wpdb->get_col( 'DESC ' . $table_mjschool_fees_payment, 0 ) ) ) {
+	if ( ! in_array( $discount, $wpdb->get_col( "DESC {$table_mjschool_fees_payment}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_fees_payment ADD $discount varchar(20) DEFAULT NULL" );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_fees_payment} ADD {$discount} varchar(20) DEFAULT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$discount_type = 'discount_type';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $discount_type, $wpdb->get_col( 'DESC ' . $table_mjschool_fees_payment, 0 ) ) ) {
+	if ( ! in_array( $discount_type, $wpdb->get_col( "DESC {$table_mjschool_fees_payment}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_fees_payment ADD $discount_type varchar(10) DEFAULT NULL" );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_fees_payment} ADD {$discount_type} varchar(10) DEFAULT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$fees_amount = 'fees_amount';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $fees_amount, $wpdb->get_col( 'DESC ' . $table_mjschool_fees_payment, 0 ) ) ) {
+	if ( ! in_array( $fees_amount, $wpdb->get_col( "DESC {$table_mjschool_fees_payment}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_fees_payment ADD $fees_amount float" );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_fees_payment} ADD {$fees_amount} float" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$discount_amount = 'discount_amount';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $discount_amount, $wpdb->get_col( 'DESC ' . $table_mjschool_fees_payment, 0 ) ) ) {
+	if ( ! in_array( $discount_amount, $wpdb->get_col( "DESC {$table_mjschool_fees_payment}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_fees_payment ADD $discount_amount double DEFAULT 0" );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_fees_payment} ADD {$discount_amount} double DEFAULT 0" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$invoice_status = 'invoice_status';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $invoice_status, $wpdb->get_col( 'DESC ' . $table_mjschool_fees_payment, 0 ) ) ) {
+	if ( ! in_array( $invoice_status, $wpdb->get_col( "DESC {$table_mjschool_fees_payment}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->query( "ALTER TABLE $table_mjschool_fees_payment ADD $invoice_status VARCHAR(20) DEFAULT NULL" );
+		$wpdb->query( "ALTER TABLE {$table_mjschool_fees_payment} ADD {$invoice_status} VARCHAR(20) DEFAULT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$invoice_id = 'invoice_id';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $invoice_id, $wpdb->get_col( 'DESC ' . $table_mjschool_fees_payment, 0 ) ) ) {
+	if ( ! in_array( $invoice_id, $wpdb->get_col( "DESC {$table_mjschool_fees_payment}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->query( "ALTER TABLE $table_mjschool_fees_payment ADD $invoice_id int(11) DEFAULT NULL" );
+		$wpdb->query( "ALTER TABLE {$table_mjschool_fees_payment} ADD {$invoice_id} int(11) DEFAULT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$mjschool_fees_payment_recurring = $wpdb->prefix . 'mjschool_fees_payment_recurring'; // register smgt_class table.
@@ -5920,21 +6604,21 @@ function mjschool_install_tables() {
 	dbDelta( $sql );
 	$tax = 'tax';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $tax, $wpdb->get_col( 'DESC ' . $mjschool_fees_payment_recurring, 0 ) ) ) {
+	if ( ! in_array( $tax, $wpdb->get_col( "DESC {$mjschool_fees_payment_recurring}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$result = $wpdb->query( "ALTER TABLE $mjschool_fees_payment_recurring ADD $tax varchar(100) NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$tax_amount = 'tax_amount';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $tax_amount, $wpdb->get_col( 'DESC ' . $mjschool_fees_payment_recurring, 0 ) ) ) {
+	if ( ! in_array( $tax_amount, $wpdb->get_col( "DESC {$mjschool_fees_payment_recurring}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$result = $wpdb->query( "ALTER TABLE $mjschool_fees_payment_recurring ADD $tax_amount double DEFAULT 0" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$fees_amount = 'fees_amount';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $fees_amount, $wpdb->get_col( 'DESC ' . $mjschool_fees_payment_recurring, 0 ) ) ) {
+	if ( ! in_array( $fees_amount, $wpdb->get_col( "DESC {$mjschool_fees_payment_recurring}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$result = $wpdb->query( "ALTER TABLE $mjschool_fees_payment_recurring ADD $fees_amount float " );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -5954,7 +6638,7 @@ function mjschool_install_tables() {
 	dbDelta( $sql );
 	$payment_note = 'payment_note';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $payment_note, $wpdb->get_col( 'DESC ' . $table_mjschool_fee_payment_history, 0 ) ) ) {
+	if ( ! in_array( $payment_note, $wpdb->get_col( "DESC {$table_mjschool_fee_payment_history}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$result = $wpdb->query( "ALTER TABLE $table_mjschool_fee_payment_history ADD $payment_note text NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -5991,23 +6675,23 @@ function mjschool_install_tables() {
 	dbDelta( $sql );
 	$tax = 'tax';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $tax, $wpdb->get_col( 'DESC ' . $table_mjschool_payment, 0 ) ) ) {
+	if ( ! in_array( $tax, $wpdb->get_col( "DESC {$table_mjschool_payment}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_payment ADD $tax varchar(100) NULL" );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_payment} ADD {$tax} varchar(100) NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$tax_amount = 'tax_amount';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $tax_amount, $wpdb->get_col( 'DESC ' . $table_mjschool_payment, 0 ) ) ) {
+	if ( ! in_array( $tax_amount, $wpdb->get_col( "DESC {$table_mjschool_payment}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_payment ADD $tax_amount double DEFAULT 0" );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_payment} ADD {$tax_amount} double DEFAULT 0" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$fees_amount = 'fees_amount';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $fees_amount, $wpdb->get_col( 'DESC ' . $table_mjschool_payment, 0 ) ) ) {
+	if ( ! in_array( $fees_amount, $wpdb->get_col( "DESC {$table_mjschool_payment}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_payment ADD $fees_amount float " );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_payment} ADD {$fees_amount} float " );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_mjschool_time_table = $wpdb->prefix . 'mjschool_time_table'; // register mjschool_time_table table.
@@ -6025,19 +6709,18 @@ function mjschool_install_tables() {
 	$teacher_id       = 'teacher_id';
 	$multiple_teacher = 'multiple_teacher';
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$result = $wpdb->query( "ALTER TABLE $table_mjschool_time_table MODIFY $teacher_id text NULL" );
+	$result = $wpdb->query( "ALTER TABLE {$table_mjschool_time_table} MODIFY {$teacher_id} text NULL" );
 	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $multiple_teacher, $wpdb->get_col( 'DESC ' . $table_mjschool_time_table, 0 ) ) ) {
+	if ( ! in_array( $multiple_teacher, $wpdb->get_col( "DESC {$table_mjschool_time_table}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_time_table ADD $multiple_teacher text" );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_time_table} ADD {$multiple_teacher} text" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$room_id = 'room_id';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	if (!in_array($room_id, $wpdb->get_col( "DESC " . $table_mjschool_time_table, 0 ) ) ) {
+	if (!in_array($room_id, $wpdb->get_col( "DESC {$table_mjschool_time_table}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_time_table ADD $room_id int(11) NULL" );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_time_table} ADD {$room_id} int(11) NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_subject = $wpdb->prefix . 'mjschool_subject'; // register subject table.
@@ -6055,16 +6738,16 @@ function mjschool_install_tables() {
 	dbDelta( $sql );
 	$subject_studentid = 'selected_students';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	if (!in_array($subject_studentid, $wpdb->get_col( "DESC " . $table_subject, 0 ) ) ) {
+	if (!in_array($subject_studentid, $wpdb->get_col( "DESC {$table_subject}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_subject ADD $subject_studentid TEXT NULL" );
+		$result = $wpdb->query( "ALTER TABLE {$table_subject} ADD {$subject_studentid} TEXT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$subject_credit = 'subject_credit';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	if (!in_array($subject_credit, $wpdb->get_col( "DESC " . $table_subject, 0 ) ) ) {
+	if (!in_array($subject_credit, $wpdb->get_col( "DESC {$table_subject}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_subject ADD $subject_credit varchar(255) NULL" );
+		$result = $wpdb->query( "ALTER TABLE {$table_subject} ADD {$subject_credit} varchar(255) NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_transport = $wpdb->prefix . 'mjschool_transport'; // register transport table.
@@ -6152,9 +6835,9 @@ function mjschool_install_tables() {
 	$table_mjschool_audit_log = $wpdb->prefix . 'mjschool_audit_log';
 	$module               = 'module';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $module, $wpdb->get_col( 'DESC ' . $table_mjschool_audit_log, 0 ) ) ) {
+	if ( ! in_array( $module, $wpdb->get_col( "DESC {$table_mjschool_audit_log}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_audit_log ADD $module text" );
+		$result = $wpdb->query( "ALTER TABLE {$table_mjschool_audit_log} ADD {$module} text" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_mjschool_user_log = $wpdb->prefix . 'mjschool_user_log'; // register transport table.
@@ -6224,26 +6907,26 @@ function mjschool_install_tables() {
 	$type       = 'attendence_type';
 	$sub_id     = 'sub_id';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $categories, $wpdb->get_col( 'DESC ' . $mjschool_sub_attendance, 0 ) ) ) {
+	if ( ! in_array( $categories, $wpdb->get_col( "DESC {$mjschool_sub_attendance}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $mjschool_sub_attendance ADD  $categories varchar(10) DEFAULT( 'subject' )" );
+		$result = $wpdb->query( "ALTER TABLE {$mjschool_sub_attendance} ADD {$categories} varchar(10) DEFAULT( 'subject' )" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $section_id, $wpdb->get_col( 'DESC ' . $mjschool_sub_attendance, 0 ) ) ) {
+	if ( ! in_array( $section_id, $wpdb->get_col( "DESC {$mjschool_sub_attendance}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $mjschool_sub_attendance ADD  $section_id int(11) NULL" );
+		$result = $wpdb->query( "ALTER TABLE {$mjschool_sub_attendance} ADD {$section_id} int(11) NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $type, $wpdb->get_col( 'DESC ' . $mjschool_sub_attendance, 0 ) ) ) {
+	if ( ! in_array( $type, $wpdb->get_col( "DESC {$mjschool_sub_attendance}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $mjschool_sub_attendance ADD  $type varchar(10) NULL" );
+		$result = $wpdb->query( "ALTER TABLE {$mjschool_sub_attendance} ADD {$type} varchar(10) NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$result = $wpdb->query( "ALTER TABLE $mjschool_sub_attendance MODIFY  $sub_id int(11) NULL" );
-	$result = $wpdb->query( "ALTER TABLE $mjschool_sub_attendance MODIFY  $section_id int(11) NULL" );
+	$result = $wpdb->query( "ALTER TABLE {$mjschool_sub_attendance} MODIFY {$sub_id} int(11) NULL" );
+	$result = $wpdb->query( "ALTER TABLE {$mjschool_sub_attendance} MODIFY {$section_id} int(11) NULL" );
 	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$mjschool_homework = $wpdb->prefix . 'mjschool_homework'; // homework table.
 	$sql               = 'CREATE TABLE IF NOT EXISTS ' . $mjschool_homework . ' (
@@ -6288,44 +6971,44 @@ function mjschool_install_tables() {
 	dbDelta( $sql );
 	$document_for = 'document_for';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $document_for, $wpdb->get_col( 'DESC ' . $smgt_document, 0 ) ) ) {
+	if ( ! in_array( $document_for, $wpdb->get_col( "DESC {$smgt_document}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $smgt_document  ADD   $document_for varchar(50) DEFAULT NULL" );
+		$result = $wpdb->query( "ALTER TABLE {$smgt_document} ADD {$document_for} varchar(50) DEFAULT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$review_file = 'review_file';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $review_file, $wpdb->get_col( 'DESC ' . $mjschool_student_homework, 0 ) ) ) {
+	if ( ! in_array( $review_file, $wpdb->get_col( "DESC {$mjschool_student_homework}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $mjschool_student_homework  ADD   $review_file text DEFAULT NULL" );
+		$result = $wpdb->query( "ALTER TABLE {$mjschool_student_homework} ADD {$review_file} text DEFAULT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$obtain_marks = 'obtain_marks';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $obtain_marks, $wpdb->get_col( 'DESC ' . $mjschool_student_homework, 0 ) ) ) {
+	if ( ! in_array( $obtain_marks, $wpdb->get_col( "DESC {$mjschool_student_homework}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $mjschool_student_homework  ADD $obtain_marks tinyint(3) DEFAULT NULL AFTER review_file" );
+		$result = $wpdb->query( "ALTER TABLE {$mjschool_student_homework} ADD {$obtain_marks} tinyint(3) DEFAULT NULL AFTER review_file" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$evaluate_date = 'evaluate_date';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $evaluate_date, $wpdb->get_col( 'DESC ' . $mjschool_student_homework, 0 ) ) ) {
+	if ( ! in_array( $evaluate_date, $wpdb->get_col( "DESC {$mjschool_student_homework}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $mjschool_student_homework  ADD $evaluate_date datetime DEFAULT NULL AFTER obtain_marks" );
+		$result = $wpdb->query( "ALTER TABLE {$mjschool_student_homework} ADD {$evaluate_date} datetime DEFAULT NULL AFTER obtain_marks" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$student_comment = 'student_comment';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $student_comment, $wpdb->get_col( 'DESC ' . $mjschool_student_homework, 0 ) ) ) {
+	if ( ! in_array( $student_comment, $wpdb->get_col( "DESC {$mjschool_student_homework}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $mjschool_student_homework  ADD $student_comment text DEFAULT NULL AFTER evaluate_date" );
+		$result = $wpdb->query( "ALTER TABLE {$mjschool_student_homework} ADD {$student_comment} text DEFAULT NULL AFTER evaluate_date" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$teacher_comment = 'teacher_comment';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $teacher_comment, $wpdb->get_col( 'DESC ' . $mjschool_student_homework, 0 ) ) ) {
+	if ( ! in_array( $teacher_comment, $wpdb->get_col( "DESC {$mjschool_student_homework}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $mjschool_student_homework  ADD $teacher_comment text DEFAULT NULL AFTER student_comment" );
+		$result = $wpdb->query( "ALTER TABLE {$mjschool_student_homework} ADD {$teacher_comment} text DEFAULT NULL AFTER student_comment" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$mjschool_message_replies = $wpdb->prefix . 'mjschool_message_replies'; // register smgt_class table.
@@ -6431,9 +7114,9 @@ function mjschool_install_tables() {
 	dbDelta( $sql );
 	$facilities = 'facilities';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $facilities, $wpdb->get_col( 'DESC ' . $smgt_mjschool_room, 0 ) ) ) {
+	if ( ! in_array( $facilities, $wpdb->get_col( "DESC {$smgt_mjschool_room}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $smgt_mjschool_room ADD $facilities text DEFAULT NULL" );
+		$wpdb->query( "ALTER TABLE {$smgt_mjschool_room} ADD {$facilities} text DEFAULT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$smgt_mjschool_beds = $wpdb->prefix . 'mjschool_beds'; // register smgt_beds.
@@ -6481,9 +7164,9 @@ function mjschool_install_tables() {
 	dbDelta( $sql );
 	$show_in_table = 'show_in_table';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $show_in_table, $wpdb->get_col( 'DESC ' . $table_custom_field, 0 ) ) ) {
+	if ( ! in_array( $show_in_table, $wpdb->get_col( "DESC {$table_custom_field}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_custom_field  ADD   $show_in_table varchar(255) DEFAULT NULL" );
+		$wpdb->query( "ALTER TABLE {$table_custom_field} ADD {$show_in_table} varchar(255) DEFAULT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_csv_log = $wpdb->prefix . 'mjschool_csv_log'; // Correct variable name.
@@ -6497,11 +7180,11 @@ function mjschool_install_tables() {
 	) DEFAULT CHARSET=utf8";
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$wpdb->query( $sql );
-	$show_in_table1 = 'status';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $show_in_table, $wpdb->get_col( 'DESC ' . $table_csv_log, 0 ) ) ) {
+	$status_column = 'status';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $status_column, $wpdb->get_col( "DESC {$table_csv_log}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $table_csv_log ADD   $show_in_table1 varchar(50) DEFAULT NULL" );
+		$wpdb->query( "ALTER TABLE {$table_csv_log} ADD {$status_column} varchar(50) DEFAULT NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_custom_field_dropdown_metas = $wpdb->prefix . 'mjschool_custom_field_dropdown_metas';
@@ -6613,13 +7296,13 @@ function mjschool_install_tables() {
 	`created_by` int(11) NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`)
-	) DEFAULT CHARSET=utf8';
+	) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci';
 	dbDelta( $sql );
 	$status_comment = 'status_comment';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $status_comment, $wpdb->get_col( 'DESC ' . $smgt_leave, 0 ) ) ) {
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $status_comment, $wpdb->get_col( "DESC {$smgt_leave}", 0 ), true ) ) {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query( "ALTER TABLE $smgt_leave  ADD   $status_comment text NULL" );
+		$wpdb->query( "ALTER TABLE {$smgt_leave} ADD {$status_comment} text NULL" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	mjschool_add_default_admission_fees_type();
@@ -6627,305 +7310,413 @@ function mjschool_install_tables() {
 	mjschool_add_default_library_periods();
 	// ---- End Leave tables. -----//
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$teacher_class = $wpdb->get_results( "SELECT *from $mjschool_teacher_class" );
+	$teacher_class = $wpdb->get_results( "SELECT * FROM {$mjschool_teacher_class}" );
 	if ( empty( $teacher_class ) ) {
 		$teacherlist = get_users( array( 'role' => 'teacher' ) );
 		if ( ! empty( $teacherlist ) ) {
 			foreach ( $teacherlist as $retrieve_data ) {
 				$created_by   = get_current_user_id();
-				$created_date = date( 'Y-m-d H:i:s' );
+				$created_date = current_time( 'mysql' );
 				$class_id     = get_user_meta( $retrieve_data->ID, 'class_name', true );
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+				
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$success = $wpdb->insert(
 					$mjschool_teacher_class,
 					array(
-						'teacher_id'   => $retrieve_data->ID,
-						'class_id'     => $class_id,
-						'created_by'   => $created_by,
+						'teacher_id'   => absint( $retrieve_data->ID ),
+						'class_id'     => absint( $class_id ),
+						'created_by'   => absint( $created_by ),
 						'created_date' => $created_date,
-					)
-				);
+					),
+					array( '%d', '%d', '%d', '%s' )
+				);	
+				if ( false === $success ) {
+					error_log( "MJSchool: Failed to insert teacher class data for teacher ID: {$retrieve_data->ID}" );
+				}
 			}
 		}
 	}
 	/* Update transport*/
-	$table_transport = $wpdb->prefix . 'mjschool_transport'; // register marks table.
+	$table_transport = $wpdb->prefix . 'mjschool_transport';
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$wpdb->query( "ALTER TABLE $table_transport MODIFY number_of_vehicle int(11) NOT NULL" );
+	$wpdb->query( "ALTER TABLE {$table_transport} MODIFY number_of_vehicle int(11) NOT NULL" );
+	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$table_hall     = $wpdb->prefix . 'mjschool_hall';
 	$creted_by_hall = 'created_by';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $creted_by_hall, $wpdb->get_col( 'DESC ' . $table_hall, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_hall  ADD   $creted_by_hall int(11) NOT NULL" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $creted_by_hall, $wpdb->get_col( "DESC {$table_hall}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_hall} ADD {$creted_by_hall} int(11) NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	/* Update Makrs*/
-	$table_marks = $wpdb->prefix . 'mjschool_marks'; // register marks table.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$wpdb->query( "ALTER TABLE $table_marks MODIFY marks  float" );
-	/* Update Makrs*/
-	$table_marks = $wpdb->prefix . 'mjschool_marks'; // register marks table.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$wpdb->query( "ALTER TABLE $table_marks MODIFY grade_id int(11) NULL" );
-	$table_mjschool_holiday   = $wpdb->prefix . 'mjschool_holiday';
-	$created_date_holiday = 'created_date';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $created_date_holiday, $wpdb->get_col( 'DESC ' . $table_mjschool_holiday, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_holiday  ADD   $created_date_holiday  datetime NULL" );
+	$table_marks = $wpdb->prefix . 'mjschool_marks';
+	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$wpdb->query( "ALTER TABLE {$table_marks} MODIFY marks float" );
+	$wpdb->query( "ALTER TABLE {$table_marks} MODIFY grade_id int(11) NULL" );
+	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$table_mjschool_holiday = $wpdb->prefix . 'mjschool_holiday';
+	$created_date_holiday   = 'created_date';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $created_date_holiday, $wpdb->get_col( "DESC {$table_mjschool_holiday}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_holiday} ADD {$created_date_holiday} datetime NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	// ------------- alter query for holiday status. --------------//
 	$table_mjschool_holiday_status = $wpdb->prefix . 'mjschool_holiday';
-	$status_holiday            = 'status';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $status_holiday, $wpdb->get_col( 'DESC ' . $table_mjschool_holiday_status, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_holiday_status  ADD   $status_holiday  int(11) NOT NULL", 0 );
+	$status_holiday                = 'status';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $status_holiday, $wpdb->get_col( "DESC {$table_mjschool_holiday_status}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_holiday_status} ADD {$status_holiday} int(11) NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_mjschool_transport = $wpdb->prefix . 'mjschool_transport';
-	$creted_by            = 'created_by';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $creted_by, $wpdb->get_col( 'DESC ' . $table_mjschool_transport, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_transport  ADD   $creted_by   text" );
+	$creted_by                = 'created_by';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $creted_by, $wpdb->get_col( "DESC {$table_mjschool_transport}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_transport} ADD {$creted_by} text" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$comment_field = 'comment';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $comment_field, $wpdb->get_col( 'DESC ' . $mjschool_sub_attendance, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $mjschool_sub_attendance  ADD   $comment_field   text" );
+
+	// Sub Attendance
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $comment_field, $wpdb->get_col( "DESC {$mjschool_sub_attendance}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$mjschool_sub_attendance} ADD {$comment_field} text" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$table_attendance = $wpdb->prefix . 'mjschool_attendence';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $comment_field, $wpdb->get_col( 'DESC ' . $table_attendance, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_attendance  ADD   $comment_field   text" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $comment_field, $wpdb->get_col( "DESC {$table_attendance}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_attendance} ADD {$comment_field} text" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
+
+	/**
+	 * Add post_id to Message Table
+	 */
 	$new_field              = 'post_id';
 	$table_mjschool_message = $wpdb->prefix . 'mjschool_message';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $new_field, $wpdb->get_col( 'DESC ' . $table_mjschool_message, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_message  ADD   $new_field   int(11)" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $new_field, $wpdb->get_col( "DESC {$table_mjschool_message}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_message} ADD {$new_field} int(11)" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	$section_id    = 'section_id';
-	$created_by    = 'created_by';
+
+	/**
+	 * Add section_id to Multiple Tables
+	 */
+	$section_id = 'section_id';
+	$created_by = 'created_by';
+
+	// Subject Table
 	$table_subject = $wpdb->prefix . 'mjschool_subject';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $section_id, $wpdb->get_col( 'DESC ' . $table_subject, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_subject  ADD   $section_id   int(11) NOT NULL" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $section_id, $wpdb->get_col( "DESC {$table_subject}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_subject} ADD {$section_id} int(11) NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
+
+	// Fees Table
 	$table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $section_id, $wpdb->get_col( 'DESC ' . $table_mjschool_fees, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_fees  ADD   $section_id   int(11) NOT NULL" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $section_id, $wpdb->get_col( "DESC {$table_mjschool_fees}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_fees} ADD {$section_id} int(11) NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
+
+	// Fees Payment Table
 	$table_mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $section_id, $wpdb->get_col( 'DESC ' . $table_mjschool_fees_payment, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_fees_payment  ADD   $section_id   int(11) NOT NULL" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $section_id, $wpdb->get_col( "DESC {$table_mjschool_fees_payment}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_fees_payment} ADD {$section_id} int(11) NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	$table_mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
-	$fees_id                     = 'fees_id';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result                    = $wpdb->query( "ALTER TABLE $table_mjschool_fees_payment MODIFY COLUMN $fees_id varchar(255) NOT NULL" );
+
+	// Modify fees_id column
+	$fees_id = 'fees_id';
+	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$wpdb->query( "ALTER TABLE {$table_mjschool_fees_payment} MODIFY COLUMN {$fees_id} varchar(255) NOT NULL" );
+	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
+	// Income/Expense Table
 	$table_mjschool_income_expense = $wpdb->prefix . 'mjschool_income_expense';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $section_id, $wpdb->get_col( 'DESC ' . $table_mjschool_income_expense, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_income_expense  ADD   $section_id   int(11) NOT NULL" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $section_id, $wpdb->get_col( "DESC {$table_mjschool_income_expense}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_income_expense} ADD {$section_id} int(11) NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	$tax                       = 'tax';
-	$table_mjschool_income_expense = $wpdb->prefix . 'mjschool_income_expense';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $tax, $wpdb->get_col( 'DESC ' . $table_mjschool_income_expense, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_income_expense ADD $tax varchar(100) NULL" );
+
+	// Add tax to Income/Expense
+	$tax = 'tax';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $tax, $wpdb->get_col( "DESC {$table_mjschool_income_expense}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_income_expense} ADD {$tax} varchar(100) NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	$tax_amount                = 'tax_amount';
-	$table_mjschool_income_expense = $wpdb->prefix . 'mjschool_income_expense';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $tax_amount, $wpdb->get_col( 'DESC ' . $table_mjschool_income_expense, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_income_expense ADD $tax_amount double DEFAULT 0" );
+
+	// Add tax_amount to Income/Expense
+	$tax_amount = 'tax_amount';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $tax_amount, $wpdb->get_col( "DESC {$table_mjschool_income_expense}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_income_expense} ADD {$tax_amount} double DEFAULT 0" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
+
+	// Library Book Issue Table
 	$table_mjschool_library_book_issue = $wpdb->prefix . 'mjschool_library_book_issue';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $section_id, $wpdb->get_col( 'DESC ' . $table_mjschool_library_book_issue, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_library_book_issue  ADD   $section_id   int(11) NOT NULL" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $section_id, $wpdb->get_col( "DESC {$table_mjschool_library_book_issue}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_library_book_issue} ADD {$section_id} int(11) NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	$library_card_no                   = 'library_card_no';
-	$table_mjschool_library_book_issue = $wpdb->prefix . 'mjschool_library_book_issue';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $library_card_no, $wpdb->get_col( 'DESC ' . $table_mjschool_library_book_issue, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_library_book_issue ADD $library_card_no varchar(50) DEFAULT NULL AFTER student_id" );
+
+	// Add library_card_no
+	$library_card_no = 'library_card_no';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $library_card_no, $wpdb->get_col( "DESC {$table_mjschool_library_book_issue}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_library_book_issue} ADD {$library_card_no} varchar(50) DEFAULT NULL AFTER student_id" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	$library_comment                   = 'comment';
-	$table_mjschool_library_book_issue = $wpdb->prefix . 'mjschool_library_book_issue';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $library_comment, $wpdb->get_col( 'DESC ' . $table_mjschool_library_book_issue, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_library_book_issue ADD $library_comment text DEFAULT NULL AFTER student_id" );
+
+	// Add comment to library
+	$library_comment = 'comment';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $library_comment, $wpdb->get_col( "DESC {$table_mjschool_library_book_issue}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_library_book_issue} ADD {$library_comment} text DEFAULT NULL AFTER student_id" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
+
+	// Payment Table - section_id
 	$table_mjschool_payment = $wpdb->prefix . 'mjschool_payment';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $section_id, $wpdb->get_col( 'DESC ' . $table_mjschool_payment, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_payment  ADD   $section_id   int(11) NOT NULL" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $section_id, $wpdb->get_col( "DESC {$table_mjschool_payment}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_payment} ADD {$section_id} int(11) NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	$table_mjschool_payment = $wpdb->prefix . 'mjschool_payment';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $created_by, $wpdb->get_col( 'DESC ' . $table_mjschool_payment, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_payment  ADD   $created_by   int(11) NOT NULL" );
+
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $created_by, $wpdb->get_col( "DESC {$table_mjschool_payment}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_payment} ADD {$created_by} int(11) NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $created_by, $wpdb->get_col( 'DESC ' . $table_mjschool_payment, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_payment  ADD   $created_by   int(11) NOT NULL" );
-	}
+	// Time Table - section_name
 	$section_name              = 'section_name';
 	$table_mjschool_time_table = $wpdb->prefix . 'mjschool_time_table';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $section_name, $wpdb->get_col( 'DESC ' . $table_mjschool_time_table, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_time_table  ADD   $section_name   int(11) NOT NULL" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $section_name, $wpdb->get_col( "DESC {$table_mjschool_time_table}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_time_table} ADD {$section_name} int(11) NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
+
+	// Marks Table - section_id
 	$table_marks = $wpdb->prefix . 'mjschool_marks';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $section_id, $wpdb->get_col( 'DESC ' . $table_marks, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_marks  ADD   $section_id   int(11) NOT NULL" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $section_id, $wpdb->get_col( "DESC {$table_marks}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_marks} ADD {$section_id} int(11) NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	$table_mjschool_class = $wpdb->prefix . 'mjschool_class'; // register smgt_class table.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$wpdb->query( "ALTER  TABLE $table_mjschool_class  MODIFY   class_capacity  int" );
+	$table_mjschool_class = $wpdb->prefix . 'mjschool_class';
+	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$wpdb->query( "ALTER TABLE {$table_mjschool_class} MODIFY class_capacity int" );
+	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
+	// Call section transfer function
 	mjschool_transfer_section_id();
-	$exam_start_date = 'exam_start_date';
-	$exam_end_date   = 'exam_end_date';
-	$class_id        = 'class_id';
-	$section_id1     = 'section_id';
-	$exam_term       = 'exam_term';
-	$passing_mark    = 'passing_mark';
-	$total_mark      = 'total_mark';
-	$exam_syllabus   = 'exam_syllabus';
-	$table_mjschool_exam = $wpdb->prefix . 'mjschool_exam';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $class_id, $wpdb->get_col( 'DESC ' . $table_mjschool_exam, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_exam  ADD   $class_id  int(11) NOT NULL AFTER exam_name" );
+
+	/**
+	 * Add Multiple Columns to Exam Table
+	 */
+	$exam_start_date       = 'exam_start_date';
+	$exam_end_date         = 'exam_end_date';
+	$class_id              = 'class_id';
+	$section_id1           = 'section_id';
+	$exam_term             = 'exam_term';
+	$passing_mark          = 'passing_mark';
+	$total_mark            = 'total_mark';
+	$exam_syllabus         = 'exam_syllabus';
+	$table_mjschool_exam   = $wpdb->prefix . 'mjschool_exam';
+
+	// class_id
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $class_id, $wpdb->get_col( "DESC {$table_mjschool_exam}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_exam} ADD {$class_id} int(11) NOT NULL AFTER exam_name" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $section_id1, $wpdb->get_col( 'DESC ' . $table_mjschool_exam, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_exam  ADD   $section_id1  int(11) NOT NULL AFTER class_id" );
+
+	// section_id
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $section_id1, $wpdb->get_col( "DESC {$table_mjschool_exam}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_exam} ADD {$section_id1} int(11) NOT NULL AFTER class_id" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $exam_term, $wpdb->get_col( 'DESC ' . $table_mjschool_exam, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_exam  ADD   $exam_term  int(11) NOT NULL AFTER section_id" );
+
+	// exam_term
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $exam_term, $wpdb->get_col( "DESC {$table_mjschool_exam}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_exam} ADD {$exam_term} int(11) NOT NULL AFTER section_id" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $passing_mark, $wpdb->get_col( 'DESC ' . $table_mjschool_exam, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_exam  ADD   $passing_mark  tinyint(3) NOT NULL AFTER exam_term" );
+
+	// passing_mark
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $passing_mark, $wpdb->get_col( "DESC {$table_mjschool_exam}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_exam} ADD {$passing_mark} tinyint(3) NOT NULL AFTER exam_term" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $total_mark, $wpdb->get_col( 'DESC ' . $table_mjschool_exam, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_exam  ADD   $total_mark  tinyint(3) NOT NULL AFTER passing_mark" );
+
+	// total_mark
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $total_mark, $wpdb->get_col( "DESC {$table_mjschool_exam}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_exam} ADD {$total_mark} tinyint(3) NOT NULL AFTER passing_mark" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $exam_start_date, $wpdb->get_col( 'DESC ' . $table_mjschool_exam, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_exam  ADD   $exam_start_date  date NOT NULL" );
+
+	// exam_start_date
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $exam_start_date, $wpdb->get_col( "DESC {$table_mjschool_exam}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_exam} ADD {$exam_start_date} date NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $exam_end_date, $wpdb->get_col( 'DESC ' . $table_mjschool_exam, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_exam  ADD   $exam_end_date  date NOT NULL" );
+
+	// exam_end_date
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $exam_end_date, $wpdb->get_col( "DESC {$table_mjschool_exam}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_exam} ADD {$exam_end_date} date NOT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $exam_syllabus, $wpdb->get_col( 'DESC ' . $table_mjschool_exam, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_mjschool_exam  ADD   $exam_syllabus  varchar(255) DEFAULT NULL AFTER exam_end_date" );
+
+	// exam_syllabus
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $exam_syllabus, $wpdb->get_col( "DESC {$table_mjschool_exam}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_mjschool_exam} ADD {$exam_syllabus} varchar(255) DEFAULT NULL AFTER exam_end_date" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$homework_document = 'homework_document';
 	$mjschool_homework = $wpdb->prefix . 'mjschool_homework';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $homework_document, $wpdb->get_col( 'DESC ' . $mjschool_homework, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $mjschool_homework  ADD   $homework_document  varchar(255) DEFAULT NULL AFTER content" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $homework_document, $wpdb->get_col( "DESC {$mjschool_homework}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$mjschool_homework} ADD {$homework_document} varchar(255) DEFAULT NULL AFTER content" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$marks = 'marks';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $marks, $wpdb->get_col( 'DESC ' . $mjschool_homework, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $mjschool_homework ADD $marks tinyint(3) DEFAULT NULL AFTER content" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $marks, $wpdb->get_col( "DESC {$mjschool_homework}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$mjschool_homework} ADD {$marks} tinyint(3) DEFAULT NULL AFTER content" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
+	/**
+	 * Add subject_code to Subject Table
+	 */
 	$subject_code  = 'subject_code';
 	$table_subject = $wpdb->prefix . 'mjschool_subject';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $subject_code, $wpdb->get_col( 'DESC ' . $table_subject, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_subject  ADD   $subject_code   varchar(255)  DEFAULT NULL" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $subject_code, $wpdb->get_col( "DESC {$table_subject}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_subject} ADD {$subject_code} varchar(255) DEFAULT NULL" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
+	/**
+	 * Add Columns to Message Replies Table
+	 */
 	$mjschool_message_replies = $wpdb->prefix . 'mjschool_message_replies';
 	$message_attachment       = 'message_attachment';
 	$status_reply             = 'status';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $message_attachment, $wpdb->get_col( 'DESC ' . $mjschool_message_replies, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $mjschool_message_replies  ADD $message_attachment  text" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $message_attachment, $wpdb->get_col( "DESC {$mjschool_message_replies}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$mjschool_message_replies} ADD {$message_attachment} text" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $status_reply, $wpdb->get_col( 'DESC ' . $mjschool_message_replies, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $mjschool_message_replies ADD $status_reply int(11)" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $status_reply, $wpdb->get_col( "DESC {$mjschool_message_replies}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$mjschool_message_replies} ADD {$status_reply} int(11)" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
+	/**
+	 * Add Columns to Hostel Table
+	 */
 	$hostel_address = 'hostel_address';
 	$hostel_intake  = 'hostel_intake';
 	$table_hostel   = $wpdb->prefix . 'mjschool_hostel';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $hostel_address, $wpdb->get_col( 'DESC ' . $table_hostel, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_hostel  ADD   $hostel_address  varchar(255) AFTER hostel_name" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $hostel_address, $wpdb->get_col( "DESC {$table_hostel}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_hostel} ADD {$hostel_address} varchar(255) AFTER hostel_name" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $hostel_intake, $wpdb->get_col( 'DESC ' . $table_hostel, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_hostel  ADD   $hostel_intake  int(11) NOT NULL DEFAULT 0 AFTER hostel_type" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $hostel_intake, $wpdb->get_col( "DESC {$table_hostel}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_hostel} ADD {$hostel_intake} int(11) NOT NULL DEFAULT 0 AFTER hostel_type" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
+	/**
+	 * Add bed_charge to Beds Table
+	 */
 	$bed_charge = 'bed_charge';
 	$table_bed  = $wpdb->prefix . 'mjschool_beds';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $bed_charge, $wpdb->get_col( 'DESC ' . $table_bed, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_bed  ADD   $bed_charge  int(11) NOT NULL DEFAULT 0 AFTER bed_description" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $bed_charge, $wpdb->get_col( "DESC {$table_bed}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_bed} ADD {$bed_charge} int(11) NOT NULL DEFAULT 0 AFTER bed_description" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
+	/**
+	 * Add Columns to Library Book Table
+	 */
 	$book_number        = 'book_number';
 	$table_library_book = $wpdb->prefix . 'mjschool_library_book';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $book_number, $wpdb->get_col( 'DESC ' . $table_library_book, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_library_book  ADD   $book_number  int(11) NOT NULL DEFAULT 0 AFTER book_name" );
+
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $book_number, $wpdb->get_col( "DESC {$table_library_book}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_library_book} ADD {$book_number} int(11) NOT NULL DEFAULT 0 AFTER book_name" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$publisher = 'publisher';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $publisher, $wpdb->get_col( 'DESC ' . $table_library_book, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_library_book ADD $publisher varchar(100) DEFAULT NULL AFTER author_name" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $publisher, $wpdb->get_col( "DESC {$table_library_book}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_library_book} ADD {$publisher} varchar(100) DEFAULT NULL AFTER author_name" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	$total_quentity = 'total_quentity';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	if ( ! in_array( $total_quentity, $wpdb->get_col( 'DESC ' . $table_library_book, 0 ) ) ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->query( "ALTER TABLE $table_library_book ADD $total_quentity int(11) NOT NULL DEFAULT 0 AFTER quentity" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	if ( ! in_array( $total_quentity, $wpdb->get_col( "DESC {$table_library_book}", 0 ), true ) ) {
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( "ALTER TABLE {$table_library_book} ADD {$total_quentity} int(11) NOT NULL DEFAULT 0 AFTER quentity" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 }
@@ -7046,23 +7837,35 @@ function mjschool_send_mail( $email, $subject, $message ) {
  * @return string User role slug, or an empty string if not found.
  */
 function mjschool_get_user_role( $id ) {
+	$id = absint( $id );
+	
+	if ( empty( $id ) ) {
+		return '';
+	}
+	
 	$result = get_userdata( $id );
+	if ( false === $result || ! isset( $result->roles ) ) {
+		return '';
+	}
+	
 	$role_array = $result->roles;
-	if ( in_array( 'administrator', $role_array ) ) {
+	
+	if ( in_array( 'administrator', $role_array, true ) ) {
 		$role = 'administrator';
-	} elseif ( in_array( 'management', $role_array ) ) {
+	} elseif ( in_array( 'management', $role_array, true ) ) {
 		$role = 'management';
-	} elseif ( in_array( 'student', $role_array ) ) {
+	} elseif ( in_array( 'student', $role_array, true ) ) {
 		$role = 'student';
-	} elseif ( in_array( 'teacher', $role_array ) ) {
+	} elseif ( in_array( 'teacher', $role_array, true ) ) {
 		$role = 'teacher';
-	} elseif ( in_array( 'parent', $role_array ) ) {
+	} elseif ( in_array( 'parent', $role_array, true ) ) {
 		$role = 'parent';
-	} elseif ( in_array( 'supportstaff', $role_array ) ) {
+	} elseif ( in_array( 'supportstaff', $role_array, true ) ) {
 		$role = 'supportstaff';
 	} else {
 		$role = '';
 	}
+	
 	return $role;
 }
 /**
@@ -7096,14 +7899,23 @@ function mjschool_get_currency_symbol( $currency = '' ) {
  * @return array List of WP_User objects for assigned teachers.
  */
 function mjschool_get_teacher_by_class_id( $class_id ) {
+	$class_id = absint( $class_id );
+	if ( empty( $class_id ) ) {
+		return array();
+	}
 	$teacher_data = array();
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_teacher_class';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$teachers = $wpdb->get_results( "SELECT * FROM $tbl_name where class_id=" . $class_id );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$teachers = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE class_id = %d", $class_id )
+	);
 	if ( ! empty( $teachers ) ) {
-		foreach ( $teachers as $key => $teacher ) {
-			$teachersdata = get_userdata( $teacher->teacher_id );
+		foreach ( $teachers as $teacher ) {
+			if ( ! isset( $teacher->teacher_id ) ) {
+				continue;
+			}
+			$teachersdata = get_userdata( absint( $teacher->teacher_id ) );
 			if ( ! empty( $teachersdata ) ) {
 				$teacher_data[] = $teachersdata;
 			}
@@ -7121,100 +7933,92 @@ function mjschool_get_teacher_by_class_id( $class_id ) {
  * @return string Rendered HTML invoice content.
  */
 function mjschool_get_html_content( $fees_pay_id ) {
-	$schooName                  = get_option( 'mjschool_name' );
-	$schooLogo                  = get_option( 'mjschool_logo' );
-	$schooAddress               = get_option( 'mjschool_address' );
-	$schoolCountry              = get_option( 'mjschool_contry' );
-	$schoolNo                   = get_option( 'mjschool_contact_number' );
+	$fees_pay_id = absint( $fees_pay_id );
+	if ( empty( $fees_pay_id ) ) {
+		return '';
+	}
+	$schooName     = get_option( 'mjschool_name' );
+	$schooLogo     = get_option( 'mjschool_logo' );
+	$schooAddress  = get_option( 'mjschool_address' );
+	$schoolCountry = get_option( 'mjschool_contry' );
+	$schoolNo      = get_option( 'mjschool_contact_number' );
 	$fees_detail_result         = mjschool_get_single_fees_payment_record( $fees_pay_id );
 	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
-	$student_id                 = $fees_detail_result->student_id;
-	$abc                        = '';
-	if ( $student_id != 0 ) {
-		$patient = get_userdata( $student_id );
-		$patient->display_name . '<br>';
-		$abc = get_user_meta( $student_id, 'address', true ) . ',' . get_user_meta( $student_id, 'city', true ) . ',' . get_user_meta( $student_id, 'zip_code', true ) . ',<BR>' . get_user_meta( $student_id, 'state', true ) . ',' . get_option( 'mjschool_contry' ) . ',' . get_user_meta( $student_id, 'mobile', true ) . '<br>';
+	if ( empty( $fees_detail_result ) || ! isset( $fees_detail_result->student_id ) ) {
+		return '';
 	}
-	$content  = '';
-	$content .= '';
-	$content = '<div style="background-color:aliceblue; padding:20px"; class="modal-body">
-	<div class="modal-header">
-		<h4 class="modal-title">' . $schooName . '</h4>
-	</div>
-	<div id="mjschool-invoice-print" class="print-box">
-		<table width="100%" border="0">
-			<tbody>
-				<tr>
-					<td width="70%"> <img style="max-height:80px;" src=' . get_option( 'mjschool_logo' ) . '/> </td>
-					<td align="right" width="24%">
-						<h5>';
-	 ?>
-	<?php
+	$student_id = absint( $fees_detail_result->student_id );
+	$abc        = '';
+	if ( ! empty( $student_id ) ) {
+		$patient = get_userdata( $student_id );
+		if ( $patient && isset( $patient->display_name ) ) {
+			$abc  = get_user_meta( $student_id, 'address', true ) . ', ';
+			$abc .= get_user_meta( $student_id, 'city', true ) . ', ';
+			$abc .= get_user_meta( $student_id, 'zip_code', true ) . ',<br>';
+			$abc .= get_user_meta( $student_id, 'state', true ) . ', ';
+			$abc .= esc_html( $schoolCountry ) . ', ';
+			$abc .= get_user_meta( $student_id, 'mobile', true ) . '<br>';
+		}
+	}
+	
+	$content  = '<div style="background-color:aliceblue; padding:20px" class="modal-body">';
+	$content .= '<div class="modal-header">';
+	$content .= '<h4 class="modal-title">' . esc_html( $schooName ) . '</h4>';
+	$content .= '</div>';
+	$content .= '<div id="mjschool-invoice-print" class="print-box">';
+	$content .= '<table width="100%" border="0"><tbody><tr>';
+	$content .= '<td width="70%"><img style="max-height:80px;" src="' . esc_url( $schooLogo ) . '" alt="' . esc_attr( $schooName ) . '"/></td>';
+	$content .= '<td align="right" width="24%"><h5>';
 	$payment_status = mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
+	$PStatus        = 'Not Paid';
 	if ( $payment_status === 'Fully Paid' ) {
 		$PStatus = 'Fully Paid';
-	}
-	if ( $payment_status === 'Partially Paid' ) {
+	} elseif ( $payment_status === 'Partially Paid' ) {
 		$PStatus = 'Partially Paid';
 	}
-	if ( $payment_status === 'Not Paid' ) {
-		$PStatus = 'Not Paid';
-	}
-	$issue_date = 'DD-MM-YYYY';
-	$issue_date = $fees_detail_result->paid_by_date;
-	$Due_amount = $fees_detail_result->total_amount - $fees_detail_result->fees_paid_amount;
-	$content   .= 'Issue Date: ' . mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) . '</h5>';
-	$content   .= '<h5>Status : <span class="btn btn-success btn-xs">' . $PStatus . '</span></h5>';
-	$content   .= '</td></tr><tbody></table>
-	<table width="100%" border="0">
-		<tbody>
-			<tr>
-				<td align="left">
-					<h4>Payment From</h4>
-				</td>
-				<td align="right">
-					<h4>Bill To</h4>
-				</td>
-			</tr>
-			<tr>
-				<td valign="top" align="left">
-					' . $schooName . '<br>
-					' . $schooAddress . ',
-					' . $schoolCountry . '<br>
-					' . $schoolNo . '<br>
-				</td>
-				<td valign="top" align="right">' . $abc . '</td>
-			</tr>
-		</tbody>
-	</table><hr>
-	<table class="table table-bordered mjschool_border_collapse" width="100%" border="1" >
-		<thead>
-			<tr>
-				<th class="text-center">#</th>
-				<th class="text-center"> Fees Type</th>
-				<th>Total</th>
-			</tr>
-		</thead>
-		<tbody>
-			<td>1</td>
-			<td>' . mjschool_get_fees_term_name( $fees_detail_result->fees_id ) . '</td>
-			<td>' . mjschool_currency_symbol_position_language_wise( number_format( $fees_detail_result->total_amount, 2, '.', '' ) ) . '</td>
-		</tbody>
-	</table>
-	<table width="100%" border="0">
-		<tbody>
-			<tr>
-				<td width="80%" align="right">Sub Total :</td>
-				<td align="right">' . mjschool_currency_symbol_position_language_wise( number_format( $fees_detail_result->total_amount, 2, '.', '' ) ) . '</td>
-			</tr>
-			<tr>
-				<td width="80%" align="right">Payment Made :</td>
-				<td align="right">' . mjschool_currency_symbol_position_language_wise( number_format( $fees_detail_result->fees_paid_amount, 2, '.', '' ) ) . '</td>
-			</tr>
-			<tr>
-				<td width="80%" align="right">Due Amount  :</td>
-				<td align="right">' . mjschool_currency_symbol_position_language_wise( number_format( $Due_amount, 2, '.', '' ) ) . '</td>';
-	$content   .= '</tr> </tbody> </table></div></div>';
+	$issue_date = isset( $fees_detail_result->paid_by_date ) ? $fees_detail_result->paid_by_date : date( 'Y-m-d' );
+	
+	$content .= 'Issue Date: ' . esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ) . '</h5>';
+	$content .= '<h5>Status: <span class="btn btn-success btn-xs">' . esc_html( $PStatus ) . '</span></h5>';
+	$content .= '</td></tr></tbody></table>';
+	
+	$content .= '<table width="100%" border="0"><tbody>';
+	$content .= '<tr><td align="left"><h4>Payment From</h4></td>';
+	$content .= '<td align="right"><h4>Bill To</h4></td></tr>';
+	$content .= '<tr><td valign="top" align="left">';
+	$content .= esc_html( $schooName ) . '<br>';
+	$content .= esc_html( $schooAddress ) . ', ';
+	$content .= esc_html( $schoolCountry ) . '<br>';
+	$content .= esc_html( $schoolNo ) . '<br>';
+	$content .= '</td><td valign="top" align="right">' . wp_kses_post( $abc ) . '</td></tr>';
+	$content .= '</tbody></table><hr>';
+	
+	$content .= '<table class="table table-bordered mjschool_border_collapse" width="100%" border="1">';
+	$content .= '<thead><tr>';
+	$content .= '<th class="text-center">#</th>';
+	$content .= '<th class="text-center">Fees Type</th>';
+	$content .= '<th>Total</th>';
+	$content .= '</tr></thead><tbody>';
+	$content .= '<tr><td>1</td>';
+	$fees_id = isset( $fees_detail_result->fees_id ) ? $fees_detail_result->fees_id : 0;
+	$content .= '<td>' . esc_html( mjschool_get_fees_term_name( $fees_id ) ) . '</td>';
+	$total_amount = isset( $fees_detail_result->total_amount ) ? floatval( $fees_detail_result->total_amount ) : 0;
+	$paid_amount  = isset( $fees_detail_result->fees_paid_amount ) ? floatval( $fees_detail_result->fees_paid_amount ) : 0;
+	
+	$content .= '<td>' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $total_amount, 2, '.', '' ) ) ) . '</td>';
+	$content .= '</tr></tbody></table>';
+	
+	$Due_amount = $total_amount - $paid_amount;
+	
+	$content .= '<table width="100%" border="0"><tbody>';
+	$content .= '<tr><td width="80%" align="right">Sub Total:</td>';
+	$content .= '<td align="right">' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $total_amount, 2, '.', '' ) ) ) . '</td></tr>';
+	$content .= '<tr><td width="80%" align="right">Payment Made:</td>';
+	$content .= '<td align="right">' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $paid_amount, 2, '.', '' ) ) ) . '</td></tr>';
+	$content .= '<tr><td width="80%" align="right">Due Amount:</td>';
+	$content .= '<td align="right">' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $Due_amount, 2, '.', '' ) ) ) . '</td></tr>';
+	$content .= '</tbody></table></div></div>';
+	
 	return $content;
 }
 /**
@@ -7245,6 +8049,7 @@ function mjschool_strip_tags_and_stripslashes( $post_string ) {
  * @return int 1 if access is granted, 0 otherwise.
  */
 function mjschool_page_access_role_wise_access_right_dashboard( $page ) {
+	$page               = sanitize_text_field( $page );
 	$school_obj = new MJSchool_Management( get_current_user_id() );
 	$role       = $school_obj->role;
 	$flage      = 0;
@@ -7315,9 +8120,10 @@ function mjschool_get_user_role_wise_access_right_array() {
 	$school_obj = new MJSchool_Management( get_current_user_id() );
 	$role       = $school_obj->role;
 	$page       = '';
-	if ( ! empty( $_REQUEST['page'] ) ) {
-		$page = sanitize_text_field(wp_unslash($_REQUEST['page']));
+	if ( isset( $_REQUEST['page'] ) && ! empty( $_REQUEST['page'] ) ) {
+		$page = sanitize_text_field( wp_unslash( $_REQUEST['page'] ) );
 	}
+	$menu = array();
 	if ( $role === 'student' ) {
 		$menu = get_option( 'mjschool_access_right_student' );
 	} elseif ( $role === 'parent' ) {
@@ -7326,18 +8132,25 @@ function mjschool_get_user_role_wise_access_right_array() {
 		$menu = get_option( 'mjschool_access_right_supportstaff' );
 	} elseif ( $role === 'teacher' ) {
 		$menu = get_option( 'mjschool_access_right_teacher' );
-	} else {
-		$menu = 0;
 	}
-	if ( ! empty( $menu ) ) {
-		foreach ( $menu as $key1 => $value1 ) {
-			foreach ( $value1 as $key => $value ) {
-				if ( $page === $value['page_link'] ) {
-					return $value;
-				}
+	if ( ! is_array( $menu ) || empty( $menu ) ) {
+		return null;
+	}
+	foreach ( $menu as $key1 => $value1 ) {
+		if ( ! is_array( $value1 ) ) {
+			continue;
+		}
+		foreach ( $value1 as $key => $value ) {
+			if ( ! is_array( $value ) || ! isset( $value['page_link'] ) ) {
+				continue;
+			}
+			
+			if ( $page === $value['page_link'] ) {
+				return $value;
 			}
 		}
 	}
+	return null;
 }
 /**
  * Retrieves access rights for management users on a given admin page.
@@ -7349,34 +8162,45 @@ function mjschool_get_user_role_wise_access_right_array() {
  * @return array|null Access rights configuration.
  */
 function mjschool_get_management_access_right_array( $page ) {
+	$page = sanitize_text_field( $page );
+	
 	$page_route     = 'schedule';
 	$page_exam_hall = 'exam_hall';
 	$page_homework  = 'homework';
 	$fees_payment   = 'feepayment';
 	if ( $page === 'mjschool_route' ) {
-		$mjschool_page_name === $page_route;
+		$mjschool_page_name = $page_route;
 	} elseif ( $page === 'mjschool_hall' ) {
-		$mjschool_page_name === $page_exam_hall;
+		$mjschool_page_name = $page_exam_hall;
 	} elseif ( $page === 'mjschool_student_homewrok' ) {
-		$mjschool_page_name === $page_homework;
+		$mjschool_page_name = $page_homework;
 	} elseif ( $page === 'mjschool_fees_payment' ) {
-		$mjschool_page_name === $fees_payment;
+		$mjschool_page_name = $fees_payment;
 	} else {
 		$mjschool_page_name = strtolower( str_replace( 'mjschool_', '', $page ) );
 	}
 	$role = mjschool_get_user_role( get_current_user_id() );
+	$menu = array();
 	if ( $role === 'management' ) {
 		$menu = get_option( 'mjschool_access_right_management' );
 	}
-	if ( ! empty( $menu ) ) {
-		foreach ( $menu as $key1 => $value1 ) {
-			foreach ( $value1 as $key => $value ) {
-				if ( $mjschool_page_name === $value['page_link'] ) {
-					return $value;
-				}
+	if ( ! is_array( $menu ) || empty( $menu ) ) {
+		return null;
+	}
+	foreach ( $menu as $key1 => $value1 ) {
+		if ( ! is_array( $value1 ) ) {
+			continue;
+		}
+		foreach ( $value1 as $key => $value ) {
+			if ( ! is_array( $value ) || ! isset( $value['page_link'] ) ) {
+				continue;
+			}
+			if ( $mjschool_page_name === $value['page_link'] ) {
+				return $value;
 			}
 		}
 	}
+	return null;
 }
 /**
  * Retrieves access permissions for management users for a specific page.
@@ -7388,16 +8212,27 @@ function mjschool_get_management_access_right_array( $page ) {
  * @return int 1 if access is allowed, 0 otherwise.
  */
 function mjschool_get_user_role_wise_access_right_array_by_page( $page ) {
-	$flage              = '';
+	$page               = sanitize_text_field( $page );
+	$flage              = 0;
 	$mjschool_page_name = str_replace( 'mjschool_', '', $page );
 	$role               = mjschool_get_user_role( get_current_user_id() );
+	$menu = array();
 	if ( $role === 'management' ) {
 		$menu = get_option( 'mjschool_access_right_management' );
 	}
+	if ( ! is_array( $menu ) || empty( $menu ) ) {
+		return 0;
+	}
 	foreach ( $menu as $key1 => $value1 ) {
+		if ( ! is_array( $value1 ) ) {
+			continue;
+		}
 		foreach ( $value1 as $key => $value ) {
+			if ( ! is_array( $value ) || ! isset( $value['page_link'] ) ) {
+				continue;
+			}
 			if ( $mjschool_page_name === $value['page_link'] ) {
-				if ( $value['view'] === '0' ) {
+				if ( isset( $value['view'] ) && $value['view'] === '0' ) {
 					$flage = 0;
 				} else {
 					$flage = 1;
@@ -7463,18 +8298,26 @@ function mjschool_convert_date_time( $date_time ) {
 function mjschool_get_all_date_of_holidays() {
 	global $wpdb;
 	$tbl_holiday = $wpdb->prefix . 'mjschool_holiday';
-	$holiday     = "SELECT * FROM $tbl_holiday";
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$HolidayData  = $wpdb->get_results( $holiday );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$HolidayData = $wpdb->get_results( "SELECT * FROM {$tbl_holiday}" );
 	$holidaydates = array();
+	if ( empty( $HolidayData ) ) {
+		return $holidaydates;
+	}
 	foreach ( $HolidayData as $holiday ) {
+		if ( ! isset( $holiday->date ) || ! isset( $holiday->end_date ) ) {
+			continue;
+		}
 		$holidaydates[] = $holiday->date;
 		$holidaydates[] = $holiday->end_date;
-		$start_date     = strtotime( $holiday->date );
-		$end_date       = strtotime( $holiday->end_date );
-		if ( $holiday->date != $holiday->end_date ) {
+		$start_date = strtotime( $holiday->date );
+		$end_date   = strtotime( $holiday->end_date );
+		if ( false === $start_date || false === $end_date ) {
+			continue;
+		}
+		if ( $holiday->date !== $holiday->end_date ) {
 			for ( $i = $start_date; $i < $end_date; $i += 86400 ) {
-				$holidaydates[] = date( 'Y-m-d', $i );
+				$holidaydates[] = gmdate( 'Y-m-d', $i );
 			}
 		}
 	}
@@ -7509,27 +8352,38 @@ function mjschool_generate_admission_number() {
  * @return int Inserted post ID.
  */
 function mjschool_add_categorytype( $data ) {
+	if ( ! is_array( $data ) || ! isset( $data['category_type'] ) || ! isset( $data['category_name'] ) ) {
+		return 0;
+	}
+	$category_type = sanitize_key( $data['category_type'] );
+	$category_name = sanitize_text_field( $data['category_name'] );
+	if ( empty( $category_type ) || empty( $category_name ) ) {
+		return 0;
+	}
 	global $wpdb;
-	if ( $data['category_type'] === 'period_type' ) {
+	if ( $category_type === 'period_type' ) {
 		$result = wp_insert_post(
 			array(
 				'post_status' => 'publish',
 				'post_type'   => 'mjschool_bookperiod',
-				'post_title'  => $data['category_name'],
+				'post_title'  => $category_name,
 			)
 		);
 	} else {
 		$result = wp_insert_post(
 			array(
 				'post_status' => 'publish',
-				'post_type'   => $data['category_type'],
-				'post_title'  => $data['category_name'],
+				'post_type'   => $category_type,
+				'post_title'  => $category_name,
 			)
 		);
 	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+	if ( is_wp_error( $result ) ) {
+		return 0;
+	}
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$id = $wpdb->insert_id;
-	return $id;
+	return absint( $id );
 }
 /**
  * Retrieves all category posts for a given post type.
@@ -7567,60 +8421,84 @@ add_action( 'wp_ajax_nopriv_mjschool_load_sections_students_homework', 'mjschool
  * @return void Outputs JSON and terminates execution.
  */
 function mjschool_datatable_homework_data_ajax_to_load() {
-	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
-		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
-	}
+    // 1. CHECK THE NONCE FIRST
+    if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+        wp_send_json_error( 'Security check failed.' );
+        wp_die();
+    }
 
-	// 2. CHECK IF USER IS LOGGED IN.
-	if ( ! is_user_logged_in() ) {
-		wp_die( 'You must be logged in.' );
-	}
-	global $wpdb;
-	$sTable = $wpdb->prefix . 'mjschool_homework';
-	$sLimit = '10';
-	if ( isset( $_REQUEST['iDisplayStart'] ) && $_REQUEST['iDisplayLength'] != '-1' ) {
-		$sLimit = 'LIMIT ' . intval( $_REQUEST['iDisplayStart'] ) . ', ' . intval( $_REQUEST['iDisplayLength'] );
-	}
-	$ssearch = isset($_REQUEST['sSearch']) ? sanitize_text_field(wp_unslash($_REQUEST['sSearch'])) : '';
-	if ( $ssearch ) {
-		$sQuery = "SELECT * FROM  $sTable  WHERE mjschool_homework_title LIKE '%$ssearch%' OR to_date LIKE '%$ssearch%'";
-	} else {
-		$sQuery = "SELECT * FROM $sTable";
-	}
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$rResult = $wpdb->get_results( $sQuery, ARRAY_A );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$wpdb->get_results( " SELECT * FROM $sTable" );
-	$iFilteredTotal = $wpdb->num_rows;
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$wpdb->get_results( " SELECT * FROM $sTable " );
-	$iTotal = $wpdb->num_rows;
-	$output = array(
-		'sEcho'                => intval( $_REQUEST['sEcho'] ),
-		'iTotalRecords'        => $iTotal,
-		'iTotalDisplayRecords' => $iFilteredTotal,
-		'aaData'               => array(),
-	);
-	foreach ( $rResult as $aRow ) {
-		if ( isset( $aRow['section_id'] ) && $aRow['section_id'] != 0 ) {
-			$section_name = mjschool_get_section_name( $aRow['section_id'] );
-		} else {
-			$section_name = 'No Section';
-		}
-		$row[0] = '<input type="checkbox" class="select-checkbox" name="id[]" value=' . $aRow['homework_id'] . '">';
-		$row[1] = $aRow['mjschool_homework_title'];
-		$row[2] = mjschool_get_class_name( $aRow['class_id'] );
-		$row[3] = $section_name;
-		$row[4] = mjschool_get_single_subject_name( $aRow['subject_id'] );
-		$row[5] = $aRow['to_date'];
-		$row[6] = '<a href="?page=mjschool_Homework&tab=addhomework&action=edit&homework_id=' . $aRow['homework_id'] . '" class="btn btn-info"><i class="fas fa-edit"></i>&nbsp; ' . esc_attr__( 'Edit', 'mjschool' ) . ' </a>&nbsp;&nbsp;
-		<a id="delete_selected" href="?page=mjschool_Homework&tab=homeworklist&action=delete&del_homework_id=' . $aRow['homework_id'] . '" class="btn btn-danger delete_selected" Onclick="ConfirmDelete()"><i class="fas fa-times"></i>&nbsp; ' . esc_attr__( 'Delete', 'mjschool' ) . ' </a>&nbsp;&nbsp;
-		<a href="?page=mjschool_Homework&tab=submission&homework_id=' . $aRow['homework_id'] . '" class="btn btn-default"><i class="fas fa-eye"></i>&nbsp; ' . esc_attr__( 'View Submissions', 'mjschool' ) . ' </a>';
-		$output['aaData'][] = $row;
-	}
-	echo json_encode( $output );
-	die();
+    // 2. CHECK IF USER IS LOGGED IN
+    if ( ! is_user_logged_in() ) {
+        wp_send_json_error( 'You must be logged in.' );
+        wp_die();
+    }
+    
+    global $wpdb;
+    $sTable = $wpdb->prefix . 'mjschool_homework';
+    $iStart  = isset( $_REQUEST['iDisplayStart'] ) ? absint( $_REQUEST['iDisplayStart'] ) : 0;
+    $iLength = isset( $_REQUEST['iDisplayLength'] ) ? absint( $_REQUEST['iDisplayLength'] ) : 10;
+    
+    if ( $iLength === 0 || $iLength > 100 ) {
+        $iLength = 10; // Prevent abuse.
+    }
+    
+    $sLimit = "LIMIT {$iStart}, {$iLength}";
+    $ssearch = isset( $_REQUEST['sSearch'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['sSearch'] ) ) : '';
+    
+    if ( ! empty( $ssearch ) ) {
+        $search_term = '%' . $wpdb->esc_like( $ssearch ) . '%';
+        $sQuery = $wpdb->prepare(
+            "SELECT * FROM {$sTable} WHERE title LIKE %s OR to_date LIKE %s {$sLimit}",
+            $search_term,
+            $search_term
+        );
+    } else {
+        $sQuery = "SELECT * FROM {$sTable} {$sLimit}";
+    }
+    
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $rResult = $wpdb->get_results( $sQuery, ARRAY_A );
+    
+    // Get total counts
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $wpdb->get_results( "SELECT * FROM {$sTable}" );
+    $iTotal = $wpdb->num_rows;
+    
+    $output = array(
+        'sEcho'                => isset( $_REQUEST['sEcho'] ) ? absint( $_REQUEST['sEcho'] ) : 0,
+        'iTotalRecords'        => $iTotal,
+        'iTotalDisplayRecords' => $iTotal,
+        'aaData'               => array(),
+    );
+    
+    if ( ! empty( $rResult ) ) {
+        foreach ( $rResult as $aRow ) {
+            if ( ! isset( $aRow['homework_id'] ) ) {
+                continue;
+            }
+            $homework_id = absint( $aRow['homework_id'] );
+            $class_id    = isset( $aRow['class_id'] ) ? absint( $aRow['class_id'] ) : 0;
+            $section_id  = isset( $aRow['section_id'] ) ? absint( $aRow['section_id'] ) : 0;
+            $subject_id  = isset( $aRow['subject_id'] ) ? absint( $aRow['subject_id'] ) : 0;
+            $section_name = ( $section_id !== 0 ) ? mjschool_get_section_name( $section_id ) : esc_html__( 'No Section', 'mjschool' );
+            $row    = array();
+            $row[0] = '<input type="checkbox" class="select-checkbox" name="id[]" value="' . esc_attr( $homework_id ) . '">';
+            $row[1] = isset( $aRow['title'] ) ? esc_html( $aRow['title'] ) : '';
+            $row[2] = esc_html( mjschool_get_class_name( $class_id ) );
+            $row[3] = esc_html( $section_name );
+            $row[4] = esc_html( mjschool_get_single_subject_name( $subject_id ) );
+            $row[5] = isset( $aRow['to_date'] ) ? esc_html( $aRow['to_date'] ) : '';
+            $row[6]  = '<a href="?page=mjschool_Homework&amp;tab=addhomework&amp;action=edit&amp;homework_id=' . esc_attr( $homework_id ) . '" class="btn btn-info">';
+            $row[6] .= '<i class="fas fa-edit"></i>&nbsp; ' . esc_html__( 'Edit', 'mjschool' ) . '</a>&nbsp;&nbsp;';
+            $row[6] .= '<a href="?page=mjschool_Homework&amp;tab=homeworklist&amp;action=delete&amp;del_homework_id=' . esc_attr( $homework_id ) . '" class="btn btn-danger delete_selected" onclick="ConfirmDelete()">';
+            $row[6] .= '<i class="fas fa-times"></i>&nbsp; ' . esc_html__( 'Delete', 'mjschool' ) . '</a>&nbsp;&nbsp;';
+            $row[6] .= '<a href="?page=mjschool_Homework&amp;tab=submission&amp;homework_id=' . esc_attr( $homework_id ) . '" class="btn btn-default">';
+            $row[6] .= '<i class="fas fa-eye"></i>&nbsp; ' . esc_html__( 'View Submissions', 'mjschool' ) . '</a>';
+            $output['aaData'][] = $row;
+        }
+    }
+    wp_send_json( $output );
+    wp_die();
 }
 /**
  * Loads the modal HTML for leave approval form via AJAX.
@@ -7648,7 +8526,7 @@ function mjschool_leave_approve() {
 	</div>
 	<div class="mjschool-panel-white mjschool-padding-20px">
 		<form name="leave_form" action="" method="post" class="mjschool-form-horizontal" id="leave_form">
-			<input type="hidden" name="leave_id" value="<?php print esc_attr( sanitize_text_field(wp_unslash($_REQUEST['leave_id'])) ); ?>">
+			<input type="hidden" name="leave_id" value="<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['leave_id'])) ); ?>">
 			<div class="form-body mjschool-user-form">
 				<div class="row">
 					<div class="col-md-9">
@@ -7663,7 +8541,7 @@ function mjschool_leave_approve() {
 						</div>
 					</div>
 					<div class="col-sm-3">
-						<input type="submit" value="<?php esc_html_e( 'Submit', 'mjschool' ); ?>" name="approve_comment" class="btn btn-success mjschool-save-btn" id="btn-add-cat" />
+						<input type="submit" value="<?php esc_attr_e( 'Submit', 'mjschool' ); ?>" name="approve_comment" class="btn btn-success mjschool-save-btn" id="btn-add-cat" />
 					</div>
 				</div>
 			</div>
@@ -7700,7 +8578,7 @@ function mjschool_leave_reject() {
 	</div>
 	<div class="mjschool-panel-white mjschool-padding-20px">
 		<form name="leave_form" action="" method="post" class="mjschool-form-horizontal" id="leave_form">
-			<input type="hidden" name="leave_id" value="<?php print esc_attr( sanitize_text_field(wp_unslash($_REQUEST['leave_id'])) ); ?>">
+			<input type="hidden" name="leave_id" value="<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['leave_id'])) ); ?>">
 			<div class="form-body mjschool-user-form">
 				<div class="row">
 					<div class="col-md-9">
@@ -7715,7 +8593,7 @@ function mjschool_leave_reject() {
 						</div>
 					</div>
 					<div class="col-sm-3">
-						<input type="submit" value="<?php esc_html_e( 'Submit', 'mjschool' ); ?>" name="reject_leave" class="btn btn-success mjschool-save-btn" id="btn-add-cat" />
+						<input type="submit" value="<?php esc_attr_e( 'Submit', 'mjschool' ); ?>" name="reject_leave" class="btn btn-success mjschool-save-btn" id="btn-add-cat" />
 					</div>
 				</div>
 			</div>
@@ -7906,187 +8784,273 @@ add_action( 'wp_ajax_nopriv_mjschool_load_exam_hall_receipt_div', 'mjschool_load
  * @return void Outputs HTML and terminates execution.
  */
 function mjschool_load_exam_hall_receipt_div() {
-	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
+	// 1. CHECK THE NONCE FIRST.
 	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
-		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
+		wp_send_json_error( 'Security check failed.' );
+		wp_die();
 	}
-
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
-		wp_die( 'You must be logged in.' );
+		wp_send_json_error( 'You must be logged in.' );
+		wp_die();
 	}
 	global $wpdb;
-	$exam_data  = mjschool_get_exam_by_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id'])) );
-	$exam_id    = isset($_REQUEST['exam_id']) ? intval(wp_unslash($_REQUEST['exam_id'])) : '';
-	$array_var  = array();
-	$start_date = $exam_data->exam_start_date;
-	$end_date   = $exam_data->exam_end_date;
-	$class_id   = $exam_data->class_id;
-	$section_id = $exam_data->section_id;
-	// ----------- All Student Data. ------------//
+	$exam_id = isset( $_REQUEST['exam_id'] ) ? absint( $_REQUEST['exam_id'] ) : 0;
+	if ( empty( $exam_id ) ) {
+		wp_send_json_error( 'Invalid exam ID' );
+		wp_die();
+	}
+	$exam_data = mjschool_get_exam_by_id( $exam_id );
+	if ( empty( $exam_data ) ) {
+		wp_send_json_error( 'Exam not found' );
+		wp_die();
+	}
+	$start_date = isset( $exam_data->exam_start_date ) ? $exam_data->exam_start_date : '';
+	$end_date   = isset( $exam_data->exam_end_date ) ? $exam_data->exam_end_date : '';
+	$class_id   = isset( $exam_data->class_id ) ? absint( $exam_data->class_id ) : 0;
+	$section_id = isset( $exam_data->section_id ) ? absint( $exam_data->section_id ) : 0;
+	if ( empty( $class_id ) ) {
+		wp_send_json_error( 'Invalid class ID' );
+		wp_die();
+	}
+	// Get excluded student list.
 	$exlude_id = mjschool_approve_student_list();
-
-	if ( isset( $class_id) && $section_id != 0) {
+	
+	// Get student data based on class and section.
+	if ( ! empty( $class_id ) && ! empty( $section_id ) ) {
 		$student_data = get_users(
 			array(
-				'role' => 'student',
-				'exclude' => $exlude_id,
+				'role'       => 'student',
+				'exclude'    => $exlude_id,
 				'meta_query' => array(
 					array(
-						'key' => 'class_name',
-						'value' => $class_id,
-						'compare' => '=='
+						'key'     => 'class_name',
+						'value'   => $class_id,
+						'compare' => '==',
 					),
 					array(
-						'key' => 'class_section',
-						'value' => $section_id,
-						'compare' => '=='
-					)
-				)
+						'key'     => 'class_section',
+						'value'   => $section_id,
+						'compare' => '==',
+					),
+				),
 			)
 		);
 	} else {
-		$student_data = get_users(array( 'meta_key' => 'class_name', 'meta_value' => $class_id, 'role' => 'student', 'exclude' => $exlude_id ) );
+		$student_data = get_users(
+			array(
+				'meta_key'   => 'class_name',
+				'meta_value' => $class_id,
+				'role'       => 'student',
+				'exclude'    => $exlude_id,
+			)
+		);
 	}
-
+	$student_id  = array();
+	$student_id1 = array();
+	
+	// Build student ID array
 	if ( ! empty( $student_data ) ) {
 		foreach ( $student_data as $s_id ) {
-			$student_id[] = $s_id->ID;
+			if ( isset( $s_id->ID ) ) {
+				$student_id[] = absint( $s_id->ID );
+			}
 		}
 	}
-	// ---------- Assigned Student Data. --------//
+	
+	// Get assigned students
 	$table_name_mjschool_exam_hall_receipt = $wpdb->prefix . 'mjschool_exam_hall_receipt';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$student_data_asigned = $wpdb->get_results( $wpdb->prepare( "SELECT user_id FROM $table_name_mjschool_exam_hall_receipt WHERE exam_id=%d", $exam_id ) );
+	
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$student_data_asigned = $wpdb->get_results(
+		$wpdb->prepare( "SELECT user_id FROM {$table_name_mjschool_exam_hall_receipt} WHERE exam_id = %d", $exam_id )
+	);
+	
+	// Build assigned student ID array
 	if ( ! empty( $student_data_asigned ) ) {
 		foreach ( $student_data_asigned as $s_id1 ) {
-			$student_id1[] = $s_id1->user_id;
+			if ( isset( $s_id1->user_id ) ) {
+				$student_id1[] = absint( $s_id1->user_id );
+			}
 		}
 	}
+	
+	// Calculate unassigned students
 	if ( empty( $student_data_asigned ) ) {
 		$student_show_data = $student_id;
 	} else {
 		$student_show_data = array_diff( $student_id, $student_id1 );
 	}
-	$array_var = '<div class="exam_hall_receipt_main_div">
-		<form name="receipt_form" action="" method="post" class="mjschool-form-horizontal" id="receipt_form">
-			<input type="hidden" name="exam_id" value="' . $exam_id . '">
-			<div class="form-group row">
-				<div class="table-responsive rtl_mjschool-padding-15px">
-					<table class="table exam_hall_table mjschool_examhall_border_1px_center" id="exam_hall_table" >
-						<thead>
-							<tr>
-								<th  class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading_medium" >' . esc_attr__( 'Exam', 'mjschool' ) . '</th>
-								<th  class="mjschool-exam-hall-receipt-table-heading mjschool_library_table" >' . esc_attr__( 'Class', 'mjschool' ) . '</th>
-								<th  class="mjschool-exam-hall-receipt-table-heading mjschool_library_table" >' . esc_attr__( 'Section', 'mjschool' ) . '</th>
-								<th  class="mjschool-exam-hall-receipt-table-heading mjschool_library_table" >' . esc_attr__( 'Term', 'mjschool' ) . '</th>
-								<th  class="mjschool-exam-hall-receipt-table-heading mjschool_library_table" >' . esc_attr__( 'Start Date', 'mjschool' ) . '</th>
-								<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head " >' . esc_attr__( 'End Date', 'mjschool' ); '</th>
-							</tr>
-						</thead>
-						<tfoot></tfoot>
-						<tbody>';
-	$array_var .= '<tr> <td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >' . $exam_data->exam_name . '</td> <td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >' . mjschool_get_class_name( $exam_data->class_id );
-	$array_var .= '</td> <td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >';
-	if ( $exam_data->section_id != 0 ) {
-		$array_var .= mjschool_get_section_name( $exam_data->section_id );
+	
+	// Build HTML response
+	$array_var  = '<div class="exam_hall_receipt_main_div">';
+	$array_var .= '<form name="receipt_form" action="" method="post" class="mjschool-form-horizontal" id="receipt_form">';
+	$array_var .= '<input type="hidden" name="exam_id" value="' . esc_attr( $exam_id ) . '">';
+	$array_var .= '<div class="form-group row">';
+	$array_var .= '<div class="table-responsive rtl_mjschool-padding-15px">';
+	$array_var .= '<table class="table exam_hall_table mjschool_examhall_border_1px_center" id="exam_hall_table">';
+	$array_var .= '<thead><tr>';
+	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading_medium">' . esc_html__( 'Exam', 'mjschool' ) . '</th>';
+	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_library_table">' . esc_html__( 'Class', 'mjschool' ) . '</th>';
+	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_library_table">' . esc_html__( 'Section', 'mjschool' ) . '</th>';
+	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_library_table">' . esc_html__( 'Term', 'mjschool' ) . '</th>';
+	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_library_table">' . esc_html__( 'Start Date', 'mjschool' ) . '</th>';
+	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head">' . esc_html__( 'End Date', 'mjschool' ) . '</th>';
+	$array_var .= '</tr></thead>';
+	$array_var .= '<tfoot></tfoot>';
+	$array_var .= '<tbody>';
+	$exam_name    = isset( $exam_data->exam_name ) ? esc_html( $exam_data->exam_name ) : '';
+	$class_name   = mjschool_get_class_name( $class_id );
+	$exam_term_id = isset( $exam_data->exam_term ) ? absint( $exam_data->exam_term ) : 0;
+	
+	$array_var .= '<tr>';
+	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px">' . $exam_name . '</td>';
+	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px">' . esc_html( $class_name ) . '</td>';
+	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px">';
+	
+	if ( ! empty( $section_id ) ) {
+		$array_var .= esc_html( mjschool_get_section_name( $section_id ) );
 	} else {
-		$array_var .= esc_attr__( 'No Section', 'mjschool' );
+		$array_var .= esc_html__( 'No Section', 'mjschool' );
 	}
-	$array_var .= '</td> <td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >' . get_the_title( $exam_data->exam_term );
-	$array_var .= '</td> <td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >' . mjschool_get_date_in_input_box( $start_date );
-	$array_var .= '</td> <td class="mjschool-exam-hall-receipt-table-value">' . mjschool_get_date_in_input_box( $end_date );
-	$array_var .= '</td> </tr> </tbody> </table> </div> </div>
-	<div class="form-body mjschool-user-form mjschool-margin-top-20px mjschool-padding-top-25px-res">
-	<div class="row">
-	<div class="col-md-6 col-sm-6 col-xs-12">';
+	
+	$array_var .= '</td>';
+	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px">' . esc_html( get_the_title( $exam_term_id ) ) . '</td>';
+	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px">' . esc_html( mjschool_get_date_in_input_box( $start_date ) ) . '</td>';
+	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value">' . esc_html( mjschool_get_date_in_input_box( $end_date ) ) . '</td>';
+	$array_var .= '</tr>';
+	$array_var .= '</tbody></table></div></div>';
+	
+	// Exam hall dropdown
+	$array_var .= '<div class="form-body mjschool-user-form mjschool-margin-top-20px mjschool-padding-top-25px-res">';
+	$array_var .= '<div class="row"><div class="col-md-6 col-sm-6 col-xs-12">';
+	
 	$table_name = $wpdb->prefix . 'mjschool_hall';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$retrieve_subject = $wpdb->get_results( "SELECT * FROM $table_name" );
-	$array_var       .= '<select name="exam_hall" class="mjschool-line-height-30px form-control validate[required]" id="exam_hall">';
-	$defaultmsg       = esc_attr__( 'Select Exam Hall', 'mjschool' );
-	$array_var       .= '<option value="">' . esc_attr( $defaultmsg ) . '</option>';
-	foreach ( $retrieve_subject as $retrieved_data ) {
-		$array_var .= '<option id="exam_hall_capacity_' . esc_attr( $retrieved_data->hall_id ) . '" hall_capacity="' . $retrieved_data->hall_capacity . '" value="' . esc_attr( $retrieved_data->hall_id ) . '"> ' . esc_html( stripslashes( $retrieved_data->hall_name ) ) . '</option>';
-	}
-	$array_var .= '</select> </div> </div> </div>
-	<div class="form-group row mjschool-margin-top-20px mjschool-padding-top-25px-res">
-	<div class="col-md-12">
-	<div class="row">';
-	if ( ! empty( $student_show_data ) || ! empty( $student_data_asigned ) ) {
-		$array_var .= "<div class='col-md-6 col-sm-6 col-xs-12'>";
-		$array_var .= '<h4 class="exam_hall_lable">' . esc_attr__( 'Not Assign Exam Hall Student List', 'mjschool' ) . '</h4>';
-		if ( isset( $student_show_data ) ) {
-			$array_var .= '<table id="not_approve_table" class="display exam_timelist mjschool_examhall_border_1px_center" cellspacing="0" width="100%" >
-			<thead>
-				<tr>
-					<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_names" ><input name="select_all[]" value="all" class="hall_receipt_checkbox my_all_check " id="checkbox-select-all" type="checkbox" /></th>
-					<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading">' . esc_attr__( 'Student Name', 'mjschool' ) . '</th>
-					<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head" >' . esc_attr__( 'Student Roll No', 'mjschool' ) . '</th>
-				</tr>
-			</thead>
-			<tbody>';
-			if ( ! empty( $student_show_data ) ) {
-				foreach ( $student_show_data as $retrieve_data ) {
-					$userdata   = get_userdata( $retrieve_data );
-					$array_var .= '<tr id="' . $retrieve_data . '" class="mjschool_border_1px_white">
-					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center"><input type="checkbox" class="hall_receipt_checkbox select-checkbox my_check hall_receipt_checkbox" name="id[]" dataid="' . $retrieve_data . '"  value="' . $retrieve_data . '"></td>
-					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $userdata->display_name . '</td>
-					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . get_user_meta( $retrieve_data, 'roll_id', true );
-					$array_var .= '</td> </tr>';
-				}
-			} else {
-				$array_var .= '<td class="no_data_td_remove" style="text-align:center;" colspan="3">' . esc_attr__( 'No Student Available', 'mjschool' ) . '</td>';
+	
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$retrieve_subject = $wpdb->get_results( "SELECT * FROM {$table_name}" );
+	
+	$array_var .= '<select name="exam_hall" class="mjschool-line-height-30px form-control validate[required]" id="exam_hall">';
+	$array_var .= '<option value="">' . esc_html__( 'Select Exam Hall', 'mjschool' ) . '</option>';
+	
+	if ( ! empty( $retrieve_subject ) ) {
+		foreach ( $retrieve_subject as $retrieved_data ) {
+			if ( ! isset( $retrieved_data->hall_id ) || ! isset( $retrieved_data->hall_name ) ) {
+				continue;
 			}
-			$array_var .= '</tbody> </table>
-			<tr>
-				<td>
-					<button type="button" class="mt-2 btn btn-success mjschool-save-btn mjschool-assign-exam-hall" name="assign_exam_hall" id="assign_exam_hall">' . esc_attr__( 'Assign Exam Hall', 'mjschool' ) . '</button>
-				</td>
-			</tr>';
+			
+			$hall_id       = absint( $retrieved_data->hall_id );
+			$hall_name     = esc_html( stripslashes( $retrieved_data->hall_name ) );
+			$hall_capacity = isset( $retrieved_data->hall_capacity ) ? absint( $retrieved_data->hall_capacity ) : 0;
+			
+			$array_var .= '<option id="exam_hall_capacity_' . esc_attr( $hall_id ) . '" ';
+			$array_var .= 'hall_capacity="' . esc_attr( $hall_capacity ) . '" ';
+			$array_var .= 'value="' . esc_attr( $hall_id ) . '">';
+			$array_var .= $hall_name;
+			$array_var .= '</option>';
+		}
+	}
+	$array_var .= '</select></div></div></div>';
+	// Student lists section.
+	$array_var .= '<div class="form-group row mjschool-margin-top-20px mjschool-padding-top-25px-res">';
+	$array_var .= '<div class="col-md-12"><div class="row">';
+	if ( ! empty( $student_show_data ) || ! empty( $student_data_asigned ) ) {
+		// Unassigned students table.
+		$array_var .= '<div class="col-md-6 col-sm-6 col-xs-12">';
+		$array_var .= '<h4 class="exam_hall_lable">' . esc_html__( 'Not Assigned Exam Hall Student List', 'mjschool' ) . '</h4>';
+		if ( isset( $student_show_data ) && ! empty( $student_show_data ) ) {
+			$array_var .= '<table id="not_approve_table" class="display exam_timelist mjschool_examhall_border_1px_center" cellspacing="0" width="100%">';
+			$array_var .= '<thead><tr>';
+			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_names">';
+			$array_var .= '<input name="select_all[]" value="all" class="hall_receipt_checkbox my_all_check" id="checkbox-select-all" type="checkbox" />';
+			$array_var .= '</th>';
+			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading">' . esc_html__( 'Student Name', 'mjschool' ) . '</th>';
+			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head">' . esc_html__( 'Student Roll No', 'mjschool' ) . '</th>';
+			$array_var .= '</tr></thead><tbody>';
+			$has_students = false;
+			foreach ( $student_show_data as $retrieve_data ) {
+				$userdata = get_userdata( absint( $retrieve_data ) );
+				if ( empty( $userdata ) || ! isset( $userdata->display_name ) ) {
+					continue;
+				}
+				$has_students = true;
+				$user_id      = absint( $retrieve_data );
+				$display_name = esc_html( $userdata->display_name );
+				$roll_id      = esc_html( get_user_meta( $user_id, 'roll_id', true ) );
+				$array_var .= '<tr id="' . esc_attr( $user_id ) . '" class="mjschool_border_1px_white">';
+				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">';
+				$array_var .= '<input type="checkbox" class="hall_receipt_checkbox select-checkbox my_check" ';
+				$array_var .= 'name="id[]" dataid="' . esc_attr( $user_id ) . '" value="' . esc_attr( $user_id ) . '">';
+				$array_var .= '</td>';
+				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $display_name . '</td>';
+				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $roll_id . '</td>';
+				$array_var .= '</tr>';
+			}
+			if ( ! $has_students ) {
+				$array_var .= '<tr><td class="no_data_td_remove" style="text-align:center;" colspan="3">';
+				$array_var .= esc_html__( 'No Student Available', 'mjschool' );
+				$array_var .= '</td></tr>';
+			}
+			$array_var .= '</tbody></table>';
+			$array_var .= '<tr><td>';
+			$array_var .= '<button type="button" class="mt-2 btn btn-success mjschool-save-btn mjschool-assign-exam-hall" ';
+			$array_var .= 'name="assign_exam_hall" id="assign_exam_hall">';
+			$array_var .= esc_html__( 'Assign Exam Hall', 'mjschool' );
+			$array_var .= '</button>';
+			$array_var .= '</td></tr>';
 		}
 		$array_var .= '</div>';
-		$array_var .= "<div class='col-md-6 col-sm-6 col-xs-12'>";
-		$array_var .= '<h4 class="exam_hall_lable">' . esc_attr__( 'Assigned Exam Hall Student List', 'mjschool' ) . '</h4>';
-		if ( isset( $student_data_asigned ) ) {
-			$array_var .= '<table id="approve_table" class="display exam_timelist mjschool_examhall_border_1px_center" cellspacing="0" width="100%" >
-			<thead>
-				<tr >
-					<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_names" ></th>
-					<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading" >' . esc_attr__( 'Student Name', 'mjschool' ) . '</th>
-					<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head">' . esc_attr__( 'Student Roll No', 'mjschool' ) . '</th>
-				</tr>
-			</thead>
-			<tbody>';
-			if ( ! empty( $student_data_asigned ) ) {
-				foreach ( $student_data_asigned as $retrieve_data1 ) {
-					$userdata       = get_userdata( $retrieve_data1->user_id );
-					$dlt_image_icon = esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/Delete.png' );
-
-					$array_var .= '<tr class="assign_student_exam_lis mjschool_border_1px_white" id="' . $retrieve_data1->user_id . '" >
-					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">
-					<a class="delete_receipt_record" href="#" dataid="' . $retrieve_data1->user_id . '"  id=' . $retrieve_data1->user_id . '><img src="' . $dlt_image_icon . '" class="mjschool-massage-image"></a></td>
-					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $userdata->display_name . '</td>
-					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . get_user_meta($retrieve_data1->user_id, 'roll_id', true);
-					$array_var .= '</td> </tr>';
-
+		// Assigned students table.
+		$array_var .= '<div class="col-md-6 col-sm-6 col-xs-12">';
+		$array_var .= '<h4 class="exam_hall_lable">' . esc_html__( 'Assigned Exam Hall Student List', 'mjschool' ) . '</h4>';
+		if ( isset( $student_data_asigned ) && ! empty( $student_data_asigned ) ) {
+			$array_var .= '<table id="approve_table" class="display exam_timelist mjschool_examhall_border_1px_center" cellspacing="0" width="100%">';
+			$array_var .= '<thead><tr>';
+			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_names"></th>';
+			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading">' . esc_html__( 'Student Name', 'mjschool' ) . '</th>';
+			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head">' . esc_html__( 'Student Roll No', 'mjschool' ) . '</th>';
+			$array_var .= '</tr></thead><tbody>';
+			$has_assigned = false;
+			foreach ( $student_data_asigned as $retrieve_data1 ) {
+				if ( ! isset( $retrieve_data1->user_id ) ) {
+					continue;
 				}
+				$userdata = get_userdata( absint( $retrieve_data1->user_id ) );
+				if ( empty( $userdata ) || ! isset( $userdata->display_name ) ) {
+					continue;
+				}
+				$has_assigned     = true;
+				$user_id          = absint( $retrieve_data1->user_id );
+				$display_name     = esc_html( $userdata->display_name );
+				$roll_id          = esc_html( get_user_meta( $user_id, 'roll_id', true ) );
+				$dlt_image_icon   = esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/Delete.png' );
+				$array_var .= '<tr class="assign_student_exam_lis mjschool_border_1px_white" id="' . esc_attr( $user_id ) . '">';
+				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">';
+				$array_var .= '<a class="delete_receipt_record" href="#" dataid="' . esc_attr( $user_id ) . '" id="' . esc_attr( $user_id ) . '">';
+				$array_var .= '<img src="' . $dlt_image_icon . '" class="mjschool-massage-image" alt="' . esc_attr__( 'Delete', 'mjschool' ) . '">';
+				$array_var .= '</a></td>';
+				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $display_name . '</td>';
+				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $roll_id . '</td>';
+				$array_var .= '</tr>';
 			}
-			$array_var .= '</tbody> </table>
-			<tr>
-				<td>
-					<button type="submit" class="mt-2 btn mjschool-save-btn btn-success" name="send_mail_exam_receipt" id="send_mail_exam_receipt">' . esc_attr__( 'Send Mail', 'mjschool' ) . '</button>
-				</td>
-			</tr>';
+			if ( ! $has_assigned ) {
+				$array_var .= '<tr><td colspan="3" style="text-align:center;">' . esc_html__( 'No students assigned yet', 'mjschool' ) . '</td></tr>';
+			}
+			$array_var .= '</tbody></table>';
+			$array_var .= '<tr><td>';
+			$array_var .= '<button type="submit" class="mt-2 btn mjschool-save-btn btn-success" ';
+			$array_var .= 'name="send_mail_exam_receipt" id="send_mail_exam_receipt">';
+			$array_var .= esc_html__( 'Send Mail', 'mjschool' );
+			$array_var .= '</button>';
+			$array_var .= '</td></tr>';
 		}
 		$array_var .= '</div>';
 	} else {
-		$array_var .= '<div><h4 >' . esc_attr__( 'No Student Available', 'mjschool' ) . '</h4></div>';
+		$array_var .= '<div><h4>' . esc_html__( 'No Student Available', 'mjschool' ) . '</h4></div>';
 	}
-	$array_var .= '</div> </div> </div> </form> </div>';
-	$data[]     = $array_var;
-	echo json_encode( $data );
-	die();
+	$array_var .= '</div></div></div></form></div>';
+	wp_send_json_success( array( $array_var ) );
+	wp_die();
 }
 add_action( 'wp_ajax_mjschool_delete_receipt_record', 'mjschool_delete_receipt_record' );
 add_action( 'wp_ajax_nopriv_mjschool_delete_receipt_record', 'mjschool_delete_receipt_record' );
@@ -8101,34 +9065,64 @@ add_action( 'wp_ajax_nopriv_mjschool_delete_receipt_record', 'mjschool_delete_re
  * @return void Outputs JSON encoded HTML row.
  */
 function mjschool_delete_receipt_record() {
-	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
+	// 1. CHECK THE NONCE FIRST
 	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
-		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
+		wp_send_json_error( 'Security check failed.' );
+		wp_die();
 	}
 
-	// 2. CHECK IF USER IS LOGGED IN.
+	// 2. CHECK IF USER IS LOGGED IN
 	if ( ! is_user_logged_in() ) {
-		wp_die( 'You must be logged in.' );
+		wp_send_json_error( 'You must be logged in.' );
+		wp_die();
 	}
-	$array_var = array();
-	$id        = isset($_POST['record_id']) ? intval(wp_unslash($_POST['record_id'])) : '';
-	$exam_id   = isset($_POST['exam_id']) ? intval(wp_unslash($_POST['exam_id'])) : '';
+	$id      = isset( $_POST['record_id'] ) ? absint( $_POST['record_id'] ) : 0;
+	$exam_id = isset( $_POST['exam_id'] ) ? absint( $_POST['exam_id'] ) : 0;
+	
+	if ( empty( $id ) || empty( $exam_id ) ) {
+		wp_send_json_error( 'Invalid parameters' );
+		wp_die();
+	}
+	
 	global $wpdb;
 	$table_name_mjschool_exam_hall_receipt = $wpdb->prefix . 'mjschool_exam_hall_receipt';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$user_id = $wpdb->query( $wpdb->prepare( "Delete from $table_name_mjschool_exam_hall_receipt where exam_id=%d AND user_id=%d", $exam_id, $id ) );
-	if ( $user_id ) {
-		$userdata   = get_userdata( $id );
-		$array_var .= '<tr id="' . $id . '" class="mjschool_border_1px_white">
-		<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center"><input type="checkbox" class="select-checkbox my_check hall_receipt_checkbox" name="id[]" dataid="' . $id . '"  value="' . $id . '"></td>
-		<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $userdata->display_name . '</td>
-		<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . get_user_meta( $id, 'roll_id', true );
-		$array_var .= '</td>
-		</tr>';
+	
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$deleted = $wpdb->query(
+		$wpdb->prepare(
+			"DELETE FROM {$table_name_mjschool_exam_hall_receipt} WHERE exam_id = %d AND user_id = %d",
+			$exam_id,
+			$id
+		)
+	);
+	
+	if ( $deleted ) {
+		$userdata = get_userdata( $id );
+		
+		if ( empty( $userdata ) || ! isset( $userdata->display_name ) ) {
+			wp_send_json_error( 'User not found' );
+			wp_die();
+		}
+		
+		$display_name = esc_html( $userdata->display_name );
+		$roll_id      = esc_html( get_user_meta( $id, 'roll_id', true ) );
+		
+		// Build HTML row for unassigned list
+		$array_var  = '<tr id="' . esc_attr( $id ) . '" class="mjschool_border_1px_white">';
+		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">';
+		$array_var .= '<input type="checkbox" class="select-checkbox my_check hall_receipt_checkbox" ';
+		$array_var .= 'name="id[]" dataid="' . esc_attr( $id ) . '" value="' . esc_attr( $id ) . '">';
+		$array_var .= '</td>';
+		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $display_name . '</td>';
+		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $roll_id . '</td>';
+		$array_var .= '</tr>';
+		
+		wp_send_json_success( array( $array_var ) );
+	} else {
+		wp_send_json_error( 'Delete failed' );
 	}
-	$data[] = $array_var;
-	echo json_encode( $data );
-	die();
+	
+	wp_die();
 }
 add_action( 'wp_ajax_mjschool_add_receipt_record', 'mjschool_add_receipt_record' );
 add_action( 'wp_ajax_nopriv_mjschool_add_receipt_record', 'mjschool_add_receipt_record' );
@@ -8143,40 +9137,64 @@ add_action( 'wp_ajax_nopriv_mjschool_add_receipt_record', 'mjschool_add_receipt_
  * @return void Outputs JSON encoded HTML rows.
  */
 function mjschool_add_receipt_record() {
-	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
+	// 1. CHECK THE NONCE FIRST
 	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
-		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
+		wp_send_json_error( 'Security check failed.' );
+		wp_die();
 	}
 
-	// 2. CHECK IF USER IS LOGGED IN.
+	// 2. CHECK IF USER IS LOGGED IN
 	if ( ! is_user_logged_in() ) {
-		wp_die( 'You must be logged in.' );
+		wp_send_json_error( 'You must be logged in.' );
+		wp_die();
 	}
-	$array_var     = array();
-	$user_id_array = isset( $_POST['id_array'] ) ? array_map( 'intval', wp_unslash( $_POST['id_array'] ) ) : array();
-	$exam_hall = isset( $_POST['exam_hall'] ) ? intval( wp_unslash( $_POST['exam_hall'] ) ) : 0;
-	$exam_id = isset( $_POST['exam_id'] ) ? intval( wp_unslash( $_POST['exam_id'] ) ) : 0;
-	if ( ! empty( $user_id_array ) ) {
-		foreach ( $user_id_array as $id ) {
-			$user_id  = mjschool_insert_exam_reciept( $id, $exam_hall, $exam_id );
-			$userdata = get_userdata( $user_id );
-
-			if ($user_id) {
-				$dlt_image_icon = esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/Delete.png");
-				$array_var .= '<tr id="' . $user_id . '" class="mjschool_border_1px_white">
-				<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">
-					<a class="delete_receipt_record " href="#" id=' . $user_id . '><img src="' . $dlt_image_icon . '" class="mjschool-massage-image"></a></td>
-				<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $userdata->display_name . '</td>
-				<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . get_user_meta($user_id, 'roll_id', true);
-				$array_var .= '</td>
-				</tr>';
-			}
-
+	$user_id_array = isset( $_POST['id_array'] ) && is_array( $_POST['id_array'] ) ? array_map( 'absint', $_POST['id_array'] ) : array();
+	$exam_hall = isset( $_POST['exam_hall'] ) ? absint( $_POST['exam_hall'] ) : 0;
+	$exam_id   = isset( $_POST['exam_id'] ) ? absint( $_POST['exam_id'] ) : 0;
+	
+	if ( empty( $user_id_array ) || empty( $exam_hall ) || empty( $exam_id ) ) {
+		wp_send_json_error( 'Invalid parameters' );
+		wp_die();
+	}
+	
+	$array_var = '';
+	$dlt_image_icon = esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/Delete.png' );
+	
+	foreach ( $user_id_array as $id ) {
+		$id = absint( $id );
+		
+		if ( empty( $id ) ) {
+			continue;
 		}
+		
+		// Insert the receipt record
+		$user_id = mjschool_insert_exam_reciept( $id, $exam_hall, $exam_id );
+		
+		if ( empty( $user_id ) ) {
+			continue;
+		}
+		$userdata = get_userdata( $user_id );
+		
+		if ( empty( $userdata ) || ! isset( $userdata->display_name ) ) {
+			continue;
+		}
+		
+		$display_name = esc_html( $userdata->display_name );
+		$roll_id      = esc_html( get_user_meta( $user_id, 'roll_id', true ) );
+		
+		// Build HTML row for assigned list
+		$array_var .= '<tr id="' . esc_attr( $user_id ) . '" class="mjschool_border_1px_white">';
+		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">';
+		$array_var .= '<a class="delete_receipt_record" href="#" dataid="' . esc_attr( $user_id ) . '" id="' . esc_attr( $user_id ) . '">';
+		$array_var .= '<img src="' . $dlt_image_icon . '" class="mjschool-massage-image" alt="' . esc_attr__( 'Delete', 'mjschool' ) . '">';
+		$array_var .= '</a></td>';
+		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $display_name . '</td>';
+		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $roll_id . '</td>';
+		$array_var .= '</tr>';
 	}
-	$data[] = $array_var;
-	echo json_encode( $data );
-	die();
+	
+	wp_send_json_success( array( $array_var ) );
+	wp_die();
 }
 /**
  * Retrieves the exam hall receipt records for a given student.
@@ -8191,12 +9209,17 @@ function mjschool_add_receipt_record() {
  * @return array List of exam hall receipt records.
  */
 function mjschool_student_exam_receipt_check( $id ) {
+	$student_id = absint( $id );
+	if ( empty( $student_id ) ) {
+		return array();
+	}
 	global $wpdb;
 	$table_name_mjschool_exam_hall_receipt = $wpdb->prefix . 'mjschool_exam_hall_receipt';
-	$student_id                            = intval( $id );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "Select * from $table_name_mjschool_exam_hall_receipt where user_id=%d", $student_id ) );
-	return $result;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_name_mjschool_exam_hall_receipt} WHERE user_id = %d", $student_id )
+	);
+	return is_array( $result ) ? $result : array();
 }
 /**
  * Retrieves exam hall receipt details for a specific student and exam.
@@ -8209,12 +9232,17 @@ function mjschool_student_exam_receipt_check( $id ) {
  * @return object|null Database row containing exam hall receipt details, or null if not found.
  */
 function mjschool_get_exam_hall_name( $id, $eid ) {
+	$student_id = absint( $id );
+	$exam_id    = absint( $eid );
+	if ( empty( $student_id ) || empty( $exam_id ) ) {
+		return null;
+	}
 	global $wpdb;
 	$table_name_mjschool_exam_hall_receipt = $wpdb->prefix . 'mjschool_exam_hall_receipt';
-	$student_id                            = intval( $id );
-	$exam_id                               = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "select * from $table_name_mjschool_exam_hall_receipt where exam_id=%d and user_id=%d", $exam_id, $student_id ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT * FROM {$table_name_mjschool_exam_hall_receipt} WHERE exam_id = %d AND user_id = %d", $exam_id, $student_id )
+	);
 	return $result;
 }
 /**
@@ -8227,11 +9255,20 @@ function mjschool_get_exam_hall_name( $id, $eid ) {
  * @return string|null Hall name if available, otherwise null.
  */
 function mjschool_get_hall_name( $eid ) {
+	$hall_id = absint( $eid );
+	
+	if ( empty( $hall_id ) ) {
+		return '';
+	}
 	global $wpdb;
 	$table_name_hall = $wpdb->prefix . 'mjschool_hall';
-	$hall_id         = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "select * from $table_name_hall where hall_id=%d", $hall_id ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT * FROM {$table_name_hall} WHERE hall_id = %d", $hall_id )
+	);
+	if ( empty( $result ) || ! isset( $result->hall_name ) ) {
+		return '';
+	}
 	return $result->hall_name;
 }
 /**
@@ -8244,12 +9281,18 @@ function mjschool_get_hall_name( $eid ) {
  * @return int|null Hall capacity if found, otherwise null.
  */
 function mjschool_get_hall_capacity( $eid ) {
+	$hall_id = absint( $eid );
+	if ( empty( $hall_id ) ) {
+		return 0;
+	}
 	global $wpdb;
 	$table_name_hall = $wpdb->prefix . 'mjschool_hall';
-	$hall_id         = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "select hall_capacity from $table_name_hall where hall_id=%d", $hall_id ) );
-	return $result->hall_name;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row( $wpdb->prepare( "SELECT hall_capacity FROM {$table_name_hall} WHERE hall_id = %d", $hall_id ) );
+	if ( empty( $result ) || ! isset( $result->hall_capacity ) ) {
+		return 0;
+	}
+	return absint( $result->hall_capacity );
 }
 /**
  * Generates a unique room code based on the last inserted room ID.
@@ -8261,12 +9304,11 @@ function mjschool_get_hall_capacity( $eid ) {
 function mjschool_generate_room_code() {
 	global $wpdb;
 	$smgt_room = $wpdb->prefix . 'mjschool_room';
-	// Get the last inserted ID.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$last = $wpdb->get_var( "SELECT MAX(id) FROM $smgt_room" );
-	// Ensure $lastid is numeric and increment it.
-	$lastid = ( $last ) ? $last + 1 : 1;
-	$code   = 'RM' . '' . sprintf( '00' . $lastid );
+	
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$last = $wpdb->get_var( "SELECT MAX(id) FROM {$smgt_room}" );
+	$lastid = ( $last ) ? absint( $last ) + 1 : 1;
+	$code = 'RM' . str_pad( $lastid, 3, '0', STR_PAD_LEFT );
 	return $code;
 }
 /**
@@ -8279,10 +9321,10 @@ function mjschool_generate_room_code() {
 function mjschool_generate_bed_code() {
 	global $wpdb;
 	$smgt_beds = $wpdb->prefix . 'mjschool_beds';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$last   = $wpdb->get_var( "SELECT MAX(id) FROM $smgt_beds" );
-	$lastid = ( $last ) ? $last + 1 : 1;
-	$code   = 'BD' . '' . sprintf( '00' . $lastid );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$last = $wpdb->get_var( "SELECT MAX(id) FROM {$smgt_beds}" );
+	$lastid = ( $last ) ? absint( $last ) + 1 : 1;
+	$code = 'BD' . str_pad( $lastid, 3, '0', STR_PAD_LEFT );
 	return $code;
 }
 /**
@@ -8295,16 +9337,21 @@ function mjschool_generate_bed_code() {
  * @return string Hostel name or 'N/A' if not found.
  */
 function mjschool_get_hostel_name_by_id( $eid ) {
-	global $wpdb;
-	$smgt_hostel = $wpdb->prefix . 'mjschool_hostel';
-	$id          = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * From $smgt_hostel where id=%d", $id ) );
-	if ( $result ) {
-		return $hostel_name = $result->hostel_name;
-	} else {
+	$id = absint( $eid );
+	if ( empty( $id ) ) {
 		return 'N/A';
 	}
+	global $wpdb;
+	$smgt_hostel = $wpdb->prefix . 'mjschool_hostel';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT * FROM {$smgt_hostel} WHERE id = %d", $id )
+	);
+	if ( empty( $result ) || ! isset( $result->hostel_name ) ) {
+		return 'N/A';
+	}
+	
+	return $result->hostel_name;
 }
 /**
  * Retrieves a room's unique ID using the room record ID.
@@ -8313,17 +9360,23 @@ function mjschool_get_hostel_name_by_id( $eid ) {
  *
  * @param int $eid Room ID.
  *
- * @return string|null Room unique ID or null if not found.
+ * @return string Room unique ID or empty string if not found.
  */
 function mjschool_get_room_unique_id_by_id( $eid ) {
+	$id = absint( $eid );
+	if ( empty( $id ) ) {
+		return '';
+	}
 	global $wpdb;
 	$smgt_room = $wpdb->prefix . 'mjschool_room';
-	$id        = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * From $smgt_room where id=%d", $id ) );
-	if ( $result ) {
-		return $room_unique_id = $result->room_unique_id;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT room_unique_id FROM {$smgt_room} WHERE id = %d", $id )
+	);
+	if ( empty( $result ) || ! isset( $result->room_unique_id ) ) {
+		return '';
 	}
+	return $result->room_unique_id;
 }
 /**
  * Retrieves the bed capacity of a room by its ID.
@@ -8332,15 +9385,23 @@ function mjschool_get_room_unique_id_by_id( $eid ) {
  *
  * @param int $eid Room ID.
  *
- * @return int Bed capacity.
+ * @return int Bed capacity, 0 if not found.
  */
 function mjschool_get_bed_capacity_by_id( $eid ) {
+	$id = absint( $eid );
+	if ( empty( $id ) ) {
+		return 0;
+	}
 	global $wpdb;
 	$smgt_room = $wpdb->prefix . 'mjschool_room';
-	$id        = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result              = $wpdb->get_row( $wpdb->prepare( "SELECT * From $smgt_room where id=%d", $id ) );
-	return $bed_capacity = $result->beds_capacity;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT beds_capacity FROM {$smgt_room} WHERE id = %d", $id )
+	);
+	if ( empty( $result ) || ! isset( $result->beds_capacity ) ) {
+		return 0;
+	}
+	return absint( $result->beds_capacity );
 }
 /**
  * Counts the number of beds assigned to a room.
@@ -8352,13 +9413,17 @@ function mjschool_get_bed_capacity_by_id( $eid ) {
  * @return int Number of beds in the room.
  */
 function mjschool_hostel_room_bed_count( $eid ) {
+	$id = absint( $eid );
+	if ( empty( $id ) ) {
+		return 0;
+	}
 	global $wpdb;
 	$smgt_beds = $wpdb->prefix . 'mjschool_beds';
-	$id        = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result_bed = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $smgt_beds where room_id=%d", $id ) );
-	$bed_count  = count( $result_bed );
-	return $bed_count;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result_bed = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$smgt_beds} WHERE room_id = %d", $id )
+	);
+	return is_array( $result_bed ) ? count( $result_bed ) : 0;
 }
 /**
  * Retrieves the count of occupied beds for a room.
@@ -8370,21 +9435,32 @@ function mjschool_hostel_room_bed_count( $eid ) {
  * @return int Number of occupied beds.
  */
 function mjschool_hostel_room_status_check( $eid ) {
+	$room_id = absint( $eid );
+	if ( empty( $room_id ) ) {
+		return 0;
+	}
 	global $wpdb;
 	$smgt_room = $wpdb->prefix . 'mjschool_room';
 	$smgt_beds = $wpdb->prefix . 'mjschool_beds';
-	$room_id   = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result    = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $smgt_room where id=%d", $room_id ) );
-	$final_cnt = 0;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_results(
+		$wpdb->prepare( "SELECT id, beds_capacity FROM {$smgt_room} WHERE id = %d", $room_id )
+	);
+	$final_cnt   = 0;
+	$result_room = array();
 	if ( ! empty( $result ) ) {
 		foreach ( $result as $data ) {
-			$bed_capacity = $data->beds_capacity;
-			$room_id_id   = $data->id;
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$result_room = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $smgt_beds where room_id=%d and bed_status=%d", $room_id_id, 1 ) );
+			if ( ! isset( $data->id ) ) {
+				continue;
+			}
+			$room_id_id = absint( $data->id );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$result_room = $wpdb->get_results(
+				$wpdb->prepare( "SELECT * FROM {$smgt_beds} WHERE room_id = %d AND bed_status = %d", $room_id_id, 1 )
+			);
 		}
-		$final_cnt = count( $result_room );
+		
+		$final_cnt = is_array( $result_room ) ? count( $result_room ) : 0;
 	}
 	return $final_cnt;
 }
@@ -8398,13 +9474,19 @@ function mjschool_hostel_room_status_check( $eid ) {
  * @return object|null Bed assignment record or null if not found.
  */
 function mjschool_student_assign_bed_data( $eid ) {
+	$id = absint( $eid );
+	if ( empty( $id ) ) {
+		return null;
+	}
 	global $wpdb;
 	$table_mjschool_assign_beds = $wpdb->prefix . 'mjschool_assign_beds';
-	$id                     = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_assign_beds where bed_id=%d", $id ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT * FROM {$table_mjschool_assign_beds} WHERE bed_id = %d", $id )
+	);
 	return $result;
 }
+
 /**
  * Retrieves the unique room ID using the room ID.
  *
@@ -8415,17 +9497,22 @@ function mjschool_student_assign_bed_data( $eid ) {
  * @return string Room unique ID or 'N/A' if not found.
  */
 function mjschool_get_room_unique_id_by_room_id( $eid ) {
-	global $wpdb;
-	$table_mjschool_room = $wpdb->prefix . 'mjschool_room';
-	$room_id         = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_room where id=%d", $room_id ) );
-	if ( $result ) {
-		return $result->room_unique_id;
-	} else {
+	$room_id = absint( $eid );
+	if ( empty( $room_id ) ) {
 		return 'N/A';
 	}
+	global $wpdb;
+	$table_mjschool_room = $wpdb->prefix . 'mjschool_room';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT room_unique_id FROM {$table_mjschool_room} WHERE id = %d", $room_id )
+	);
+	if ( empty( $result ) || ! isset( $result->room_unique_id ) ) {
+		return 'N/A';
+	}
+	return $result->room_unique_id;
 }
+
 /**
  * Retrieves the room category/type for a given room ID.
  *
@@ -8436,16 +9523,20 @@ function mjschool_get_room_unique_id_by_room_id( $eid ) {
  * @return string Room category or 'N/A' if not found.
  */
 function mjschool_get_room_type_by_room_id( $eid ) {
-	global $wpdb;
-	$table_mjschool_room = $wpdb->prefix . 'mjschool_room';
-	$room_id         = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_room where id=%d", $room_id ) );
-	if ( $result ) {
-		return $result->room_category;
-	} else {
+	$room_id = absint( $eid );
+	if ( empty( $room_id ) ) {
 		return 'N/A';
 	}
+	global $wpdb;
+	$table_mjschool_room = $wpdb->prefix . 'mjschool_room';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT room_category FROM {$table_mjschool_room} WHERE id = %d", $room_id )
+	);
+	if ( empty( $result ) || ! isset( $result->room_category ) ) {
+		return 'N/A';
+	}
+	return $result->room_category;
 }
 /**
  * Retrieves the hostel name using its ID.
@@ -8457,17 +9548,22 @@ function mjschool_get_room_type_by_room_id( $eid ) {
  * @return string Hostel name or 'N/A' if not found.
  */
 function mjschool_hostel_name_by_id( $eid ) {
-	global $wpdb;
-	$table_mjschool_hostel = $wpdb->prefix . 'mjschool_hostel';
-	$hostel_id         = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_hostel where id=%d" . $hostel_id ) );
-	if ( ! empty( $result->hostel_name ) ) {
-		return $result->hostel_name;
-	} else {
+	$hostel_id = absint( $eid );
+	if ( empty( $hostel_id ) ) {
 		return 'N/A';
 	}
+	global $wpdb;
+	$table_mjschool_hostel = $wpdb->prefix . 'mjschool_hostel';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT hostel_name FROM {$table_mjschool_hostel} WHERE id = %d", $hostel_id )
+	);
+	if ( empty( $result ) || ! isset( $result->hostel_name ) ) {
+		return 'N/A';
+	}
+	return $result->hostel_name;
 }
+
 /**
  * Retrieves all student bed assignment records.
  *
@@ -8478,10 +9574,11 @@ function mjschool_hostel_name_by_id( $eid ) {
 function mjschool_all_assign_student_data() {
 	global $wpdb;
 	$table_mjschool_assign_beds = $wpdb->prefix . 'mjschool_assign_beds';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_assign_beds" ) );
-	return $result;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_results( "SELECT * FROM {$table_mjschool_assign_beds}" );
+	return is_array( $result ) ? $result : array();
 }
+
 /**
  * Checks whether a message was sent to a single user or multiple users.
  *
@@ -8492,12 +9589,17 @@ function mjschool_all_assign_student_data() {
  * @return int Number of message recipients.
  */
 function mjschool_send_message_check_single_user_or_multiple( $eid ) {
+	$post_id = absint( $eid );
+	if ( empty( $post_id ) ) {
+		return 0;
+	}
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_message';
-	$post_id  = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$sent_message = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $tbl_name where post_id =%d", $post_id ) );
-	return $sent_message;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$sent_message = $wpdb->get_var(
+		$wpdb->prepare( "SELECT COUNT(*) FROM {$tbl_name} WHERE post_id = %d", $post_id )
+	);
+	return absint( $sent_message );
 }
 // -------------------- VIEW PAGE POPUP. -----------------------//
 add_action( 'wp_ajax_mjschool_view_details_popup', 'mjschool_view_details_popup' );
@@ -8514,14 +9616,16 @@ add_action( 'wp_ajax_nopriv_mjschool_view_details_popup', 'mjschool_view_details
  * @return void Outputs HTML for the popup and terminates execution.
  */
 function mjschool_view_details_popup() {
-	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
+	// 1. CHECK THE NONCE FIRST
 	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
-		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
+		wp_send_json_error( 'Security check failed.' );
+		wp_die();
 	}
 
-	// 2. CHECK IF USER IS LOGGED IN.
+	// 2. CHECK IF USER IS LOGGED IN
 	if ( ! is_user_logged_in() ) {
-		wp_die( 'You must be logged in.' );
+		wp_send_json_error( 'You must be logged in.' );
+		wp_die();
 	}
 	?>
 	<style>
@@ -8536,62 +9640,97 @@ function mjschool_view_details_popup() {
 		}
 	</style>
 	<?php
-	$school_type=get_option( 'mjschool_custom_class' );
-	$recoed_id = isset($_REQUEST['record_id']) ? intval(wp_unslash($_REQUEST['record_id'])) : '';
-	$type      = isset($_REQUEST['type']) ? sanitize_text_field(wp_unslash($_REQUEST['type'])) : '';
+	$school_type = get_option( 'mjschool_custom_class' );
+	$recoed_id   = isset( $_REQUEST['record_id'] ) ? absint( $_REQUEST['record_id'] ) : 0;
+	$type        = isset( $_REQUEST['type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['type'] ) ) : '';
+	
+	// IMPROVED: Validate inputs
+	if ( empty( $recoed_id ) || empty( $type ) ) {
+		wp_send_json_error( 'Invalid parameters' );
+		wp_die();
+	}
+	
 	if ( $type === 'transport_view' ) {
 		$transport_data = mjschool_get_transport_by_id( $recoed_id );
+		
+		// ADDED: Validation
+		if ( empty( $transport_data ) ) {
+			?>
+			<div class="modal-body">
+				<p><?php esc_html_e( 'Transport details not found.', 'mjschool' ); ?></p>
+			</div>
+			<?php
+			wp_die();
+		}
 		?>
 		<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
-
-			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-transportation.png"); ?>" class="mjschool-popup-image-before-name">
-			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/icons/mjschool-transportation.png' ); ?>" class="mjschool-popup-image-before-name">
+			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>"></a>
 			<h4 id="myLargeModalLabel" class="modal-title"> <?php esc_html_e( 'Transport Details', 'mjschool' ); ?> </h4>
-
 		</div>
 		<div class="modal-body mjschool-view-details-body-assigned-bed mjschool-view-details-body">
 			<div class="row">
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Route Name', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $transport_data->route_name ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $transport_data->route_name ) ? esc_html( $transport_data->route_name ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Vehicle Identifier', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $transport_data->number_of_vehicle ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $transport_data->number_of_vehicle ) ? esc_html( $transport_data->number_of_vehicle ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Vehicle Registration Number', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $transport_data->vehicle_reg_num ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $transport_data->vehicle_reg_num ) ? esc_html( $transport_data->vehicle_reg_num ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Driver Name', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $transport_data->driver_name ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $transport_data->driver_name ) ? esc_html( $transport_data->driver_name ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Driver Phone Number', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $transport_data->driver_phone_num ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $transport_data->driver_phone_num ) ? esc_html( $transport_data->driver_phone_num ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Driver Address', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $transport_data->driver_address ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $transport_data->driver_address ) ? esc_html( $transport_data->driver_address ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Route Fare', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $transport_data->route_fare, 2, '.', '' ) ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $transport_data->route_fare ) ) {
+							echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( (float) $transport_data->route_fare, 2, '.', '' ) ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Route Description', 'mjschool' ); ?> </label>
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $transport_data->route_description ) ) {
+						if ( isset( $transport_data->route_description ) && ! empty( $transport_data->route_description ) ) {
 							echo esc_html( $transport_data->route_description );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -8610,25 +9749,35 @@ function mjschool_view_details_popup() {
 	} elseif ( $type === 'booklist_view' ) {
 		$obj_lib   = new mjschoollibrary();
 		$book_data = $obj_lib->mjschool_get_single_books( $recoed_id );
+		
+		// ADDED: Validation
+		if ( empty( $book_data ) ) {
+			?>
+			<div class="modal-body">
+				<p><?php esc_html_e( 'Book details not found.', 'mjschool' ); ?></p>
+			</div>
+			<?php
+			wp_die();
+		}
 		?>
 		<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
-
-			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-library.png"); ?>" class="mjschool-popup-image-before-name">
-			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/icons/mjschool-library.png' ); ?>" class="mjschool-popup-image-before-name">
+			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>"></a>
 			<h4 id="myLargeModalLabel" class="modal-title"> <?php esc_html_e( 'Book Details', 'mjschool' ); ?> </h4>
-
 		</div>
 		<div class="modal-body mjschool-view-details-body-assigned-bed mjschool-view-details-body">
 			<div class="row">
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'ISBN', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $book_data->ISBN ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $book_data->ISBN ) ? esc_html( $book_data->ISBN ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Book Number', 'mjschool' ); ?> </label><br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $book_data->book_number ) ) {
+						if ( isset( $book_data->book_number ) && ! empty( $book_data->book_number ) ) {
 							echo esc_html( $book_data->book_number );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -8638,21 +9787,33 @@ function mjschool_view_details_popup() {
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Book Title', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $book_data->book_name ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $book_data->book_name ) ? esc_html( $book_data->book_name ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Book Category', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_html( get_the_title( $book_data->cat_id ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $book_data->cat_id ) ) {
+							echo esc_html( get_the_title( absint( $book_data->cat_id ) ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Author Name', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $book_data->author_name ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $book_data->author_name ) ? esc_html( $book_data->author_name ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Publisher', 'mjschool' ); ?> </label><br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $book_data->publisher ) ) {
+						if ( isset( $book_data->publisher ) && ! empty( $book_data->publisher ) ) {
 							echo esc_html( $book_data->publisher );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -8662,24 +9823,51 @@ function mjschool_view_details_popup() {
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Rack Location', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_html( get_the_title( $book_data->rack_location ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $book_data->rack_location ) ) {
+							echo esc_html( get_the_title( absint( $book_data->rack_location ) ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Book Price', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $book_data->price, 2, '.', '' ) ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $book_data->price ) ) {
+							echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( (float) $book_data->price, 2, '.', '' ) ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Remaining Quantity', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $book_data->quentity ) . ' ' . esc_html__( 'Out Of', 'mjschool' ) . ' ' . esc_html( $book_data->total_quentity ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $book_data->quentity ) && isset( $book_data->total_quentity ) ) {
+							echo esc_html( $book_data->quentity ) . ' ' . esc_html__( 'Out Of', 'mjschool' ) . ' ' . esc_html( $book_data->total_quentity );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-12 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Description', 'mjschool' ); ?> </label><br>
 					<label class="mjschool-label-value">
 						<?php
-						$description = $book_data->description;
-						$description = ltrim( $description, ' ' );
-						if ( ! empty( $description ) ) {
-							echo esc_html( $description );
+						if ( isset( $book_data->description ) ) {
+							$description = ltrim( $book_data->description, ' ' );
+							if ( ! empty( $description ) ) {
+								echo esc_html( $description );
+							} else {
+								esc_html_e( 'N/A', 'mjschool' );
+							}
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
 						}
@@ -8692,32 +9880,60 @@ function mjschool_view_details_popup() {
 	} elseif ( $type === 'room_view' ) {
 		$obj_hostel = new mjschool_hostel();
 		$room_data  = $obj_hostel->mjschool_get_room_by_id( $recoed_id );
+		
+		// ADDED: Validation
+		if ( empty( $room_data ) ) {
+			?>
+			<div class="modal-body">
+				<p><?php esc_html_e( 'Room details not found.', 'mjschool' ); ?></p>
+			</div>
+			<?php
+			wp_die();
+		}
 		?>
 		<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
-
-			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-room.png"); ?>" class="mjschool-popup-image-before-name">
-			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-room.png' ); ?>" class="mjschool-popup-image-before-name">
+			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>"></a>
 			<h4 id="myLargeModalLabel" class="modal-title"> <?php esc_html_e( 'Room Details', 'mjschool' ); ?> </h4>
-
 		</div>
 		<div class="modal-body mjschool-view-details-body-assigned-bed mjschool-view-details-body">
 			<div class="row">
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Room Unique ID', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $room_data->room_unique_id ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $room_data->room_unique_id ) ? esc_html( $room_data->room_unique_id ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Hostel Name', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_get_hostel_name_by_id( $room_data->hostel_id ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $room_data->hostel_id ) ) {
+							echo esc_html( mjschool_get_hostel_name_by_id( absint( $room_data->hostel_id ) ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Room Category', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( get_the_title( $room_data->room_category ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $room_data->room_category ) ) {
+							echo esc_html( get_the_title( absint( $room_data->room_category ) ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
-				<?php $capacity = $obj_hostel->mjschool_remaining_bed_capacity( $room_data->id ); ?>
+				<?php 
+				$capacity = isset( $room_data->id ) ? $obj_hostel->mjschool_remaining_bed_capacity( absint( $room_data->id ) ) : 0;
+				?>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Remaining Beds Capacity', 'mjschool' ); ?> </label>
 					<br>
@@ -8725,7 +9941,9 @@ function mjschool_view_details_popup() {
 						<?php
 						echo esc_html( $capacity ) . ' ';
 						esc_html_e( 'Out Of', 'mjschool' );
-						echo ' ' . esc_html( $room_data->beds_capacity );
+						if ( isset( $room_data->beds_capacity ) ) {
+							echo ' ' . esc_html( $room_data->beds_capacity );
+						}
 						?>
 					</label>
 				</div>
@@ -8734,16 +9952,20 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						$room_cnt     = mjschool_hostel_room_status_check( $room_data->id );
-						$bed_capacity = (int) $room_data->beds_capacity;
-						if ( $room_cnt >= $bed_capacity ) {
-							?>
-							<label class="mjschool-label-value mjschool_red_colors" > <?php esc_html_e( 'Occupied', 'mjschool' ); ?> </label>
-							<?php
+						if ( isset( $room_data->id ) && isset( $room_data->beds_capacity ) ) {
+							$room_cnt     = mjschool_hostel_room_status_check( absint( $room_data->id ) );
+							$bed_capacity = absint( $room_data->beds_capacity );
+							if ( $room_cnt >= $bed_capacity ) {
+								?>
+								<label class="mjschool-label-value mjschool_red_colors" > <?php esc_html_e( 'Occupied', 'mjschool' ); ?> </label>
+								<?php
+							} else {
+								?>
+								<label class="mjschool-label-value mjschool_green_colors" > <?php esc_html_e( 'Available', 'mjschool' ); ?> </label>
+								<?php
+							}
 						} else {
-							?>
-							<label class="mjschool-label-value mjschool_green_colors" > <?php esc_html_e( 'Available', 'mjschool' ); ?> </label>
-							<?php
+							esc_html_e( 'N/A', 'mjschool' );
 						}
 						?>
 					</label>
@@ -8753,7 +9975,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $room_data->room_description ) ) {
+						if ( isset( $room_data->room_description ) && ! empty( $room_data->room_description ) ) {
 							echo esc_html( $room_data->room_description );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -8767,49 +9989,92 @@ function mjschool_view_details_popup() {
 	} elseif ( $type === 'Homework_view' ) {
 		$objj      = new mjschool_Homework();
 		$classdata = mjschool_get_homework_by_id( $recoed_id );
+		
+		// ADDED: Validation
+		if ( empty( $classdata ) ) {
+			?>
+			<div class="modal-body">
+				<p><?php esc_html_e( 'Homework details not found.', 'mjschool' ); ?></p>
+			</div>
+			<?php
+			wp_die();
+		}
 		?>
 		<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
-
-			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-homework.png"); ?>" class="mjschool-popup-image-before-name">
-			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/icons/mjschool-homework.png' ); ?>" class="mjschool-popup-image-before-name">
+			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>"></a>
 			<h4 id="myLargeModalLabel" class="modal-title"> <?php esc_html_e( 'Homework Details', 'mjschool' ); ?> </h4>
-
 		</div>
 		<div class="modal-body mjschool-view-details-body-assigned-bed mjschool-view-details-body">
 			<div class="row">
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Title', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $classdata->title ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $classdata->title ) ? esc_html( $classdata->title ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Subject', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_get_subject_by_id( $classdata->subject ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $classdata->subject ) ) {
+							echo esc_html( mjschool_get_subject_by_id( absint( $classdata->subject ) ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Class', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_get_class_section_name_wise( $classdata->class_name, $classdata->section_id ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $classdata->class_name ) && isset( $classdata->section_id ) ) {
+							echo esc_html( mjschool_get_class_section_name_wise( absint( $classdata->class_name ), absint( $classdata->section_id ) ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Homework Date', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_get_date_in_input_box( $classdata->created_date ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $classdata->created_date ) ) {
+							echo esc_html( mjschool_get_date_in_input_box( $classdata->created_date ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Submission Date', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_get_date_in_input_box( $classdata->submition_date ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $classdata->submition_date ) ) {
+							echo esc_html( mjschool_get_date_in_input_box( $classdata->submition_date ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Documents Title', 'mjschool' ); ?> </label>
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						$doc_data = json_decode( $classdata->homework_document );
-						if ( ! empty( $doc_data[0]->title ) ) {
-							echo esc_attr( $doc_data[0]->title );
+						// FIXED: Proper json_decode() validation
+						$doc_data = isset( $classdata->homework_document ) ? json_decode( $classdata->homework_document ) : null;
+						if ( is_array( $doc_data ) && ! empty( $doc_data ) && isset( $doc_data[0]->title ) && ! empty( $doc_data[0]->title ) ) {
+							echo esc_html( $doc_data[0]->title );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
 						}
@@ -8821,10 +10086,15 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						$doc_data = json_decode( $classdata->homework_document );
-						if ( ! empty( $doc_data[0]->value ) ) {
+						// FIXED: Proper json_decode() validation
+						$doc_data = isset( $classdata->homework_document ) ? json_decode( $classdata->homework_document ) : null;
+						if ( is_array( $doc_data ) && ! empty( $doc_data ) && isset( $doc_data[0]->value ) && ! empty( $doc_data[0]->value ) ) {
 							?>
-							<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $doc_data[0]->value ); ?>" class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_attr( $retrieved_data->homework_id ); ?>"><i class="fa fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?> </a>
+							<a download href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>" 
+							   class="btn mjschool-custom-padding-0 popup_download_btn" 
+							   record_id="<?php echo esc_attr( isset( $classdata->homework_id ) ? $classdata->homework_id : $recoed_id ); ?>">
+								<i class="fa fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?>
+							</a>
 							<?php
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -8837,7 +10107,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $classdata->content ) ) {
+						if ( isset( $classdata->content ) && ! empty( $classdata->content ) ) {
 							echo esc_html( $classdata->content );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -8849,37 +10119,63 @@ function mjschool_view_details_popup() {
 		</div>
 		<?php
 	} elseif ( $type === 'Exam_view' ) {
-		$id        	  = $recoed_id;
-		$exam_data 	  = mjschool_get_exam_by_id( $recoed_id );
-		$subject_data = json_decode($exam_data->subject_data);
-		foreach ($subject_data as $subject) {
-			$max_mark 		= $subject->max_marks;
-			$passing_marks1 = $subject->passing_marks;
-			break;
+		$exam_data = mjschool_get_exam_by_id( $recoed_id );
+		
+		// ADDED: Validation
+		if ( empty( $exam_data ) ) {
+			?>
+			<div class="modal-body">
+				<p><?php esc_html_e( 'Exam details not found.', 'mjschool' ); ?></p>
+			</div>
+			<?php
+			wp_die();
 		}
-		if ( $exam_data->contributions === 'yes' ) {
-			$contributions_data_array = json_decode( $exam_data->contributions_data );
+		
+		// FIXED: Proper json_decode() and foreach validation
+		$subject_data = isset( $exam_data->subject_data ) ? json_decode( $exam_data->subject_data ) : null;
+		if ( ! is_array( $subject_data ) ) {
+			$subject_data = array();
+		}
+		
+		// FIXED: Initialize variables
+		$max_mark       = '';
+		$passing_marks1 = '';
+		
+		foreach ( $subject_data as $subject ) {
+			if ( isset( $subject->max_marks ) && isset( $subject->passing_marks ) ) {
+				$max_mark       = $subject->max_marks;
+				$passing_marks1 = $subject->passing_marks;
+				break;
+			}
+		}
+		
+		$contributions_data_array = array();
+		if ( isset( $exam_data->contributions ) && $exam_data->contributions === 'yes' ) {
+			$contributions_data_array = isset( $exam_data->contributions_data ) ? json_decode( $exam_data->contributions_data ) : null;
+			if ( ! is_array( $contributions_data_array ) ) {
+				$contributions_data_array = array();
+			}
 		}
 		?>
 		<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
-
-			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-exam.png"); ?>" class="mjschool-popup-image-before-name">
-			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-exam.png' ); ?>" class="mjschool-popup-image-before-name">
+			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>"></a>
 			<h4 id="myLargeModalLabel" class="modal-title"> <?php esc_html_e( 'Exam Details', 'mjschool' ); ?> </h4>
-
 		</div>
 		<div class="modal-body mjschool-view-details-body-assigned-bed mjschool-view-details-body">
 			<div class="row">
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Title', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $exam_data->exam_name ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $exam_data->exam_name ) ? esc_html( $exam_data->exam_name ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Term', 'mjschool' ); ?> </label><br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( get_the_title( $exam_data->exam_term ) ) ) {
-							echo esc_html( get_the_title( $exam_data->exam_term ) );
+						if ( isset( $exam_data->exam_term ) && ! empty( get_the_title( absint( $exam_data->exam_term ) ) ) ) {
+							echo esc_html( get_the_title( absint( $exam_data->exam_term ) ) );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
 						}
@@ -8888,7 +10184,15 @@ function mjschool_view_details_popup() {
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Class', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_get_class_section_name_wise( $exam_data->class_id, $exam_data->section_id ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $exam_data->class_id ) && isset( $exam_data->section_id ) ) {
+							echo esc_html( mjschool_get_class_section_name_wise( absint( $exam_data->class_id ), absint( $exam_data->section_id ) ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading">
@@ -8897,26 +10201,57 @@ function mjschool_view_details_popup() {
 						<?php esc_html_e( 'End Date', 'mjschool' ); ?>
 					</label><br>
 					<label class="mjschool-label-value">
-						<?php echo esc_html( mjschool_get_date_in_input_box( $exam_data->exam_start_date ) ); ?>
-						<?php esc_html_e( 'To', 'mjschool' ); ?>
-						<?php echo esc_html( mjschool_get_date_in_input_box( $exam_data->exam_end_date ) ); ?>
+						<?php 
+						if ( isset( $exam_data->exam_start_date ) && isset( $exam_data->exam_end_date ) ) {
+							echo esc_html( mjschool_get_date_in_input_box( $exam_data->exam_start_date ) );
+							echo ' ';
+							esc_html_e( 'To', 'mjschool' );
+							echo ' ';
+							echo esc_html( mjschool_get_date_in_input_box( $exam_data->exam_end_date ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
 					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Total Marks', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"><?php if( isset( $max_mark ) ){ echo esc_html( $max_mark); } else{ echo esc_html( $exam_data->total_mark); }?></label>
+					<label class="mjschool-label-value">
+						<?php 
+						if ( ! empty( $max_mark ) ) {
+							echo esc_html( $max_mark );
+						} elseif ( isset( $exam_data->total_mark ) ) {
+							echo esc_html( $exam_data->total_mark );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Passing Marks', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"><?php if( isset( $passing_marks1 ) ){ echo esc_html( $passing_marks1); } else{ echo esc_html( $exam_data->passing_mark); }?></label>
+					<label class="mjschool-label-value">
+						<?php 
+						if ( ! empty( $passing_marks1 ) ) {
+							echo esc_html( $passing_marks1 );
+						} elseif ( isset( $exam_data->passing_mark ) ) {
+							echo esc_html( $exam_data->passing_mark );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<?php
-				if ( $exam_data->contributions === 'yes' && ! empty( $contributions_data_array ) ) {
+				if ( ! empty( $contributions_data_array ) ) {
 					foreach ( $contributions_data_array as $key => $value ) {
+						if ( ! isset( $value->label ) || ! isset( $value->mark ) ) {
+							continue;
+						}
 						?>
 						<div class="col-md-6 mjschool-popup-padding-15px">
-							<label class="mjschool-popup-label-heading"> <?php esc_html( $value->label ); ?> </label><br>
-							<label class="mjschool-label-value"> <?php esc_html( $value->mark ); ?> </label>
+							<label class="mjschool-popup-label-heading"> <?php echo esc_html( $value->label ); ?> </label><br>
+							<label class="mjschool-label-value"> <?php echo esc_html( $value->mark ); ?> </label>
 						</div>
 						<?php
 					}
@@ -8927,10 +10262,15 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						$doc_data = json_decode( $exam_data->exam_syllabus );
-						if ( ! empty( $doc_data[0]->value ) ) {
+						// FIXED: Proper json_decode() validation
+						$doc_data = isset( $exam_data->exam_syllabus ) ? json_decode( $exam_data->exam_syllabus ) : null;
+						if ( is_array( $doc_data ) && ! empty( $doc_data ) && isset( $doc_data[0]->value ) && ! empty( $doc_data[0]->value ) ) {
 							?>
-							<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $doc_data[0]->value ); ?>" class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_attr( $exam_data->exam_id ); ?>"><i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?> </a>
+							<a download href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>" 
+							   class="btn mjschool-custom-padding-0 popup_download_btn" 
+							   record_id="<?php echo esc_attr( isset( $exam_data->exam_id ) ? $exam_data->exam_id : $recoed_id ); ?>">
+								<i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?>
+							</a>
 							<?php
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -8942,7 +10282,7 @@ function mjschool_view_details_popup() {
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Comment', 'mjschool' ); ?> </label><br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $exam_data->exam_comment ) ) {
+						if ( isset( $exam_data->exam_comment ) && ! empty( $exam_data->exam_comment ) ) {
 							echo esc_html( $exam_data->exam_comment );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -8958,31 +10298,51 @@ function mjschool_view_details_popup() {
 			</div>
 		</div>
 		<?php
-	} elseif ( $type === 'beds_view' ) {
+	}elseif ( $type === 'beds_view' ) {
 		$obj_hostel = new mjschool_hostel();
 		$bed_data   = $obj_hostel->mjschool_get_bed_by_id( $recoed_id );
+		
+		// ADDED: Validation
+		if ( empty( $bed_data ) ) {
+			?>
+			<div class="modal-body">
+				<p><?php esc_html_e( 'Bed details not found.', 'mjschool' ); ?></p>
+			</div>
+			<?php
+			wp_die();
+		}
 		?>
 		<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
-
-			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-bed.png"); ?>" class="mjschool-popup-image-before-name">
-			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-bed.png' ); ?>" class="mjschool-popup-image-before-name">
+			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>"></a>
 			<h4 id="myLargeModalLabel" class="modal-title"> <?php esc_html_e( 'Beds Details', 'mjschool' ); ?> </h4>
-
 		</div>
 		<div class="modal-body mjschool-view-details-body-assigned-bed mjschool-view-details-body">
 			<div class="row">
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Bed Unique ID', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $bed_data->bed_unique_id ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $bed_data->bed_unique_id ) ? esc_html( $bed_data->bed_unique_id ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
-				<?php $hostel_id = $obj_hostel->mjschool_get_hostel_id_by_room_id( $bed_data->room_id ); ?>
+				<?php 
+				$hostel_id = isset( $bed_data->room_id ) ? $obj_hostel->mjschool_get_hostel_id_by_room_id( absint( $bed_data->room_id ) ) : 0;
+				?>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Room Unique ID', 'mjschool' ); ?> </label>
 					<br>
 					<label class="mjschool-label-value">
-						<?php echo esc_html( mjschool_get_room_unique_id_by_id( $bed_data->room_id ) ); ?>(
-						<?php echo esc_html( mjschool_get_hostel_name_by_id( $hostel_id ) ); ?>)
+						<?php 
+						if ( isset( $bed_data->room_id ) ) {
+							echo esc_html( mjschool_get_room_unique_id_by_id( absint( $bed_data->room_id ) ) );
+							if ( $hostel_id ) {
+								echo ' (' . esc_html( mjschool_get_hostel_name_by_id( absint( $hostel_id ) ) ) . ')';
+							}
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
 					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
@@ -8990,7 +10350,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( $bed_data->bed_status === '0' ) {
+						if ( isset( $bed_data->bed_status ) && $bed_data->bed_status === '0' ) {
 							?>
 							<label class="mjschool-label-value mjschool_green_colors" > <?php esc_html_e( 'Available', 'mjschool' ); ?> </label>
 							<?php
@@ -9005,14 +10365,22 @@ function mjschool_view_details_popup() {
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Charge', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $bed_data->bed_charge, 2, '.', '' ) ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $bed_data->bed_charge ) ) {
+							echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( (float) $bed_data->bed_charge, 2, '.', '' ) ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-12 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Description', 'mjschool' ); ?> </label>
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $bed_data->bed_description ) ) {
+						if ( isset( $bed_data->bed_description ) && ! empty( $bed_data->bed_description ) ) {
 							echo esc_html( $bed_data->bed_description );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9021,8 +10389,8 @@ function mjschool_view_details_popup() {
 					</label>
 				</div>
 				<?php
-				if ( $bed_data->bed_status != '0' ) {
-					$assign_data = $obj_hostel->mjschool_get_assign_bed_by_id( $bed_data->id );
+				if ( isset( $bed_data->bed_status ) && $bed_data->bed_status != '0' && isset( $bed_data->id ) ) {
+					$assign_data = $obj_hostel->mjschool_get_assign_bed_by_id( absint( $bed_data->id ) );
 					?>
 					<div class="mb-3">
 						<label class="mjschool-popup-label-heading" style="font-size: 18px !important; font-weight:bold;"> <?php esc_html_e( 'Occupied History :', 'mjschool' ); ?>
@@ -9033,8 +10401,8 @@ function mjschool_view_details_popup() {
 						<br>
 						<label class="mjschool-label-value">
 							<?php
-							if ( $assign_data ) {
-								echo esc_html( mjschool_student_display_name_with_roll( $assign_data->student_id ) );
+							if ( $assign_data && isset( $assign_data->student_id ) ) {
+								echo esc_html( mjschool_student_display_name_with_roll( absint( $assign_data->student_id ) ) );
 							} else {
 								esc_html_e( 'N/A', 'mjschool' );
 							}
@@ -9046,7 +10414,7 @@ function mjschool_view_details_popup() {
 						<br>
 						<label class="mjschool-label-value">
 							<?php
-							if ( $assign_data ) {
+							if ( $assign_data && isset( $assign_data->assign_date ) ) {
 								echo esc_html( mjschool_get_date_in_input_box( $assign_data->assign_date ) );
 							} else {
 								esc_html_e( 'N/A', 'mjschool' );
@@ -9059,7 +10427,7 @@ function mjschool_view_details_popup() {
 						<br>
 						<label class="mjschool-label-value">
 							<?php
-							if ( $assign_data ) {
+							if ( $assign_data && isset( $assign_data->created_date ) ) {
 								echo esc_html( mjschool_get_date_in_input_box( $assign_data->created_date ) );
 							} else {
 								esc_html_e( 'N/A', 'mjschool' );
@@ -9072,8 +10440,8 @@ function mjschool_view_details_popup() {
 						<br>
 						<label class="mjschool-label-value">
 							<?php
-							if ( $assign_data ) {
-								echo esc_html( ucfirst( mjschool_get_user_name_by_id( $assign_data->created_by ) ) );
+							if ( $assign_data && isset( $assign_data->created_by ) ) {
+								echo esc_html( ucfirst( mjschool_get_user_name_by_id( absint( $assign_data->created_by ) ) ) );
 							} else {
 								esc_html_e( 'N/A', 'mjschool' );
 							}
@@ -9087,20 +10455,34 @@ function mjschool_view_details_popup() {
 		</div>
 		<?php
 	} elseif ( $type === 'subject_view' ) {
-		$subject_data  = mjschool_get_subject( $recoed_id );
+		$subject_data = mjschool_get_subject( $recoed_id );
+		
+		// ADDED: Validation
+		if ( empty( $subject_data ) ) {
+			?>
+			<div class="modal-body">
+				<p><?php esc_html_e( 'Subject details not found.', 'mjschool' ); ?></p>
+			</div>
+			<?php
+			wp_die();
+		}
+		
 		$teacher_group = array();
 		$teacher_ids   = mjschool_teacher_by_subject( $subject_data );
-		foreach ( $teacher_ids as $teacher_id ) {
-			$teacher_group[] = mjschool_get_teacher( $teacher_id );
+		if ( is_array( $teacher_ids ) ) {
+			foreach ( $teacher_ids as $teacher_id ) {
+				$teacher_name = mjschool_get_teacher( absint( $teacher_id ) );
+				if ( ! empty( $teacher_name ) ) {
+					$teacher_group[] = $teacher_name;
+				}
+			}
 		}
-		$teachers = implode( ',', $teacher_group );
+		$teachers = ! empty( $teacher_group ) ? implode( ', ', $teacher_group ) : '';
 		?>
 		<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
-
-			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-subject.png"); ?>" class="mjschool-popup-image-before-name">
-			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-subject.png' ); ?>" class="mjschool-popup-image-before-name">
+			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>"></a>
 			<h4 id="myLargeModalLabel" class="modal-title"> <?php esc_html_e( 'Subject Details', 'mjschool' ); ?> </h4>
-
 		</div>
 		<div class="modal-body mjschool-view-details-body-assigned-bed mjschool-view-details-body">
 			<div class="row">
@@ -9109,7 +10491,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $subject_data->subject_code ) ) {
+						if ( isset( $subject_data->subject_code ) && ! empty( $subject_data->subject_code ) ) {
 							echo esc_html( $subject_data->subject_code );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9122,7 +10504,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $subject_data->sub_name ) ) {
+						if ( isset( $subject_data->sub_name ) && ! empty( $subject_data->sub_name ) ) {
 							echo esc_html( $subject_data->sub_name );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9135,8 +10517,8 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $subject_data->class_id ) ) {
-							echo esc_html( mjschool_get_class_section_name_wise( $subject_data->class_id, $subject_data->section_id ) );
+						if ( isset( $subject_data->class_id ) && ! empty( $subject_data->class_id ) ) {
+							echo esc_html( mjschool_get_class_section_name_wise( absint( $subject_data->class_id ), absint( $subject_data->section_id ) ) );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
 						}
@@ -9161,7 +10543,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $subject_data->author_name ) ) {
+						if ( isset( $subject_data->author_name ) && ! empty( $subject_data->author_name ) ) {
 							echo esc_html( $subject_data->author_name );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9174,7 +10556,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $subject_data->edition ) ) {
+						if ( isset( $subject_data->edition ) && ! empty( $subject_data->edition ) ) {
 							echo esc_html( $subject_data->edition );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9185,14 +10567,16 @@ function mjschool_view_details_popup() {
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Syllabus', 'mjschool' ); ?> </label>
 					<br>
-					<?php
-					$syllabus = $subject_data->syllabus;
-					?>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $syllabus ) ) {
+						if ( isset( $subject_data->syllabus ) && ! empty( $subject_data->syllabus ) ) {
+							$syllabus = $subject_data->syllabus;
 							?>
-							<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $syllabus ); ?>" record_id="<?php echo esc_attr( $subject->subject ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?> </a>
+							<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" 
+							   href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $syllabus ) ); ?>" 
+							   record_id="<?php echo esc_attr( $recoed_id ); ?>">
+								<i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?>
+							</a>
 							<?php
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9205,8 +10589,8 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						$author = mjschool_get_user_name_by_id( $subject_data->created_by );
-						if ( ! empty( $subject_data->created_by ) ) {
+						if ( isset( $subject_data->created_by ) && ! empty( $subject_data->created_by ) ) {
+							$author = mjschool_get_user_name_by_id( absint( $subject_data->created_by ) );
 							echo esc_html( $author );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9224,13 +10608,21 @@ function mjschool_view_details_popup() {
 		<?php
 	} elseif ( $type === 'examhall_view' ) {
 		$exam_hall = mjschool_get_hall_by_id( $recoed_id );
+		
+		// ADDED: Validation
+		if ( empty( $exam_hall ) ) {
+			?>
+			<div class="modal-body">
+				<p><?php esc_html_e( 'Exam hall details not found.', 'mjschool' ); ?></p>
+			</div>
+			<?php
+			wp_die();
+		}
 		?>
 		<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
-
-			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-exam.png"); ?>" class="mjschool-popup-image-before-name">
-			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-exam.png' ); ?>" class="mjschool-popup-image-before-name">
+			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>"></a>
 			<h4 id="myLargeModalLabel" class="modal-title"> <?php esc_html_e( 'Exam Hall Details', 'mjschool' ); ?> </h4>
-
 		</div>
 		<div class="modal-body mjschool-view-details-body-assigned-bed mjschool-view-details-body">
 			<div class="row">
@@ -9239,7 +10631,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $exam_hall->hall_name ) ) {
+						if ( isset( $exam_hall->hall_name ) && ! empty( $exam_hall->hall_name ) ) {
 							echo esc_html( stripslashes( $exam_hall->hall_name ) );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9252,7 +10644,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $exam_hall->number_of_hall ) ) {
+						if ( isset( $exam_hall->number_of_hall ) && ! empty( $exam_hall->number_of_hall ) ) {
 							echo esc_html( $exam_hall->number_of_hall );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9265,7 +10657,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $exam_hall->hall_capacity ) ) {
+						if ( isset( $exam_hall->hall_capacity ) && ! empty( $exam_hall->hall_capacity ) ) {
 							echo esc_html( $exam_hall->hall_capacity );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9278,7 +10670,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $exam_hall->date ) ) {
+						if ( isset( $exam_hall->date ) && ! empty( $exam_hall->date ) ) {
 							echo esc_html( mjschool_get_date_in_input_box( $exam_hall->date ) );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9291,7 +10683,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $exam_hall->description ) ) {
+						if ( isset( $exam_hall->description ) && ! empty( $exam_hall->description ) ) {
 							echo esc_html( stripslashes( $exam_hall->description ) );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9310,13 +10702,21 @@ function mjschool_view_details_popup() {
 	} elseif ( $type === 'event_view' ) {
 		$obj_event  = new mjschool_event_Manage();
 		$event_data = $obj_event->mjschool_get_single_event( $recoed_id );
+		
+		// ADDED: Validation
+		if ( empty( $event_data ) ) {
+			?>
+			<div class="modal-body">
+				<p><?php esc_html_e( 'Event details not found.', 'mjschool' ); ?></p>
+			</div>
+			<?php
+			wp_die();
+		}
 		?>
 		<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
-
-			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-event.png"); ?>" class="mjschool-popup-image-before-name">
-			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-event.png' ); ?>" class="mjschool-popup-image-before-name">
+			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>"></a>
 			<h4 id="myLargeModalLabel" class="modal-title"> <?php esc_html_e( 'Event Details', 'mjschool' ); ?> </h4>
-
 		</div>
 		<div class="modal-body mjschool-view-details-body-assigned-bed mjschool-view-details-body">
 			<div class="row">
@@ -9325,7 +10725,7 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $event_data->event_title ) ) {
+						if ( isset( $event_data->event_title ) && ! empty( $event_data->event_title ) ) {
 							echo esc_html( stripslashes( $event_data->event_title ) );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9338,9 +10738,13 @@ function mjschool_view_details_popup() {
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $event_data->event_doc ) ) {
+						if ( isset( $event_data->event_doc ) && ! empty( $event_data->event_doc ) ) {
 							?>
-							<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $event_data->event_doc ); ?>" class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_attr( $exam_data->exam_id ); ?>"><i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?> </a>
+							<a download href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $event_data->event_doc ) ); ?>" 
+							   class="btn mjschool-custom-padding-0 popup_download_btn" 
+							   record_id="<?php echo esc_attr( isset( $event_data->id ) ? $event_data->id : $recoed_id ); ?>">
+								<i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?>
+							</a>
 							<?php
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9350,26 +10754,58 @@ function mjschool_view_details_popup() {
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Start Date', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_attr( mjschool_get_date_in_input_box( $event_data->start_date ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $event_data->start_date ) ) {
+							echo esc_html( mjschool_get_date_in_input_box( $event_data->start_date ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'End Date', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_attr( mjschool_get_date_in_input_box( $event_data->end_date ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $event_data->end_date ) ) {
+							echo esc_html( mjschool_get_date_in_input_box( $event_data->end_date ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Start Time', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_time_remove_colon_before_am_pm( $event_data->start_time ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $event_data->start_time ) ) {
+							echo esc_html( mjschool_time_remove_colon_before_am_pm( $event_data->start_time ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'End Time', 'mjschool' ); ?> </label><br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_time_remove_colon_before_am_pm( $event_data->end_time ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $event_data->end_time ) ) {
+							echo esc_html( mjschool_time_remove_colon_before_am_pm( $event_data->end_time ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-12 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Description', 'mjschool' ); ?> </label>
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						if ( ! empty( $event_data->description ) ) {
+						if ( isset( $event_data->description ) && ! empty( $event_data->description ) ) {
 							echo esc_html( stripslashes( $event_data->description ) );
 						} else {
 							esc_html_e( 'N/A', 'mjschool' );
@@ -9387,61 +10823,127 @@ function mjschool_view_details_popup() {
 		<?php
 	} elseif ( $type === 'assign_transport_view' ) {
 		$assign_transport_data = mjschool_get_single_assign_transport_by_id( $recoed_id );
-		$transport_data        = mjschool_get_transport_by_id( $assign_transport_data->transport_id );
+		if ( empty( $assign_transport_data ) ) {
+			?>
+			<div class="modal-body">
+				<p><?php esc_html_e( 'Assigned transport details not found.', 'mjschool' ); ?></p>
+			</div>
+			<?php
+			wp_die();
+		}
+		$transport_data = null;
+		if ( isset( $assign_transport_data->transport_id ) ) {
+			$transport_data = mjschool_get_transport_by_id( absint( $assign_transport_data->transport_id ) );
+		}
 		?>
 		<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
-
-			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/mjschool-transportation.png"); ?>" class="mjschool-popup-image-before-name">
-			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
+			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/icons/mjschool-transportation.png' ); ?>" class="mjschool-popup-image-before-name">
+			<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-close.png' ); ?>"></a>
 			<h4 id="myLargeModalLabel" class="modal-title"> <?php esc_html_e( 'Assign Transport Details', 'mjschool' ); ?> </h4>
-
 		</div>
 		<div class="modal-body mjschool-view-details-body-assigned-bed mjschool-view-details-body">
 			<div class="row">
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Route Name', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $assign_transport_data->route_name ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php echo isset( $assign_transport_data->route_name ) ? esc_html( $assign_transport_data->route_name ) : esc_html__( 'N/A', 'mjschool' ); ?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Vehicle Identifier', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $transport_data->number_of_vehicle ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( $transport_data && isset( $transport_data->number_of_vehicle ) ) {
+							echo esc_html( $transport_data->number_of_vehicle );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Vehicle Registration Number', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $transport_data->vehicle_reg_num ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( $transport_data && isset( $transport_data->vehicle_reg_num ) ) {
+							echo esc_html( $transport_data->vehicle_reg_num );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Driver Name', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( $transport_data->driver_name ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( $transport_data && isset( $transport_data->driver_name ) ) {
+							echo esc_html( $transport_data->driver_name );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Driver Phone Number', 'mjschool' ); ?> </label>
 					<br>
 					<label class="mjschool-label-value">
-						<?php echo '+' . esc_html( mjschool_get_country_phonecode( get_option( 'mjschool_contry' ) ) ); ?>
-						<?php echo esc_html( $transport_data->driver_phone_num ); ?>
+						<?php 
+						if ( $transport_data && isset( $transport_data->driver_phone_num ) ) {
+							echo '+' . esc_html( mjschool_get_country_phonecode( get_option( 'mjschool_contry' ) ) );
+							echo ' ' . esc_html( $transport_data->driver_phone_num );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
 					</label>
 				</div>
 				<div class="col-md-6 mjschool-popup-padding-15px">
 					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Route Fare', 'mjschool' ); ?> </label>
 					<br>
-					<label class="mjschool-label-value"> <?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $assign_transport_data->route_fare, 2, '.', '' ) ) ); ?> </label>
+					<label class="mjschool-label-value"> 
+						<?php 
+						if ( isset( $assign_transport_data->route_fare ) ) {
+							echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( (float) $assign_transport_data->route_fare, 2, '.', '' ) ) );
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
+						}
+						?>
+					</label>
 				</div>
 				<div class="col-md-12 mjschool-popup-padding-15px">
-					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Assign Student', 'mjschool' ); ?> </label>
+					<label class="mjschool-popup-label-heading"> <?php esc_html_e( 'Assigned Student', 'mjschool' ); ?> </label>
 					<br>
 					<label class="mjschool-label-value">
 						<?php
-						$users          = json_decode( $assign_transport_data->route_user );
-						$new_user_array = array();
-						foreach ( $users as $user ) {
-							$new_user_array[] = get_user_meta( $user, 'first_name', true ) . ' ' . get_user_meta( $user, 'last_name', true );
+						if ( isset( $assign_transport_data->route_user ) ) {
+							$users = json_decode( $assign_transport_data->route_user );
+							if ( is_array( $users ) && ! empty( $users ) ) {
+								$new_user_array = array();
+								foreach ( $users as $user ) {
+									$user_id    = absint( $user );
+									$first_name = get_user_meta( $user_id, 'first_name', true );
+									$last_name  = get_user_meta( $user_id, 'last_name', true );
+									if ( ! empty( $first_name ) || ! empty( $last_name ) ) {
+										$new_user_array[] = trim( $first_name . ' ' . $last_name );
+									}
+								}
+								if ( ! empty( $new_user_array ) ) {
+									echo esc_html( implode( ', ', $new_user_array ) );
+								} else {
+									esc_html_e( 'N/A', 'mjschool' );
+								}
+							} else {
+								esc_html_e( 'N/A', 'mjschool' );
+							}
+						} else {
+							esc_html_e( 'N/A', 'mjschool' );
 						}
-						echo esc_html( implode( ', ', $new_user_array ) );
 						?>
 					</label>
 				</div>
@@ -9449,7 +10951,7 @@ function mjschool_view_details_popup() {
 		</div>
 		<?php
 	}
-	die();
+	wp_die();
 }
 /**
  * Redirects users to a fallback page when JavaScript is disabled in the browser.
@@ -9500,12 +11002,19 @@ function mjschool_access_right_page_not_access_message_admin_side() {
  * @return array List of transport records.
  */
 function mjschool_get_all_transport_created_by( $eid ) {
+	$user_id = absint( $eid );
+	if ( empty( $user_id ) ) {
+		return array();
+	}
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_transport';
-	$user_id    = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE  created_by=%d", $user_id ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$results = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_name} WHERE created_by = %d", $user_id )
+	);
+	return is_array( $results ) ? $results : array();
 }
+
 /**
  * Retrieves all leave entries created by a specific user.
  *
@@ -9516,12 +11025,19 @@ function mjschool_get_all_transport_created_by( $eid ) {
  * @return array List of leave records.
  */
 function mjschool_get_all_leave_created_by( $eid ) {
+	$user_id = absint( $eid );
+	if ( empty( $user_id ) ) {
+		return array();
+	}
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_leave';
-	$user_id    = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE  created_by=%d", $user_id ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$results = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_name} WHERE created_by = %d", $user_id )
+	);
+	return is_array( $results ) ? $results : array();
 }
+
 /**
  * Retrieves all leave entries for a specific student ID (used for parent/child relation).
  *
@@ -9532,13 +11048,19 @@ function mjschool_get_all_leave_created_by( $eid ) {
  * @return array List of leave records.
  */
 function mjschool_get_all_leave_parent_by_child_list( $eid ) {
+	$child_id = absint( $eid );
+	if ( empty( $child_id ) ) {
+		return array();
+	}
 	global $wpdb;
-	$table_name   = $wpdb->prefix . 'mjschool_leave';
-	$child_id_str = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE student_id=%d", $child_id_str ) );
-	return $results;
+	$table_name = $wpdb->prefix . 'mjschool_leave';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$results = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_name} WHERE student_id = %d", $child_id )
+	);
+	return is_array( $results ) ? $results : array();
 }
+
 /**
  * Retrieves all holiday records created by a specific user.
  *
@@ -9549,12 +11071,19 @@ function mjschool_get_all_leave_parent_by_child_list( $eid ) {
  * @return array List of holiday records.
  */
 function mjschool_get_all_holiday_created_by( $eid ) {
+	$user_id = absint( $eid );
+	if ( empty( $user_id ) ) {
+		return array();
+	}
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_holiday';
-	$user_id    = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE  created_by=%d", $user_id ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$results = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_name} WHERE created_by = %d", $user_id )
+	);
+	return is_array( $results ) ? $results : array();
 }
+
 /**
  * Retrieves the latest three holiday records created by a specific user (for dashboard display).
  *
@@ -9565,12 +11094,19 @@ function mjschool_get_all_holiday_created_by( $eid ) {
  * @return array List of holiday records.
  */
 function mjschool_get_all_holiday_created_by_dashboard( $user_id ) {
+	$user_id = absint( $user_id );
+	if ( empty( $user_id ) ) {
+		return array();
+	}
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_holiday';
-	$user_id    = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	return $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE  created_by=%d ORDER BY holiday_id DESC limit 3", $user_id ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$results = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_name} WHERE created_by = %d ORDER BY holiday_id DESC LIMIT 3", $user_id )
+	);
+	return is_array( $results ) ? $results : array();
 }
+
 /**
  * Retrieves user access rights based on role and specific page link.
  *
@@ -9582,27 +11118,45 @@ function mjschool_get_all_holiday_created_by_dashboard( $user_id ) {
  * @return array|null Access rights array or null if not found.
  */
 function mjschool_get_user_role_wise_access_right_array_in_api( $user_id, $page_link ) {
+	$user_id   = absint( $user_id );
+	$page_link = sanitize_text_field( $page_link );
+	if ( empty( $user_id ) || empty( $page_link ) ) {
+		return null;
+	}
 	$school_obj = new MJSchool_Management( $user_id );
 	$role       = $school_obj->role;
+	$menu = array();
 	if ( $role === 'student' ) {
 		$menu = get_option( 'mjschool_access_right_student' );
-	}
-	if ( $role === 'teacher' ) {
+	} elseif ( $role === 'teacher' ) { 
 		$menu = get_option( 'mjschool_access_right_teacher' );
 	}
+	if ( ! is_array( $menu ) || empty( $menu ) ) {
+		return null;
+	}
 	foreach ( $menu as $key1 => $value1 ) {
+		if ( ! is_array( $value1 ) ) {
+			continue;
+		}
 		foreach ( $value1 as $key => $value ) {
+			if ( ! is_array( $value ) || ! isset( $value['page_link'] ) ) {
+				continue;
+			}
 			if ( $page_link === $value['page_link'] ) {
-				$menu_array1['view']     = $value['view'];
-				$menu_array1['own_data'] = $value['own_data'];
-				$menu_array1['add']      = $value['add'];
-				$menu_array1['edit']     = $value['edit'];
-				$menu_array1['delete']   = $value['delete'];
+				$menu_array1 = array(
+					'view'     => isset( $value['view'] ) ? $value['view'] : '0',
+					'own_data' => isset( $value['own_data'] ) ? $value['own_data'] : '0',
+					'add'      => isset( $value['add'] ) ? $value['add'] : '0',
+					'edit'     => isset( $value['edit'] ) ? $value['edit'] : '0',
+					'delete'   => isset( $value['delete'] ) ? $value['delete'] : '0',
+				);
 				return $menu_array1;
 			}
 		}
 	}
+	return null;
 }
+
 /**
  * Generates an array of dates between two given dates (inclusive).
  *
@@ -9614,21 +11168,19 @@ function mjschool_get_user_role_wise_access_right_array_in_api( $user_id, $page_
  * @return array List of dates in Y-m-d format.
  */
 function mjschool_get_dates_from_range( $start, $end ) {
-	// Declare an empty array.
-	$array = array();
-	// Variable that store the date interval.
-	// Of period 1 day.
+	$array    = array();
 	$interval = new DateInterval( 'P1D' );
 	$realEnd  = new DateTime( $end );
 	$realEnd->add( $interval );
 	$period = new DatePeriod( new DateTime( $start ), $interval, $realEnd );
-	// Use loop to store date into array.
+	
 	foreach ( $period as $date ) {
 		$array[] = $date->format( 'Y-m-d' );
 	}
-	// Return the array elements.
+	
 	return $array;
 }
+
 /**
  * Validates the username and password fields before login and redirects if empty.
  *
@@ -9641,13 +11193,18 @@ function mjschool_get_dates_from_range( $start, $end ) {
  * @return void
  */
 function mjschool_check_username_password( $login, $username, $password ) {
-	// Getting URL of the login page.
 	$referrer = isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '';
-	// if there's a valid referrer, and it's not the default log-in screen.
-	if ( ! empty( $referrer ) && ! strstr( $referrer, 'wp-login' ) && ! strstr( $referrer, 'wp-admin' ) ) {
-		if ( $username === '' || $password === '' ) {
-			wp_redirect( get_permalink( get_option( 'mjschool_login_page' ) ) . '?login=empty' );
-			die();
+	if ( empty( $referrer ) ) {
+		return;
+	}
+	if ( strpos( $referrer, 'wp-login' ) !== false || strpos( $referrer, 'wp-admin' ) !== false ) {
+		return;
+	}
+	if ( empty( $username ) || empty( $password ) ) {
+		$login_page = absint( get_option( 'mjschool_login_page' ) );
+		if ( ! empty( $login_page ) ) {
+			wp_safe_redirect( get_permalink( $login_page ) . '?login=empty' );
+			exit;
 		}
 	}
 }
@@ -9669,369 +11226,509 @@ function mjschool_check_username_password( $login, $username, $password ) {
  * @return void
  */
 function mjschool_send_mail_paid_invoice_pdf( $emails, $subject, $message, $fees_pay_id ) {
-	$format       = get_option( 'mjschool_invoice_option' );
-	$document_dir = WP_CONTENT_DIR;
-	$document_dir .= '/uploads/invoices/';
-	$document_path = $document_dir;
-	if ( ! file_exists( $document_path ) ) {
-		mkdir( $document_path, 0777, true );
+	// ADDED: Input validation
+	if ( empty( $emails ) || empty( $fees_pay_id ) ) {
+		error_log( 'Invoice PDF: Missing required parameters' );
+		return false;
 	}
+	
+	$fees_pay_id = absint( $fees_pay_id );
+	if ( empty( $fees_pay_id ) ) {
+		error_log( 'Invoice PDF: Invalid fees payment ID' );
+		return false;
+	}
+	
+	// Sanitize inputs
+	$emails  = is_array( $emails ) ? array_map( 'sanitize_email', $emails ) : sanitize_email( $emails );
+	$subject = sanitize_text_field( $subject );
+	$message = wp_kses_post( $message );
+	
+	// ADDED: Validate data exists
 	$fees_detail_result = mjschool_get_single_fees_payment_record( $fees_pay_id );
+	if ( empty( $fees_detail_result ) || ! isset( $fees_detail_result->student_id ) ) {
+		error_log( 'Invoice PDF: Fees payment record not found: ' . $fees_pay_id );
+		return false;
+	}
+	
 	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
-	$invoice_number = mjschool_generate_invoice_number( $fees_pay_id );
-	require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
-	$mpdf = new Mpdf\Mpdf();
-	$stylesheet = file_get_contents( MJSCHOOL_PLUGIN_DIR . '/assets/css/mjschool-style.css' ); // Get css content.
-	$mpdf->WriteHTML( '<html>' );
-	$mpdf->WriteHTML( '<head>' );
-	$mpdf->WriteHTML( '<style></style>' );
-	$mpdf->WriteHTML( $stylesheet, 1 ); // Writing style to pdf.
-	$mpdf->WriteHTML( '</head>' );
-	$mpdf->WriteHTML( '<body>' );
-	$mpdf->WriteHTML( '<div class="modal-body">' );
-	if ( $format != 1 ) {
-		$mpdf->WriteHTML( '<h3 >' . get_option( 'mjschool_name' ) . '</h3>' );
-		$mpdf->WriteHTML( '<table style="float: left;position: absolute;vertical-align: top;background-repeat: no-repeat;">' );
-		$mpdf->WriteHTML( '<tbody>' );
-		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<td>' );
-
-		$mpdf->WriteHTML( '<img  class="mjschool-invoice-image mjschool-float-left mjschool-invoice-image-model"  src="' . plugins_url( '/mjschool/assets/images/listpage_icon/invoice.png' ) . '" width="100%">' );
-		$mpdf->WriteHTML( '</td>' );
-		$mpdf->WriteHTML( '</tr>' );
-		$mpdf->WriteHTML( '</tbody>' );
-		$mpdf->WriteHTML( '</table>' );
+	$invoice_number             = mjschool_generate_invoice_number( $fees_pay_id );
+	
+	// FIXED: Changed permissions from 0777 to 0755
+	$document_dir  = WP_CONTENT_DIR . '/uploads/invoices/';
+	$document_path = $document_dir;
+	
+	if ( ! file_exists( $document_path ) ) {
+		if ( ! mkdir( $document_path, 0755, true ) && ! is_dir( $document_path ) ) {
+			error_log( 'Invoice PDF: Failed to create directory: ' . $document_path );
+			return false;
+		}
 	}
-	if ($format === 1) {
-		$school_name = esc_html( get_option( 'mjschool_name' ) );
-		$email = esc_html( get_option( 'mjschool_email' ) );
-		$phone = esc_html( get_option( 'mjschool_contact_number' ) );
-		// Put address all in one line.
-		$school_address = get_option( 'mjschool_address' );
-		$mpdf->WriteHTML( '<table style="border: 2px solid #000; width: 100%; margin: 6px 0 0 6px; padding: 20px;">
-			<tr>
-				<td style="width: 25%; vertical-align: top;">
-					<div style="border-radius: 50px;">
-						<img src="' . esc_url( get_option( 'mjschool_logo' ) ) . '" style="height: 130px; border-radius: 50%; background-repeat: no-repeat; background-size: cover; margin-top: 3px;">
-					</div>
-				</td>
-				<td style="width: 75%; padding-top: 10px; text-align: center;">
-					<div style="font-weight: bold; color: #1B1B8D; font-size: 24px; line-height: 30px; width: 100% !important">' . $school_name . '</div>
-					<div style="font-size: 17px; line-height: 26px; margin-top: 5px;">' . $school_address . '</div>
-					<div style="font-size: 17px; line-height: 26px; margin-top: 5px;">
-						' . esc_html__( 'E-mail', 'mjschool' ) . ': ' . $email . ' &nbsp;&nbsp;&nbsp; ' .
-				esc_html__( 'Phone', 'mjschool' ) . ': ' . $phone . '
-					</div>
-				</td>
-			</tr>
-		</table>' );
-	} else {
-		$mpdf->WriteHTML( '<table style="float: left;width: 100%;position: absolute!important;margin-top:-160px;">' );
-		$mpdf->WriteHTML( '<tbody>' );
-		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<td width="80%">' );
-		$mpdf->WriteHTML( '<table>' );
-		$mpdf->WriteHTML( '<tbody>' );
-		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<td width="10%">' );
-		$mpdf->WriteHTML( '<img class="system_logo"  src="' . esc_url( get_option( 'mjschool_logo' ) ) . '">' );
-		$mpdf->WriteHTML( '</td>' );
-		$mpdf->WriteHTML( '<td width="90%" style="padding-left: 20px;">' );
-		$mpdf->WriteHTML( '<h4 class="mjschool-popup-label-heading">' . esc_attr__( 'Address', 'mjschool' ) . '</h4>' );
-		$mpdf->WriteHTML( '<label class="mjschool-label-value mjschool-word-break-all" style="font-size: 16px !important;color: #333333 !important;font-weight: 400;">' . chunk_split(get_option( 'mjschool_address' ), 100, "<br>") . '</label><br>' );
-		$mpdf->WriteHTML( '<h4 class="mjschool-popup-label-heading">' . esc_attr__( 'Email', 'mjschool' ) . '</h4>' );
-		$mpdf->WriteHTML( '<label style="font-size: 16px !important;color: #333333 !important;font-weight: 400;" class="mjschool-label-value mjschool-word-break-all">' . get_option( 'mjschool_email' ) . "<br>" . '</label><br>' );
-		$mpdf->WriteHTML( '<h4 class="mjschool-popup-label-heading">' . esc_attr__( 'Phone', 'mjschool' ) . '</h4>' );
-		$mpdf->WriteHTML( '<label style="font-size: 16px !important;color: #333333 !important;font-weight: 400;" class="mjschool-label-value">' . get_option( 'mjschool_contact_number' ) . "<br>" . '</label>' );
-		$mpdf->WriteHTML( '</td>' );
-		$mpdf->WriteHTML( '</tr>' );
-		$mpdf->WriteHTML( '</tbody>' );
-		$mpdf->WriteHTML( '</table>' );
-		$mpdf->WriteHTML( '</td>' );
-		$mpdf->WriteHTML( '</tr>' );
-		$mpdf->WriteHTML( '</tbody>' );
-		$mpdf->WriteHTML( '</table>' );
-	}
-	$mpdf->WriteHTML( '<br>' );
-	if ($format === 1) {
-		$student_id = $fees_detail_result->student_id;
-		$patient = get_userdata($student_id);
-		$invoice_number = isset($invoice_number) ? $invoice_number : '';
-		$display_name = $patient ? ucwords($patient->display_name) : 'N/A';
-		$address = $patient ? esc_html( get_user_meta($student_id, 'address', true ) ) : '';
-		$city = $patient ? esc_html( get_user_meta($student_id, 'city', true ) ) : '';
-		$zip = $patient ? esc_html( get_user_meta($student_id, 'zip_code', true ) ) : '';
-		$issue_date = isset($fees_detail_result->paid_by_date) ? $fees_detail_result->paid_by_date : 'DD-MM-YYYY';
-		if ( ! empty( $income_data ) )
-			$issue_date = $income_data->income_create_date;
-		if ( ! empty( $invoice_data ) )
-			$issue_date = $invoice_data->date;
-		if ( ! empty( $expense_data ) )
-			$issue_date = $expense_data->income_create_date;
-		$payment_status = mjschool_get_payment_status($fees_detail_result->fees_pay_id);
-		$payment_status_color = 'N/A';
-		if ($payment_status === 'Fully Paid' ) {
-			$payment_status_color = '<span style="color:green;">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
-		} elseif ($payment_status === 'Partially Paid' ) {
-			$payment_status_color = '<span style="color:#800080;">' . esc_html__( 'Partially Paid', 'mjschool' ) . '</span>';
-		} elseif ($payment_status === 'Not Paid' ) {
-			$payment_status_color = '<span style="color:red;">' . esc_html__( 'Not Paid', 'mjschool' ) . '</span>';
-		}
-		$mpdf->WriteHTML( '<table style="width:100%; border: 2px solid #000; padding: 20px 20px 5px 20px; margin-bottom: 0; margin-top: 0;">
-			<tr>
-				<td style="width:65%; vertical-align: top;">
-					<b>' . esc_html__( 'Bill To', 'mjschool' ) . ':</b> ' . esc_html( mjschool_student_display_name_with_roll($student_id ) ) . '
-				</td>
-				<td style="width:35%; vertical-align: top;">
-					<b>' . esc_html__( 'Invoice Number', 'mjschool' ) . ':</b> ' . esc_html( $invoice_number) . '
-				</td>
-			</tr>
-			<tr>
-				<td style="width:64%; vertical-align: top; padding-top: 10px;">
-					<b>' . esc_html__( 'Address', 'mjschool' ) . ':</b> ' . $address . '<br>' . $city . ', ' . $zip . '
-				</td>
-				<td style="width:35.3%; vertical-align: top; padding-top: 10px;">
-					<b>' . esc_html__( 'Issue Date', 'mjschool' ) . ':</b> ' . esc_html( mjschool_get_date_in_input_box(date( "Y-m-d", strtotime($issue_date ) ) ) ) . '<br>
-					<b>' . esc_html__( 'Status', 'mjschool' ) . ':</b> ' . $payment_status_color . '
-				</td>
-			</tr>
-		</table>' );
-	} else {
-		$mpdf->WriteHTML( '<table>' );
-		$mpdf->WriteHTML( '<tbody>' );
-		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<td width="40%">' );
-		$mpdf->WriteHTML( '<h3 class="mjschool-billed-to-lable mjschool-invoice-model-heading mjschool-bill-to-width-12px">' . esc_attr__( 'Bill To', 'mjschool' ) . ': </h3>' );
-		$student_id = $fees_detail_result->student_id;
-		$patient = get_userdata($student_id);
-		if ($patient) {
-			$mpdf->WriteHTML( '<h3 class="display_name mjschool-invoice-width-100px">' . chunk_split(ucwords($patient->display_name), 30, "<BR>") . '</h3>' );
-		} else {
-			$mpdf->WriteHTML( '<h3 class="display_name mjschool-invoice-width-100px">' . esc_attr__( 'N/A', 'mjschool' ) . '</h3>' );
-		}
-		$student_id = $fees_detail_result->student_id;
-		$patient = get_userdata($student_id);
-		if ($patient) {
-			$address = get_user_meta($student_id, 'address', true);
-			$escaped_address = esc_html( $address);
-			$split_address = str_replace( '<br>', '<BR>', chunk_split($escaped_address, 30, '<br>' ) );
-			echo wp_kses_post($split_address);
-			echo esc_html( get_user_meta($student_id, 'city', true ) ) . "," . "<BR>";
-			echo esc_html( get_user_meta($student_id, 'zip_code', true ) ) . ",<BR>";
-		}
-		$mpdf->WriteHTML( '<div>' . chunk_split($address, 30, "<BR>") . get_user_meta($student_id, 'city', true) . "," . "<BR>" . get_user_meta($student_id, 'zip_code', true) . ",<BR>" . '</div>' );
-		$mpdf->WriteHTML( '</td>' );
-		$mpdf->WriteHTML( '<td width="15%">' );
-		$mpdf->WriteHTML( '<label style="color: #818386 !important;font-size: 14px !important;text-transform: uppercase;font-weight: 500;line-height: 0px;">' . esc_html__( 'Invoice Number', 'mjschool' ) . '</label>: <label class="mjschool-invoice-model-value" style="font-weight: 600;color: #333333;font-size: 16px !important;">' . esc_html( $invoice_number) . '</label><br>' );
-		$issue_date = 'DD-MM-YYYY';
-		$issue_date = $fees_detail_result->paid_by_date;
-		$payment_status = mjschool_get_payment_status($fees_detail_result->fees_pay_id);
-		$mpdf->WriteHTML( '<label style="color: #818386 !important;font-size: 14px !important;text-transform: uppercase;font-weight: 500;line-height: 0px;">' . esc_html__( 'Date', 'mjschool' ) . '</label>: <label class="mjschool-invoice-model-value" style="font-weight: 600;color: #333333;font-size: 16px !important;">' . mjschool_get_date_in_input_box(date( "Y-m-d", strtotime($issue_date ) ) ) . '</label><br>' );
-		if ($payment_status === 'Fully Paid' ) {
-			$payment_status_color = '<span style="color:green;">' . esc_attr__( 'Fully Paid', 'mjschool' ) . '</span>';
-		}
-		if ($payment_status === 'Partially Paid' ) {
-			$payment_status_color = '<span style="color:#3895d3;">' . esc_attr__( 'Partially Paid', 'mjschool' ) . '</span>';
-		}
-		if ($payment_status === 'Not Paid' ) {
-			$payment_status_color = '<span style="color:red;">' . esc_attr__( 'Not Paid', 'mjschool' ) . '</span>';
-		}
-		$mpdf->WriteHTML( '<label style="color: #818386 !important;font-size: 14px !important;text-transform: uppercase;font-weight: 500;line-height: 0px;">' . esc_html__( 'Status', 'mjschool' ) . ' </label>: <label class="mjschool-invoice-model-value" style="font-weight: 600;color: #333333;font-size: 16px !important;">' . $payment_status_color . '</label>' );
-		$mpdf->WriteHTML( '</td>' );
-		$mpdf->WriteHTML( '</tr>' );
-		$mpdf->WriteHTML( '</tbody>' );
-		$mpdf->WriteHTML( '</table>' );
-	}
-	$mpdf->WriteHTML( '<h4 style="font-size: 16px;font-weight: 600;color: #333333;">' . esc_attr__( 'Invoice Entry', 'mjschool' ) . '</h4>' );
-	if ($format === 1) {
-		$fees_id = explode( ',', $fees_detail_result->fees_id);
-		$x = 1;
-		$amounts = 0;
-		$mpdf->WriteHTML( '<table width="100%" style="border-collapse: collapse; border: 1px solid black;">' );
-		$mpdf->WriteHTML( '<thead style="background-color: #b8daff;">' );
-		$mpdf->WriteHTML( '<tr>' );
-		$header_style = 'text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black; background-color: #b8daff; font-size: 14px;';
-		$mpdf->WriteHTML( '<th style="' . $header_style . ' width: 15%;">Number</th>' );
-		$mpdf->WriteHTML( '<th style="' . $header_style . ' width: 20%;">' . esc_html__( 'Date', 'mjschool' ) . '</th>' );
-		$mpdf->WriteHTML( '<th style="' . $header_style . '">' . esc_html__( 'Fees Type', 'mjschool' ) . '</th>' );
-		$mpdf->WriteHTML( '<th style="' . $header_style . ' width: 15%;">' . esc_html__( 'Total', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol( ) ) . ' )</th>' );
-		$mpdf->WriteHTML( '</tr>' );
-		$mpdf->WriteHTML( '</thead>' );
-		$mpdf->WriteHTML( '<tbody>' );
-		foreach ($fees_id as $id) {
-			$obj_feespayment = new mjschool_feespayment();
-			$amount = $obj_feespayment->mjschool_feetype_amount_data($id);
-			$amounts += $amount;
-			$td_style = 'text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black; font-size: 14px;';
-			$mpdf->WriteHTML( '<tr>' );
-			$mpdf->WriteHTML( '<td style="' . $td_style . '">' . esc_html( $x) . '</td>' );
-			$mpdf->WriteHTML( '<td style="' . $td_style . '">' . esc_html( mjschool_get_date_in_input_box($fees_detail_result->created_date ) ) . '</td>' );
-			$mpdf->WriteHTML( '<td style="' . $td_style . '">' . esc_html( mjschool_get_fees_term_name($id ) ) . '</td>' );
-			$mpdf->WriteHTML( '<td style="' . $td_style . '">' . esc_html( number_format($amount, 2, '.', '' ) ) . '</td>' );
-			$mpdf->WriteHTML( '</tr>' );
-			$x++;
-		}
-		$sub_total = $amounts;
-		// Optional: Capture Tax and Discount labels.
-		$tax_name = !empty($fees_detail_result->tax) ? mjschool_tax_name_by_tax_id_array_for_invoice(esc_html( $fees_detail_result->tax ) ) : '';
-		$discount_name = !empty($fees_detail_result->discount) ? mjschool_get_discount_name($fees_detail_result->discount, $fees_detail_result->discount_type) : '';
-		$mpdf->WriteHTML( '</tbody>' );
-		$mpdf->WriteHTML( '</table>' );
-	} else {
-		$mpdf->WriteHTML( '<table class="table table-bordered" width="100%">' );
-		$mpdf->WriteHTML( '<thead style="background-color: #F2F2F2 !important;">' );
-		$mpdf->WriteHTML( '<tr style="background-color: #F2F2F2 !important;">' );
-		$mpdf->WriteHTML( '<th class="mjschool-align-left mjschool_border_padding_15px">#</th>' );
-		$mpdf->WriteHTML( '<th class="mjschool-align-left mjschool_border_padding_15px">' . esc_attr__( 'Date', 'mjschool' ) . '</th>' );
-		$mpdf->WriteHTML( '<th class="mjschool-align-left mjschool_border_padding_15px">' . esc_attr__( 'Fees Type', 'mjschool' ) . '</th>' );
-		$mpdf->WriteHTML( '<th class="mjschool-align-left" style="color: #818386 !important;font-weight: 600;border-bottom-color: #E1E3E5 !important;padding: 15px;">' . esc_attr__( 'Total', 'mjschool' ) . '</th>' );
-		$mpdf->WriteHTML( '</tr>' );
-		$mpdf->WriteHTML( '</thead>' );
-		$fees_id = explode( ',', $fees_detail_result->fees_id);
-		$x = 1;
-		$amounts = 0;
-		foreach ($fees_id as $id) {
+	
+	// ADDED: Try-catch for PDF generation
+	try {
+		require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
+		$mpdf = new Mpdf\Mpdf();
+		
+		$stylesheet = file_get_contents( MJSCHOOL_PLUGIN_DIR . '/assets/css/mjschool-style.css' );
+		
+		$mpdf->WriteHTML( '<html>' );
+		$mpdf->WriteHTML( '<head>' );
+		$mpdf->WriteHTML( '<style></style>' );
+		$mpdf->WriteHTML( $stylesheet, 1 );
+		$mpdf->WriteHTML( '</head>' );
+		$mpdf->WriteHTML( '<body>' );
+		$mpdf->WriteHTML( '<div class="modal-body">' );
+		
+		// FIXED: Consistent strict comparison
+		$format = absint( get_option( 'mjschool_invoice_option' ) );
+		
+		if ( 1 !== $format ) {
+			$mpdf->WriteHTML( '<h3>' . esc_html( get_option( 'mjschool_name' ) ) . '</h3>' );
+			$mpdf->WriteHTML( '<table style="float: left;position: absolute;vertical-align: top;background-repeat: no-repeat;">' );
 			$mpdf->WriteHTML( '<tbody>' );
-			$mpdf->WriteHTML( '<tr style=" border-bottom: 1px solid #E1E3E5 !important;">' );
-			$mpdf->WriteHTML( '<td class="align-center mjschool_tables_bottoms">' . $x . '</td>' );
-			$mpdf->WriteHTML( '<td class="align-center mjschool_tables_bottoms">' . mjschool_get_date_in_input_box($fees_detail_result->created_date) . '</td>' );
-			$mpdf->WriteHTML( '<td class="align-center mjschool_tables_bottoms">' . mjschool_get_fees_term_name($id) . '</td>' );
-			$obj_feespayment = new mjschool_feespayment();
-			$amount = $obj_feespayment->mjschool_feetype_amount_data($id);
-			$amounts += $amount;
-			$T_amount = mjschool_currency_symbol_position_language_wise(number_format($amount, 2, '.', '' ) );
-			$mpdf->WriteHTML( '<td class="align-center mjschool_tables_bottoms">' . $T_amount . '</td>' );
+			$mpdf->WriteHTML( '<tr>' );
+			$mpdf->WriteHTML( '<td>' );
+			$mpdf->WriteHTML( '<img class="mjschool-invoice-image mjschool-float-left mjschool-invoice-image-model" src="' . esc_url( plugins_url( '/mjschool/assets/images/listpage_icon/invoice.png' ) ) . '" width="100%">' );
+			$mpdf->WriteHTML( '</td>' );
 			$mpdf->WriteHTML( '</tr>' );
 			$mpdf->WriteHTML( '</tbody>' );
-			$x++;
+			$mpdf->WriteHTML( '</table>' );
 		}
-		$sub_total = $amounts;
-		if ( ! empty( $fees_detail_result->tax ) ) {
-			$tax_name = mjschool_tax_name_by_tax_id_array_for_invoice(esc_html( $fees_detail_result->tax ) );
+		
+		if ( 1 === $format ) {
+			$school_name    = esc_html( get_option( 'mjschool_name' ) );
+			$email          = esc_html( get_option( 'mjschool_email' ) );
+			$phone          = esc_html( get_option( 'mjschool_contact_number' ) );
+			$school_address = esc_html( get_option( 'mjschool_address' ) );
+			
+			$mpdf->WriteHTML( '<table style="border: 2px solid #000; width: 100%; margin: 6px 0 0 6px; padding: 20px;">
+				<tr>
+					<td style="width: 25%; vertical-align: top;">
+						<div style="border-radius: 50px;">
+							<img src="' . esc_url( get_option( 'mjschool_logo' ) ) . '" style="height: 130px; border-radius: 50%; background-repeat: no-repeat; background-size: cover; margin-top: 3px;">
+						</div>
+					</td>
+					<td style="width: 75%; padding-top: 10px; text-align: center;">
+						<div style="font-weight: bold; color: #1B1B8D; font-size: 24px; line-height: 30px; width: 100% !important">' . $school_name . '</div>
+						<div style="font-size: 17px; line-height: 26px; margin-top: 5px;">' . $school_address . '</div>
+						<div style="font-size: 17px; line-height: 26px; margin-top: 5px;">
+							' . esc_html__( 'E-mail', 'mjschool' ) . ': ' . $email . ' &nbsp;&nbsp;&nbsp; ' .
+					esc_html__( 'Phone', 'mjschool' ) . ': ' . $phone . '
+						</div>
+					</td>
+				</tr>
+			</table>' );
 		} else {
+			$mpdf->WriteHTML( '<table style="float: left;width: 100%;position: absolute!important;margin-top:-160px;">' );
+			$mpdf->WriteHTML( '<tbody>' );
+			$mpdf->WriteHTML( '<tr>' );
+			$mpdf->WriteHTML( '<td width="80%">' );
+			$mpdf->WriteHTML( '<table>' );
+			$mpdf->WriteHTML( '<tbody>' );
+			$mpdf->WriteHTML( '<tr>' );
+			$mpdf->WriteHTML( '<td width="10%">' );
+			$mpdf->WriteHTML( '<img class="system_logo" src="' . esc_url( get_option( 'mjschool_logo' ) ) . '">' );
+			$mpdf->WriteHTML( '</td>' );
+			$mpdf->WriteHTML( '<td width="90%" style="padding-left: 20px;">' );
+			$mpdf->WriteHTML( '<h4 class="mjschool-popup-label-heading">' . esc_html__( 'Address', 'mjschool' ) . '</h4>' );
+			$mpdf->WriteHTML( '<label class="mjschool-label-value mjschool-word-break-all" style="font-size: 16px !important;color: #333333 !important;font-weight: 400;">' . esc_html( chunk_split( get_option( 'mjschool_address' ), 100, "<br>" ) ) . '</label><br>' );
+			$mpdf->WriteHTML( '<h4 class="mjschool-popup-label-heading">' . esc_html__( 'Email', 'mjschool' ) . '</h4>' );
+			$mpdf->WriteHTML( '<label style="font-size: 16px !important;color: #333333 !important;font-weight: 400;" class="mjschool-label-value mjschool-word-break-all">' . esc_html( get_option( 'mjschool_email' ) ) . '</label><br>' );
+			$mpdf->WriteHTML( '<h4 class="mjschool-popup-label-heading">' . esc_html__( 'Phone', 'mjschool' ) . '</h4>' );
+			$mpdf->WriteHTML( '<label style="font-size: 16px !important;color: #333333 !important;font-weight: 400;" class="mjschool-label-value">' . esc_html( get_option( 'mjschool_contact_number' ) ) . '</label>' );
+			$mpdf->WriteHTML( '</td>' );
+			$mpdf->WriteHTML( '</tr>' );
+			$mpdf->WriteHTML( '</tbody>' );
+			$mpdf->WriteHTML( '</table>' );
+			$mpdf->WriteHTML( '</td>' );
+			$mpdf->WriteHTML( '</tr>' );
+			$mpdf->WriteHTML( '</tbody>' );
+			$mpdf->WriteHTML( '</table>' );
+		}
+		
+		$mpdf->WriteHTML( '<br>' );
+		
+		if ( 1 === $format ) {
+			$student_id = absint( $fees_detail_result->student_id );
+			
+			// FIXED: Validate get_userdata()
+			$patient = get_userdata( $student_id );
+			if ( empty( $patient ) || ! isset( $patient->display_name ) ) {
+				error_log( 'Invoice PDF: Invalid student ID: ' . $student_id );
+				return false;
+			}
+			
+			$invoice_number = isset( $invoice_number ) ? $invoice_number : '';
+			$display_name   = ucwords( $patient->display_name );
+			$address        = esc_html( get_user_meta( $student_id, 'address', true ) );
+			$city           = esc_html( get_user_meta( $student_id, 'city', true ) );
+			$zip            = esc_html( get_user_meta( $student_id, 'zip_code', true ) );
+			
+			// FIXED: Removed undefined variable checks
+			$issue_date = isset( $fees_detail_result->paid_by_date ) && ! empty( $fees_detail_result->paid_by_date ) ? $fees_detail_result->paid_by_date : gmdate( 'Y-m-d' );
+			
+			$payment_status       = mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
+			$payment_status_color = 'N/A';
+			
+			if ( 'Fully Paid' === $payment_status ) {
+				$payment_status_color = '<span style="color:green;">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
+			} elseif ( 'Partially Paid' === $payment_status ) {
+				$payment_status_color = '<span style="color:#800080;">' . esc_html__( 'Partially Paid', 'mjschool' ) . '</span>';
+			} elseif ( 'Not Paid' === $payment_status ) {
+				$payment_status_color = '<span style="color:red;">' . esc_html__( 'Not Paid', 'mjschool' ) . '</span>';
+			}
+			
+			$mpdf->WriteHTML( '<table style="width:100%; border: 2px solid #000; padding: 20px 20px 5px 20px; margin-bottom: 0; margin-top: 0;">
+				<tr>
+					<td style="width:65%; vertical-align: top;">
+						<b>' . esc_html__( 'Bill To', 'mjschool' ) . ':</b> ' . esc_html( mjschool_student_display_name_with_roll( $student_id ) ) . '
+					</td>
+					<td style="width:35%; vertical-align: top;">
+						<b>' . esc_html__( 'Invoice Number', 'mjschool' ) . ':</b> ' . esc_html( $invoice_number ) . '
+					</td>
+				</tr>
+				<tr>
+					<td style="width:64%; vertical-align: top; padding-top: 10px;">
+						<b>' . esc_html__( 'Address', 'mjschool' ) . ':</b> ' . $address . '<br>' . $city . ', ' . $zip . '
+					</td>
+					<td style="width:35.3%; vertical-align: top; padding-top: 10px;">
+						<b>' . esc_html__( 'Issue Date', 'mjschool' ) . ':</b> ' . esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) ) . '<br>
+						<b>' . esc_html__( 'Status', 'mjschool' ) . ':</b> ' . $payment_status_color . '
+					</td>
+				</tr>
+			</table>' );
+		} else {
+			$mpdf->WriteHTML( '<table>' );
+			$mpdf->WriteHTML( '<tbody>' );
+			$mpdf->WriteHTML( '<tr>' );
+			$mpdf->WriteHTML( '<td width="40%">' );
+			$mpdf->WriteHTML( '<h3 class="mjschool-billed-to-lable mjschool-invoice-model-heading mjschool-bill-to-width-12px">' . esc_html__( 'Bill To', 'mjschool' ) . ': </h3>' );
+			
+			$student_id = absint( $fees_detail_result->student_id );
+			
+			// FIXED: Validate get_userdata()
+			$patient = get_userdata( $student_id );
+			if ( empty( $patient ) || ! isset( $patient->display_name ) ) {
+				$mpdf->WriteHTML( '<h3 class="display_name mjschool-invoice-width-100px">' . esc_html__( 'N/A', 'mjschool' ) . '</h3>' );
+			} else {
+				$mpdf->WriteHTML( '<h3 class="display_name mjschool-invoice-width-100px">' . esc_html( chunk_split( ucwords( $patient->display_name ), 30, '<BR>' ) ) . '</h3>' );
+			}
+			
+			// FIXED: Removed echo statements, get address data
+			if ( $patient ) {
+				$address = get_user_meta( $student_id, 'address', true );
+				$city    = get_user_meta( $student_id, 'city', true );
+				$zip     = get_user_meta( $student_id, 'zip_code', true );
+				
+				$mpdf->WriteHTML( '<div>' . esc_html( chunk_split( $address, 30, '<BR>' ) ) . esc_html( $city ) . ',<BR>' . esc_html( $zip ) . ',<BR></div>' );
+			}
+			
+			$mpdf->WriteHTML( '</td>' );
+			$mpdf->WriteHTML( '<td width="15%">' );
+			$mpdf->WriteHTML( '<label style="color: #818386 !important;font-size: 14px !important;text-transform: uppercase;font-weight: 500;line-height: 0px;">' . esc_html__( 'Invoice Number', 'mjschool' ) . '</label>: <label class="mjschool-invoice-model-value" style="font-weight: 600;color: #333333;font-size: 16px !important;">' . esc_html( $invoice_number ) . '</label><br>' );
+			
+			// FIXED: Removed dead code for issue_date
+			$issue_date = isset( $fees_detail_result->paid_by_date ) && ! empty( $fees_detail_result->paid_by_date )
+				? $fees_detail_result->paid_by_date
+				: gmdate( 'Y-m-d' );
+			
+			$payment_status = mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
+			
+			$mpdf->WriteHTML( '<label style="color: #818386 !important;font-size: 14px !important;text-transform: uppercase;font-weight: 500;line-height: 0px;">' . esc_html__( 'Date', 'mjschool' ) . '</label>: <label class="mjschool-invoice-model-value" style="font-weight: 600;color: #333333;font-size: 16px !important;">' . esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) ) . '</label><br>' );
+			
+			$payment_status_color = '';
+			if ( 'Fully Paid' === $payment_status ) {
+				$payment_status_color = '<span style="color:green;">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
+			} elseif ( 'Partially Paid' === $payment_status ) {
+				$payment_status_color = '<span style="color:#3895d3;">' . esc_html__( 'Partially Paid', 'mjschool' ) . '</span>';
+			} elseif ( 'Not Paid' === $payment_status ) {
+				$payment_status_color = '<span style="color:red;">' . esc_html__( 'Not Paid', 'mjschool' ) . '</span>';
+			}
+			
+			$mpdf->WriteHTML( '<label style="color: #818386 !important;font-size: 14px !important;text-transform: uppercase;font-weight: 500;line-height: 0px;">' . esc_html__( 'Status', 'mjschool' ) . ' </label>: <label class="mjschool-invoice-model-value" style="font-weight: 600;color: #333333;font-size: 16px !important;">' . $payment_status_color . '</label>' );
+			$mpdf->WriteHTML( '</td>' );
+			$mpdf->WriteHTML( '</tr>' );
+			$mpdf->WriteHTML( '</tbody>' );
+			$mpdf->WriteHTML( '</table>' );
+		}
+		
+		$mpdf->WriteHTML( '<h4 style="font-size: 16px;font-weight: 600;color: #333333;">' . esc_html__( 'Invoice Entry', 'mjschool' ) . '</h4>' );
+		
+		if ( 1 === $format ) {
+			// ADDED: Validate fees_id
+			if ( ! isset( $fees_detail_result->fees_id ) || empty( $fees_detail_result->fees_id ) ) {
+				error_log( 'Invoice PDF: Missing fees_id' );
+				return false;
+			}
+			
+			$fees_id = explode( ',', $fees_detail_result->fees_id );
+			$x       = 1;
+			$amounts = 0;
+			
+			$mpdf->WriteHTML( '<table width="100%" style="border-collapse: collapse; border: 1px solid black;">' );
+			$mpdf->WriteHTML( '<thead style="background-color: #b8daff;">' );
+			$mpdf->WriteHTML( '<tr>' );
+			$header_style = 'text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black; background-color: #b8daff; font-size: 14px;';
+			$mpdf->WriteHTML( '<th style="' . $header_style . ' width: 15%;">Number</th>' );
+			$mpdf->WriteHTML( '<th style="' . $header_style . ' width: 20%;">' . esc_html__( 'Date', 'mjschool' ) . '</th>' );
+			$mpdf->WriteHTML( '<th style="' . $header_style . '">' . esc_html__( 'Fees Type', 'mjschool' ) . '</th>' );
+			$mpdf->WriteHTML( '<th style="' . $header_style . ' width: 15%;">' . esc_html__( 'Total', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )</th>' );
+			$mpdf->WriteHTML( '</tr>' );
+			$mpdf->WriteHTML( '</thead>' );
+			$mpdf->WriteHTML( '<tbody>' );
+			
+			foreach ( $fees_id as $id ) {
+				$id = absint( $id );
+				if ( empty( $id ) ) {
+					continue;
+				}
+				
+				$obj_feespayment = new mjschool_feespayment();
+				$amount          = $obj_feespayment->mjschool_feetype_amount_data( $id );
+				$amounts        += (float) $amount;
+				
+				$td_style = 'text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black; font-size: 14px;';
+				$mpdf->WriteHTML( '<tr>' );
+				$mpdf->WriteHTML( '<td style="' . $td_style . '">' . esc_html( $x ) . '</td>' );
+				$mpdf->WriteHTML( '<td style="' . $td_style . '">' . esc_html( mjschool_get_date_in_input_box( $fees_detail_result->created_date ) ) . '</td>' );
+				$mpdf->WriteHTML( '<td style="' . $td_style . '">' . esc_html( mjschool_get_fees_term_name( $id ) ) . '</td>' );
+				$mpdf->WriteHTML( '<td style="' . $td_style . '">' . esc_html( number_format( (float) $amount, 2, '.', '' ) ) . '</td>' );
+				$mpdf->WriteHTML( '</tr>' );
+				$x++;
+			}
+			
+			$sub_total = $amounts;
+			
+			// ADDED: Validate before use
 			$tax_name = '';
-		}
-		if ($fees_detail_result->discount) {
-			$discount_name = mjschool_get_discount_name($fees_detail_result->discount, $fees_detail_result->discount_type);
-		} else {
+			if ( isset( $fees_detail_result->tax ) && ! empty( $fees_detail_result->tax ) ) {
+				$tax_name = mjschool_tax_name_by_tax_id_array_for_invoice( esc_html( $fees_detail_result->tax ) );
+			}
+			
 			$discount_name = '';
-		}
-		$mpdf->WriteHTML( '</table>' );
-	}
-	if ($format === 1) {
-		$Due_amount = $fees_detail_result->total_amount - $fees_detail_result->fees_paid_amount;
-		$mpdf->WriteHTML( '<table width="100%" style="border-collapse: collapse; border: 1px solid black; margin-top:10px;">' );
-		// Subtotal.
-		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<th style="width: 85%; text-align: right; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;">' . esc_html__( 'Sub Total', 'mjschool' ) . ' :</th>' );
-		$mpdf->WriteHTML( '<td style="width: 15%; text-align: left; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;">' . esc_html( number_format($sub_total, 2, '.', '' ) ) . '</td>' );
-		$mpdf->WriteHTML( '</tr>' );
-		// Discount.
-		if ( isset( $fees_detail_result->discount_amount) && ($fees_detail_result->discount_amount) != 0) {
-			$mpdf->WriteHTML( '<tr>' );
-			$mpdf->WriteHTML( '<th style="text-align: right; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;">' . esc_html__( 'Discount Amount', 'mjschool' ) . ' ( ' . esc_html( $discount_name) . ' ) :</th>' );
-			$mpdf->WriteHTML( '<td style="text-align: left; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;">-' . esc_html( number_format($fees_detail_result->discount_amount, 2, '.', '' ) ) . '</td>' );
+			if ( isset( $fees_detail_result->discount ) && ! empty( $fees_detail_result->discount ) ) {
+				$discount_name = mjschool_get_discount_name( $fees_detail_result->discount, $fees_detail_result->discount_type );
+			}
+			
+			$mpdf->WriteHTML( '</tbody>' );
+			$mpdf->WriteHTML( '</table>' );
+		} else {
+			$mpdf->WriteHTML( '<table class="table table-bordered" width="100%">' );
+			$mpdf->WriteHTML( '<thead style="background-color: #F2F2F2 !important;">' );
+			$mpdf->WriteHTML( '<tr style="background-color: #F2F2F2 !important;">' );
+			$mpdf->WriteHTML( '<th class="mjschool-align-left mjschool_border_padding_15px">#</th>' );
+			$mpdf->WriteHTML( '<th class="mjschool-align-left mjschool_border_padding_15px">' . esc_html__( 'Date', 'mjschool' ) . '</th>' );
+			$mpdf->WriteHTML( '<th class="mjschool-align-left mjschool_border_padding_15px">' . esc_html__( 'Fees Type', 'mjschool' ) . '</th>' );
+			$mpdf->WriteHTML( '<th class="mjschool-align-left" style="color: #818386 !important;font-weight: 600;border-bottom-color: #E1E3E5 !important;padding: 15px;">' . esc_html__( 'Total', 'mjschool' ) . '</th>' );
 			$mpdf->WriteHTML( '</tr>' );
+			$mpdf->WriteHTML( '</thead>' );
+			
+			// ADDED: Validate fees_id
+			if ( ! isset( $fees_detail_result->fees_id ) || empty( $fees_detail_result->fees_id ) ) {
+				error_log( 'Invoice PDF: Missing fees_id' );
+				return false;
+			}
+			
+			$fees_id = explode( ',', $fees_detail_result->fees_id );
+			$x       = 1;
+			$amounts = 0;
+			
+			foreach ( $fees_id as $id ) {
+				$id = absint( $id );
+				if ( empty( $id ) ) {
+					continue;
+				}
+				
+				$mpdf->WriteHTML( '<tbody>' );
+				$mpdf->WriteHTML( '<tr style=" border-bottom: 1px solid #E1E3E5 !important;">' );
+				$mpdf->WriteHTML( '<td class="align-center mjschool_tables_bottoms">' . esc_html( $x ) . '</td>' );
+				$mpdf->WriteHTML( '<td class="align-center mjschool_tables_bottoms">' . esc_html( mjschool_get_date_in_input_box( $fees_detail_result->created_date ) ) . '</td>' );
+				$mpdf->WriteHTML( '<td class="align-center mjschool_tables_bottoms">' . esc_html( mjschool_get_fees_term_name( $id ) ) . '</td>' );
+				
+				$obj_feespayment = new mjschool_feespayment();
+				$amount          = $obj_feespayment->mjschool_feetype_amount_data( $id );
+				$amounts        += (float) $amount;
+				$T_amount        = mjschool_currency_symbol_position_language_wise( number_format( (float) $amount, 2, '.', '' ) );
+				
+				$mpdf->WriteHTML( '<td class="align-center mjschool_tables_bottoms">' . esc_html( $T_amount ) . '</td>' );
+				$mpdf->WriteHTML( '</tr>' );
+				$mpdf->WriteHTML( '</tbody>' );
+				$x++;
+			}
+			
+			$sub_total = $amounts;
+			
+			// ADDED: Validate before use
+			$tax_name = '';
+			if ( isset( $fees_detail_result->tax ) && ! empty( $fees_detail_result->tax ) ) {
+				$tax_name = mjschool_tax_name_by_tax_id_array_for_invoice( esc_html( $fees_detail_result->tax ) );
+			}
+			
+			$discount_name = '';
+			if ( isset( $fees_detail_result->discount ) && ! empty( $fees_detail_result->discount ) ) {
+				$discount_name = mjschool_get_discount_name( $fees_detail_result->discount, $fees_detail_result->discount_type );
+			}
+			
+			$mpdf->WriteHTML( '</table>' );
 		}
-		// Tax.
-		if ( isset( $fees_detail_result->tax_amount) && ($fees_detail_result->tax_amount) != 0) {
+		
+		// Totals section
+		if ( 1 === $format ) {
+			$Due_amount = isset( $fees_detail_result->total_amount ) && isset( $fees_detail_result->fees_paid_amount )
+				? (float) $fees_detail_result->total_amount - (float) $fees_detail_result->fees_paid_amount
+				: 0;
+			
+			$mpdf->WriteHTML( '<table width="100%" style="border-collapse: collapse; border: 1px solid black; margin-top:10px;">' );
+			
+			// Subtotal
 			$mpdf->WriteHTML( '<tr>' );
-			$mpdf->WriteHTML( '<th style="text-align: right; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;">' . esc_html__( 'Tax Amount', 'mjschool' ) . ' ( ' . esc_html( $tax_name) . ' ) :</th>' );
-			$mpdf->WriteHTML( '<td style="text-align: left; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;">+' . esc_html( number_format($fees_detail_result->tax_amount, 2, '.', '' ) ) . '</td>' );
+			$mpdf->WriteHTML( '<th style="width: 85%; text-align: right; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;">' . esc_html__( 'Sub Total', 'mjschool' ) . ' :</th>' );
+			$mpdf->WriteHTML( '<td style="width: 15%; text-align: left; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;">' . esc_html( number_format( $sub_total, 2, '.', '' ) ) . '</td>' );
 			$mpdf->WriteHTML( '</tr>' );
+			
+			// Discount
+			if ( isset( $fees_detail_result->discount_amount ) && 0 != $fees_detail_result->discount_amount ) {
+				$mpdf->WriteHTML( '<tr>' );
+				$mpdf->WriteHTML( '<th style="text-align: right; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;">' . esc_html__( 'Discount Amount', 'mjschool' ) . ' ( ' . esc_html( $discount_name ) . ' ) :</th>' );
+				$mpdf->WriteHTML( '<td style="text-align: left; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;">-' . esc_html( number_format( (float) $fees_detail_result->discount_amount, 2, '.', '' ) ) . '</td>' );
+				$mpdf->WriteHTML( '</tr>' );
+			}
+			
+			// Tax
+			if ( isset( $fees_detail_result->tax_amount ) && 0 != $fees_detail_result->tax_amount ) {
+				$mpdf->WriteHTML( '<tr>' );
+				$mpdf->WriteHTML( '<th style="text-align: right; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;">' . esc_html__( 'Tax Amount', 'mjschool' ) . ' ( ' . esc_html( $tax_name ) . ' ) :</th>' );
+				$mpdf->WriteHTML( '<td style="text-align: left; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;">+' . esc_html( number_format( (float) $fees_detail_result->tax_amount, 2, '.', '' ) ) . '</td>' );
+				$mpdf->WriteHTML( '</tr>' );
+			}
+			
+			// Payment Made
+			$mpdf->WriteHTML( '<tr>' );
+			$mpdf->WriteHTML( '<th style="text-align: right; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;">' . esc_html__( 'Payment Made :', 'mjschool' ) . '</th>' );
+			$mpdf->WriteHTML( '<td style="text-align: left; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;">' . esc_html( number_format( (float) $fees_detail_result->fees_paid_amount, 2, '.', '' ) ) . '</td>' );
+			$mpdf->WriteHTML( '</tr>' );
+			
+			// Due Amount
+			$mpdf->WriteHTML( '<tr>' );
+			$mpdf->WriteHTML( '<th style="text-align: right; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;">' . esc_html__( 'Due Amount :', 'mjschool' ) . '</th>' );
+			$mpdf->WriteHTML( '<td style="text-align: left; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;">' . esc_html( number_format( $Due_amount, 2, '.', '' ) ) . '</td>' );
+			$mpdf->WriteHTML( '</tr>' );
+			$mpdf->WriteHTML( '</table>' );
+		} else {
+			$mpdf->WriteHTML( '<table width="100%" border="0">' );
+			$mpdf->WriteHTML( '<tbody>' );
+			$mpdf->WriteHTML( '<tr>' );
+			$mpdf->WriteHTML( '<td width="80%" align="right" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;">' . esc_html__( 'Sub Total :', 'mjschool' ) . '</td>' );
+			$mpdf->WriteHTML( '<td align="right" style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;">' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $sub_total, 2, '.', '' ) ) ) . '</td>' );
+			$mpdf->WriteHTML( '</tr>' );
+			
+			if ( isset( $fees_detail_result->discount_amount ) && 0 != $fees_detail_result->discount_amount ) {
+				$mpdf->WriteHTML( '<tr>' );
+				$mpdf->WriteHTML( '<td width="80%" align="right" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;">' . esc_html__( 'Discount Amount', 'mjschool' ) . '( ' . esc_html( $discount_name ) . ' )  :</td>' );
+				$mpdf->WriteHTML( '<td align="right" style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;"><span> -' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( (float) $fees_detail_result->discount_amount, 2, '.', '' ) ) ) . ' </span></td>' );
+				$mpdf->WriteHTML( '</tr>' );
+			}
+			
+			if ( isset( $fees_detail_result->tax_amount ) && 0 != $fees_detail_result->tax_amount ) {
+				$mpdf->WriteHTML( '<tr>' );
+				$mpdf->WriteHTML( '<td width="80%" align="right" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;">' . esc_html__( 'Tax Amount', 'mjschool' ) . '( ' . esc_html( $tax_name ) . ' )  :</td>' );
+				$mpdf->WriteHTML( '<td align="right" style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;"><span> +' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( (float) $fees_detail_result->tax_amount, 2, '.', '' ) ) ) . ' </span></td>' );
+				$mpdf->WriteHTML( '</tr>' );
+			}
+			
+			$mpdf->WriteHTML( '<tr>' );
+			$mpdf->WriteHTML( '<td width="80%" align="right" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;">' . esc_html__( 'Payment Made :', 'mjschool' ) . '</td>' );
+			$mpdf->WriteHTML( '<td align="right" style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;">' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( (float) $fees_detail_result->fees_paid_amount, 2, '.', '' ) ) ) . '</td>' );
+			$mpdf->WriteHTML( '</tr>' );
+			
+			$mpdf->WriteHTML( '<tr>' );
+			$mpdf->WriteHTML( '<td width="80%" align="right" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;">' . esc_html__( 'Due Amount :', 'mjschool' ) . '</td>' );
+			$Due_amount = isset( $fees_detail_result->total_amount ) && isset( $fees_detail_result->fees_paid_amount )
+				? (float) $fees_detail_result->total_amount - (float) $fees_detail_result->fees_paid_amount
+				: 0;
+			$mpdf->WriteHTML( '<td align="right" style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;">' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $Due_amount, 2, '.', '' ) ) ) . '</td>' );
+			$mpdf->WriteHTML( '</tr>' );
+			$mpdf->WriteHTML( '</tbody>' );
+			$mpdf->WriteHTML( '</table>' );
 		}
-		// Payment Made.
-		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<th style="text-align: right; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;">' . esc_html__( 'Payment Made :', 'mjschool' ) . '</th>' );
-		$mpdf->WriteHTML( '<td style="text-align: left; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;">' . esc_html( number_format($fees_detail_result->fees_paid_amount, 2, '.', '' ) ) . '</td>' );
-		$mpdf->WriteHTML( '</tr>' );
-		// Due Amount.
-		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<th style="text-align: right; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;">' . esc_html__( 'Due Amount :', 'mjschool' ) . '</th>' );
-		$mpdf->WriteHTML( '<td style="text-align: left; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;">' . esc_html( number_format($Due_amount, 2, '.', '' ) ) . '</td>' );
-		$mpdf->WriteHTML( '</tr>' );
-		$mpdf->WriteHTML( '</table>' );
-	} else {
-		$mpdf->WriteHTML( '<table width="100%" border="0">' );
+		
+		// Grand Total
+		$mpdf->WriteHTML( '<table style="width:100%">' );
 		$mpdf->WriteHTML( '<tbody>' );
 		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<td width="80%" align="right" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;">' . esc_attr__( 'Sub Total :', 'mjschool' ) . '</td>' );
-		$mpdf->WriteHTML( '<td align="right" style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;">' . mjschool_currency_symbol_position_language_wise(number_format($sub_total, 2, '.', '' ) ) . '</td>' );
-		$mpdf->WriteHTML( '</tr>' );
-		if ( isset( $fees_detail_result->discount_amount) && ($fees_detail_result->discount_amount) != 0) {
-			$mpdf->WriteHTML( '<tr>' );
-			$mpdf->WriteHTML( '<td width="80%" align="right" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;">' . esc_attr__( 'Discount Amount', 'mjschool' ) . '( ' . $discount_name . ' )' . '  :' . '</td>' );
-			$mpdf->WriteHTML( '<td align="right" style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;">' . '<span> -' . mjschool_currency_symbol_position_language_wise(number_format($fees_detail_result->discount_amount, 2, '.', '' ) ) . ' </span>' . '</td>' );
-			$mpdf->WriteHTML( '</tr>' );
-		}
-		if ( isset( $fees_detail_result->tax_amount) && ($fees_detail_result->tax_amount) != 0) {
-			$mpdf->WriteHTML( '<tr>' );
-			$mpdf->WriteHTML( '<td width="80%" align="right" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;">' . esc_attr__( 'Tax Amount', 'mjschool' ) . '( ' . $tax_name . ' )' . '  :' . '</td>' );
-			$mpdf->WriteHTML( '<td align="right" style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;">' . '<span> +' . mjschool_currency_symbol_position_language_wise(number_format($fees_detail_result->tax_amount, 2, '.', '' ) ) . ' </span>' . '</td>' );
-			$mpdf->WriteHTML( '</tr>' );
-		}
+		$mpdf->WriteHTML( '<td width="62%" align="left"></td>' );
+		$mpdf->WriteHTML( '<td align="right" style="float:right; background-color:' . esc_attr( get_option( 'mjschool_system_color_code' ) ) . ' !important;color: #fff !important;">' );
+		$mpdf->WriteHTML( '<table style="background-color: ' . esc_attr( get_option( 'mjschool_system_color_code' ) ) . ' !important;color: #fff !important;">' );
+		$mpdf->WriteHTML( '<tbody>' );
 		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<td width="80%" align="right" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;">' . esc_attr__( 'Payment Made :', 'mjschool' ) . '</td>' );
-		$mpdf->WriteHTML( '<td align="right" style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;">' . mjschool_currency_symbol_position_language_wise(number_format($fees_detail_result->fees_paid_amount, 2, '.', '' ) ) . '</td>' );
-		$mpdf->WriteHTML( '</tr>' );
-		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<td width="80%" align="right" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;">' . esc_attr__( 'Due Amount :', 'mjschool' ) . '</td>' );
-		$Due_amount = $fees_detail_result->total_amount - $fees_detail_result->fees_paid_amount;
-		$mpdf->WriteHTML( '<td align="right" style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;">' . mjschool_currency_symbol_position_language_wise(number_format($Due_amount, 2, '.', '' ) ) . '</td>' );
+		
+		$subtotal    = isset( $fees_detail_result->total_amount ) ? (float) $fees_detail_result->total_amount : 0;
+		$paid_amount = isset( $fees_detail_result->fees_paid_amount ) ? (float) $fees_detail_result->fees_paid_amount : 0;
+		$grand_total = $subtotal - $paid_amount;
+		
+		$mpdf->WriteHTML( '<td style="background-color: ' . esc_attr( get_option( 'mjschool_system_color_code' ) ) . ' !important;color: #fff !important;padding:10px">' );
+		$mpdf->WriteHTML( '<h3>' . esc_html__( 'Grand Total', 'mjschool' ) . '</h3>' );
+		$mpdf->WriteHTML( '</td>' );
+		$mpdf->WriteHTML( '<td style="background-color: ' . esc_attr( get_option( 'mjschool_system_color_code' ) ) . ' !important;color: #fff !important;padding:10px;">' );
+		
+		$formatted_amount = number_format( $subtotal, 2, '.', '' );
+		$currency         = mjschool_get_currency_symbol();
+		
+		$mpdf->WriteHTML( '<h3>( ' . esc_html( $currency ) . ' )' . esc_html( $formatted_amount ) . '</h3>' );
+		$mpdf->WriteHTML( '</td>' );
 		$mpdf->WriteHTML( '</tr>' );
 		$mpdf->WriteHTML( '</tbody>' );
 		$mpdf->WriteHTML( '</table>' );
+		$mpdf->WriteHTML( '</td>' );
+		$mpdf->WriteHTML( '</tr>' );
+		$mpdf->WriteHTML( '</tbody>' );
+		$mpdf->WriteHTML( '</table>' );
+		$mpdf->WriteHTML( '</div>' );
+		
+		// Signature
+		$mpdf->WriteHTML( '<div style="border: 2px solid; width:100%; float: left; margin-bottom:12px; padding: 15px 10px; overflow: hidden; margin-top: 4px;">
+			<div style="width: 100%; text-align: right;">
+				<img src="' . esc_url( get_option( 'mjschool_principal_signature' ) ) . '" class="mjschool_width_100px" />
+				<div style="border-top: 1px solid #000; width: 150px; margin: 5px 0 0 auto;"></div>
+				<div class="mjschool_margin_top_5px">' . esc_html__( 'Principal Signature', 'mjschool' ) . '</div>
+			</div>
+		</div>' );
+		
+		$mpdf->WriteHTML( '</body>' );
+		$mpdf->WriteHTML( '</html>' );
+		
+		$invoice_file = $document_path . 'invoice.pdf';
+		$mpdf->Output( $invoice_file, 'F' );
+		
+		// ADDED: Verify file was created
+		if ( ! file_exists( $invoice_file ) ) {
+			error_log( 'Invoice PDF: Failed to create PDF file' );
+			return false;
+		}
+		// Send email
+		if ( 1 == get_option( 'mjschool_mail_notification' ) ) {
+			$school  = get_option( 'mjschool_name' );
+			$headers = '';
+			$admin_email = get_option( 'admin_email' );
+			$headers    .= 'From: ' . $school . ' <' . $admin_email . '>' . "\r\n";
+			$headers    .= "MIME-Version: 1.0\r\n";
+			$headers    .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
+			$email_template = mjschool_get_mail_content_with_template_design( $message );
+			$sent = wp_mail( $emails, $subject, $email_template, $headers, array( $invoice_file ) );
+			if ( ! $sent ) {
+				error_log( 'Invoice PDF: Failed to send email to: ' . ( is_array( $emails ) ? implode( ', ', $emails ) : $emails ) );
+			}
+		}
+		if ( file_exists( $invoice_file ) ) {
+			if ( ! unlink( $invoice_file ) ) {
+				error_log( 'Invoice PDF: Failed to delete temporary file: ' . $invoice_file );
+			}
+		}
+		return true;
+	} catch ( Exception $e ) {
+		error_log( 'Invoice PDF generation failed: ' . $e->getMessage() );
+		return false;
 	}
-	$mpdf->WriteHTML( '<table style="width:100%">' );
-	$mpdf->WriteHTML( '<tbody>' );
-	$mpdf->WriteHTML( '<tr>' );
-	$mpdf->WriteHTML( '<td width="62%" align="left"></td>' );
-	$mpdf->WriteHTML( '<td align="right" style="float:right; background-color:' . get_option( "mjschool_system_color_code") . ' !important;color: #fff !important;">' );
-	$mpdf->WriteHTML( '<table style="background-color: ' . get_option( "mjschool_system_color_code") . ' !important;color: #fff !important;">' );
-	$mpdf->WriteHTML( '<tbody>' );
-	$mpdf->WriteHTML( '<tr>' );
-	$subtotal = $fees_detail_result->total_amount;
-	$paid_amount = $fees_detail_result->fees_paid_amount;
-	$grand_total = $subtotal - $paid_amount;
-	$mpdf->WriteHTML( '<td style="background-color: ' . get_option( "mjschool_system_color_code") . ' !important;color: #fff !important;padding:10px">' );
-	$mpdf->WriteHTML( '<h3>' . esc_attr__( 'Grand Total', 'mjschool' ) . '</h3>' );
-	$mpdf->WriteHTML( '</td>' );
-	$mpdf->WriteHTML( '<td style="background-color: ' . get_option( "mjschool_system_color_code") . ' !important;color: #fff !important;padding:10px;">' );
-	$formatted_amount = number_format($subtotal, 2, '.', '' );
-	$currency = mjschool_get_currency_symbol();
-	echo esc_html( "($currency)$formatted_amount");
-	$mpdf->WriteHTML( '<h3>( ' . esc_html( $currency) . ' )' . esc_html( $formatted_amount) . '</h3>' );
-	$mpdf->WriteHTML( '</td>' );
-	$mpdf->WriteHTML( '</tr>' );
-	$mpdf->WriteHTML( '</tbody>' );
-	$mpdf->WriteHTML( '</table>' );
-	$mpdf->WriteHTML( '</td>' );
-	$mpdf->WriteHTML( '</tr>' );
-	$mpdf->WriteHTML( '</tbody>' );
-	$mpdf->WriteHTML( '</table>' );
-	$mpdf->WriteHTML( '</div>' );
-	$mpdf->WriteHTML( '<div style="border: 2px solid; width:100%; float: left; margin-bottom:12px; padding: 15px 10px; overflow: hidden; margin-top: 4px;">
-		<div style="width: 100%; text-align: right;">
-			<img src="' . esc_url( get_option( 'mjschool_principal_signature' ) ) . '" class="mjschool_width_100px" />
-			<div style="border-top: 1px solid #000; width: 150px; margin: 5px 0 0 auto;"></div>
-			<div class="mjschool_margin_top_5px">' . esc_html__( 'Principal Signature', 'mjschool' ) . '</div>
-		</div>
-	</div>' );
-	$mpdf->WriteHTML( '</body>' );
-	$mpdf->WriteHTML( '</html>' );
-	$mpdf->Output($document_path . 'invoice.pdf', 'F' );
-	$mail_attachment = array($document_path . 'invoice.pdf' );
-	$school   = get_option( 'mjschool_name' );
-	$headers  = "";
-	$headers .= 'From: ' . $school . ' <noreplay@gmail.com>' . "\r\n";
-	$headers .= "MIME-Version: 1.0\r\n";
-	$headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
-	// MAIL CONTEMNT WITH TEMPLATE DESIGN.
-	$email_template = mjschool_get_mail_content_with_template_design($message);
-	if (get_option( 'mjschool_mail_notification' ) === 1 ) {
-		wp_mail($emails, $subject, $email_template, $headers, $mail_attachment);
-	}
-	unlink($document_path . 'invoice.pdf' );
 }
 /**
  * Generates a translated invoice PDF using mPDF for a specific student fee payment.
@@ -10048,169 +11745,281 @@ function mjschool_send_mail_paid_invoice_pdf( $emails, $subject, $message, $fees
  *
  * @return string URL of the generated PDF file.
  */
-function mjschool_api_translate_invoice_pdf($id, $student) {
-	$document_dir = WP_CONTENT_DIR;
-	$document_dir .= '/uploads/translate_invoice_pdf/';
+function mjschool_api_translate_invoice_pdf( $id, $student ) {
+	// ADDED: Input validation
+	$fees_pay_id = absint( $id );
+	$student     = sanitize_file_name( $student );
+	
+	if ( empty( $fees_pay_id ) || empty( $student ) ) {
+		error_log( 'Translate Invoice PDF: Invalid parameters' );
+		return false;
+	}
+	
+	// ADDED: Validate data exists
+	$fees_detail_result = mjschool_get_single_fees_payment_record( $fees_pay_id );
+	if ( empty( $fees_detail_result ) || ! isset( $fees_detail_result->student_id ) ) {
+		error_log( 'Translate Invoice PDF: Fees payment record not found: ' . $fees_pay_id );
+		return false;
+	}
+	
+	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
+	
+	// FIXED: Changed permissions from 0777 to 0755
+	$document_dir  = WP_CONTENT_DIR . '/uploads/translate_invoice_pdf/';
 	$document_path = $document_dir;
-	if (!file_exists($document_path ) ) {
-		mkdir($document_path, 0777, true);
+	
+	if ( ! file_exists( $document_path ) ) {
+		if ( ! mkdir( $document_path, 0755, true ) && ! is_dir( $document_path ) ) {
+			error_log( 'Translate Invoice PDF: Failed to create directory: ' . $document_path );
+			return false;
+		}
 	}
-	$fees_pay_id = $id;
-	$fees_detail_result = mjschool_get_single_fees_payment_record($fees_pay_id);
-	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id($fees_pay_id);
-	require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
-	$mpdf = new Mpdf\Mpdf;
-	$mpdf->autoScriptToLang = true;
-	$mpdf->autoLangToFont = true;
-	$stylesheet = file_get_contents(MJSCHOOL_PLUGIN_DIR . '/assets/css/mjschool-style.css' ); // Get css content.
-	$mpdf->WriteHTML( '<html>' );
-	$mpdf->WriteHTML( '<head>' );
-	$mpdf->WriteHTML( '<style></style>' );
-	$mpdf->WriteHTML($stylesheet, 1); // Writing style to pdf.
-	$mpdf->WriteHTML( '</head>' );
-	$mpdf->WriteHTML( '<body>' );
-	//$mpdf->SetTitle( 'Invoice' );
-	$mpdf->WriteHTML( '<div class="modal-body">' );
-	$mpdf->WriteHTML( '<div id="mjschool-invoice-print" class="print-box" width="100%">' );
-	$mpdf->WriteHTML( '<table width="100%" border="0">' );
-	$mpdf->WriteHTML( '<tbody>' );
-	$mpdf->WriteHTML( '<tr>' );
-	$mpdf->WriteHTML( '<td width="70%">' );
-
-	$mpdf->WriteHTML( '<img style="max-height:80px;" src="' . get_option( 'mjschool_logo' ) . '">' );
-
-	$mpdf->WriteHTML( '</td>' );
-	$mpdf->WriteHTML( '<td align="right" width="24%">' );
-	$mpdf->WriteHTML( '<h5>' );
-	$issue_date = 'DD-MM-YYYY';
-	$issue_date = $fees_detail_result->paid_by_date;
-	$mpdf->WriteHTML( '' . esc_attr__( 'Issue Date', 'mjschool' ) . ' : ' . mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) . '</h5>' );
-	$mpdf->WriteHTML( '<br>' );
-	$mpdf->WriteHTML( '<h5>' );
-	$payment_status = mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
-	$mpdf->WriteHTML( '' . esc_attr__( 'status', 'mjschool' ) . ' : ' . $payment_status . '</h5>' );
-	$mpdf->WriteHTML( '</td>' );
-	$mpdf->WriteHTML( '</tr>' );
-	$mpdf->WriteHTML( '</tbody>' );
-	$mpdf->WriteHTML( '</table>' );
-	$mpdf->WriteHTML( '<hr class="mjschool-hr-margin-new">' );
-	$mpdf->WriteHTML( '<table width="100%" border="0">' );
-	$mpdf->WriteHTML( '<tbody>' );
-	$mpdf->WriteHTML( '<tr>' );
-	$mpdf->WriteHTML( '<td class="col-md-6">' );
-	$mpdf->WriteHTML( '<h4>' );
-	$mpdf->WriteHTML( '' . esc_attr__( 'Payment From', 'mjschool' ) . '' );
-	$mpdf->WriteHTML( '</h4>' );
-	$mpdf->WriteHTML( '</td>' );
-	$mpdf->WriteHTML( '<td class="col-md-6 pull-right mjchool_text_align_right" >' );
-	$mpdf->WriteHTML( '<h4>' );
-	$mpdf->WriteHTML( '' . esc_attr__( 'Bill To', 'mjschool' ) . '' );
-	$mpdf->WriteHTML( '</h4>' );
-	$mpdf->WriteHTML( '</td>' );
-	$mpdf->WriteHTML( '</tr>' );
-	$mpdf->WriteHTML( '<tr>' );
-	$mpdf->WriteHTML( '<td valign="top"class="col-md-6">' );
-	$mpdf->WriteHTML( '' . get_option( 'mjschool_name' ) . '<br>' . '' );
-	$mpdf->WriteHTML( '' . get_option( 'mjschool_address' ) . ',' . '' );
-	$mpdf->WriteHTML( '' . get_option( 'mjschool_contry' ) . '<br>' . '' );
-	$mpdf->WriteHTML( '' . get_option( 'mjschool_contact_number' ) . '<br>' . '' );
-	$mpdf->WriteHTML( '</td>' );
-	$mpdf->WriteHTML( '<td valign="top" class="col-md-6 mjchool_text_align_right" >' );
-	$student_id   = $fees_detail_result->student_id;
-	$student_data = get_userdata( $student_id );
-	$class_id     = $student_data->class_name;
-	$section_id   = $student_data->class_section;
-	$class_name   = mjschool_get_class_name( $class_id );
-	$section_name = mjschool_get_section_name( $section_id );
-	$mpdf->WriteHTML( '' . $student_data->display_name . '<br>' . '' );
-	$mpdf->WriteHTML( 'Class Name ' . '<b>' . $class_name . '</b><br>' . '' );
-	if ( $section_id != '' ) {
-		$mpdf->WriteHTML( 'Section Name ' . '<b>' . $section_name . '</b><br>' . '' );
-	}
-	$mpdf->WriteHTML( 'Student ID ' . '<b>' . get_user_meta( $student_id, 'roll_id', true ) . '</b><br>' . '' );
-	$mpdf->WriteHTML( '' . get_user_meta( $student_id, 'address', true ) . ',' . '' );
-	$mpdf->WriteHTML( '' . get_user_meta( $student_id, 'city', true ) . '<br>' . '' );
-	$mpdf->WriteHTML( '' . get_user_meta( $student_id, 'zip_code', true ) . '<br>' . '' );
-	$mpdf->WriteHTML( '' . get_user_meta( $student_id, 'state', true ) . ',' . '' );
-	$mpdf->WriteHTML( '' . get_option( 'mjschool_contry' ) . ',' . '' );
-	$mpdf->WriteHTML( '' . get_user_meta( $student_id, 'mobile', true ) . '<br>' . '' );
-	$mpdf->WriteHTML( '</td>' );
-	$mpdf->WriteHTML( '</tr>' );
-	$mpdf->WriteHTML( '</tbody>' );
-	$mpdf->WriteHTML( '</table>' );
-	$mpdf->WriteHTML( '<hr class="mjschool-hr-margin-new">' );
-	$mpdf->WriteHTML( '<div class="table-responsive">' );
-	$mpdf->WriteHTML( '<table class="table table-bordered mjschool_border_collapse" width="100%" border="1" >' );
-	$mpdf->WriteHTML( '<thead>' );
-	$mpdf->WriteHTML( '<tr>' );
-	$mpdf->WriteHTML( '<th class="text-center mjschool-padding-10px">#</th>' );
-	$mpdf->WriteHTML( '<th class="text-center mjschool-padding-10px">' . esc_attr__( 'Fees Type', 'mjschool' ) . '</th>' );
-	$mpdf->WriteHTML( '<th class="mjschool-padding-10px">' . esc_attr__( 'Total', 'mjschool' ) . '</th>' );
-	$mpdf->WriteHTML( '</tr>' );
-	$mpdf->WriteHTML( '</thead>' );
-	$mpdf->WriteHTML( '<tbody>' );
-	$fees_array = explode( ',', $fees_detail_result->fees_id );
-	$n          = 1;
-	foreach ( $fees_array as $fees_id ) {
-		$fees_details = mjschool_get_fees_details( $fees_id );
+	
+	// ADDED: Try-catch for PDF generation
+	try {
+		require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
+		$mpdf                 = new Mpdf\Mpdf();
+		$mpdf->autoScriptToLang = true;
+		$mpdf->autoLangToFont   = true;
+		
+		$stylesheet = file_get_contents( MJSCHOOL_PLUGIN_DIR . '/assets/css/mjschool-style.css' );
+		
+		$mpdf->WriteHTML( '<html>' );
+		$mpdf->WriteHTML( '<head>' );
+		$mpdf->WriteHTML( '<style></style>' );
+		$mpdf->WriteHTML( $stylesheet, 1 );
+		$mpdf->WriteHTML( '</head>' );
+		$mpdf->WriteHTML( '<body>' );
+		$mpdf->WriteHTML( '<div class="modal-body">' );
+		$mpdf->WriteHTML( '<div id="mjschool-invoice-print" class="print-box" width="100%">' );
+		
+		$mpdf->WriteHTML( '<table width="100%" border="0">' );
+		$mpdf->WriteHTML( '<tbody>' );
 		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<td class="text-center">' . $n . '</td>' );
-		$mpdf->WriteHTML( '<td class="text-center">' );
-		$mpdf->WriteHTML( '' . get_the_title( $fees_details->fees_title_id ) . '</td>' );
-		$mpdf->WriteHTML( '<td>' );
-		$mpdf->WriteHTML( mjschool_currency_symbol_position_language_wise( number_format( $fees_details->fees_amount, 2, '.', '' ) ) . '</td>' );
+		$mpdf->WriteHTML( '<td width="70%">' );
+		$mpdf->WriteHTML( '<img style="max-height:80px;" src="' . esc_url( get_option( 'mjschool_logo' ) ) . '">' );
+		$mpdf->WriteHTML( '</td>' );
+		$mpdf->WriteHTML( '<td align="right" width="24%">' );
+		$mpdf->WriteHTML( '<h5>' );
+		
+		$issue_date = isset( $fees_detail_result->paid_by_date ) && ! empty( $fees_detail_result->paid_by_date )
+			? $fees_detail_result->paid_by_date
+			: gmdate( 'Y-m-d' );
+		
+		$mpdf->WriteHTML( '' . esc_html__( 'Issue Date', 'mjschool' ) . ' : ' . esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) ) . '</h5>' );
+		$mpdf->WriteHTML( '<br>' );
+		$mpdf->WriteHTML( '<h5>' );
+		
+		$payment_status = mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
+		$mpdf->WriteHTML( '' . esc_html__( 'status', 'mjschool' ) . ' : ' . esc_html( $payment_status ) . '</h5>' );
+		$mpdf->WriteHTML( '</td>' );
 		$mpdf->WriteHTML( '</tr>' );
-		++$n;
-	}
-	$mpdf->WriteHTML( '</tbody>' );
-	$mpdf->WriteHTML( '</table>' );
-	$mpdf->WriteHTML( '</div>' );
-	$mpdf->WriteHTML( '<table width="100%" border="0">' );
-	$mpdf->WriteHTML( '<tbody>' );
-	$mpdf->WriteHTML( '<tr>' );
-	$mpdf->WriteHTML( '<td  align="right">' . esc_attr__( 'Sub Total : ', 'mjschool' ) . '</td>' );
-	$mpdf->WriteHTML( '<td align="right">' . mjschool_currency_symbol_position_language_wise( number_format( $fees_detail_result->total_amount, 2, '.', '' ) ) . '</td>' );
-	$mpdf->WriteHTML( '</tr>' );
-	$mpdf->WriteHTML( '<tr>' );
-	$mpdf->WriteHTML( '<td width="80%" align="right">' . esc_attr__( 'Payment Made :', 'mjschool' ) . '</td>' );
-	$mpdf->WriteHTML( '<td align="right">' . mjschool_currency_symbol_position_language_wise( number_format( $fees_detail_result->fees_paid_amount, 2, '.', '' ) ) . '</td>' );
-	$mpdf->WriteHTML( '</tr>' );
-	$mpdf->WriteHTML( '<tr>' );
-	$mpdf->WriteHTML( '<td width="80%" align="right">' . esc_attr__( 'Due Amount :', 'mjschool' ) . '</td>' );
-	$Due_amount = $fees_detail_result->total_amount - $fees_detail_result->fees_paid_amount;
-	$mpdf->WriteHTML( '<td align="right">' . mjschool_currency_symbol_position_language_wise( number_format( $Due_amount, 2, '.', '' ) ) . '</td>' );
-	$mpdf->WriteHTML( '</tr>' );
-	$mpdf->WriteHTML( '</tbody>' );
-	$mpdf->WriteHTML( '</table>' );
-	$mpdf->WriteHTML( '<hr class="mjschool-hr-margin-new">' );
-	if ( ! empty( $fees_history_detail_result ) ) {
-		$mpdf->WriteHTML( '<h4>' . esc_attr__( 'Payment History', 'mjschool' ) . '</h4>' );
-		$mpdf->WriteHTML( '<table class="table table-bordered mjschool_border_collapse" width="100%" border="1" >' );
+		$mpdf->WriteHTML( '</tbody>' );
+		$mpdf->WriteHTML( '</table>' );
+		
+		$mpdf->WriteHTML( '<hr class="mjschool-hr-margin-new">' );
+		
+		$mpdf->WriteHTML( '<table width="100%" border="0">' );
+		$mpdf->WriteHTML( '<tbody>' );
+		$mpdf->WriteHTML( '<tr>' );
+		$mpdf->WriteHTML( '<td class="col-md-6">' );
+		$mpdf->WriteHTML( '<h4>' . esc_html__( 'Payment From', 'mjschool' ) . '</h4>' );
+		$mpdf->WriteHTML( '</td>' );
+		$mpdf->WriteHTML( '<td class="col-md-6 pull-right mjchool_text_align_right">' );
+		$mpdf->WriteHTML( '<h4>' . esc_html__( 'Bill To', 'mjschool' ) . '</h4>' );
+		$mpdf->WriteHTML( '</td>' );
+		$mpdf->WriteHTML( '</tr>' );
+		$mpdf->WriteHTML( '<tr>' );
+		$mpdf->WriteHTML( '<td valign="top" class="col-md-6">' );
+		$mpdf->WriteHTML( esc_html( get_option( 'mjschool_name' ) ) . '<br>' );
+		$mpdf->WriteHTML( esc_html( get_option( 'mjschool_address' ) ) . ',' );
+		$mpdf->WriteHTML( esc_html( get_option( 'mjschool_contry' ) ) . '<br>' );
+		$mpdf->WriteHTML( esc_html( get_option( 'mjschool_contact_number' ) ) . '<br>' );
+		$mpdf->WriteHTML( '</td>' );
+		$mpdf->WriteHTML( '<td valign="top" class="col-md-6 mjchool_text_align_right">' );
+		
+		$student_id = absint( $fees_detail_result->student_id );
+		
+		// ADDED: Validate get_userdata()
+		$student_data = get_userdata( $student_id );
+		if ( empty( $student_data ) || ! isset( $student_data->display_name ) ) {
+			$mpdf->WriteHTML( esc_html__( 'Unknown Student', 'mjschool' ) . '<br>' );
+		} else {
+			$class_id   = isset( $student_data->class_name ) ? absint( $student_data->class_name ) : 0;
+			$section_id = isset( $student_data->class_section ) ? absint( $student_data->class_section ) : 0;
+			
+			$mpdf->WriteHTML( esc_html( $student_data->display_name ) . '<br>' );
+			
+			if ( $class_id ) {
+				$class_name = mjschool_get_class_name( $class_id );
+				$mpdf->WriteHTML( 'Class Name <b>' . esc_html( $class_name ) . '</b><br>' );
+			}
+			
+			if ( $section_id ) {
+				$section_name = mjschool_get_section_name( $section_id );
+				$mpdf->WriteHTML( 'Section Name <b>' . esc_html( $section_name ) . '</b><br>' );
+			}
+			
+			$mpdf->WriteHTML( 'Student ID <b>' . esc_html( get_user_meta( $student_id, 'roll_id', true ) ) . '</b><br>' );
+			$mpdf->WriteHTML( esc_html( get_user_meta( $student_id, 'address', true ) ) . ',' );
+			$mpdf->WriteHTML( esc_html( get_user_meta( $student_id, 'city', true ) ) . '<br>' );
+			$mpdf->WriteHTML( esc_html( get_user_meta( $student_id, 'zip_code', true ) ) . '<br>' );
+			$mpdf->WriteHTML( esc_html( get_user_meta( $student_id, 'state', true ) ) . ',' );
+			$mpdf->WriteHTML( esc_html( get_option( 'mjschool_contry' ) ) . ',' );
+			$mpdf->WriteHTML( esc_html( get_user_meta( $student_id, 'mobile', true ) ) . '<br>' );
+		}
+		
+		$mpdf->WriteHTML( '</td>' );
+		$mpdf->WriteHTML( '</tr>' );
+		$mpdf->WriteHTML( '</tbody>' );
+		$mpdf->WriteHTML( '</table>' );
+		
+		$mpdf->WriteHTML( '<hr class="mjschool-hr-margin-new">' );
+		
+		$mpdf->WriteHTML( '<div class="table-responsive">' );
+		$mpdf->WriteHTML( '<table class="table table-bordered mjschool_border_collapse" width="100%" border="1">' );
 		$mpdf->WriteHTML( '<thead>' );
 		$mpdf->WriteHTML( '<tr>' );
-		$mpdf->WriteHTML( '<th class="text-center mjschool-padding-10px">' . esc_attr__( 'Date', 'mjschool' ) . '</th>' );
-		$mpdf->WriteHTML( '<th class="text-center mjschool-padding-10px">' . esc_attr__( 'Amount', 'mjschool' ) . '</th>' );
-		$mpdf->WriteHTML( '<th class="mjschool-padding-10px">' . esc_attr__( 'Method', 'mjschool' ) . '</th>' );
+		$mpdf->WriteHTML( '<th class="text-center mjschool-padding-10px">#</th>' );
+		$mpdf->WriteHTML( '<th class="text-center mjschool-padding-10px">' . esc_html__( 'Fees Type', 'mjschool' ) . '</th>' );
+		$mpdf->WriteHTML( '<th class="mjschool-padding-10px">' . esc_html__( 'Total', 'mjschool' ) . '</th>' );
 		$mpdf->WriteHTML( '</tr>' );
 		$mpdf->WriteHTML( '</thead>' );
 		$mpdf->WriteHTML( '<tbody>' );
-		foreach ( $fees_history_detail_result as $retrive_date ) {
-			$mpdf->WriteHTML( '<tr>' );
-			$mpdf->WriteHTML( '<td class="text-center">' . mjschool_get_date_in_input_box( $retrive_date->paid_by_date ) . '</td>' );
-			$mpdf->WriteHTML( '<td class="text-center">' . mjschool_currency_symbol_position_language_wise( number_format( $retrive_date->amount, 2, '.', '' ) ) . '</td>' );
-			$mpdf->WriteHTML( '<td>' . $retrive_date->payment_method . '</td>' );
-			$mpdf->WriteHTML( '</tr>' );
+		
+		// ADDED: Validate fees_id
+		if ( ! isset( $fees_detail_result->fees_id ) || empty( $fees_detail_result->fees_id ) ) {
+			$mpdf->WriteHTML( '<tr><td colspan="3">' . esc_html__( 'No fees data', 'mjschool' ) . '</td></tr>' );
+		} else {
+			$fees_array = explode( ',', $fees_detail_result->fees_id );
+			$n          = 1;
+			
+			foreach ( $fees_array as $fees_id ) {
+				$fees_id = absint( $fees_id );
+				if ( empty( $fees_id ) ) {
+					continue;
+				}
+				
+				$obj_fees     = new Mjschool_Fees();
+				$fees_details = $obj_fees->mjschool_get_fees_details( $fees_id );
+				
+				if ( empty( $fees_details ) ) {
+					continue;
+				}
+				
+				$mpdf->WriteHTML( '<tr>' );
+				$mpdf->WriteHTML( '<td class="text-center">' . esc_html( $n ) . '</td>' );
+				$mpdf->WriteHTML( '<td class="text-center">' );
+				
+				if ( isset( $fees_details->fees_title_id ) ) {
+					$mpdf->WriteHTML( esc_html( get_the_title( absint( $fees_details->fees_title_id ) ) ) . '</td>' );
+				} else {
+					$mpdf->WriteHTML( esc_html__( 'N/A', 'mjschool' ) . '</td>' );
+				}
+				
+				$mpdf->WriteHTML( '<td>' );
+				
+				if ( isset( $fees_details->fees_amount ) ) {
+					$mpdf->WriteHTML( esc_html( mjschool_currency_symbol_position_language_wise( number_format( (float) $fees_details->fees_amount, 2, '.', '' ) ) ) . '</td>' );
+				} else {
+					$mpdf->WriteHTML( '0.00</td>' );
+				}
+				
+				$mpdf->WriteHTML( '</tr>' );
+				++$n;
+			}
 		}
+		
 		$mpdf->WriteHTML( '</tbody>' );
 		$mpdf->WriteHTML( '</table>' );
+		$mpdf->WriteHTML( '</div>' );
+		
+		// Totals
+		$mpdf->WriteHTML( '<table width="100%" border="0">' );
+		$mpdf->WriteHTML( '<tbody>' );
+		$mpdf->WriteHTML( '<tr>' );
+		$mpdf->WriteHTML( '<td align="right">' . esc_html__( 'Sub Total : ', 'mjschool' ) . '</td>' );
+		
+		$total_amount = isset( $fees_detail_result->total_amount ) ? (float) $fees_detail_result->total_amount : 0;
+		$mpdf->WriteHTML( '<td align="right">' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $total_amount, 2, '.', '' ) ) ) . '</td>' );
+		$mpdf->WriteHTML( '</tr>' );
+		$mpdf->WriteHTML( '<tr>' );
+		$mpdf->WriteHTML( '<td width="80%" align="right">' . esc_html__( 'Payment Made :', 'mjschool' ) . '</td>' );
+		
+		$paid_amount = isset( $fees_detail_result->fees_paid_amount ) ? (float) $fees_detail_result->fees_paid_amount : 0;
+		$mpdf->WriteHTML( '<td align="right">' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $paid_amount, 2, '.', '' ) ) ) . '</td>' );
+		$mpdf->WriteHTML( '</tr>' );
+		$mpdf->WriteHTML( '<tr>' );
+		$mpdf->WriteHTML( '<td width="80%" align="right">' . esc_html__( 'Due Amount :', 'mjschool' ) . '</td>' );
+		
+		$Due_amount = $total_amount - $paid_amount;
+		$mpdf->WriteHTML( '<td align="right">' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $Due_amount, 2, '.', '' ) ) ) . '</td>' );
+		$mpdf->WriteHTML( '</tr>' );
+		$mpdf->WriteHTML( '</tbody>' );
+		$mpdf->WriteHTML( '</table>' );
+		
+		$mpdf->WriteHTML( '<hr class="mjschool-hr-margin-new">' );
+		
+		// Payment History
+		if ( ! empty( $fees_history_detail_result ) && is_array( $fees_history_detail_result ) ) {
+			$mpdf->WriteHTML( '<h4>' . esc_html__( 'Payment History', 'mjschool' ) . '</h4>' );
+			$mpdf->WriteHTML( '<table class="table table-bordered mjschool_border_collapse" width="100%" border="1">' );
+			$mpdf->WriteHTML( '<thead>' );
+			$mpdf->WriteHTML( '<tr>' );
+			$mpdf->WriteHTML( '<th class="text-center mjschool-padding-10px">' . esc_html__( 'Date', 'mjschool' ) . '</th>' );
+			$mpdf->WriteHTML( '<th class="text-center mjschool-padding-10px">' . esc_html__( 'Amount', 'mjschool' ) . '</th>' );
+			$mpdf->WriteHTML( '<th class="mjschool-padding-10px">' . esc_html__( 'Method', 'mjschool' ) . '</th>' );
+			$mpdf->WriteHTML( '</tr>' );
+			$mpdf->WriteHTML( '</thead>' );
+			$mpdf->WriteHTML( '<tbody>' );
+			
+			foreach ( $fees_history_detail_result as $retrive_date ) {
+				if ( empty( $retrive_date ) ) {
+					continue;
+				}
+				
+				$mpdf->WriteHTML( '<tr>' );
+				
+				if ( isset( $retrive_date->paid_by_date ) ) {
+					$mpdf->WriteHTML( '<td class="text-center">' . esc_html( mjschool_get_date_in_input_box( $retrive_date->paid_by_date ) ) . '</td>' );
+				} else {
+					$mpdf->WriteHTML( '<td class="text-center">N/A</td>' );
+				}
+				
+				if ( isset( $retrive_date->amount ) ) {
+					$mpdf->WriteHTML( '<td class="text-center">' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( (float) $retrive_date->amount, 2, '.', '' ) ) ) . '</td>' );
+				} else {
+					$mpdf->WriteHTML( '<td class="text-center">0.00</td>' );
+				}
+				
+				if ( isset( $retrive_date->payment_method ) ) {
+					$mpdf->WriteHTML( '<td>' . esc_html( $retrive_date->payment_method ) . '</td>' );
+				} else {
+					$mpdf->WriteHTML( '<td>N/A</td>' );
+				}
+				$mpdf->WriteHTML( '</tr>' );
+			}
+			$mpdf->WriteHTML( '</tbody>' );
+			$mpdf->WriteHTML( '</table>' );
+		}
+		$mpdf->WriteHTML( '</div>' );
+		$mpdf->WriteHTML( '</div>' );
+		$mpdf->WriteHTML( '</body>' );
+		$mpdf->WriteHTML( '</html>' );
+		$pdf_filename = 'invoice_' . $fees_pay_id . '_' . $student . '.pdf';
+		$pdf_file     = $document_path . $pdf_filename;
+		$mpdf->Output( $pdf_file, 'F' );
+		// ADDED: Verify file was created
+		if ( ! file_exists( $pdf_file ) ) {
+			error_log( 'Translate Invoice PDF: Failed to create PDF file' );
+			return false;
+		}
+		$result = get_site_url() . '/wp-content/uploads/translate_invoice_pdf/' . $pdf_filename;
+		return $result;
+	} catch ( Exception $e ) {
+		error_log( 'Translate Invoice PDF generation failed: ' . $e->getMessage() );
+		return false;
 	}
-	$mpdf->WriteHTML( '</div>' );
-	$mpdf->WriteHTML( '</div>' );
-	$mpdf->WriteHTML( '</body>' );
-	$mpdf->WriteHTML( '</html>' );
-	$mpdf->Output( $document_path . 'invoice_' . $fees_pay_id . '_' . $student . '.pdf', 'F' );
-	$result = get_site_url() . '/wp-content/uploads/translate_invoice_pdf/' . 'invoice_' . $fees_pay_id . '_' . $student . '.pdf';
-	return $result;
 }
 /**
  * Generates a translated exam result PDF for a student.
@@ -10227,113 +12036,174 @@ function mjschool_api_translate_invoice_pdf($id, $student) {
  * @return string URL of the generated exam result PDF file.
  */
 function mjschool_api_translate_result_pdf( $s_id, $e_id ) {
-	$document_dir  = WP_CONTENT_DIR;
-	$document_dir .= '/uploads/translate_invoice_pdf/';
+	$s_id = absint( $s_id );
+	$e_id = absint( $e_id );
+	
+	if ( empty( $s_id ) || empty( $e_id ) ) {
+		error_log( 'Result PDF: Invalid parameters' );
+		return false;
+	}
+	
+	// FIXED: Changed permissions from 0777 to 0755
+	$document_dir  = WP_CONTENT_DIR . '/uploads/translate_invoice_pdf/';
 	$document_path = $document_dir;
+	
 	if ( ! file_exists( $document_path ) ) {
-		mkdir( $document_path, 0777, true );
+		if ( ! mkdir( $document_path, 0755, true ) && ! is_dir( $document_path ) ) {
+			error_log( 'Result PDF: Failed to create directory' );
+			return false;
+		}
 	}
-	ob_start();
-	$obj_mark   = new mjschool_Marks_Manage();
-	$uid        = $s_id;
-	$user       = get_userdata( $uid );
-	$user_meta  = get_user_meta( $uid );
-	$class_id   = $user_meta['class_name'][0];
-	$section_id = get_user_meta( $uid, 'class_section', true );
-	if ( $section_id ) {
-		$subject = $obj_mark->mjschool_student_subject( $class_id, $section_id );
-	} else {
-		$subject = $obj_mark->mjschool_student_subject( $class_id );
-	}
-	$total_subject = count( $subject );
-	$exam_id       = $e_id;
-	$total         = 0;
-	$grade_point   = 0;
-	$umetadata     = mjschool_get_user_image( $uid );
-	?>
-	<center>
-
-		<div class="mjschool_float_left_width_100">
-			<img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>" style="max-height:50px;" />
-			<?php echo esc_html( get_option( 'mjschool_name' ) ); ?>
-		</div>
-
-		<div style="width:100%;float:left;border-bottom:1px solid red;"></div>
-		<div style="width:100%;float:left;border-bottom:1px solid yellow;padding-top:5px;"></div>
-		<br>
-		<div style="float:left;width:100%;padding:10px 0;">
-			<div style="width:70%;float:left;text-align:left;">
-				<p><?php esc_html_e( 'Surname', 'mjschool' ); ?> : <?php echo esc_html( get_user_meta( $uid, 'last_name', true ) ); ?></p>
-				<p><?php esc_html_e( 'First Name', 'mjschool' ); ?> : <?php echo esc_html( get_user_meta( $uid, 'first_name', true ) ); ?></p>
-				<p>
-					<?php esc_html_e( 'Class', 'mjschool' ); ?> :
-					<?php
-					$class_id  = get_user_meta( $uid, 'class_name', true );
-					$classname = mjschool_get_class_name( $class_id );
-					echo esc_html( $classname )
-					?>
-				</p>
-				<p><?php esc_html_e( 'Exam Name', 'mjschool' ); ?> : <?php echo esc_html( mjschool_get_exam_name_id( $exam_id ) ); ?></p>
+	
+	// ADDED: Try-catch for error handling
+	try {
+		ob_start();
+		
+		$obj_mark = new mjschool_Marks_Manage();
+		$uid      = $s_id;
+		
+		// ADDED: Validate get_userdata()
+		$user = get_userdata( $uid );
+		if ( empty( $user ) ) {
+			error_log( 'Result PDF: Invalid student ID: ' . $uid );
+			ob_end_clean();
+			return false;
+		}
+		
+		// FIXED: Validate array access
+		$user_meta = get_user_meta( $uid );
+		if ( ! is_array( $user_meta ) || ! isset( $user_meta['class_name'][0] ) ) {
+			error_log( 'Result PDF: Missing class_name for student: ' . $uid );
+			ob_end_clean();
+			return false;
+		}
+		
+		$class_id   = absint( $user_meta['class_name'][0] );
+		$section_id = get_user_meta( $uid, 'class_section', true );
+		
+		if ( ! empty( $section_id ) ) {
+			$subject = $obj_mark->mjschool_student_subject( $class_id, absint( $section_id ) );
+		} else {
+			$subject = $obj_mark->mjschool_student_subject( $class_id );
+		}
+		
+		// ADDED: Validate subject array
+		if ( ! is_array( $subject ) || empty( $subject ) ) {
+			error_log( 'Result PDF: No subjects found for student: ' . $uid );
+			ob_end_clean();
+			return false;
+		}
+		
+		$total_subject = count( $subject );
+		$exam_id       = $e_id;
+		$total         = 0;
+		$grade_point   = 0;
+		$umetadata     = mjschool_get_user_image( $uid );
+		?>
+		<center>
+			<div class="mjschool_float_left_width_100">
+				<img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>" style="max-height:50px;" />
+				<?php echo esc_html( get_option( 'mjschool_name' ) ); ?>
 			</div>
-		</div>
-		<br>
-		<table style="float:left;width:100%;border:1px solid #000;" cellpadding="0" cellspacing="0">
-			<thead>
-				<tr style="border-bottom: 1px solid #000;">
-					<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"><?php esc_html_e( 'S/No', 'mjschool' ); ?></th>
-					<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"><?php esc_html_e( 'Subject', 'mjschool' ); ?></th>
-					<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"><?php esc_html_e( 'Obtain Mark', 'mjschool' ); ?></th>
-					<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"><?php esc_html_e( 'Grade', 'mjschool' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php
-				$i = 1;
-				foreach ( $subject as $sub ) {
-					?>
+
+			<div style="width:100%;float:left;border-bottom:1px solid red;"></div>
+			<div style="width:100%;float:left;border-bottom:1px solid yellow;padding-top:5px;"></div>
+			<br>
+			<div style="float:left;width:100%;padding:10px 0;">
+				<div style="width:70%;float:left;text-align:left;">
+					<p><?php esc_html_e( 'Surname', 'mjschool' ); ?> : <?php echo esc_html( get_user_meta( $uid, 'last_name', true ) ); ?></p>
+					<p><?php esc_html_e( 'First Name', 'mjschool' ); ?> : <?php echo esc_html( get_user_meta( $uid, 'first_name', true ) ); ?></p>
+					<p>
+						<?php esc_html_e( 'Class', 'mjschool' ); ?> :
+						<?php
+						$classname = mjschool_get_class_name( $class_id );
+						echo esc_html( $classname );
+						?>
+					</p>
+					<p><?php esc_html_e( 'Exam Name', 'mjschool' ); ?> : <?php echo esc_html( mjschool_get_exam_name_id( $exam_id ) ); ?></p>
+				</div>
+			</div>
+			<br>
+			<table style="float:left;width:100%;border:1px solid #000;" cellpadding="0" cellspacing="0">
+				<thead>
 					<tr style="border-bottom: 1px solid #000;">
-						<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $i ); ?></td>
-						<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $sub->sub_name ); ?></td>
-						<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid ) ); ?></td>
-						<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $obj_mark->mjschool_get_grade( $exam_id, $class_id, $sub->subid, $uid ) ); ?></td>
+						<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"><?php esc_html_e( 'S/No', 'mjschool' ); ?></th>
+						<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"><?php esc_html_e( 'Subject', 'mjschool' ); ?></th>
+						<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"><?php esc_html_e( 'Obtain Mark', 'mjschool' ); ?></th>
+						<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"><?php esc_html_e( 'Grade', 'mjschool' ); ?></th>
 					</tr>
+				</thead>
+				<tbody>
 					<?php
-					++$i;
-					$total       += $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid );
-					$grade_point += $obj_mark->mjschool_get_grade_point( $exam_id, $class_id, $sub->subid, $uid );
-				}
+					$i = 1;
+					// FIXED: Validate foreach
+					foreach ( $subject as $sub ) {
+						if ( ! isset( $sub->subid ) || ! isset( $sub->sub_name ) ) {
+							continue;
+						}
+						?>
+						<tr style="border-bottom: 1px solid #000;">
+							<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $i ); ?></td>
+							<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $sub->sub_name ); ?></td>
+							<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid ) ); ?></td>
+							<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $obj_mark->mjschool_get_grade( $exam_id, $class_id, $sub->subid, $uid ) ); ?></td>
+						</tr>
+						<?php
+						++$i;
+						$total       += (float) $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid );
+						$grade_point += (float) $obj_mark->mjschool_get_grade_point( $exam_id, $class_id, $sub->subid, $uid );
+					}
+					?>
+				</tbody>
+			</table>
+			<p class="result_total">
+				<?php
+				esc_html_e( 'Total Marks', 'mjschool' );
+				echo ' : ' . esc_html( $total );
 				?>
-			</tbody>
-		</table>
-		<p class="result_total">
-			<?php
-			esc_html_e( 'Total Marks', 'mjschool' );
-			echo ' : ' . esc_html( $total );
-			?>
-		</p>
-		<p class="result_point">
-			<?php
-			esc_html_e( 'GPA(grade point average)', 'mjschool' );
-			$GPA = $grade_point / $total_subject;
-			echo ' : ' . esc_html( round( $GPA, 2 ) );
-			?>
-		</p>
-		<hr />
-	</center>
-	<?php
-	$out_put = ob_get_contents();
-	ob_clean();
-	header( 'Content-Disposition: inline; filename="result"' );
-	header( 'Content-Transfer-Encoding: binary' );
-	header( 'Accept-Ranges: bytes' );
-	require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
-	$mpdf                   = new Mpdf\Mpdf();
-	$mpdf->autoScriptToLang = true;
-	$mpdf->autoLangToFont   = true;
-	$mpdf->WriteHTML( $out_put );
-	$mpdf->Output( $document_path . 'invoice_' . $exam_id . '_' . $uid . '.pdf', 'F' );
-	$result = get_site_url() . '/wp-content/uploads/translate_invoice_pdf/' . 'invoice_' . $exam_id . '_' . $uid . '.pdf';
-	return $result;
+			</p>
+			<p class="result_point">
+				<?php
+				esc_html_e( 'GPA(grade point average)', 'mjschool' );
+				$GPA = $total_subject > 0 ? $grade_point / $total_subject : 0;
+				echo ' : ' . esc_html( round( $GPA, 2 ) );
+				?>
+			</p>
+			<hr />
+		</center>
+		<?php
+		$out_put = ob_get_contents();
+		ob_end_clean();
+		
+		header( 'Content-Disposition: inline; filename="result"' );
+		header( 'Content-Transfer-Encoding: binary' );
+		header( 'Accept-Ranges: bytes' );
+		
+		require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
+		$mpdf                   = new Mpdf\Mpdf();
+		$mpdf->autoScriptToLang = true;
+		$mpdf->autoLangToFont   = true;
+		$mpdf->WriteHTML( $out_put );
+		
+		$pdf_filename = 'invoice_' . $exam_id . '_' . $uid . '.pdf';
+		$pdf_file     = $document_path . $pdf_filename;
+		
+		$mpdf->Output( $pdf_file, 'F' );
+		
+		// ADDED: Verify file was created
+		if ( ! file_exists( $pdf_file ) ) {
+			error_log( 'Result PDF: Failed to create PDF file' );
+			return false;
+		}
+		
+		$result = get_site_url() . '/wp-content/uploads/translate_invoice_pdf/' . $pdf_filename;
+		return $result;
+		
+	} catch ( Exception $e ) {
+		error_log( 'Result PDF generation failed: ' . $e->getMessage() );
+		ob_end_clean();
+		return false;
+	}
 }
 /**
  * Retrieves all rooms belonging to a specific hostel.
@@ -10348,12 +12218,19 @@ function mjschool_api_translate_result_pdf( $s_id, $e_id ) {
  * @return array List of room objects.
  */
 function mjschool_get_rooms_by_hostel_id( $eid ) {
+	$hostel_id = absint( $eid );
+	
+	if ( empty( $hostel_id ) ) {
+		return array();
+	}
+	
 	global $wpdb;
 	$table_mjschool_room = $wpdb->prefix . 'mjschool_room';
-	$hostel_id       = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_room where hostel_id=%d", $hostel_id ) );
-	return $result;
+	
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_mjschool_room} WHERE hostel_id = %d", $hostel_id ) );
+	
+	return is_array( $result ) ? $result : array();
 }
 /**
  * Retrieves all beds associated with a specific room.
@@ -10368,17 +12245,27 @@ function mjschool_get_rooms_by_hostel_id( $eid ) {
  * @return array List of bed objects.
  */
 function mjschool_get_beds_by_room_id( $eid ) {
+	$room_id = absint( $eid );
+	
+	if ( empty( $room_id ) ) {
+		return array();
+	}
+	
 	global $wpdb;
 	$table_mjschool_beds = $wpdb->prefix . 'mjschool_beds';
-	$room_id         = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_beds where room_id=%d", $room_id ) );
-	return $result;
+	
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_mjschool_beds} WHERE room_id = %d", $room_id )
+	);
+	
+	return is_array( $result ) ? $result : array();
 }
+
 /**
  * Retrieve bed charge by bed ID.
  *
- * Fetches a single bed record from the database and returns the bed charge.
+ * CORRECTED VERSION with property validation.
  *
  * @since 1.0.0
  *
@@ -10386,19 +12273,32 @@ function mjschool_get_beds_by_room_id( $eid ) {
  * @return float|null Bed charge on success, null on failure.
  */
 function mjschool_get_bed_charge_by_id( $eid ) {
+	$bed_id = absint( $eid );
+	
+	if ( empty( $bed_id ) ) {
+		return null;
+	}
+	
 	global $wpdb;
 	$table_mjschool_beds = $wpdb->prefix . 'mjschool_beds';
-	$bed_id          = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_beds where id=%d", $bed_id ) );
-	if ( $result ) {
-		return $result->bed_charge;
+	
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT bed_charge FROM {$table_mjschool_beds} WHERE id = %d", $bed_id )
+	);
+	
+	// ADDED: Property validation
+	if ( empty( $result ) || ! isset( $result->bed_charge ) ) {
+		return null;
 	}
+	
+	return (float) $result->bed_charge;
 }
+
 /**
  * Get all beds associated with a hostel.
  *
- * Retrieves all room IDs under the given hostel and returns all beds assigned to those rooms.
+ * CORRECTED VERSION - FIXED SQL INJECTION!
  *
  * @since 1.0.0
  *
@@ -10406,27 +12306,51 @@ function mjschool_get_bed_charge_by_id( $eid ) {
  * @return array List of beds found under the hostel.
  */
 function mjschool_get_beds_by_hostel_id( $eid ) {
-	global $wpdb;
-	$room_id             = array();
-	$table_mjschool_room     = $wpdb->prefix . 'mjschool_room';
-	$table_mjschool_beds = $wpdb->prefix . 'mjschool_beds';
-	$hostel_id           = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_room where hostel_id=%d", $hostel_id ) );
-	if ( ! empty( $result ) ) {
-		foreach ( $result as $data ) {
-			$room_id[] = $data->id;
-		}
-		$implode_room = implode( ',', $room_id );
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result_beds = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_beds where room_id IN ($implode_room)" ) );
-		return $result_beds;
+	$hostel_id = absint( $eid );
+	
+	if ( empty( $hostel_id ) ) {
+		return array();
 	}
+	
+	global $wpdb;
+	$table_mjschool_room = $wpdb->prefix . 'mjschool_room';
+	$table_mjschool_beds = $wpdb->prefix . 'mjschool_beds';
+	
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_results(
+		$wpdb->prepare( "SELECT id FROM {$table_mjschool_room} WHERE hostel_id = %d", $hostel_id )
+	);
+	
+	if ( empty( $result ) || ! is_array( $result ) ) {
+		return array();
+	}
+	
+	$room_id = array();
+	foreach ( $result as $data ) {
+		if ( isset( $data->id ) ) {
+			$room_id[] = absint( $data->id );
+		}
+	}
+	
+	if ( empty( $room_id ) ) {
+		return array();
+	}
+	
+	// FIXED: Proper prepare() with placeholders for IN clause
+	$placeholders = implode( ',', array_fill( 0, count( $room_id ), '%d' ) );
+	
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result_beds = $wpdb->get_results(
+		$wpdb->prepare( "SELECT * FROM {$table_mjschool_beds} WHERE room_id IN ($placeholders)", ...$room_id )
+	);
+	
+	return is_array( $result_beds ) ? $result_beds : array();
 }
+
 /**
  * Get hostel name from room ID.
  *
- * Retrieves the hostel name by using the room’s associated hostel ID.
+ * CORRECTED VERSION - FIXED SQL CONCATENATION BUG!
  *
  * @since 1.0.0
  *
@@ -10434,17 +12358,39 @@ function mjschool_get_beds_by_hostel_id( $eid ) {
  * @return string Hostel name.
  */
 function mjschool_get_hostel_name_by_room_id( $eid ) {
+	$room_id = absint( $eid );
+	
+	if ( empty( $room_id ) ) {
+		return '';
+	}
+	
 	global $wpdb;
 	$table_mjschool_room   = $wpdb->prefix . 'mjschool_room';
 	$table_mjschool_hostel = $wpdb->prefix . 'mjschool_hostel';
-	$room_id               = intval( $eid );
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result    = $wpdb->get_row( $wpdb->prepare( "SELECT hostel_id FROM $table_mjschool_room where id=%d" . $room_id ) );
-	$hostel_id = $result->hostel_id;
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result_hostel = $wpdb->get_row( $wpdb->prepare( "SELECT hostel_name FROM $table_mjschool_hostel where id=%d" . $hostel_id ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result = $wpdb->get_row(
+		$wpdb->prepare( "SELECT hostel_id FROM {$table_mjschool_room} WHERE id = %d", $room_id )
+	);
+	
+	// ADDED: Property validation
+	if ( empty( $result ) || ! isset( $result->hostel_id ) ) {
+		return '';
+	}
+	
+	$hostel_id = absint( $result->hostel_id );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$result_hostel = $wpdb->get_row(
+		$wpdb->prepare( "SELECT hostel_name FROM {$table_mjschool_hostel} WHERE id = %d", $hostel_id )
+	);
+	
+	// ADDED: Property validation
+	if ( empty( $result_hostel ) || ! isset( $result_hostel->hostel_name ) ) {
+		return '';
+	}
+	
 	return $result_hostel->hostel_name;
 }
+
 /**
  * Compare notifications by date.
  *
@@ -10457,48 +12403,80 @@ function mjschool_get_hostel_name_by_room_id( $eid ) {
  * @return int Comparison result for usort().
  */
 function mjschool_date_compare( $element1, $element2 ) {
+	// ADDED: Validation
+	if ( ! is_array( $element1 ) || ! isset( $element1['notification_date'] ) ) {
+		return 0;
+	}
+	if ( ! is_array( $element2 ) || ! isset( $element2['notification_date'] ) ) {
+		return 0;
+	}
+	
 	$datetime1 = strtotime( $element1['notification_date'] );
 	$datetime2 = strtotime( $element2['notification_date'] );
+	
 	return $datetime2 - $datetime1;
 }
+
 /**
  * Refresh Zoom OAuth access token.
  *
- * Uses refresh token to request a new Zoom access token
- * and updates it in the WordPress options table.
- *
  * @since 1.0.0
  *
- * @return void
+ * @return bool True on success, false on failure.
  */
 function mjschool_refresh_token() {
-	require_once MJSCHOOL_PLUGIN_DIR . '/lib/vendor/autoload.php';
 	$CLIENT_ID     = get_option( 'mjschool_virtual_classroom_client_id' );
 	$CLIENT_SECRET = get_option( 'mjschool_virtual_classroom_client_secret_id' );
 	$arr_token     = get_option( 'mjschool_virtual_classroom_access_token' );
-	$token_decode  = json_decode( $arr_token );
+	
+	if ( empty( $CLIENT_ID ) || empty( $CLIENT_SECRET ) || empty( $arr_token ) ) {
+		error_log( 'Zoom token refresh: Missing credentials' );
+		return false;
+	}
+	
+	$token_decode = json_decode( $arr_token );
+	
+	if ( empty( $token_decode ) || ! isset( $token_decode->refresh_token ) ) {
+		error_log( 'Zoom token refresh: Invalid token format' );
+		return false;
+	}
+	
 	$refresh_token = $token_decode->refresh_token;
-	$client        = new GuzzleHttp\Client( array( 'base_uri' => 'https://zoom.us' ) );
-	$response      = $client->request(
-		'POST',
-		'/oauth/token',
-		array(
-			'headers' => array(
-				'Authorization' => 'Basic ' . base64_encode( $CLIENT_ID . ':' . $CLIENT_SECRET ),
-			),
-			'query'   => array(
-				'grant_type'    => 'refresh_token',
-				'refresh_token' => $refresh_token,
-			),
-		)
-	);
-	$token         = $response->getBody()->getContents();
-	update_option( 'mjschool_virtual_classroom_access_token', $token );
+	
+	// ADDED: Try-catch for error handling
+	try {
+		require_once MJSCHOOL_PLUGIN_DIR . '/lib/vendor/autoload.php';
+		
+		$client   = new GuzzleHttp\Client( array( 'base_uri' => 'https://zoom.us' ) );
+		$response = $client->request(
+			'POST',
+			'/oauth/token',
+			array(
+				'headers' => array(
+					'Authorization' => 'Basic ' . base64_encode( $CLIENT_ID . ':' . $CLIENT_SECRET ),
+				),
+				'query'   => array(
+					'grant_type'    => 'refresh_token',
+					'refresh_token' => $refresh_token,
+				),
+			)
+		);
+		
+		$token = $response->getBody()->getContents();
+		update_option( 'mjschool_virtual_classroom_access_token', $token );
+		
+		return true;
+		
+	} catch ( Exception $e ) {
+		error_log( 'Zoom token refresh failed: ' . $e->getMessage() );
+		return false;
+	}
 }
+
 if ( get_option( 'mjschool_enable_virtual_classroom' ) === 'yes' ) {
-	// ACCESS TOKAN REAFRESH FUNCTION.
 	add_filter( 'cron_schedules', 'mjschool_isa_add_every_thirty_minutes' );
 }
+
 /**
  * Register a new cron schedule for every 30 minutes.
  *
@@ -10508,13 +12486,16 @@ if ( get_option( 'mjschool_enable_virtual_classroom' ) === 'yes' ) {
  * @return array Modified schedules array.
  */
 function mjschool_isa_add_every_thirty_minutes( $schedules ) {
+	if ( ! is_array( $schedules ) ) {
+		$schedules = array();
+	}
+	
 	$schedules['every_thirty_minutes'] = array(
 		'interval' => 1800,
-		'display'  => esc_attr__( 'Every 30 Minutes', 'mjschool' ),
+		'display'  => esc_html__( 'Every 30 Minutes', 'mjschool' ),
 	);
 	return $schedules;
 }
-// Schedule an action if it's not already scheduled.
 if ( ! wp_next_scheduled( 'mjschool_isa_add_every_thirty_minutes' ) ) {
 	wp_schedule_event( time(), 'every_thirty_minutes', 'mjschool_isa_add_every_thirty_minutes' );
 }
@@ -10532,8 +12513,7 @@ function mjschool_every_thirty_minutes_event_func() {
 /**
  * Get receiver names for a specific message reply.
  *
- * Finds all receiver IDs based on message conditions
- * and returns a comma-separated list of display names.
+ * CORRECTED VERSION - FIXED CRITICAL SQL INJECTION!
  *
  * @since 1.0.0
  *
@@ -10544,23 +12524,46 @@ function mjschool_every_thirty_minutes_event_func() {
  * @return string Comma-separated receiver names.
  */
 function mjschool_get_receiver_name_array( $message_id, $sender_id, $created_date, $message_comment ) {
-	$message_id = (int) $message_id;
-	$sender_id  = (int) $sender_id;
+	// ADDED: Input validation
+	$message_id      = absint( $message_id );
+	$sender_id       = absint( $sender_id );
+	$created_date    = sanitize_text_field( $created_date );
+	$message_comment = sanitize_textarea_field( $message_comment );
+	
+	if ( empty( $message_id ) || empty( $sender_id ) ) {
+		return '';
+	}
+	
 	global $wpdb;
-	$new_name_array = array();
-	$receiver_name  = array();
-	$tbl_name       = $wpdb->prefix . 'mjschool_message_replies';
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$reply_msg = $wpdb->get_results( "SELECT receiver_id  FROM $tbl_name where message_id = $message_id AND sender_id = $sender_id AND message_comment='$message_comment' OR created_date='$created_date'" );
-	if ( ! empty( $reply_msg ) ) {
-		foreach ( $reply_msg as $receiver_id ) {
-			$receiver_name[] = mjschool_get_display_name( $receiver_id->receiver_id );
+	$tbl_name = $wpdb->prefix . 'mjschool_message_replies';
+	
+	// FIXED: Proper prepare() with placeholders - CRITICAL SQL INJECTION FIX!
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$reply_msg = $wpdb->get_results(
+		$wpdb->prepare( "SELECT receiver_id FROM {$tbl_name} WHERE message_id = %d AND sender_id = %d AND (message_comment = %s OR created_date = %s)", $message_id, $sender_id, $message_comment, $created_date )
+	);
+	
+	if ( empty( $reply_msg ) || ! is_array( $reply_msg ) ) {
+		return '';
+	}
+	
+	$receiver_name = array();
+	foreach ( $reply_msg as $receiver ) {
+		if ( ! isset( $receiver->receiver_id ) ) {
+			continue;
+		}
+		
+		$name = mjschool_get_display_name( absint( $receiver->receiver_id ) );
+		if ( ! empty( $name ) ) {
+			$receiver_name[] = $name;
 		}
 	}
-	$new_name_array = implode( ', ', $receiver_name );
-	return $new_name_array;
+	
+	return ! empty( $receiver_name ) ? implode( ', ', $receiver_name ) : '';
 }
+
 add_filter( 'cron_schedules', 'mjschool_isa_add_every_five_minutes' );
+
 /**
  * Register a cron schedule for every 5 minutes.
  *
@@ -10570,13 +12573,16 @@ add_filter( 'cron_schedules', 'mjschool_isa_add_every_five_minutes' );
  * @return array Modified schedules.
  */
 function mjschool_isa_add_every_five_minutes( $schedules ) {
+	if ( ! is_array( $schedules ) ) {
+		$schedules = array();
+	}
 	$schedules['every_five_minutes'] = array(
 		'interval' => 300,
-		'display'  => esc_attr__( 'Every 5 Minutes', 'mjschool' ),
+		'display'  => esc_html__( 'Every 5 Minutes', 'mjschool' ),
 	);
 	return $schedules;
 }
-// Schedule an action if it's not already scheduled.
+
 if ( ! wp_next_scheduled( 'mjschool_isa_add_every_five_minutes' ) ) {
 	wp_schedule_event( time(), 'every_five_minutes', 'mjschool_isa_add_every_five_minutes' );
 }
@@ -10591,11 +12597,9 @@ add_action( 'mjschool_isa_add_every_five_minutes', 'mjschool_every_five_minutes_
 function mjschool_every_five_minutes_event_callback() {
 	mjschool_virtual_class_mail_reminder();
 }
+
 /**
  * Process virtual classroom reminder logic.
- *
- * Checks daily class schedules and sends email/push reminders
- * to teachers and students before class start time.
  *
  * @since 1.0.0
  *
@@ -10607,68 +12611,88 @@ function mjschool_virtual_class_mail_reminder() {
 	$virtual_classroom_reminder_enable                   = get_option( 'mjschool_enable_virtual_classroom_reminder' );
 	$virtual_classroom_reminder_time                     = get_option( 'mjschool_virtual_classroom_reminder_before_time' );
 	$mjschool_enable_mjschool_virtual_classroom_reminder = get_option( 'mjschool_enable_mjschool_virtual_classroom_reminder' );
-	if ( $mjschool_enable_mjschool_virtual_classroom_reminder === 'yes' || $virtual_classroom_enable === 'yes' || $virtual_classroom_reminder_enable === 'yes' ) {
-		// Day code counvert zoom data wise.
-		$today_day = date( 'w' );
-		if ( $today_day === 1 ) {
-			$weekday = 2;
-		} elseif ( $today_day === 2 ) {
-			$weekday = 3;
-		} elseif ( $today_day === 3 ) {
-			$weekday = 4;
-		} elseif ( $today_day === 4 ) {
-			$weekday = 5;
-		} elseif ( $today_day === 5 ) {
-			$weekday = 6;
-		} elseif ( $today_day === 6 ) {
-			$weekday = 7;
-		} elseif ( $today_day === 7 ) {
-			$weekday = 1;
+	
+	if ( 'yes' !== $mjschool_enable_mjschool_virtual_classroom_reminder && 'yes' !== $virtual_classroom_enable && 'yes' !== $virtual_classroom_reminder_enable ) {
+		return;
+	}
+	
+	// FIXED: Date comparison logic
+	$today_day = absint( gmdate( 'w' ) );  // 0 (Sunday) to 6 (Saturday)
+	
+	// Map PHP's date('w') to Zoom's day codes
+	$weekday_map = array(
+		0 => 1,  // Sunday
+		1 => 2,  // Monday
+		2 => 3,  // Tuesday
+		3 => 4,  // Wednesday
+		4 => 5,  // Thursday
+		5 => 6,  // Friday
+		6 => 7   // Saturday
+	);
+	
+	$weekday = isset( $weekday_map[ $today_day ] ) ? $weekday_map[ $today_day ] : 1;
+	
+	$virtual_classroom_data = $obj_virtual_classroom->mjschool_get_meeting_data_by_day_in_zoom( $weekday );
+	
+	if ( empty( $virtual_classroom_data ) || ! is_array( $virtual_classroom_data ) ) {
+		return;
+	}
+	
+	foreach ( $virtual_classroom_data as $data ) {
+		if ( ! isset( $data->route_id ) || ! isset( $data->meeting_id ) ) {
+			continue;
 		}
-		$virtual_classroom_data = $obj_virtual_classroom->mjschool_get_meeting_data_by_day_in_zoom( $weekday );
-		if ( ! empty( $virtual_classroom_data ) ) {
-			foreach ( $virtual_classroom_data as $data ) {
-				$route_data = mjschool_get_route_by_id( $data->route_id );
-				// Time class start counver in formate.
-				$stime       = explode( ':', $route_data->start_time );
-				$start_hour  = str_pad( $stime[0], 2, '0', STR_PAD_LEFT );
-				$start_min   = str_pad( $stime[1], 2, '0', STR_PAD_LEFT );
-				$start_am_pm = $stime[2];
-				$start_time  = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
-				// Class start time counvert in 24 hours fourmet.
-				$starttime = date( 'H:i', strtotime( $start_time ) );
-				// Git cuurunt time
-				$currunt_time = current_time( 'h:i:s' );
-				// Minuse time in minutes.
-				$duration          = '-' . $virtual_classroom_reminder_time . ' minutes';
-				$class_time        = strtotime( $duration, strtotime( $starttime ) );
-				$befour_class_time = date( 'h:i:s', $class_time );
-				// Check time cundition.
-				if ( $currunt_time >= $befour_class_time ) {
-					if ( $mjschool_enable_mjschool_virtual_classroom_reminder === 'yes' && $virtual_classroom_enable === 'yes' && $virtual_classroom_reminder_enable === 'yes' ) {
-						mjschool_virtual_class_teacher_mail_reminder( $data->meeting_id );
-						mjschool_virtual_class_students_mail_reminder( $data->meeting_id );
-						mjschool_virtual_class_teacher_mjschool_reminder( $data->meeting_id );
-						mjschool_virtual_class_students_mjschool_reminder( $data->meeting_id );
-					}
-					if ( $mjschool_enable_mjschool_virtual_classroom_reminder === 'yes' && $virtual_classroom_enable === 'yes' ) {
-						mjschool_virtual_class_teacher_mjschool_reminder( $data->meeting_id );
-						mjschool_virtual_class_students_mjschool_reminder( $data->meeting_id );
-					}
-					if ( $virtual_classroom_enable === 'yes' && $virtual_classroom_reminder_enable === 'yes' ) {
-						mjschool_virtual_class_teacher_mail_reminder( $data->meeting_id );
-						mjschool_virtual_class_students_mail_reminder( $data->meeting_id );
-					}
-				}
+		
+		$route_data = mjschool_get_route_by_id( absint( $data->route_id ) );
+		
+		if ( empty( $route_data ) || ! isset( $route_data->start_time ) ) {
+			continue;
+		}
+		
+		// Time class start convert in format
+		$stime = explode( ':', $route_data->start_time );
+		if ( count( $stime ) < 3 ) {
+			continue;
+		}
+		
+		$start_hour  = str_pad( $stime[0], 2, '0', STR_PAD_LEFT );
+		$start_min   = str_pad( $stime[1], 2, '0', STR_PAD_LEFT );
+		$start_am_pm = $stime[2];
+		$start_time  = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
+		
+		// Class start time convert in 24 hours format
+		$starttime = gmdate( 'H:i', strtotime( $start_time ) );
+		
+		// Get current time
+		$currunt_time = current_time( 'H:i:s' );
+		
+		// Minus time in minutes
+		$duration          = '-' . absint( $virtual_classroom_reminder_time ) . ' minutes';
+		$class_time        = strtotime( $duration, strtotime( $starttime ) );
+		$befour_class_time = gmdate( 'H:i:s', $class_time );
+		
+		// Check time condition
+		if ( $currunt_time >= $befour_class_time ) {
+			if ( 'yes' === $mjschool_enable_mjschool_virtual_classroom_reminder && 'yes' === $virtual_classroom_enable && 'yes' === $virtual_classroom_reminder_enable ) {
+				mjschool_virtual_class_teacher_mail_reminder( absint( $data->meeting_id ) );
+				mjschool_virtual_class_students_mail_reminder( absint( $data->meeting_id ) );
+				mjschool_virtual_class_teacher_mjschool_reminder( absint( $data->meeting_id ) );
+				mjschool_virtual_class_students_mjschool_reminder( absint( $data->meeting_id ) );
+			} elseif ( 'yes' === $mjschool_enable_mjschool_virtual_classroom_reminder && 'yes' === $virtual_classroom_enable ) {
+				mjschool_virtual_class_teacher_mjschool_reminder( absint( $data->meeting_id ) );
+				mjschool_virtual_class_students_mjschool_reminder( absint( $data->meeting_id ) );
+			} elseif ( 'yes' === $virtual_classroom_enable && 'yes' === $virtual_classroom_reminder_enable ) {
+				mjschool_virtual_class_teacher_mail_reminder( absint( $data->meeting_id ) );
+				mjschool_virtual_class_students_mail_reminder( absint( $data->meeting_id ) );
 			}
 		}
 	}
 }
+
 /**
  * Send email reminder to teacher for an upcoming virtual class.
  *
- * Builds dynamic email content using placeholders and logs reminders
- * to avoid sending duplicates.
+ * CORRECTED VERSION with email fix.
  *
  * @since 1.0.0
  *
@@ -10676,78 +12700,119 @@ function mjschool_virtual_class_mail_reminder() {
  * @return void
  */
 function mjschool_virtual_class_teacher_mail_reminder( $meeting_id ) {
-	// Define virtual classroom object.
+	$meeting_id = absint( $meeting_id );
+	
+	if ( empty( $meeting_id ) ) {
+		return;
+	}
+	
 	$obj_virtual_classroom = new mjschool_virtual_classroom();
-	// Get singal virtual classroom data by meeting id.
-	$meeting_data = $obj_virtual_classroom->mjschool_get_single_meeting_data_in_zoom( $meeting_id );
-	// Get class name by class id.
-	$clasname = mjschool_get_class_name( $meeting_data->class_id );
-	// Get subject name by subject id.
-	$subjectname = mjschool_get_single_subject_name( $meeting_data->subject_id );
-	// Today date function.
-	$today_date = mjschool_get_date_in_input_box( date( 'Y-m-d' ) ); // date(get_option( 'date_format' ) );
-	// Teacher name.
-	$teacher_name = mjschool_get_display_name( $meeting_data->teacher_id );
-	// Teacher all data.
-	$teacher_all_data = get_userdata( $meeting_data->teacher_id );
-	// Get route data by rout id.
-	$route_data = mjschool_get_route_by_id( $meeting_data->route_id );
-	// Class start time data.
-	$start_time_123 = $route_data->start_time;
-	// $starttime =mjschool_time_convert($start_time_new);
-	$end_time_123 = $route_data->end_time;
-	// $edittime=mjschool_time_convert($end_time_new);
+	$meeting_data          = $obj_virtual_classroom->mjschool_get_single_meeting_data_in_zoom( $meeting_id );
+	
+	if ( empty( $meeting_data ) || ! isset( $meeting_data->teacher_id ) ) {
+		return;
+	}
+	
+	$clasname     = mjschool_get_class_name( absint( $meeting_data->class_id ) );
+	$subjectname  = mjschool_get_single_subject_name( absint( $meeting_data->subject_id ) );
+	$today_date   = mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) );
+	$teacher_name = mjschool_get_display_name( absint( $meeting_data->teacher_id ) );
+	
+	$teacher_all_data = get_userdata( absint( $meeting_data->teacher_id ) );
+	if ( empty( $teacher_all_data ) || ! isset( $teacher_all_data->user_email ) ) {
+		return;
+	}
+	
+	$route_data = mjschool_get_route_by_id( absint( $meeting_data->route_id ) );
+	if ( empty( $route_data ) ) {
+		return;
+	}
+	
+	// Process start and end times...
+	$start_time_123 = isset( $route_data->start_time ) ? $route_data->start_time : '';
+	$end_time_123   = isset( $route_data->end_time ) ? $route_data->end_time : '';
+	
+	if ( empty( $start_time_123 ) || empty( $end_time_123 ) ) {
+		return;
+	}
+	
 	$start_time_data = explode( ':', $start_time_123 );
-	$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
-	$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
-	$start_am_pm     = $start_time_data[2];
-	$start_time_new  = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
-	$starttime       = date( 'H:i', strtotime( $start_time_new ) );
-	$end_time_data   = explode( ':', $end_time_123 );
-	$end_hour        = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
-	$end_min         = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
-	$end_am_pm       = $end_time_data[2];
-	$end_time_new    = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
-	$edittime        = date( 'H:i', strtotime( $end_time_new ) );
-	// concat start time and end time.
+	if ( count( $start_time_data ) < 3 ) {
+		return;
+	}
+	
+	$start_hour     = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
+	$start_min      = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
+	$start_am_pm    = $start_time_data[2];
+	$start_time_new = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
+	$starttime      = gmdate( 'H:i', strtotime( $start_time_new ) );
+	
+	$end_time_data = explode( ':', $end_time_123 );
+	if ( count( $end_time_data ) < 3 ) {
+		return;
+	}
+	
+	$end_hour     = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
+	$end_min      = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
+	$end_am_pm    = $end_time_data[2];
+	$end_time_new = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
+	$edittime     = gmdate( 'H:i', strtotime( $end_time_new ) );
+	
 	$time = $starttime . ' TO ' . $edittime;
-	// start zoom virtual class link data.
-	$start_zoom_virtual_class_link = '<p><a href=' . $meeting_data->meeting_start_link . " class='btn btn-primary'>" . esc_attr__( 'Start Virtual Class', 'mjschool' ) . '</a></p><br><br>';
-	$log_date                      = date( 'Y-m-d', strtotime( $today_date ) );
-	$mail_reminder_log_data        = mjschool_cheack_virtual_class_mail_reminder_log_data( $meeting_data->teacher_id, $meeting_data->meeting_id, $meeting_data->class_id, $log_date );
+	
+	$start_zoom_virtual_class_link = isset( $meeting_data->meeting_start_link ) 
+		? '<p><a href="' . esc_url( $meeting_data->meeting_start_link ) . '" class="btn btn-primary">' . esc_html__( 'Start Virtual Class', 'mjschool' ) . '</a></p><br><br>'
+		: '';
+	
+	$log_date               = gmdate( 'Y-m-d', strtotime( $today_date ) );
+	$mail_reminder_log_data = mjschool_cheack_virtual_class_mail_reminder_log_data( 
+		absint( $meeting_data->teacher_id ), 
+		$meeting_id, 
+		absint( $meeting_data->class_id ), 
+		$log_date 
+	);
+	
 	if ( empty( $mail_reminder_log_data ) ) {
-		// send mail data.
 		$string                                 = array();
-		$string['{{teacher_name}}']             = '<span>' . $teacher_name . '</span><br><br>';
-		$string['{{class_name}}']               = '<span>' . $clasname . '</span><br><br>';
-		$string['{{subject_name}}']             = '<span>' . $subjectname . '</span><br><br>';
-		$string['{{date}}']                     = '<span>' . $today_date . '</span><br><br>';
-		$string['{{time}}']                     = '<span>' . $time . '</span><br><br>';
-		$string['{{virtual_class_id}}']         = '<span>' . $meeting_data->zoom_meeting_id . '</span><br><br>';
-		$string['{{password}}']                 = '<span>' . $meeting_data->password . '</span><br><br>';
+		$string['{{teacher_name}}']             = '<span>' . esc_html( $teacher_name ) . '</span><br><br>';
+		$string['{{class_name}}']               = '<span>' . esc_html( $clasname ) . '</span><br><br>';
+		$string['{{subject_name}}']             = '<span>' . esc_html( $subjectname ) . '</span><br><br>';
+		$string['{{date}}']                     = '<span>' . esc_html( $today_date ) . '</span><br><br>';
+		$string['{{time}}']                     = '<span>' . esc_html( $time ) . '</span><br><br>';
+		$string['{{virtual_class_id}}']         = '<span>' . esc_html( isset( $meeting_data->zoom_meeting_id ) ? $meeting_data->zoom_meeting_id : '' ) . '</span><br><br>';
+		$string['{{password}}']                 = '<span>' . esc_html( isset( $meeting_data->password ) ? $meeting_data->password : '' ) . '</span><br><br>';
 		$string['{{start_zoom_virtual_class}}'] = $start_zoom_virtual_class_link;
-		$string['{{school_name}}']              = '<span>' . get_option( 'mjschool_name' ) . '</span><br><br>';
-		$MsgContent                             = get_option( 'mjschool_virtual_class_teacher_reminder_mail_content' );
-		$MsgSubject                             = get_option( 'mjschool_virtual_class_teacher_reminder_mail_subject' );
-		$message                                = mjschool_string_replacement( $string, $MsgContent );
-		$MsgSubject                             = mjschool_string_replacement( $string, $MsgSubject );
-		$email                                  = $teacher_all_data->user_email;
-		$headers                                = "MIME-Version: 1.0\r\n";
-		$headers                               .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
-		$headers   							   .= 'From: ' . get_option( 'mjschool_name' ) . ' <noreplay@gmail.com>' . "\r\n";
-		// MAIL CONTEMNT WITH TEMPLATE DESIGN.
+		$string['{{school_name}}']              = '<span>' . esc_html( get_option( 'mjschool_name' ) ) . '</span><br><br>';
+		
+		$MsgContent = get_option( 'mjschool_virtual_class_teacher_reminder_mail_content' );
+		$MsgSubject = get_option( 'mjschool_virtual_class_teacher_reminder_mail_subject' );
+		$message    = mjschool_string_replacement( $string, $MsgContent );
+		$MsgSubject = mjschool_string_replacement( $string, $MsgSubject );
+		$email      = $teacher_all_data->user_email;
+		
+		$headers  = "MIME-Version: 1.0\r\n";
+		$headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
+		$headers .= 'From: ' . get_option( 'mjschool_name' ) . ' <' . get_option( 'admin_email' ) . '>' . "\r\n";
+		
 		$email_template = mjschool_get_mail_content_with_template_design( $message );
-		if ( get_option( 'mjschool_mail_notification' ) === 1 ) {
+		
+		if ( 1 == get_option( 'mjschool_mail_notification' ) ) {
 			wp_mail( $email, $MsgSubject, $email_template, $headers );
 		}
-		mjschool_insert_virtual_class_mail_reminder_log( $meeting_data->teacher_id, $meeting_data->meeting_id, $meeting_data->class_id, $log_date );
+		
+		mjschool_insert_virtual_class_mail_reminder_log( 
+			absint( $meeting_data->teacher_id ), 
+			$meeting_id, 
+			absint( $meeting_data->class_id ), 
+			$log_date 
+		);
 	}
 }
+
 /**
  * Send email reminders to students for an upcoming virtual class.
  *
- * Sends email and push notifications to class/section students,
- * ensuring reminders are not duplicated.
+ * CORRECTED VERSION with validation and email fix.
  *
  * @since 1.0.0
  *
@@ -10755,91 +12820,163 @@ function mjschool_virtual_class_teacher_mail_reminder( $meeting_id ) {
  * @return void
  */
 function mjschool_virtual_class_students_mail_reminder( $meeting_id ) {
-	// define virtual classroom object.
-	$obj_virtual_classroom = new mjschool_virtual_classroom();
-	// get singal virtual classroom data by meeting id.
-	$meeting_data  = $obj_virtual_classroom->mjschool_get_single_meeting_data_in_zoom( $meeting_id );
-	$sections_data = mjschool_get_class_sections( $meeting_data->class_id );
-	if ( ! empty( $sections_data ) ) {
-
-		foreach ($sections_data as $data) {
-			if ($meeting_data->section_id === $data->id) {
-				$student_data = get_users(array( 'meta_key' => 'class_section', 'meta_value' => $data->id, 'meta_query' => array(array( 'key' => 'class_name', 'value' => $data->class_id, 'compare' => '=' ) ), 'role' => 'student' ) );
-			}
-		}
-
-	} else {
-		$student_data = mjschool_get_student_by_class_id( $meeting_data->class_id );
+	$meeting_id = absint( $meeting_id );
+	
+	if ( empty( $meeting_id ) ) {
+		return;
 	}
-	// get class name by class id.
-	$clasname = mjschool_get_class_name( $meeting_data->class_id );
-	// get subject name by subject id.
-	$subjectname = mjschool_get_single_subject_name( $meeting_data->subject_id );
-	// today date function.
-	$today_date = mjschool_get_date_in_input_box( date( 'Y-m-d' ) );  // date(get_option( 'date_format' ) );
-	// teacher name.
-	$teacher_name = mjschool_get_display_name( $meeting_data->teacher_id );
-	// get route data by rout id.
-	$route_data = mjschool_get_route_by_id( $meeting_data->route_id );
-	// class start time data.
-	$start_time_123 = $route_data->start_time;
-	// $starttime =mjschool_time_convert($start_time_new);
-	$end_time_123 = $route_data->end_time;
-	// $edittime=mjschool_time_convert($end_time_new);
-	$start_time_data = explode( ':', $start_time_123 );
-	$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
-	$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
-	$start_am_pm     = $start_time_data[2];
-	$start_time_new  = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
-	$starttime       = date( 'H:i', strtotime( $start_time_new ) );
-	$end_time_data   = explode( ':', $end_time_123 );
-	$end_hour        = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
-	$end_min         = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
-	$end_am_pm       = $end_time_data[2];
-	$end_time_new    = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
-	$edittime        = date( 'H:i', strtotime( $end_time_new ) );
-	// concat start time and end time.
-	$time = $starttime . ' TO ' . $edittime;
-	// start zoom virtual class link data.
-	$join_zoom_virtual_class_link = '<p><a href=' . $meeting_data->meeting_join_link . " class='btn btn-primary'>" . esc_attr__( 'Join Virtual Class', 'mjschool' ) . '</a></p><br><br>';
-	if ( ! empty( $student_data ) ) {
-		$device_token = array();
-		foreach ( $student_data as $data ) {
-			$log_date               = date( 'Y-m-d', strtotime( $today_date ) );
-			$device_token[]         = get_user_meta( $data->ID, 'token_id', true );
-			$mail_reminder_log_data = mjschool_cheack_virtual_class_mail_reminder_log_data( $data->ID, $meeting_data->meeting_id, $meeting_data->class_id, $log_date );
-			if ( empty( $mail_reminder_log_data ) ) {
-				$student_name                          = mjschool_get_display_name( $data->ID );
-				$string                                = array();
-				$string['{{student_name}}']            = '<span>' . $student_name . '</span><br><br>';
-				$string['{{class_name}}']              = '<span>' . $clasname . '</span><br><br>';
-				$string['{{subject_name}}']            = '<span>' . $subjectname . '</span><br><br>';
-				$string['{{teacher_name}}']            = '<span>' . $teacher_name . '</span><br><br>';
-				$string['{{date}}']                    = '<span>' . $today_date . '</span><br><br>';
-				$string['{{time}}']                    = '<span>' . $time . '</span><br><br>';
-				$string['{{virtual_class_id}}']        = '<span>' . $meeting_data->zoom_meeting_id . '</span><br><br>';
-				$string['{{password}}']                = '<span>' . $meeting_data->password . '</span><br><br>';
-				$string['{{join_zoom_virtual_class}}'] = $join_zoom_virtual_class_link;
-				$string['{{school_name}}']             = '<span>' . get_option( 'mjschool_name' ) . '</span><br><br>';
-				$MsgContent                            = get_option( 'mjschool_virtual_class_student_reminder_mail_content' );
-				$MsgSubject                            = get_option( 'mjschool_virtual_class_student_reminder_mail_subject' );
-				$message                               = mjschool_string_replacement( $string, $MsgContent );
-				$MsgSubject                            = mjschool_string_replacement( $string, $MsgSubject );
-				$email                                 = $data->user_email;
-				$headers                               = "MIME-Version: 1.0\r\n";
-				$headers                              .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
-				$headers                              .= 'From: ' . get_option( 'mjschool_name' ) . ' <noreplay@gmail.com>' . "\r\n";
-				// MAIL CONTEMNT WITH TEMPLATE DESIGN.
-				$email_template = mjschool_get_mail_content_with_template_design( $message );
-				if ( get_option( 'mjschool_mail_notification' ) === 1 ) {
-					wp_mail( $email, $MsgSubject, $email_template, $headers );
-				}
-				mjschool_insert_virtual_class_mail_reminder_log( $data->ID, $meeting_data->meeting_id, $meeting_data->class_id, $log_date );
+	
+	$obj_virtual_classroom = new mjschool_virtual_classroom();
+	$meeting_data          = $obj_virtual_classroom->mjschool_get_single_meeting_data_in_zoom( $meeting_id );
+	
+	if ( empty( $meeting_data ) || ! isset( $meeting_data->class_id ) ) {
+		return;
+	}
+	
+	$sections_data = mjschool_get_class_sections( absint( $meeting_data->class_id ) );
+	$student_data  = array();
+	
+	// FIXED: Proper validation
+	if ( ! empty( $sections_data ) && is_array( $sections_data ) ) {
+		foreach ( $sections_data as $data ) {
+			if ( ! isset( $data->id ) || ! isset( $data->class_id ) ) {
+				continue;
+			}
+			
+			if ( isset( $meeting_data->section_id ) && $meeting_data->section_id === $data->id ) {
+				$student_data = get_users(
+					array(
+						'meta_key'   => 'class_section',
+						'meta_value' => $data->id,
+						'meta_query' => array(
+							array(
+								'key'     => 'class_name',
+								'value'   => $data->class_id,
+								'compare' => '=',
+							),
+						),
+						'role'       => 'student',
+					)
+				);
+				break;
 			}
 		}
-		/* Send Push Notification. */
-		$title             = esc_attr__( 'New Notification For Virtual Classroom', 'mjschool' );
-		$text              = esc_attr__( 'Your virtual class just start', 'mjschool' ) . ' ' . $meeting_data->zoom_meeting_id;
+	} else {
+		$student_data = mjschool_get_student_by_class_id( absint( $meeting_data->class_id ) );
+	}
+	
+	if ( empty( $student_data ) || ! is_array( $student_data ) ) {
+		return;
+	}
+	
+	$clasname    = mjschool_get_class_name( absint( $meeting_data->class_id ) );
+	$subjectname = mjschool_get_single_subject_name( absint( $meeting_data->subject_id ) );
+	$today_date  = mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) );
+	
+	if ( ! isset( $meeting_data->teacher_id ) ) {
+		return;
+	}
+	
+	$teacher_name = mjschool_get_display_name( absint( $meeting_data->teacher_id ) );
+	$route_data   = mjschool_get_route_by_id( absint( $meeting_data->route_id ) );
+	
+	if ( empty( $route_data ) || ! isset( $route_data->start_time ) || ! isset( $route_data->end_time ) ) {
+		return;
+	}
+	
+	// Process times (same as teacher function)
+	$start_time_123 = $route_data->start_time;
+	$end_time_123   = $route_data->end_time;
+	
+	$start_time_data = explode( ':', $start_time_123 );
+	if ( count( $start_time_data ) < 3 ) {
+		return;
+	}
+	
+	$start_hour     = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
+	$start_min      = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
+	$start_am_pm    = $start_time_data[2];
+	$start_time_new = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
+	$starttime      = gmdate( 'H:i', strtotime( $start_time_new ) );
+	
+	$end_time_data = explode( ':', $end_time_123 );
+	if ( count( $end_time_data ) < 3 ) {
+		return;
+	}
+	
+	$end_hour     = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
+	$end_min      = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
+	$end_am_pm    = $end_time_data[2];
+	$end_time_new = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
+	$edittime     = gmdate( 'H:i', strtotime( $end_time_new ) );
+	
+	$time = $starttime . ' TO ' . $edittime;
+	
+	$join_zoom_virtual_class_link = isset( $meeting_data->meeting_join_link )
+		? '<p><a href="' . esc_url( $meeting_data->meeting_join_link ) . '" class="btn btn-primary">' . esc_html__( 'Join Virtual Class', 'mjschool' ) . '</a></p><br><br>'
+		: '';
+	
+	$device_token = array();
+	
+	foreach ( $student_data as $data ) {
+		if ( ! isset( $data->ID ) || ! isset( $data->user_email ) ) {
+			continue;
+		}
+		
+		$log_date               = gmdate( 'Y-m-d', strtotime( $today_date ) );
+		$device_token[]         = get_user_meta( $data->ID, 'token_id', true );
+		$mail_reminder_log_data = mjschool_cheack_virtual_class_mail_reminder_log_data( 
+			absint( $data->ID ), 
+			$meeting_id, 
+			absint( $meeting_data->class_id ), 
+			$log_date 
+		);
+		
+		if ( empty( $mail_reminder_log_data ) ) {
+			$student_name = mjschool_get_display_name( absint( $data->ID ) );
+			
+			$string                                = array();
+			$string['{{student_name}}']            = '<span>' . esc_html( $student_name ) . '</span><br><br>';
+			$string['{{class_name}}']              = '<span>' . esc_html( $clasname ) . '</span><br><br>';
+			$string['{{subject_name}}']            = '<span>' . esc_html( $subjectname ) . '</span><br><br>';
+			$string['{{teacher_name}}']            = '<span>' . esc_html( $teacher_name ) . '</span><br><br>';
+			$string['{{date}}']                    = '<span>' . esc_html( $today_date ) . '</span><br><br>';
+			$string['{{time}}']                    = '<span>' . esc_html( $time ) . '</span><br><br>';
+			$string['{{virtual_class_id}}']        = '<span>' . esc_html( isset( $meeting_data->zoom_meeting_id ) ? $meeting_data->zoom_meeting_id : '' ) . '</span><br><br>';
+			$string['{{password}}']                = '<span>' . esc_html( isset( $meeting_data->password ) ? $meeting_data->password : '' ) . '</span><br><br>';
+			$string['{{join_zoom_virtual_class}}'] = $join_zoom_virtual_class_link;
+			$string['{{school_name}}']             = '<span>' . esc_html( get_option( 'mjschool_name' ) ) . '</span><br><br>';
+			
+			$MsgContent = get_option( 'mjschool_virtual_class_student_reminder_mail_content' );
+			$MsgSubject = get_option( 'mjschool_virtual_class_student_reminder_mail_subject' );
+			$message    = mjschool_string_replacement( $string, $MsgContent );
+			$MsgSubject = mjschool_string_replacement( $string, $MsgSubject );
+			$email      = $data->user_email;
+			
+			$headers  = "MIME-Version: 1.0\r\n";
+			$headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
+			$headers .= 'From: ' . get_option( 'mjschool_name' ) . ' <' . get_option( 'admin_email' ) . '>' . "\r\n";
+			
+			$email_template = mjschool_get_mail_content_with_template_design( $message );
+			
+			if ( 1 == get_option( 'mjschool_mail_notification' ) ) {
+				wp_mail( $email, $MsgSubject, $email_template, $headers );
+			}
+			
+			mjschool_insert_virtual_class_mail_reminder_log( 
+				absint( $data->ID ), 
+				$meeting_id, 
+				absint( $meeting_data->class_id ), 
+				$log_date 
+			);
+		}
+	}
+	
+	// Send Push Notification
+	if ( ! empty( $device_token ) ) {
+		$title = esc_html__( 'New Notification For Virtual Classroom', 'mjschool' );
+		$text  = esc_html__( 'Your virtual class just start', 'mjschool' ) . ' ' . esc_html( isset( $meeting_data->zoom_meeting_id ) ? $meeting_data->zoom_meeting_id : '' );
+		
 		$notification_data = array(
 			'registration_ids' => $device_token,
 			'notification'     => array(
@@ -10848,9 +12985,9 @@ function mjschool_virtual_class_students_mail_reminder( $meeting_id ) {
 				'type'  => 'notification',
 			),
 		);
-		$json              = json_encode( $notification_data );
-		$message           = mjschool_send_push_notification( $json );
-		/* Send Push Notification. */
+		
+		$json    = wp_json_encode( $notification_data );
+		$message = mjschool_send_push_notification( $json );
 	}
 }
 /**
@@ -10966,7 +13103,7 @@ function mjschool_virtual_class_students_mjschool_reminder( $meeting_id ) {
 	// concat start time and end time.
 	$time = $starttime . ' TO ' . $edittime;
 	// start zoom virtual class link data.
-	$join_zoom_virtual_class_link = '<p><a href=' . $meeting_data->meeting_join_link . " class='btn btn-primary'>" . esc_attr__( 'Join Virtual Class', 'mjschool' ) . '</a></p><br><br>';
+	$join_zoom_virtual_class_link = '<p><a href="' . esc_url( $meeting_data->meeting_join_link ) . '" class="btn btn-primary">' . esc_html__( 'Join Virtual Class', 'mjschool' ) . '</a></p><br><br>';
 	if ( ! empty( $student_data ) ) {
 		foreach ( $student_data as $data ) {
 			$message_content = 'Your virtual class just start';
@@ -10993,10 +13130,10 @@ function mjschool_virtual_class_students_mjschool_reminder( $meeting_id ) {
 function mjschool_insert_virtual_class_mail_reminder_log( $user_id, $meeting_id, $class_id, $date ) {
 	global $wpdb;
 	$table_zoom_meeting_mail_reminder_log = $wpdb->prefix . 'mjschool_reminder_zoom_meeting_mail_log';
-	$meeting_log_data['user_id']          = $user_id;
-	$meeting_log_data['meeting_id']       = $meeting_id;
-	$meeting_log_data['class_id']         = $class_id;
-	$meeting_log_data['alert_date']       = $date;
+	$meeting_log_data['user_id']          = absint( $user_id );
+	$meeting_log_data['meeting_id']       = absint( $meeting_id );
+	$meeting_log_data['class_id']         = absint( $class_id );
+	$meeting_log_data['alert_date']       = sanitize_text_field( $date );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->insert( $table_zoom_meeting_mail_reminder_log, $meeting_log_data );
 }
@@ -11016,8 +13153,12 @@ function mjschool_insert_virtual_class_mail_reminder_log( $user_id, $meeting_id,
 function mjschool_cheack_virtual_class_mail_reminder_log_data( $user_id, $meeting_id, $class_id, $date ) {
 	global $wpdb;
 	$table_zoom_meeting_mail_reminder_log = $wpdb->prefix . 'mjschool_reminder_zoom_meeting_mail_log';
+	$user_id                              = absint( $user_id );
+	$meeting_id                           = absint( $meeting_id );
+	$class_id                             = absint( $class_id );
+	$date                                 = sanitize_text_field( $date );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( "SELECT * FROM $table_zoom_meeting_mail_reminder_log WHERE user_id=$user_id AND meeting_id=$meeting_id AND class_id=$class_id AND alert_date='$date'" );
+	$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_zoom_meeting_mail_reminder_log WHERE user_id=%d AND meeting_id=%d AND class_id=%d AND alert_date=%s", $user_id, $meeting_id, $class_id, $date ) );
 	return $result;
 }
 /**
@@ -11043,6 +13184,7 @@ function mjschool_calender_laungage() {
  * @return string Readable label.
  */
 function mjschool_notice_for_value( $notice_for ) {
+	$notice_for = sanitize_text_field( $notice_for );
 	if ( $notice_for === 'teacher' ) {
 		return 'Teacher';
 	} elseif ( $notice_for === 'student' ) {
@@ -11067,11 +13209,20 @@ function mjschool_notice_for_value( $notice_for ) {
  * @return string Filename of uploaded image.
  */
 function mjschool_user_avatar_image_upload( $type ) {
-	$check_image = mjschool_wp_check_file_type_and_ext_image( $_FILES[ $type ]['tmp_name'], $_FILES[ $type ]['name'] );
+	$type = sanitize_key( $type );
+	
+	if ( ! isset( $_FILES[ $type ] ) || empty( $_FILES[ $type ]['tmp_name'] ) ) {
+		wp_die( esc_html__( 'No file uploaded.', 'mjschool' ) );
+	}
+	
+	$file_tmp_name = sanitize_text_field( wp_unslash( $_FILES[ $type ]['tmp_name'] ) );
+	$file_name     = sanitize_file_name( wp_unslash( $_FILES[ $type ]['name'] ) );
+	
+	$check_image = mjschool_wp_check_file_type_and_ext_image( $file_tmp_name, $file_name );
 	if ( $check_image ) {
-		$imagepath          = $file;
-		$parts              = pathinfo( $_FILES[ $type ]['name'] );
-		$inventoryimagename = 'mjschool_' . time() . '-' . 'student' . '.' . $parts['extension'];
+		$imagepath          = '';
+		$parts              = pathinfo( $file_name );
+		$inventoryimagename = 'mjschool_' . time() . '-' . 'student' . '.' . sanitize_file_name( $parts['extension'] );
 		$document_dir       = WP_CONTENT_DIR;
 		$document_dir      .= '/uploads/school_assets/';
 		$document_path      = $document_dir;
@@ -11081,10 +13232,10 @@ function mjschool_user_avatar_image_upload( $type ) {
 			}
 		}
 		if ( ! file_exists( $document_path ) ) {
-			mkdir( $document_path, 0777, true );
+			wp_mkdir_p( $document_path );
 		}
-		if ( is_uploaded_file( $_FILES[ $type ]['tmp_name'] ) ) {
-			if ( move_uploaded_file( $_FILES[ $type ]['tmp_name'], $document_path . $inventoryimagename ) ) {
+		if ( is_uploaded_file( $file_tmp_name ) ) {
+			if ( move_uploaded_file( $file_tmp_name, $document_path . $inventoryimagename ) ) {
 				$imagepath = $inventoryimagename;
 			}
 		}
@@ -11104,7 +13255,7 @@ function mjschool_user_avatar_image_upload( $type ) {
 function mjschool_get_all_class_created_by_user( $eid ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_class';
-	$user_id    = intval( $eid );
+	$user_id    = absint( $eid );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE creater_id=%d", $user_id ) );
 	return $results;
@@ -11120,7 +13271,7 @@ function mjschool_get_all_class_created_by_user( $eid ) {
 function mjschool_get_all_grade_data_by_user_id( $mjschool_table_name ) {
 	global $wpdb;
 	$user_id    = get_current_user_id();
-	$table_name = $wpdb->prefix . $mjschool_table_name;
+	$table_name = $wpdb->prefix . sanitize_key( $mjschool_table_name );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	return $retrieve_subjects = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name where creater_id=%d", $user_id ) );
 }
@@ -11135,7 +13286,7 @@ function mjschool_get_all_grade_data_by_user_id( $mjschool_table_name ) {
 function mjschool_get_all_exam_hall_by_user_id( $mjschool_table_name ) {
 	global $wpdb;
 	$user_id    = get_current_user_id();
-	$table_name = $wpdb->prefix . $mjschool_table_name;
+	$table_name = $wpdb->prefix . sanitize_key( $mjschool_table_name );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	return $retrieve_subjects = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name where created_by=%d", $user_id ) );
 }
@@ -11156,15 +13307,22 @@ function mjschool_get_all_exam_hall_by_user_id( $mjschool_table_name ) {
 function mjschool_view_attendance_for_report( $start_date, $end_date, $class_id, $student_id, $status ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_sub_attendance';
+	
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	$class_id   = sanitize_text_field( $class_id );
+	$student_id = absint( $student_id );
+	$status     = sanitize_text_field( $status );
+	
 	// Base query parts.
 	$where_conditions = 'role_name = %s AND attendance_date BETWEEN %s AND %s';
 	$query_params     = array( 'student', $start_date, $end_date );
 	// Add class_id condition if it's not 'all_class'.
 	if ( $class_id !== 'all_class' ) {
 		$where_conditions .= ' AND class_id = %d';
-		$query_params[]    = $class_id;
+		$query_params[]    = absint( $class_id );
 	}
-	if ( $student_id !== '' ) {
+	if ( $student_id !== 0 ) {
 		$where_conditions .= ' AND user_id = %d';
 		$query_params[]    = $student_id;
 	}
@@ -11191,6 +13349,10 @@ function mjschool_view_attendance_for_report( $start_date, $end_date, $class_id,
 function mjschool_view_attendance_report_for_start_date_enddate( $start_date, $end_date ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_sub_attendance';
+	
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	
 	// Prepare the query with placeholders
 	$query = "SELECT * FROM $tbl_name WHERE role_name = %s AND attendance_date BETWEEN %s AND %s";
 	// Prepare and execute the query
@@ -11210,6 +13372,10 @@ function mjschool_view_attendance_report_for_start_date_enddate( $start_date, $e
 function mjschool_view_teacher_for_report_attendance_report_for_start_date_enddate( $start_date, $end_date ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_attendence';
+	
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	
 	// Prepare the query with placeholders.
 	$query = "SELECT * FROM $tbl_name WHERE role_name = %s AND attendence_date BETWEEN %s AND %s";
 	// Prepare and execute the query.
@@ -11228,6 +13394,9 @@ function mjschool_view_teacher_for_report_attendance_report_for_start_date_endda
 function mjschool_daily_attendance_report_for_all_class_total_present( $daily_date ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_attendence';
+	
+	$daily_date = sanitize_text_field( $daily_date );
+	
 	// Prepare the query with placeholders.
 	$query = "SELECT * FROM $tbl_name WHERE role_name = %s AND attendence_date = %s AND status = %s";
 	// Prepare and execute the query.
@@ -11247,6 +13416,9 @@ function mjschool_daily_attendance_report_for_all_class_total_present( $daily_da
 function mjschool_daily_attendance_report_for_all_class_total_absent( $daily_date ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_attendence';
+	
+	$daily_date = sanitize_text_field( $daily_date );
+	
 	// Prepare the query with placeholders.
 	$query = "SELECT * FROM $tbl_name WHERE role_name = %s AND attendence_date = %s AND status = %s";
 	// Prepare and execute the query.
@@ -11267,8 +13439,11 @@ function mjschool_daily_attendance_report_for_all_class_total_absent( $daily_dat
 function mjschool_daily_attendance_report_for_date_total_present( $daily_date, $class_id ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_sub_attendance';
-	// Format the date securely.
-	$daily_date = date( 'Y-m-d', strtotime( esc_sql( $daily_date ) ) );
+	
+	// Sanitize inputs.
+	$daily_date = sanitize_text_field( $daily_date );
+	$class_id   = absint( $class_id );
+	
 	// Prepare the query with placeholders.
 	$query = "SELECT * FROM $tbl_name WHERE role_name = %s AND attendance_date = %s AND class_id = %d AND status = %s";
 	// Prepare and execute the query.
@@ -11289,10 +13464,13 @@ function mjschool_daily_attendance_report_for_date_total_present( $daily_date, $
 function mjschool_daily_attendance_report_for_date_total_absent( $daily_date, $class_id ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_sub_attendance';
-	// Format the date securely.
-	$daily_date = date( 'Y-m-d', strtotime( esc_sql( $daily_date ) ) );
+	
+	// Sanitize inputs.
+	$daily_date = sanitize_text_field( $daily_date );
+	$class_id   = absint( $class_id );
+	
 	// Prepare the query with placeholders.
-	$query = "SELECT * FROM $tbl_name WHERE role_name = %s AND attendance_date = %s AND class_id = %d AND status = %s";
+	$query = "SELECT * FROM {$tbl_name} WHERE role_name = %s AND attendance_date = %s AND class_id = %d AND status = %s";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $wpdb->prepare( $query, 'student', $daily_date, $class_id, 'Absent' ) );
@@ -11310,9 +13488,9 @@ function mjschool_daily_attendance_report_for_date_total_absent( $daily_date, $c
 function mjschool_get_assign_beds_by_hostel_id( $eid ) {
 	global $wpdb;
 	$tbl_name  = $wpdb->prefix . 'mjschool_assign_beds';
-	$hostel_id = intval( $eid );
+	$hostel_id = absint( $eid );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $tbl_name where hostel_id = %d", $hostel_id ) );
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$tbl_name} where hostel_id = %d", $hostel_id ) );
 	return $result;
 }
 /**
@@ -11326,7 +13504,7 @@ function mjschool_get_all_assign_beds() {
 	global $wpdb;
 	$table_mjschool_room = $wpdb->prefix . 'mjschool_assign_beds';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_room" ) );
+	$result = $wpdb->get_results( "SELECT * FROM $table_mjschool_room" );
 	return $result;
 }
 /**
@@ -11340,9 +13518,9 @@ function mjschool_get_all_assign_beds() {
 function mjschool_assign_beds_student_id( $eid ) {
 	global $wpdb;
 	$tbl_name   = $wpdb->prefix . 'mjschool_assign_beds';
-	$student_id = intval( $eid );
+	$student_id = absint( $eid );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $tbl_name where student_id =%d", $student_id ) );
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$tbl_name} where student_id =%d", $student_id ) );
 	return $result;
 }
 /**
@@ -11356,9 +13534,9 @@ function mjschool_assign_beds_student_id( $eid ) {
 function mjschool_assign_beds_bed_id( $eid ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_assign_beds';
-	$id       = intval( $eid );
+	$id       = absint( $eid );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $tbl_name where bed_id =%d", $id ) );
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$tbl_name} where bed_id =%d", $id ) );
 	return $result;
 }
 /**
@@ -11376,7 +13554,14 @@ function mjschool_assign_beds_bed_id( $eid ) {
 function mjschool_attendance_report_get_status_for_student_id( $start_date, $end_date, $class_id, $user_id, $status ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_sub_attendance';
-	$query    = $wpdb->prepare( "SELECT * FROM $tbl_name WHERE attendance_date BETWEEN %s AND %s AND class_id = %d AND user_id = %d AND status = %s AND sub_id IS NULL", $start_date, $end_date, $class_id, $user_id, $status );
+	
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	$class_id   = absint( $class_id );
+	$user_id    = absint( $user_id );
+	$status     = sanitize_text_field( $status );
+	
+	$query    = $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE attendance_date BETWEEN %s AND %s AND class_id = %d AND user_id = %d AND status = %s AND sub_id IS NULL", $start_date, $end_date, $class_id, $user_id, $status );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $query );
 	return $result;
@@ -11394,7 +13579,10 @@ function mjschool_attendance_report_get_status_for_student_id( $start_date, $end
 function mjschool_check_book_issued_by_class_id_and_date( $eid, $start_date, $end_date ) {
 	global $wpdb;
 	$table_issuebook = $wpdb->prefix . 'mjschool_library_book_issue';
-	$class_id        = intval( $eid );
+	$class_id        = absint( $eid );
+	$start_date      = sanitize_text_field( $start_date );
+	$end_date        = sanitize_text_field( $end_date );
+	
 	// Fetch student and teacher IDs.
 
 	$students = get_users(array( 'meta_key' => 'class_name', 'meta_value' => $class_id, 'fields' => 'ID' ) );
@@ -11408,7 +13596,7 @@ function mjschool_check_book_issued_by_class_id_and_date( $eid, $start_date, $en
 	// Convert user IDs array to comma-separated values for SQL IN clause.
 	$user_ids_placeholders = implode( ',', array_fill( 0, count( $user_ids ), '%d' ) );
 	// Construct the query.
-	$query = "SELECT * FROM $table_issuebook WHERE issue_date BETWEEN %s AND %s AND student_id IN ($user_ids_placeholders)";
+	$query = "SELECT * FROM {$table_issuebook} WHERE issue_date BETWEEN %s AND %s AND student_id IN ($user_ids_placeholders)";
 	// Prepare query with dynamic number of user IDs.
 	$prepared_query = $wpdb->prepare( $query, array_merge( array( $start_date, $end_date ), $user_ids ) );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -11428,9 +13616,13 @@ function mjschool_check_book_issued_by_class_id_and_date( $eid, $start_date, $en
 function mjschool_check_book_issued_by_class_id_and_class_section_and_date( $eid, $class_section, $start_date, $end_date ) {
 	global $wpdb;
 	$table_issuebook = $wpdb->prefix . 'mjschool_library_book_issue';
-	$class_id        = intval( $eid );
+	$class_id        = absint( $eid );
+	$class_section   = absint( $class_section );
+	$start_date      = sanitize_text_field( $start_date );
+	$end_date        = sanitize_text_field( $end_date );
+	
 	// Prepare the query with placeholders.
-	$query = "SELECT * FROM $table_issuebook WHERE issue_date BETWEEN %s AND %s AND class_id = %d AND section_id = %d";
+	$query = "SELECT * FROM {$table_issuebook} WHERE issue_date BETWEEN %s AND %s AND class_id = %d AND section_id = %d";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$booklist = $wpdb->get_results( $wpdb->prepare( $query, $start_date, $end_date, $class_id, $class_section ) );
@@ -11448,8 +13640,12 @@ function mjschool_check_book_issued_by_class_id_and_class_section_and_date( $eid
 function mjschool_check_book_issued_by_start_date_and_end_date( $start_date, $end_date ) {
 	global $wpdb;
 	$table_issuebook = $wpdb->prefix . 'mjschool_library_book_issue';
+	
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	
 	// Prepare the query with placeholders.
-	$query = "SELECT * FROM $table_issuebook WHERE issue_date BETWEEN %s AND %s";
+	$query = "SELECT * FROM {$table_issuebook} WHERE issue_date BETWEEN %s AND %s";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$booklist = $wpdb->get_results( $wpdb->prepare( $query, $start_date, $end_date ) );
@@ -11468,10 +13664,12 @@ function mjschool_check_book_issued_by_start_date_and_end_date( $start_date, $en
 function mjschool_view_attendance_status_for_date( $date, $cid, $id ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_attendence';
-	$user_id  = intval( $id );
-	$class_id = intval( $cid );
+	$user_id  = absint( $id );
+	$class_id = absint( $cid );
+	$date     = sanitize_text_field( $date );
+	
 	// Prepare the query with placeholders.
-	$query = "SELECT status FROM $tbl_name WHERE user_id = %d AND class_id = %d AND attendence_date = %s";
+	$query = "SELECT status FROM {$tbl_name} WHERE user_id = %d AND class_id = %d AND attendence_date = %s";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $wpdb->prepare( $query, $user_id, $class_id, $date ) );
@@ -11488,8 +13686,11 @@ function mjschool_view_attendance_status_for_date( $date, $cid, $id ) {
 function mjschool_attendance_report_holiday_print_for_date( $date ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_holiday';
+	
+	$date = sanitize_text_field( $date );
+	
 	// Prepare the query with placeholders.
-	$query = "SELECT * FROM $tbl_name WHERE %s BETWEEN date AND end_date";
+	$query = "SELECT * FROM {$tbl_name} WHERE %s BETWEEN date AND end_date";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $wpdb->prepare( $query, $date ) );
@@ -11507,8 +13708,12 @@ function mjschool_attendance_report_holiday_print_for_date( $date ) {
 function mjschool_get_all_holiday_by_month_year( $month, $year ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_holiday';
+	
+	$month = absint( $month );
+	$year  = absint( $year );
+	
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( "SELECT * FROM $tbl_name WHERE CONCAT(YEAR(date),'-',MONTH(date ) )  = '$year-$month'" );
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $tbl_name WHERE YEAR(date) = %d AND MONTH(date) = %d", $year, $month ) );
 	return $result;
 }
 /**
@@ -11522,6 +13727,9 @@ function mjschool_get_all_holiday_by_month_year( $month, $year ) {
  */
 // phpcs:disable
 function mjschool_get_all_admission_by_start_date_to_end_date( $start_date, $end_date ) {
+    $start_date = sanitize_text_field( $start_date );
+    $end_date   = sanitize_text_field( $end_date );
+    
     $args = array(
         'role'    => 'student_temp',
         'orderby' => 'ID',
@@ -11555,6 +13763,7 @@ function mjschool_get_all_admission_by_start_date_to_end_date( $start_date, $end
  * @return string JSON encoded array of start/end date.
  */
 function mjschool_all_date_type_value( $date_type ) {
+	$date_type  = sanitize_text_field( $date_type );
 	$start_date = '';
 	$end_date   = '';
 	$array_res  = array();
@@ -11608,7 +13817,7 @@ function mjschool_all_date_type_value( $date_type ) {
 	}
 	$array_res[] = $start_date;
 	$array_res[] = $end_date;
-	return json_encode( $array_res );
+	return wp_json_encode( $array_res );
 }
 /**
  * Get attendance status for student for a date.
@@ -13166,8 +15375,9 @@ function mjschool_setup_wizard_steps_updates( $step ) {
 function mjschool_get_exam_data_for_parent( $student_id ) {
 	$class_id   = get_user_meta( $student_id, 'class_name', true );
 	$section_id = get_user_meta( $student_id, 'class_section', true );
+	$obj_exam = new Mjschool_Exam();
 	if ( isset( $class_id ) && $section_id === '' ) {
-		$retrieve_class = mjschool_get_all_exam_by_class_id( $class_id );
+		$retrieve_class = $obj_exam->mjschool_get_all_exam_by_class_id( $class_id );
 	} else {
 		$retrieve_class = mjschool_get_all_exam_by_class_id_and_section_id_array( $class_id, $section_id );
 	}
@@ -14002,7 +16212,7 @@ function mjschool_exam_list_data_with_access_for_dashboard( $user_role ) {
 			$class_id   = get_user_meta( get_current_user_id(), 'class_name', true );
 			$section_id = get_user_meta( get_current_user_id(), 'class_section', true );
 			if ( isset( $class_id ) && $section_id === '' ) {
-				$retrieve_class = mjschool_get_all_exam_by_class_id( $class_id );
+				$retrieve_class = $obj_exam->mjschool_get_all_exam_by_class_id( $class_id );
 			} else {
 				$retrieve_class = mjschool_get_all_exam_by_class_id_and_section_id_array( $class_id, $section_id );
 			}
@@ -15712,7 +17922,7 @@ function mjschool_generate_result_for_mobile_app( $student_id, $exam_id, $name, 
 				<br>
 				<div style="float:right;margin-right:0px;margin-right: auto;">
 
-					<div> <img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ) ?>" style="width:100px; margin-right:15px;" /> </div>
+					<div> <img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" style="width:100px; margin-right:15px;" /> </div>
 
 					<div style="border: 1px solid  !important;width: 150px;margin-top: 5px;"></div>
 					<div style="margin-right:10px;margin-bottom:10px;"> <?php esc_html_e( 'Principal Signature', 'mjschool' ); ?> </div>
@@ -15929,11 +18139,9 @@ function mjschool_generate_result_for_mobile_app( $student_id, $exam_id, $name, 
 			<div  style="direction: rtl;margin-right: 20px;">
 				<br>
 				<div style="float:right;margin-right:0px;margin-left: auto;">
-
 					<div>
-						<img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ) ?>" style="width:100px; margin-right:15px;" />
+						<img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" style="width:100px; margin-right:15px;" />
 					</div>
-
 					<div style="border: 1px solid  !important;width: 150px;margin-top: 5px;"></div>
 					<div style="margin-right:10px;margin-bottom:10px;">
 						<?php esc_html_e( 'Principal Signature', 'mjschool' ); ?>
@@ -17683,7 +19891,8 @@ function mjschool_get_student_name_with_class_and_section($class_id, $section_id
 {
 	// Fetch list of student IDs that should be excluded.
 	$exclude_ids = mjschool_approve_student_list();
-
+	var_dump($class_id);
+	var_dump($section_id);
 	// Ensure the exclude list is always an array.
 	if (!is_array($exclude_ids)) {
 		$exclude_ids = array();
@@ -17853,11 +20062,7 @@ function mjschool_get_manage_marks_exam_id_using_student_id( $uid ) {
     // Table name
     $table_name = $wpdb->prefix . "mjschool_marks";
 
-    // Corrected query: table name should not be in quotes
-    $query = $wpdb->prepare(
-        "SELECT DISTINCT exam_id FROM {$table_name} WHERE student_id = %d",
-        $uid
-    );
+    $query = $wpdb->prepare( "SELECT DISTINCT exam_id FROM {$table_name} WHERE student_id = %d", $uid );
 
     // Fetch column results
     $exam_ids = $wpdb->get_col( $query );

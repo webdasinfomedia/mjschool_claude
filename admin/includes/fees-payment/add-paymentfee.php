@@ -230,7 +230,7 @@ if ($active_tab === 'addpaymentfee' ) {
                                     if ( ! empty( $fees_data ) ) {
                                         foreach ( $fees_data as $retrive_data ) {
                                             $selected = "";
-                                            if (in_array($retrive_data->fees_id, $fees_id ) )
+                                            if (in_array((int)$retrive_data->fees_id, array_map('intval', $fees_id), true ) )
                                                 $selected = "selected";
                                             echo '<option value="' . esc_attr( $retrive_data->fees_id ) . '"'.esc_attr( $selected).'>' . esc_html( get_the_title( $retrive_data->fees_title_id ) ) . '</option>';
                                         }

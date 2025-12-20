@@ -34,9 +34,10 @@ if ( isset( $_GET['tab'] ) ) {
 	$table_name_mark       = $wpdb->prefix . 'mjschool_marks';
 	$teachers              = get_users( array( 'role' => 'teacher' ) );
 	$teacher_student_fails = array(); // Stores unique failing students per teacher.
+	$obj_subject          = new Mjschool_Subject();
 	if ( ! empty( $teachers ) ) {
 		foreach ( $teachers as $teacher ) {
-			$subject_ids = mjschool_get_subject_id_by_teacher( $teacher->ID );
+			$subject_ids = $obj_subject->mjschool_get_subject_id_by_teacher( $teacher->ID );
 			if ( ! empty( $subject_ids ) ) {
 				$sub_str = implode( ',', $subject_ids );
 				$results = $wpdb->get_results( "SELECT * FROM {$table_name_mark} WHERE subject_id IN ({$sub_str})", ARRAY_A );

@@ -926,6 +926,7 @@ function mjschool_student_exam_receipt_print( $student_id, $exam_id ) {
 		}
 	</style>
 	<?php
+	$obj_subject = new Mjschool_subjects();
 	if ( is_rtl() ) {
 		?>
 		<div class="modal-body mjschool_direction_rtl">
@@ -1049,7 +1050,7 @@ function mjschool_student_exam_receipt_print( $student_id, $exam_id ) {
 								foreach ( $exam_time_table as $retrieved_data ) {
 									?>
 									<tr>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
+										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
 										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
 										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?></td>
 										<?php
@@ -1227,7 +1228,7 @@ function mjschool_student_exam_receipt_print( $student_id, $exam_id ) {
 								foreach ( $exam_time_table as $retrieved_data ) {
 									?>
 									<tr>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
+										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
 										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
 										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?></td>
 										<?php
@@ -1400,6 +1401,7 @@ function mjschool_student_exam_receipt_pdf( $student_id, $exam_id ) {
 		}
 	</style>
 	<?php
+	$obj_subject = new Mjschool_subjects();
 	if ( is_rtl() ) {
 		?>
 		<div class="modal-body mjschool_direction_rtl" >
@@ -1526,7 +1528,7 @@ function mjschool_student_exam_receipt_pdf( $student_id, $exam_id ) {
 								foreach ( $exam_time_table as $retrieved_data ) {
 									?>
 									<tr>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
+										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
 										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
 										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?></td>
 										<?php
@@ -1715,7 +1717,7 @@ function mjschool_student_exam_receipt_pdf( $student_id, $exam_id ) {
 								foreach ( $exam_time_table as $retrieved_data ) {
 									?>
 									<tr>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
+										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
 										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
 										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?></td>
 										<?php
@@ -4790,7 +4792,7 @@ function mjschool_send_mail_receipt_pdf( $emails, $subject, $message, $student_i
 			</div>
 		</div>
 	</div>';
-	 
+	$obj_subject = new mjschool_subjects();
 	$signature = get_option( 'mjschool_principal_signature' );
 	require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
 	$mpdf       = new Mpdf\Mpdf();
@@ -4891,7 +4893,7 @@ function mjschool_send_mail_receipt_pdf( $emails, $subject, $message, $student_i
 	if ( ! empty( $exam_time_table ) ) {
 		foreach ( $exam_time_table as $retrieved_data ) {
 			$mpdf->WriteHTML( '<tr>' );
-			$mpdf->WriteHTML( '<td class="mjschool-main-td mjschool-border-rigth mjschool_padding_10px">' . mjschool_get_single_subject_code( $retrieved_data->subject_id ) . '</td>' );
+			$mpdf->WriteHTML( '<td class="mjschool-main-td mjschool-border-rigth mjschool_padding_10px">' . $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) . '</td>' );
 			$mpdf->WriteHTML( '<td class="mjschool-main-td mjschool-border-rigth mjschool_padding_10px">' . mjschool_get_single_subject_name( $retrieved_data->subject_id ) . '</td>' );
 			$mpdf->WriteHTML( '<td class="mjschool-main-td mjschool-border-rigth mjschool_padding_10px">' . mjschool_get_date_in_input_box( $retrieved_data->exam_date ) . '</td>' );
 			$start_time_data = explode( ':', $retrieved_data->start_time );

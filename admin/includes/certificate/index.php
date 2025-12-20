@@ -23,6 +23,7 @@
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/certificate
  * @since      1.0.0
+ * @since      2.0.1 Security hardening - Fixed 7 critical security issues
  */
 defined( 'ABSPATH' ) || exit;
 // -------- Check browser javascript.. ----------//
@@ -69,11 +70,20 @@ if ($mjschool_role === 'administrator' ) {
         }
     }
 }
+
+// SECURITY FIX 1: Add nonce verification for certificate save
 if ( isset( $_POST['create_exprience_latter']) || isset($_POST['save_and_print'] ) ) {
+    // SECURITY FIX: Verify nonce before processing
+    if ( ! isset( $_POST['_wpnonce'] ) || 
+         ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 
+                           'mjschool_assign_certificate_nonce' ) ) {
+        wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+    }
+    
     $type = sanitize_text_field(wp_unslash( $_POST['certificate_type'] ) );
     if ( isset( $_POST['edit'] ) ) {
-        $l_type    = $_POST['certificate_type'];
-        $emp_id    = $_POST['student_id'];
+        $l_type    = sanitize_text_field(wp_unslash($_POST['certificate_type']));
+        $emp_id    = sanitize_text_field(wp_unslash($_POST['student_id']));
         $result    = $mjschool_obj_document->mjschool_create_experience_letter(wp_unslash($_POST));
         $latter_id = sanitize_text_field(wp_unslash($_POST['id'] ) );
         if ($result) {
@@ -92,6 +102,7 @@ if ( isset( $_POST['create_exprience_latter']) || isset($_POST['save_and_print']
         }
     }
 }
+
 $message = isset( $_REQUEST['message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message'] ) ) : '0';
 switch ($message) {
     case 'cret_crt':
@@ -118,49 +129,104 @@ if ($message) {
     </div>
 	<?php
 }
+
+// SECURITY FIX 2: Add nonce verification and array validation for bulk delete
 if ( isset( $_REQUEST['delete_selected'] ) ) {
-    if ( ! empty( $_REQUEST['id'] ) ) {
+    // SECURITY FIX: Verify nonce before deletion
+    if ( ! isset( $_POST['_wpnonce'] ) || 
+         ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 
+                           'mjschool_delete_certificate_nonce' ) ) {
+        wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+    }
+    
+    // SECURITY FIX: Validate array before iteration
+    if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+        $deleted_count = 0;
         foreach ($_REQUEST['id'] as $id) {
             $result = mjschool_delete_letter_table_by_id( intval( $id ) );
             if ($result) {
-                wp_safe_redirect( admin_url( 'admin.php?page=mjschool_certificate&tab=assign_list&message=1' ) );
-                die();
+                $deleted_count++;
             }
+        }
+        
+        if ( $deleted_count > 0 ) {
+            wp_safe_redirect( admin_url( 'admin.php?page=mjschool_certificate&tab=assign_list&message=1' ) );
+            exit;
         }
     }
 }
+
 $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'certificatelist';
 $changed    = 0;
+
+// SECURITY FIX 3: Add nonce verification for transfer certificate save
 if ( isset( $_REQUEST['save_transfer'] ) ) {
+    // SECURITY FIX: Verify nonce before saving
+    if ( ! isset( $_POST['_wpnonce'] ) || 
+         ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 
+                           'mjschool_save_transfer_certificate_nonce' ) ) {
+        wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+    }
+    
     $changed = 1;
     update_option( 'mjschool_transfer_certificate_title', sanitize_text_field( wp_unslash( $_REQUEST['mjschool_transfer_certificate_title'] ) ) );
     $result = update_option( 'mjschool_transfer_certificate_template', wp_kses_post( wp_unslash( $_REQUEST['mjschool_transfer_certificate_template'] ) ) );
     wp_safe_redirect( admin_url( 'admin.php?page=mjschool_certificate&tab=certificatelist&message=2' ) );
     die();
 }
+
+// SECURITY FIX 4: Add nonce verification and improve database security
 if ( isset( $_POST['save_dynamic_certificate']) && isset($_POST['id'] ) ) {
+    // SECURITY FIX: Verify nonce before database operation
+    if ( ! isset( $_POST['_wpnonce'] ) || 
+         ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 
+                           'mjschool_save_dynamic_certificate_nonce' ) ) {
+        wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+    }
+    
     global $wpdb;
     $id       = intval(wp_unslash($_POST['id']));
     $cert_key = sanitize_text_field(wp_unslash($_POST['certificate_key']));
-    $template = stripslashes($_POST[$cert_key . '_template']);
-    $title    = stripslashes($_POST[$cert_key . '_title']);
+    $template = wp_kses_post(wp_unslash($_POST[$cert_key . '_template']));
+    $title    = sanitize_text_field(wp_unslash($_POST[$cert_key . '_title']));
+    
+    // SECURITY FIX: Add format arrays for safer database operations
     $wpdb->update(
         $wpdb->prefix . 'mjschool_daynamic_certificate',
         array(
             'certificate_name'    => $title,
             'certificate_content' => $template,
         ),
-        array( 'id' => $id)
+        array( 'id' => $id),
+        array('%s', '%s'),  // SECURITY FIX: Format array for data
+        array('%d')         // SECURITY FIX: Format array for where clause
     );
     wp_safe_redirect( admin_url( 'admin.php?page=mjschool_certificate&tab=certificatelist&message=2' ) );
     die();
 }
+
+// SECURITY FIX 5: Add nonce verification for certificate delete
 if ( isset( $_GET['delete_certificate'] ) ) {
+    // SECURITY FIX: Verify nonce before deletion
+    if ( ! isset( $_GET['_wpnonce'] ) || 
+         ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 
+                           'mjschool_delete_certificate_action' ) ) {
+        wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+    }
+    
     global $wpdb;
     $id = intval(wp_unslash($_GET['delete_certificate']));
-    $wpdb->delete( $wpdb->prefix . 'mjschool_daynamic_certificate', array( 'id' => $id) );
-    wp_safe_redirect( admin_url( 'admin.php?page=mjschool_certificate&tab=certificatelist&message=1' ) );
-    die();
+    
+    // SECURITY FIX: Add format array for where clause
+    $wpdb->delete( 
+        $wpdb->prefix . 'mjschool_daynamic_certificate', 
+        array( 'id' => $id),
+        array('%d')  // SECURITY FIX: Format array
+    );
+    
+    $delete_nonce = wp_create_nonce( 'mjschool_certificate_tab' );
+    wp_safe_redirect( admin_url( 'admin.php?page=mjschool_certificate&tab=certificatelist&_wpnonce=' . $delete_nonce . '&message=1' ) );
+    exit;
 }
 ?>
 <div class="mjschool-panel-white"><!------- Panel white.  -------->
@@ -208,9 +274,11 @@ if ( isset( $_GET['delete_certificate'] ) ) {
         <?php
         if ($active_tab === 'certificatelist' ) {
 
-            // Check nonce for exam hall list tab.
+            // SECURITY FIX 6: Sanitize nonce before verification
             if ( isset( $_GET['tab'] ) ) {
-                if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'mjschool_certificate_tab' ) ) {
+                if ( ! isset( $_GET['_wpnonce'] ) || 
+                     ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 
+                                       'mjschool_certificate_tab' ) ) {
                    wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
                 }
             }
@@ -242,6 +310,10 @@ if ( isset( $_GET['delete_certificate'] ) ) {
                         <div id="flush-collapse_collapse_<?php echo esc_attr($i); ?>" class="accordion-collapse mjschool-email-temp-rtl collapse " aria-labelledby="flush-heading<?php echo esc_attr($i); ?>" role="tabpanel" data-bs-parent="#mjschool-accordion">
                             <div class="m-auto mjschool-panel-body mjschool-margin-20px">
                                 <form id="mjschool-email-template-form" class="mjschool-form-horizontal" method="post" action="" frm="collapseOne" name="parent_form">
+                                    <?php 
+                                    // SECURITY FIX: Add nonce field for transfer certificate
+                                    wp_nonce_field( 'mjschool_save_transfer_certificate_nonce' ); 
+                                    ?>
                                     <div class="row">
                                         <input type="hidden" name="redirect" id="redirect" value="collapseOne">
                                         <div class="row">
@@ -264,7 +336,7 @@ if ( isset( $_GET['delete_certificate'] ) ) {
                                                         $editor_id = 'mjschool_transfer_certificate_template';
                                                         $settings = array(
                                                             'textarea_name' => 'mjschool_transfer_certificate_template',
-                                                            'textarea_rows' => 20, // This still controls non-TinyMCE.
+                                                            'textarea_rows' => 20,
                                                             'media_buttons' => false,
                                                             'tinymce'       => true,
                                                             'quicktags'     => true,
@@ -328,32 +400,46 @@ if ( isset( $_GET['delete_certificate'] ) ) {
                 </div>
             </div>
             <form method="post">
+                <?php 
+                // SECURITY FIX 7: Add nonce field for clone certificate
+                wp_nonce_field( 'mjschool_clone_certificate_nonce' ); 
+                ?>
                 <input type="submit" name="clone_cert" value="<?php esc_html_e( 'Add More Certificate', 'mjschool' ); ?>" class="button button-primary mjschool-save-btn">
             </form>
             <?php
+            // SECURITY FIX 7: Add nonce verification for clone certificate
             if ( isset( $_POST['clone_cert'] ) ) {
+                // SECURITY FIX: Verify nonce before cloning
+                if ( ! isset( $_POST['_wpnonce'] ) || 
+                     ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 
+                                       'mjschool_clone_certificate_nonce' ) ) {
+                    wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+                }
+                
                 $result = mjschool_clone_certificate_template( 'mjschool_transfer_certificate', 'sample_certificate' );
                 echo !is_wp_error($result) ? esc_html( $result['message']) : esc_html( 'Error: ' . $result->get_error_message( ) );
             }
             // Loop over dynamically created certificates like sample_certificate_1, sample_certificate_2, ...
             global $wpdb;
-            ++$i; // continue from your last counter.
+            ++$i;
             $table = $wpdb->prefix . 'mjschool_daynamic_certificate';
-            // Get all dynamic certificates from the table.
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $results = $wpdb->get_results( "SELECT * FROM {$table} ORDER BY id ASC");
             foreach ($results as $cert) {
                 $prefix   = 'sample_certificate_';
                 $index    = $i - 1;
-                $title    = $cert->certificate_name;               // title.
-                $template = $cert->certificate_content;        // template.
+                $title    = $cert->certificate_name;
+                $template = $cert->certificate_content;
+                
+                // Generate nonce for delete action
+                $delete_cert_nonce = wp_create_nonce( 'mjschool_delete_certificate_action' );
             	?>
                 <div class="d-flex justify-content-start mb-2 mt-1">
                     
                     <a class="mjschool-dropdown-icon-letter" data-toggle="tooltip" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_certificate&tab=assign_certificate&letter_type=' . rawurlencode( sanitize_text_field( $title ) ) . '&action=new' ) ); ?>" title="<?php esc_attr_e( 'Assign Certificate', 'mjschool' ); ?>">
                         <img height="41px" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-addmore-icon.png"); ?>" class="add_more_icon_detailpage">
                     </a>
-                    <a class="mjschool-dropdown-icon-letter" data-toggle="tooltip" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_certificate&tab=certificatelist&delete_certificate=' . rawurlencode( sanitize_text_field( $cert->id ) ) ) ); ?>" onclick="return confirm( 'Are you sure you want to delete this certificate?' );" title="<?php esc_attr_e( 'Delete Certificate', 'mjschool' ); ?>">
+                    <a class="mjschool-dropdown-icon-letter" data-toggle="tooltip" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_certificate&tab=certificatelist&delete_certificate=' . rawurlencode( sanitize_text_field( $cert->id ) ) . '&_wpnonce=' . $delete_cert_nonce ) ); ?>" onclick="return confirm( 'Are you sure you want to delete this certificate?' );" title="<?php esc_attr_e( 'Delete Certificate', 'mjschool' ); ?>">
                         <img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-delete.png"); ?>" class="add_more_icon_detailpage">
                     </a>
                     
@@ -364,12 +450,15 @@ if ( isset( $_GET['delete_certificate'] ) ) {
                             <h4 class="accordion-header" id="flush-heading<?php echo esc_attr($i); ?>">
                                 <button class="accordion-button collapsed bg-gray" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse_collapse_<?php echo esc_attr($i); ?>" aria-controls="flush-heading<?php echo esc_attr($i); ?>">
                                     <?php echo esc_html( $title); ?>
-                                    <!-- No "Add Certificate" icon for dynamic clones, unless needed. -->
                                 </button>
                             </h4>
                             <div id="flush-collapse_collapse_<?php echo esc_attr($i); ?>" class="accordion-collapse mjschool-email-temp-rtl collapse" aria-labelledby="flush-heading<?php echo esc_attr($i); ?>" role="tabpanel" data-bs-parent="#mjschool-accordion">
                                 <div class="m-auto mjschool-panel-body mjschool-margin-20px">
                                     <form class="mjschool-form-horizontal" method="post">
+                                        <?php 
+                                        // SECURITY FIX: Add nonce field for dynamic certificate
+                                        wp_nonce_field( 'mjschool_save_dynamic_certificate_nonce' ); 
+                                        ?>
                                         <input type="hidden" name="certificate_key" value="<?php echo esc_attr($prefix . $index); ?>">
                                         <input type="hidden" name="id" value="<?php echo esc_attr($cert->id); ?>">
                                         <div class="row">
@@ -440,14 +529,14 @@ if ( isset( $_GET['delete_certificate'] ) ) {
                                             ?>
                                         </div>
                                     </form>
-                                </div> <!-- .mjschool-panel-body. -->
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             	<?php
                 ++$i;
-                ++$index; // thi give undefine warning.
+                ++$index;
             }
             ?>
             <?php
@@ -459,5 +548,5 @@ if ( isset( $_GET['delete_certificate'] ) ) {
             require_once MJSCHOOL_ADMIN_DIR . '/certificate/assign-certificate.php';
         }
         ?>
-    </div> <!-------- Panel Body. --------->
-</div><!------- Panel white.  -------->
+    </div>
+</div>

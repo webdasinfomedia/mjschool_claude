@@ -8,8 +8,11 @@
  * @since      1.0.0
  * @package    MJSCHOOL
  */
-
 defined( 'ABSPATH' ) || exit;
+/**
+ * This is the Settings page of the School Management Plugin.
+ * All required classes and functions for the plugin are loaded here.
+ */
 /**
  * Load required class files with error handling
  * 
@@ -171,7 +174,6 @@ function mjschool_add_role_caps() {
     }
 }
 add_action( 'admin_init', 'mjschool_add_role_caps' );
-
 /**
  * Add custom dashboard link to admin bar
  * 
@@ -309,7 +311,6 @@ if ( is_admin() ) {
         mjschool_log( 'Admin file not found: ' . $admin_file, 'error' );
     }
 }
-
 /**
  * Plugin activation callback
  * 
@@ -473,6 +474,7 @@ function mjschool_build_module_access( $module_key, $config ) {
 		'delete'     => mjschool_get_permission_value( $module_key . '_delete', $config['delete'] ),
 	);
 }
+
 /**
  * Get the base URL for plugin icons
  *
@@ -1574,7 +1576,7 @@ function mjschool_call_script_page() {
         'mjschool_admission',
         'mjschool_setup',
         'mjschool_student',
-        'mjschool_student_homewrok',
+        'mjschool_student_homewrok', // Note: typo in original - 'homewrok' should be 'homework'
         'mjschool_teacher',
         'mjschool_parent',
         'mjschool_Subject',
@@ -1582,7 +1584,7 @@ function mjschool_call_script_page() {
         'mjschool_route',
         'mjschool_custom_class',
         'mjschool_class_room',
-        'mjschool_attendence',
+        'mjschool_attendence', // Note: typo - should be 'attendance'
         'mjschool_exam',
         'mjschool_grade',
         'mjschool_result',
@@ -1674,7 +1676,7 @@ function mjschool_enqueue_core_dependencies() {
 function mjschool_enqueue_third_party_css() {
     $version = MJSCHOOL_SCRIPT_VERSION;
     
-    // DataTables
+    // DataTables - FIXED: removed duplicate 'third-party-css' folder
     wp_enqueue_style( 'datatable', mjschool_asset_url( '/assets/css/third-party-css/dataTables.min.css' ), array(), $version );
     wp_enqueue_style( 'jquery-datatable', mjschool_asset_url( '/assets/css/third-party-css/jquery.dataTables.min.css' ), array(), $version );
     wp_enqueue_style( 'dataTables-responsive', mjschool_asset_url( '/assets/css/third-party-css/dataTables.responsive.css' ), array(), $version );
@@ -2068,6 +2070,7 @@ function mjschool_get_alert_messages() {
         'exam_hallCapacity_1'            => esc_attr__( 'Exam Hall Capacity', 'mjschool' ),
         'exam_hallCapacity_2'            => esc_attr__( 'Out Of', 'mjschool' ),
         'exam_hallCapacity_3'            => esc_attr__( 'Students.', 'mjschool' ),
+        
     );
 }
 
@@ -2116,6 +2119,7 @@ function mjschool_enqueue_page_specific_js( $current_page, $localized_data ) {
         'mjschool_grade'             => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
         'mjschool_Migration'         => array( 'mjschool-student-evaluation', '/assets/js/public-js/mjschool-student-evaluation.js', 'mjschool_student_evaluation_data' ),
         'mjschool_attendence'        => array( 'mjschool-attendance', '/assets/js/public-js/mjschool-attendance.js', 'mjschool_attendance_data' ),
+        'mjschool_setup'             => array( 'mjschool-setupform', '/assets/js/admin-js/mjschool-setupform.js', 'mjschool_setupform_data' ),
         'mjschool_custom_field'      => array( 'mjschool-general-setting', '/assets/js/public-js/mjschool-general-setting.js', 'mjschool_general_setting_data' ),
         'mjschool_email_template'    => array( 'mjschool-general-setting', '/assets/js/public-js/mjschool-general-setting.js', 'mjschool_general_setting_data' ),
         'mjschool_sms_setting'       => array( 'mjschool-general-setting', '/assets/js/public-js/mjschool-general-setting.js', 'mjschool_general_setting_data' ),
@@ -2136,6 +2140,7 @@ function mjschool_enqueue_page_specific_js( $current_page, $localized_data ) {
         wp_enqueue_script( 'mjschool-marks', mjschool_asset_url( '/assets/js/pages/marks.js' ), array( 'jquery' ), $version, true );
     }
 }
+
 /**
  * Enqueue common plugin JavaScript files
  *
@@ -3393,7 +3398,14 @@ class MJSchool_Student_Registration {
             <div class="col-md-6">
                 <div class="form-group input">
                     <div class="col-md-12 form-control">
-                        <input id="<?php echo esc_attr( $field_name ); ?>" class="mjschool-line-height-29px-registration-from form-control <?php echo esc_attr( $config['validate'] ); ?> text-input" maxlength="50" type="text" value="<?php echo esc_attr( $this->form_data[ $field_name ] ); ?>" name="<?php echo esc_attr( $field_name ); ?>">
+                        <input 
+                            id="<?php echo esc_attr( $field_name ); ?>" 
+                            class="mjschool-line-height-29px-registration-from form-control <?php echo esc_attr( $config['validate'] ); ?> text-input" 
+                            maxlength="50" 
+                            type="text" 
+                            value="<?php echo esc_attr( $this->form_data[ $field_name ] ); ?>" 
+                            name="<?php echo esc_attr( $field_name ); ?>"
+                        >
                         <label for="<?php echo esc_attr( $field_name ); ?>" class="active">
                             <?php echo esc_html( $config['label'] ); ?>
                             <?php if ( $config['required'] ) : ?>
@@ -3461,7 +3473,14 @@ class MJSchool_Student_Registration {
         <div class="col-md-6">
             <div class="form-group input">
                 <div class="col-md-12 form-control">
-                    <input id="birth_date" class="mjschool-line-height-29px-registration-from validate[required]" type="text" name="birth_date" value="<?php echo esc_attr( $birth_date ); ?>" readonly>
+                    <input 
+                        id="birth_date" 
+                        class="mjschool-line-height-29px-registration-from validate[required]" 
+                        type="text" 
+                        name="birth_date" 
+                        value="<?php echo esc_attr( $birth_date ); ?>" 
+                        readonly
+                    >
                     <label for="birth_date" class="active">
                         <?php esc_html_e( 'Date of Birth', 'mjschool' ); ?><span class="required">*</span>
                     </label>
@@ -3509,7 +3528,14 @@ class MJSchool_Student_Registration {
             <div class="col-md-6">
                 <div class="form-group input">
                     <div class="col-md-12 form-control">
-                        <input id="<?php echo esc_attr( $field_name ); ?>" class="mjschool-line-height-29px-registration-from form-control <?php echo esc_attr( $config['validate'] ); ?>" maxlength="<?php echo esc_attr( $config['maxlen'] ); ?>" type="text" name="<?php echo esc_attr( $field_name ); ?>" value="<?php echo esc_attr( $this->form_data[ $field_name ] ); ?>">
+                        <input 
+                            id="<?php echo esc_attr( $field_name ); ?>" 
+                            class="mjschool-line-height-29px-registration-from form-control <?php echo esc_attr( $config['validate'] ); ?>" 
+                            maxlength="<?php echo esc_attr( $config['maxlen'] ); ?>" 
+                            type="text" 
+                            name="<?php echo esc_attr( $field_name ); ?>" 
+                            value="<?php echo esc_attr( $this->form_data[ $field_name ] ); ?>"
+                        >
                         <label for="<?php echo esc_attr( $field_name ); ?>" class="active">
                             <?php echo esc_html( $config['label'] ); ?>
                             <?php if ( $config['required'] ) : ?>
@@ -3554,7 +3580,14 @@ class MJSchool_Student_Registration {
                     <div class="col-md-12 form-control mjschool-mobile-input">
                         <span class="input-group-text mjschool-country-code-prefix">+<?php echo esc_html( $country_code ); ?></span>
                         <input type="hidden" value="+<?php echo esc_attr( $country_code ); ?>" name="phonecode">
-                        <input id="<?php echo esc_attr( $field_name ); ?>" class="mjschool-line-height-29px-registration-from form-control text-input <?php echo esc_attr( $config['validate'] ); ?>" type="text" name="<?php echo esc_attr( $field_name ); ?>" maxlength="15" value="<?php echo esc_attr( $this->form_data[ $field_name ] ); ?>">
+                        <input 
+                            id="<?php echo esc_attr( $field_name ); ?>" 
+                            class="mjschool-line-height-29px-registration-from form-control text-input <?php echo esc_attr( $config['validate'] ); ?>" 
+                            type="text" 
+                            name="<?php echo esc_attr( $field_name ); ?>" 
+                            maxlength="15" 
+                            value="<?php echo esc_attr( $this->form_data[ $field_name ] ); ?>"
+                        >
                         <label for="<?php echo esc_attr( $field_name ); ?>" class="mjschool-custom-control-label mjschool-custom-top-label">
                             <?php echo esc_html( $config['label'] ); ?>
                             <?php if ( $config['required'] ) : ?>
@@ -3578,7 +3611,14 @@ class MJSchool_Student_Registration {
         <div class="col-md-6">
             <div class="form-group input">
                 <div class="col-md-12 form-control">
-                    <input id="email" class="mjschool-line-height-29px-registration-from form-control validate[required,custom[email]] text-input" maxlength="100" type="email" name="email" value="<?php echo esc_attr( $this->form_data['email'] ); ?>">
+                    <input 
+                        id="email" 
+                        class="mjschool-line-height-29px-registration-from form-control validate[required,custom[email]] text-input" 
+                        maxlength="100" 
+                        type="email" 
+                        name="email" 
+                        value="<?php echo esc_attr( $this->form_data['email'] ); ?>"
+                    >
                     <label for="email" class="label_email active">
                         <?php esc_html_e( 'Email', 'mjschool' ); ?><span class="required">*</span>
                     </label>
@@ -3588,7 +3628,13 @@ class MJSchool_Student_Registration {
         <div class="col-md-6">
             <div class="form-group input">
                 <div class="col-md-12 form-control">
-                    <input id="password" class="mjschool-line-height-29px-registration-from form-control validate[required,minSize[8],maxSize[12]]" type="password" name="password" value="">
+                    <input 
+                        id="password" 
+                        class="mjschool-line-height-29px-registration-from form-control validate[required,minSize[8],maxSize[12]]" 
+                        type="password" 
+                        name="password" 
+                        value=""
+                    >
                     <label for="password" class="active">
                         <?php esc_html_e( 'Password', 'mjschool' ); ?><span class="required">*</span>
                     </label>
@@ -6295,11 +6341,10 @@ class MJSchool_Recurring_Invoice_Handler {
         $total = 0;
 
         foreach ( $fees_ids as $id ) {
-            if ( function_exists( 'mjschool_get_fees_details' ) ) {
-                $result = mjschool_get_fees_details( $id );
-                if ( $result && isset( $result->fees_amount ) ) {
-                    $total += floatval( $result->fees_amount );
-                }
+            $obj_fees = new Mjschool_Fees();
+            $result = $obj_fees->mjschool_get_fees_details( $id );
+            if ( $result && isset( $result->fees_amount ) ) {
+                $total += floatval( $result->fees_amount );
             }
         }
 

@@ -218,9 +218,10 @@ if ( isset( $_REQUEST['upload_csv_file'] ) ) {
 if ( isset( $_POST['book_csv_selected'] ) ) {
 	if ( isset( $_POST['id'] ) && is_array( $_POST['id'] ) ) {
 		$book_list = array();
+		$mjschool_obj_lib = new Mjschool_Library();
 		$export_ids = array_map( 'intval', wp_unslash( $_POST['id'] ) );
 		foreach ( $export_ids as $b_id ) {
-			$book_list[] = mjschool_get_book( $b_id );
+			$book_list[] = $mjschool_obj_lib->mjschool_get_book( $b_id );
 		}
 		if ( ! empty( $book_list ) ) {
 			$header    = array(

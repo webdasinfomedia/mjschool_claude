@@ -802,25 +802,25 @@ jQuery(document).ready(function () {
     if (numItems === 1) {
         jQuery( '#revove_item' ).hide();
     }
-    $(".mjschool-sibling-trigger").each(function () {
+    jQuery(".mjschool-sibling-trigger").each(function () {
 
-        const id = $(this).data("id");
+        const id = jQuery(this).data("id");
 
         // Prevent duplicate binding
-        $(document).off("change", "#sibling_class_change_" + id);
-        $(document).off("change", "#sibling_class_section_" + id);
+        jQuery(document).off("change", "#sibling_class_change_" + id);
+        jQuery(document).off("change", "#sibling_class_section_" + id);
 
         // CLASS → Load Students + Sections
-        $(document).on("change", "#sibling_class_change_" + id, function () {
+        jQuery(document).on("change", "#sibling_class_change_" + id, function () {
 
-            let classID = $(this).val();
-            let studentBox = $("#sibling_student_list_" + id);
-            let sectionBox = $("#sibling_class_section_" + id);
+            let classID = jQuery(this).val();
+            let studentBox = jQuery("#sibling_student_list_" + id);
+            let sectionBox = jQuery("#sibling_class_section_" + id);
 
             studentBox.html("");
 
             // --- load students (expects HTML <option> list) ---
-            $.post(
+            jQuery.post(
                 mjschool.ajax,
                 {
                     action: "mjschool_load_user",
@@ -840,7 +840,7 @@ jQuery(document).ready(function () {
 
             // --- load sections (expects HTML <option> list) ---
             sectionBox.html('<option value="remove">Loading...</option>');
-            $.post(
+            jQuery.post(
                 mjschool.ajax,
                 {
                     action: "mjschool_load_class_section",
@@ -860,14 +860,14 @@ jQuery(document).ready(function () {
         });
 
         // SECTION → Load students
-        $(document).on("change", "#sibling_class_section_" + id, function () {
+        jQuery(document).on("change", "#sibling_class_section_" + id, function () {
 
-            let sectionID = $(this).val();
-            let classID = $("#sibling_class_change_" + id).val();
-            let studentBox = $("#sibling_student_list_" + id);
+            let sectionID = jQuery(this).val();
+            let classID = jQuery("#sibling_class_change_" + id).val();
+            let studentBox = jQuery("#sibling_student_list_" + id);
             studentBox.html("");
 
-            $.post(
+            jQuery.post(
                 mjschool.ajax,
                 {
                     action: "mjschool_load_section_user",
@@ -887,4 +887,13 @@ jQuery(document).ready(function () {
 
         });
     });
+    const csvError = document.getElementById('mjschool_csv_error');
+	if (csvError) {
+		alert(language_translate2.csv_alert);
+    }
+
+    const errorEl = document.getElementById('mjschool_import_error');
+	if (errorEl && errorEl.value) {
+		alert('Problems with user: '+ errorEl.value +', we are going to skip');
+	}
 });

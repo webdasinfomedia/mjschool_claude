@@ -76,41 +76,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					</button>
 				</form>
 			</div>
-			<script type="text/javascript">
-				(() => {
-					"use strict";
-					const durationStart = 120; // 2 minutes in seconds.
-					let duration = durationStart;
-					const timerDisplay = document.getElementById( 'timer' );
-					const resendBtn = document.getElementById( 'resend-btn' );
-					const countdownContainer = document.getElementById( 'countdown-timer' );
-					if (!timerDisplay || !resendBtn || !countdownContainer) {
-						console.warn( 'Timer elements missing in DOM' );
-						return;
-					}
-					resendBtn.disabled = true;
-					resendBtn.classList.add( 'btn-secondary' );
-					resendBtn.classList.remove( 'btn-primary' );
-					resendBtn.style.cursor = 'not-allowed';
-					const interval = setInterval(() => {
-						let minutes = Math.floor(duration / 60);
-						let seconds = duration % 60;
-						minutes = minutes < 10 ? '0' + minutes : minutes;
-						seconds = seconds < 10 ? '0' + seconds : seconds;
-						timerDisplay.textContent = `${minutes}:${seconds}`;
-						if (--duration < 0) {
-							clearInterval(interval);
-							countdownContainer.textContent = "OTP expired.";
-							// Enable the resend button.
-							resendBtn.disabled = false;
-							resendBtn.classList.remove( 'btn-secondary' );
-							resendBtn.classList.add( 'btn-primary' );
-							resendBtn.style.backgroundColor = ''; // Reset to default if needed.
-							resendBtn.style.cursor = 'pointer';
-						}
-					}, 1000);
-				})();
-			</script>
+			<!-- OTP trigger -->
+			<div id="mjschool_otp_trigger"></div>
 		<?php endif; ?>
 		<?php
 	}
@@ -134,26 +101,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 		}
 	}
 	?>
-	<script type="text/javascript">
-		(function(jQuery){
-			"use strict";
-			// Fade out success message and redirect after 3 seconds.
-			jQuery(document).ready(function() {
-				setTimeout(function() {
-					jQuery( '.successMessage' ).fadeOut( 'fast', function() {
-						window.location.href = '<?php echo esc_url( admin_url( 'admin.php?page=mjschool' ) ); ?>';
-					});
-				}, 3000);
-			});
-			// Initialize validation engines.
-			jQuery(document).ready(function() {
-				jQuery( '#verification_form, #reset_form, #verify_otp_form' ).validationEngine({
-					promptPosition: "bottomLeft",
-					maxErrorsPerField: 1
-				});
-			});
-		})(jQuery);
-	</script>
+	<div id="mjschool_form_trigger" data-redirect-url="<?php echo esc_url( admin_url( 'admin.php?page=mjschool' ) ); ?>"> </div>
 	<?php
 	if ( isset( $_REQUEST['reset'] ) && ( sanitize_text_field( wp_unslash( $_REQUEST['reset'] ) ) === 'success' ) ) {
 		?>

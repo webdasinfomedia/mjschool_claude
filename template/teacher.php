@@ -371,6 +371,7 @@ if ( $message ) {
 							</thead>
 							<tbody>
 								<?php
+								$obj_subject = new Mjschool_Subject();
 								foreach ( $teacherdata as $retrieved_data ) {
 									if ( ! username_exists( $retrieved_data->user_login ) ) {
 										continue;
@@ -455,7 +456,7 @@ if ( $message ) {
 										</td>
 										<td >
 											<?php
-											$subjectname = mjschool_get_subject_name_by_teacher( $uid );
+											$subjectname = $obj_subject->mjschool_get_subject_name_by_teacher( $uid );
 											if ( ! empty( $subjectname ) ) {
 												echo esc_html( rtrim( $subjectname, ', ' ) );
 											} else {
@@ -1208,6 +1209,7 @@ if ( $message ) {
 						<?php
 						// --- General tab start. ----//
 						if ( $active_tab1 === 'general' ) {
+							$obj_subject = new Mjschool_Subject();
 							?>
 							<div class="row mjschool-margin-top-15px mjschool-margin-left-3">
 								<div class="col-xl-3 col-md-3 col-sm-12 mjschool-margin-bottom-10-res">
@@ -1392,7 +1394,7 @@ if ( $message ) {
 												<div class="col-xl-4 col-md-4 col-sm-12 mjschool-margin-top-15px">
 													<label class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Subject', 'mjschool' ); ?> </label><br>
 													<?php
-													$subjectname = mjschool_get_subject_name_by_teacher( $teacher_data->ID );
+													$subjectname = $obj_subject->mjschool_get_subject_name_by_teacher( $teacher_data->ID );
 													if ( $user_access['edit'] === '1' && empty( $subjectname ) ) {
 														$edit_url = home_url( '?dashboard=mjschool_user&page=teacher&tab=addteacher&action=edit&teacher_id=' . esc_attr( mjschool_encrypt_id( $teacher_data->ID ) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
 														echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';

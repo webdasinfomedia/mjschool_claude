@@ -22,6 +22,22 @@ defined( 'ABSPATH' ) || exit;
 class Mjschool_Exam {
 
 	/**
+	 * Retrieves all exams for a class where section_id = 0.
+	 *
+	 * @param int $id Class ID.
+	 * @return array List of exams.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_all_exam_by_class_id( $id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mjschool_exam';
+		$class_id   = absint( $id );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d AND section_id = %d", $class_id, 0 ) );
+		return $result;
+	}
+
+	/**
 	 * Retrieves subjects assigned to a specific class and section.
 	 *
 	 * @since 1.0.0

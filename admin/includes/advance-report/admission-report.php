@@ -84,7 +84,7 @@ if ( isset( $_GET['tab'] ) ) {
 										<?php echo esc_html( mjschool_get_date_in_input_box( $student_data->admission_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Admission Date', 'mjschool' ); ?>"></i> 
 									</td>
 									<td>
-										<?php if ( $student_data->gender === 'male' ) { echo esc_attr__( 'Male', 'mjschool' ); } elseif ( $student_data->gender === 'female' ) { echo esc_attr__( 'Female', 'mjschool' ); } ?>
+										<?php if ( $student_data->gender === 'male' ) { echo esc_html__( 'Male', 'mjschool' ); } elseif ( $student_data->gender === 'female' ) { echo esc_html__( 'Female', 'mjschool' ); } ?>
 										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Gender', 'mjschool' ); ?>"></i>
 									</td>
 									<td>

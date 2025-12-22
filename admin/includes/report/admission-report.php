@@ -77,7 +77,7 @@ if ( isset( $_GET['tab'] ) ) {
 						?>
 					</div>
 					<div class="col-md-3 mb-2">
-						<input type="submit" name="admission_report" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
+						<input type="submit" name="admission_report" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
 					</div>
 				</div>
 			</div>

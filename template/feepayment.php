@@ -2878,7 +2878,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 				} elseif ( $user_access_add === '1' ) {
 					 ?>
 					<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-						<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_fees_payment&tab=addpaymentfee' ); ?>">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=addpaymentfee' ) ); ?>">
 							<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 						</a>
 						<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">

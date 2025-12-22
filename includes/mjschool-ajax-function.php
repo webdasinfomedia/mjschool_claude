@@ -996,7 +996,7 @@ function mjschool_class_rootine_import() {
 						</div>
 					</div>
 					<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 mjschool-margin-bottom-15px">
-						<input type="submit" value="<?php esc_html_e( 'Import CSV', 'mjschool' ); ?>" name="save_import_csv" class="btn mjschool-rtl-margin-0px mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Import CSV', 'mjschool' ); ?>" name="save_import_csv" class="btn mjschool-rtl-margin-0px mjschool-save-btn" />
 					</div>
 				</div>
 			</div>
@@ -1099,7 +1099,7 @@ function mjschool_import_student_attendance() {
 						</div>
 					</div>
 					<div class="col-sm-3">
-						<input type="submit" value="<?php esc_html_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_attendance_csv_file" class="col-sm-6 width-auto mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_attendance_csv_file" class="col-sm-6 width-auto mjschool-save-btn" />
 					</div>
 				</div>
 			</div>
@@ -1889,11 +1889,11 @@ function mjschool_ajax_teacher_comment() {
 			</div>
 			<?php if ( $type === 'print' ) { ?>
 				<div class="col-sm-6 col-md-6 col-lg-6 col-xs-12">
-					<input type="submit" value="<?php esc_html_e( 'Print', 'mjschool' ); ?>" name="print-result" class="mjschool-save-btn print-result" />
+					<input type="submit" value="<?php esc_attr_e( 'Print', 'mjschool' ); ?>" name="print-result" class="mjschool-save-btn print-result" />
 				</div>
 			<?php } else { ?>
 				<div class="col-sm-6 col-md-6 col-lg-6 col-xs-12">
-					<input type="submit" value="<?php esc_html_e( 'Pdf', 'mjschool' ); ?>" name="print-result-pdf" class="mjschool-save-btn print-result-pdf" />
+					<input type="submit" value="<?php esc_attr_e( 'Pdf', 'mjschool' ); ?>" name="print-result-pdf" class="mjschool-save-btn print-result-pdf" />
 				</div>
 			<?php } ?>
 		</div>
@@ -1961,11 +1961,11 @@ function mjschool_ajax_teacher_comment_merge() {
 			</div>
 			<?php if ( $type === 'print' ) { ?>
 				<div class="col-sm-6 col-md-6 col-lg-6 col-xs-12">
-					<input type="submit" value="<?php esc_html_e( 'Print', 'mjschool' ); ?>" name="print-result-marge" class="mjschool-save-btn print-result-marge" />
+					<input type="submit" value="<?php esc_attr_e( 'Print', 'mjschool' ); ?>" name="print-result-marge" class="mjschool-save-btn print-result-marge" />
 				</div>
 			<?php } else { ?>
 				<div class="col-sm-6 col-md-6 col-lg-6 col-xs-12">
-					<input type="submit" value="<?php esc_html_e( 'Pdf', 'mjschool' ); ?>" name="print-result-marge-pdf" class="mjschool-save-btn print-result-marge-pdf" />
+					<input type="submit" value="<?php esc_attr_e( 'Pdf', 'mjschool' ); ?>" name="print-result-marge-pdf" class="mjschool-save-btn print-result-marge-pdf" />
 				</div>
 			<?php } ?>
 		</div>
@@ -3511,7 +3511,7 @@ add_action( 'wp_ajax_mjschool_service_setting', 'mjschool_service_setting' );
  */
 function mjschool_service_setting() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -3584,8 +3584,9 @@ add_action( 'wp_ajax_mjschool_student_invoice_view', 'mjschool_student_invoice_v
  * @return void Outputs HTML and terminates execution.
  */
 function mjschool_student_invoice_view() {
+	echo 'hello'; die;
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -3895,7 +3896,7 @@ add_action( 'wp_ajax_mjschool_student_add_payment', 'mjschool_student_add_paymen
  */
 function mjschool_student_add_payment() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -4005,7 +4006,7 @@ function mjschool_student_add_payment() {
 			<div class="form-body mjschool-user-form">
 				<div class="row">
 					<div class="col-sm-6">
-						<input type="submit" value="<?php esc_html_e( 'Add Payment', 'mjschool' ); ?>" name="add_feetype_payment" class="btn btn-success mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Add Payment', 'mjschool' ); ?>" name="add_feetype_payment" class="btn btn-success mjschool-save-btn" />
 					</div>
 				</div>
 			</div>
@@ -4028,7 +4029,7 @@ add_action( 'wp_ajax_mjschool_student_view_payment_history', 'mjschool_student_v
  */
 function mjschool_student_view_payment_history() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -4227,9 +4228,9 @@ function mjschool_student_view_payment_history() {
 					);
 				}
 				?>
-				<input type="button" value="<?php esc_html_e( 'Print', 'mjschool' ); ?>" class="btn btn-success" onclick="mjschool_print_element( '#mjschool-invoice-print' )" />
+				<input type="button" value="<?php esc_attr_e( 'Print', 'mjschool' ); ?>" class="btn btn-success" onclick="mjschool_print_element( '#mjschool-invoice-print' )" />
 				&nbsp;&nbsp;&nbsp;
-				<a href="?page=mjschool_fees_payment&print=pdf&payment_id=<?php echo esc_attr( mjschool_encrypt_id( intval(wp_unslash($_POST['idtest'])) ) ); ?>&fee_paymenthistory=<?php echo 'fee_paymenthistory'; ?>" target="_blank" class="btn btn-success"><?php esc_html_e( 'PDF', 'mjschool' ); ?></a>
+				<a href="?page=mjschool_fees_payment&print=pdf&payment_id=<?php echo esc_attr( $payment_id); ?>&fee_paymenthistory=<?php echo 'fee_paymenthistory'; ?>" target="_blank" class="btn btn-success"><?php esc_html_e( 'PDF', 'mjschool' ); ?></a>
 			</div>
 		</div>
 	</div>
@@ -4250,7 +4251,7 @@ add_action( 'wp_ajax_mjschool_student_view_library_history', 'mjschool_student_v
  */
 function mjschool_student_view_library_history() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -4258,7 +4259,9 @@ function mjschool_student_view_library_history() {
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
 	}
-	$student_id = sanitize_text_field( wp_unslash($_REQUEST['student_id']) );
+	if ( isset( $_REQUEST['student_id'] ) ) {
+	    $student_id = sanitize_text_field( wp_unslash($_REQUEST['student_id']) );
+	}
 	$booklist   = mjschool_get_student_library_book_list( $student_id );
 	$student    = get_userdata( $student_id );
 	$mjschool_obj_lib = new Mjschool_Library();
@@ -4352,13 +4355,16 @@ add_action( 'wp_ajax_nopriv_mjschool_add_remove_fee_type', 'mjschool_add_remove_
  */
 function mjschool_add_remove_fee_type() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_REQUEST['model'], $_REQUEST['class_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	$model    = sanitize_text_field( wp_unslash($_REQUEST['model']) );
 	$class_id = sanitize_text_field( wp_unslash($_REQUEST['class_id']) );
@@ -4378,13 +4384,16 @@ add_action( 'wp_ajax_mjschool_add_fee_type', 'mjschool_add_fee_type' );
  */
 function mjschool_add_fee_type() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_REQUEST['model'], $_REQUEST['class_id'] ,$_REQUEST['fee_type'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	global $wpdb;
 	$model                 = sanitize_text_field( wp_unslash($_REQUEST['model']) );
@@ -4535,13 +4544,16 @@ add_action( 'wp_ajax_mjschool_update_section', 'mjschool_update_section' );
  */
 function mjschool_update_section() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_POST['section_name'], $_POST['cat_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	$model = '';
 	global $wpdb;
@@ -4582,13 +4594,16 @@ add_action( 'wp_ajax_mjschool_update_cancel_section', 'mjschool_update_cancel_se
  */
 function mjschool_update_cancel_section() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_POST['cat_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	global $wpdb;
 	$mjschool_class_section = $wpdb->prefix . 'mjschool_class_section';
@@ -4624,13 +4639,16 @@ add_action( 'wp_ajax_mjschool_get_book_return_date', 'mjschool_get_book_return_d
  */
 function mjschool_get_book_return_date() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_REQUEST['issue_period'], $_REQUEST['issue_date'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	$period_days = get_the_title( sanitize_text_field(wp_unslash($_REQUEST['issue_period'])) );
 	$date        = date_create( sanitize_text_field(wp_unslash($_REQUEST['issue_date'])) );
@@ -4652,7 +4670,7 @@ add_action( 'wp_ajax_mjschool_accept_return_book', 'mjschool_accept_return_book'
  */
 function mjschool_accept_return_book() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -4716,7 +4734,7 @@ function mjschool_accept_return_book() {
 						<div class="form-body mjschool-user-form">
 							<div class="row">
 								<div class="col-sm-6">
-									<input type="submit" value="<?php esc_html_e( 'Return Book', 'mjschool' ); ?>" name="return_book" class="btn btn-success mjschool-save-btn" />
+									<input type="submit" value="<?php esc_attr_e( 'Return Book', 'mjschool' ); ?>" name="return_book" class="btn btn-success mjschool-save-btn" />
 								</div>
 							</div>
 						</div>
@@ -4743,7 +4761,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_class_section', 'mjschool_load_class_s
  */
 function mjschool_load_class_section() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -4751,6 +4769,9 @@ function mjschool_load_class_section() {
 	// if ( ! is_user_logged_in() ) {
 	// 	wp_die( 'You must be logged in.' );
 	// }
+	if ( ! isset( $_POST['class_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
+	}
 	$class_id = sanitize_text_field( wp_unslash($_POST['class_id']) );
 	global $wpdb;
 	$retrieve_data = mjschool_get_class_sections( sanitize_text_field(wp_unslash($_POST['class_id'])) );
@@ -4773,7 +4794,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_student_with_status', 'mjschool_load_s
  */
 function mjschool_load_student_with_status() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -4798,13 +4819,16 @@ add_action( 'wp_ajax_nopriv_mjschool_load_class_section_add_student', 'mjschool_
  */
 function mjschool_load_class_section_add_student() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_POST['class_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	$class_id = sanitize_text_field( wp_unslash($_POST['class_id']) );
 	global $wpdb;
@@ -4830,13 +4854,16 @@ add_action( 'wp_ajax_mjschool_load_section_subject', 'mjschool_load_section_subj
  */
 function mjschool_load_section_subject() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_POST['section_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	$section_id = sanitize_text_field( wp_unslash($_POST['section_id']) );
 	global $wpdb;
@@ -4877,13 +4904,16 @@ add_action( 'wp_ajax_mjschool_load_class_student', 'mjschool_load_class_student'
  */
 function mjschool_load_class_student() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_REQUEST['class_list'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	$class_list = sanitize_text_field( wp_unslash($_REQUEST['class_list']) );
 	
@@ -4912,7 +4942,7 @@ add_action( 'wp_ajax_mjschool_notification_user_list', 'mjschool_notification_us
  */
 function mjschool_notification_user_list() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -4950,7 +4980,9 @@ function mjschool_notification_user_list() {
 		$query_data['meta_value'] = $class_list;
 		$results = get_users($query_data);
 	}
-	
+	if ( ! isset( $_POST['section_name'], $_POST['cat_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
+	}
 	if ( isset( $results ) ) {
 		foreach ( $results as $user_datavalue ) {
 			$user_list[] = $user_datavalue->ID;
@@ -4984,7 +5016,7 @@ add_action( 'wp_ajax_mjschool_document_user_list', 'mjschool_document_user_list'
  */
 function mjschool_document_user_list() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -5055,7 +5087,7 @@ add_action( 'wp_ajax_mjschool_class_by_teacher', 'mjschool_class_by_teacher' );
  */
 function mjschool_class_by_teacher() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -5084,7 +5116,7 @@ add_action( 'wp_ajax_mjschool_teacher_by_class', 'mjschool_teacher_by_class' );
  */
 function mjschool_teacher_by_class() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -5113,7 +5145,7 @@ add_action( 'wp_ajax_mjschool_sender_user_list', 'mjschool_sender_user_list' );
  */
 function mjschool_sender_user_list() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -5262,7 +5294,7 @@ add_action( 'wp_ajax_mjschool_change_profile_photo', 'mjschool_change_profile_ph
  */
 function mjschool_change_profile_photo() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -5311,7 +5343,7 @@ add_action( 'wp_ajax_mjschool_assign_route', 'mjschool_assign_route' );
  */
 function mjschool_assign_route() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -5320,7 +5352,7 @@ function mjschool_assign_route() {
 		wp_die( 'You must be logged in.' );
 	}
 	$transport_id          = isset($_REQUEST['record_id']) ? sanitize_text_field(wp_unslash($_REQUEST['record_id'])) : '';
-	$assign_transport_data = mjschool_get_assign_transport_by_id( sanitize_text_field(wp_unslash($_REQUEST['record_id'])) );
+	$assign_transport_data = mjschool_get_assign_transport_by_id( $transport_id );
 	$teacher_obj           = new Mjschool_Teacher();
 	?>
 	<div class="form-group mjschool-popup-header-marging">
@@ -5382,13 +5414,16 @@ add_action( 'wp_ajax_mjschool_count_student_in_class', 'mjschool_count_student_i
  */
 function mjschool_count_student_in_class() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_POST['class_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_class';
@@ -5424,13 +5459,16 @@ add_action( 'wp_ajax_nopriv_mjschool_show_event_task', 'mjschool_show_event_task
  */
 function mjschool_show_event_task() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_REQUEST['class_id'], $_REQUEST['model'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	$role  = mjschool_get_user_role( get_current_user_id() );
 	$id    = sanitize_text_field( wp_unslash($_REQUEST['id'] ));
@@ -5518,87 +5556,87 @@ function mjschool_show_event_task() {
 		if ($role === "administrator" || $role === "management") {
 			if ($model === 'homework Details' ) {
 				?>
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student_homewrok' ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok' ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'transport Details' ) {
 				?>
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_transport' ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_transport' ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Event Details' ) {
 				?>
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_event' ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_event' ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Notification Details' ) {
 				?>
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notification' ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notification' ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Noticeboard Details' ) {
 				?>
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_notice' ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_notice' ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Exam Details' ) {
 				?>
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_exam' ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam' ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'holiday Details' ) {
 				?>
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_holiday' ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_holiday' ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Feespayment Details' ) {
 				?>
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_fees_payment&tab=view_fesspayment&idtest=' . esc_attr( mjschool_encrypt_id($feespayment_data->fees_pay_id ) ) . '&view_type=view_payment' ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=view_fesspayment&idtest=' . rawurlencode( mjschool_encrypt_id($feespayment_data->fees_pay_id ) ) . '&view_type=view_payment' ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Class Details' ) {
 				?>
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_class' ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class' ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Message Details' ) {
 				?>
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_message' ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_message' ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			}
 		} else {
 			if ($model === 'homework Details' ) {
 				?>
-				<a href="<?php echo esc_url(home_url() . "?dashboard=mjschool_user&page=homework"); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url(home_url( "?dashboard=mjschool_user&page=homework" ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'transport Details' ) {
 				?>
-				<a href="<?php echo esc_url(home_url() . "?dashboard=mjschool_user&page=transport"); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url(home_url( "?dashboard=mjschool_user&page=transport" ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Event Details' ) {
 				?>
-				<a href="<?php echo esc_url(home_url() . "?dashboard=mjschool_user&page=event"); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url(home_url( "?dashboard=mjschool_user&page=event" ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Notification Details' ) {
 				?>
-				<a href="<?php echo esc_url(home_url() . "?dashboard=mjschool_user&page=notification"); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url(home_url( "?dashboard=mjschool_user&page=notification" ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Noticeboard Details' ) {
 				?>
-				<a href="<?php echo esc_url(home_url() . "?dashboard=mjschool_user&page=notice"); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url(home_url( "?dashboard=mjschool_user&page=notice" ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Exam Details' ) {
 				?>
-				<a href="<?php echo esc_url(home_url() . "?dashboard=mjschool_user&page=exam"); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url(home_url( "?dashboard=mjschool_user&page=exam" ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'holiday Details' ) {
 				?>
-				<a href="<?php echo esc_url(home_url() . "?dashboard=mjschool_user&page=holiday"); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url(home_url( "?dashboard=mjschool_user&page=holiday" ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Feespayment Details' ) {
 				if ($feepayment_access === 1 ) {
 					?>
-					<a href="<?php echo esc_url(home_url() . "?dashboard=mjschool_user&page=feepayment&tab=view_fesspayment&idtest=" . esc_attr( mjschool_encrypt_id($feespayment_data->fees_pay_id ) ) . "&view_type=view_payment"); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+					<a href="<?php echo esc_url(home_url( "?dashboard=mjschool_user&page=feepayment&tab=view_fesspayment&idtest=" . rawurlencode( mjschool_encrypt_id($feespayment_data->fees_pay_id ) ) . "&view_type=view_payment" ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 					<?php
 				}
 			} elseif ($model === 'Class Details' ) {
 				?>
-				<a href="<?php echo esc_url(home_url() . "?dashboard=mjschool_user&page=class"); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url(home_url( "?dashboard=mjschool_user&page=class" ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php
 			} elseif ($model === 'Message Details' ) {
 				?>
-				<a href="<?php echo esc_url(home_url() . "?dashboard=mjschool_user&page=message"); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
+				<a href="<?php echo esc_url(home_url( "?dashboard=mjschool_user&page=message" ) ); ?>" class="badge badge-success pull-right mjschool-dashboard-popup-design"><img class="redirect_img_css" src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-redirect.png"); ?>"></a>
 				<?php 
 			}
 		}
@@ -5739,7 +5777,7 @@ function mjschool_show_event_task() {
 								$attchment_array = explode( ',', $attchment );
 								foreach ( $attchment_array as $attchment_data ) {
 									?>
-									<a target="blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $attchment_data ); ?>" class="btn message_popup_button btn-default"><i class="fas fa-eye"></i> <?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+									<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $attchment_data ) ); ?>" class="btn message_popup_button btn-default"><i class="fas fa-eye"></i> <?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
 									<?php
 								}
 							} else {
@@ -5951,7 +5989,7 @@ function mjschool_show_event_task() {
 							$doc_data = json_decode( $exam_data->exam_syllabus );
 							if ( ! empty( $doc_data[0]->value ) ) {
 								?>
-								<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $doc_data[0]->value ); ?>" class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_html( $exam_data->exam_id ); ?>"><i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+								<a download href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>" class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_html( $exam_data->exam_id ); ?>"><i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 								<?php
 							} else {
 								esc_html_e( 'N/A', 'mjschool' );
@@ -6031,7 +6069,7 @@ function mjschool_show_event_task() {
 							<?php
 							if ( ! empty( $event_data->event_doc ) ) {
 								?>
-								<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $event_data->event_doc ); ?>" class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_attr( $exam_data->exam_id ); ?>"><i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+								<a download href="<?php print esc_url( content_url( '/uploads/school_assets/' . $event_data->event_doc ) ); ?>" class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_attr( $exam_data->exam_id ); ?>"><i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 								<?php
 							} else {
 								esc_html_e( 'N/A', 'mjschool' );
@@ -6179,7 +6217,7 @@ function mjschool_show_event_task() {
 							$doc_data = json_decode( $homework_data->homework_document );
 							if ( ! empty( $doc_data[0]->value ) ) {
 								?>
-								<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $doc_data[0]->value ); ?>" class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_attr( $homework_data->homework_id ); ?>"><i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+								<a download href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>" class="btn mjschool-custom-padding-0 popup_download_btn" record_id="<?php echo esc_attr( $homework_data->homework_id ); ?>"><i class="fas fa-download" id="mjschool-download-icon"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 								<?php
 							} else {
 								esc_html_e( 'N/A', 'mjschool' );
@@ -6237,13 +6275,16 @@ add_action( 'wp_ajax_nopriv_mjschool_add_or_remove_category_callback', 'mjschool
 function mjschool_add_or_remove_category_callback() {
 	wp_enqueue_script( 'mjschool-ajax-function', plugins_url( '/assets/js/mjschool-ajax-function.js', __FILE__ ) );	
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_REQUEST['model'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	$model              = sanitize_text_field( wp_unslash($_REQUEST['model']) );
 	$title              = esc_html__( 'title', 'mjschool' );
@@ -6431,13 +6472,16 @@ add_action( 'wp_ajax_nopriv_mjschool_add_category_new', 'mjschool_add_category_n
  */
 function mjschool_add_category_new($data) {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_POST['category_name'], $_POST['model'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	global $wpdb;
 	$model = sanitize_text_field($_REQUEST['model']);
@@ -6474,7 +6518,7 @@ add_action( 'wp_ajax_mjschool_remove_category_new', 'mjschool_remove_category_ne
  */
 function mjschool_remove_category_new() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -6488,6 +6532,9 @@ function mjschool_remove_category_new() {
     if ( ! is_user_logged_in() ) {
         wp_send_json_error( array( 'message' => 'Unauthorized access' ), 401 );
     }
+	if ( ! isset( $_POST['cat_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
+	}
     $cat_id = intval( $_POST['cat_id'] );
     $delete = wp_delete_post( $cat_id, true );
     if ( $delete ) {
@@ -6510,13 +6557,16 @@ add_action( 'wp_ajax_mjschool_admissoin_approved', 'mjschool_admissoin_approved'
 function mjschool_admissoin_approved() {
 
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_REQUEST['student_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	$uid       = sanitize_text_field(wp_unslash($_REQUEST['student_id']) );
 	$user_info = get_userdata( $uid );
@@ -6651,7 +6701,7 @@ function mjschool_admissoin_approved() {
 			<div class="form-body mjschool-user-form">
 				<div class="row">
 					<div class="col-sm-6">
-						<input type="submit" value="<?php esc_html_e( 'Active Student', 'mjschool' ); ?>" name="active_user_admission" class="btn btn-success activate_student mjschool-save-btn mjschool-margin-top-20" />
+						<input type="submit" value="<?php esc_attr_e( 'Active Student', 'mjschool' ); ?>" name="active_user_admission" class="btn btn-success activate_student mjschool-save-btn mjschool-margin-top-20" />
 					</div>
 				</div>
 			</div>
@@ -6677,7 +6727,7 @@ add_action( 'wp_ajax_nopriv_mjschool_view_all_relpy', 'mjschool_view_all_relpy' 
  */
 function mjschool_view_all_relpy() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -6824,7 +6874,7 @@ add_action( 'wp_ajax_nopriv_mjschool_view_all_message', 'mjschool_view_all_messa
  */
 function mjschool_view_all_message() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -6996,7 +7046,7 @@ add_action( 'wp_ajax_mjschool_generate_access_token', 'mjschool_generate_access_
  */
 function mjschool_generate_access_token() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7006,7 +7056,7 @@ function mjschool_generate_access_token() {
 	}
 	$CLIENT_ID    = get_option( 'mjschool_virtual_classroom_client_id' );
 	$REDIRECT_URI = site_url() . '/?page=mjschoolcallback';
-	wp_redirect( 'https://zoom.us/oauth/authorize?response_type=code&client_id=' . $CLIENT_ID . '&redirect_uri=' . $REDIRECT_URI );
+	wp_safe_redirect( 'https://zoom.us/oauth/authorize?response_type=code&client_id=' . $CLIENT_ID . '&redirect_uri=' . $REDIRECT_URI );
 	die();
 }
 add_action( 'wp_ajax_nopriv_mjschool_import_data', 'mjschool_import_data' );
@@ -7024,7 +7074,7 @@ add_action( 'wp_ajax_mjschool_import_data', 'mjschool_import_data' );
  */
 function mjschool_import_data() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7077,7 +7127,7 @@ add_action( 'wp_ajax_mjschool_export_data', 'mjschool_export_data' );
  */
 function mjschool_export_data() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7121,7 +7171,7 @@ function mjschool_export_data() {
 			<div class="form-body mjschool-user-form">
 				<div class="row">
 					<div class="col-sm-6">
-						<input type="submit" value="<?php esc_html_e( 'Export IN CSV', 'mjschool' ); ?>" name="exportstudentin_csv" class="mjschool-save-btn btn btn-success mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Export IN CSV', 'mjschool' ); ?>" name="exportstudentin_csv" class="mjschool-save-btn btn btn-success mjschool-save-btn" />
 					</div>
 				</div>
 			</div>
@@ -7145,7 +7195,7 @@ add_action( 'wp_ajax_mjschool_student_import_data', 'mjschool_student_import_dat
  */
 function mjschool_student_import_data() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7240,7 +7290,7 @@ function mjschool_student_import_data() {
 			<div class="form-body mjschool-user-form"> <!--Form Body div.-->
 				<div class="row"><!--Row Div.-->
 					<div class="col-sm-6">
-						<input type="submit" value="<?php esc_html_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_csv_file" class="btn btn-success mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_csv_file" class="btn btn-success mjschool-save-btn" />
 					</div>
 				</div> <!--Row Div.-->
 			</div><!--Form Body div.-->
@@ -7264,7 +7314,7 @@ add_action( 'wp_ajax_mjschool_teacher_import_data', 'mjschool_teacher_import_dat
  */
 function mjschool_teacher_import_data() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7310,7 +7360,7 @@ function mjschool_teacher_import_data() {
 					</div>
 					<?php wp_nonce_field( 'upload_csv_nonce' ); ?>
 					<div class="col-sm-6">
-						<input type="submit" value="<?php esc_html_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_teacher_csv_file" class="btn btn-success mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_teacher_csv_file" class="btn btn-success mjschool-save-btn" />
 					</div>
 				</div> <!--Row Div.-->
 			</div><!--Form Body div.-->
@@ -7334,7 +7384,7 @@ add_action( 'wp_ajax_mjschool_support_staff_import_data', 'mjschool_support_staf
  */
 function mjschool_support_staff_import_data() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7349,8 +7399,7 @@ function mjschool_support_staff_import_data() {
 	</div>
 	<div class="mjschool-panel-body"><!-- Mjschool-panel-body. -->
 		<!-------- Import Teacher Form. ---------->
-		<form name="mjschool-upload-form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-upload-form"
-			enctype="multipart/form-data"><!--Form div.-->
+		<form name="mjschool-upload-form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-upload-form" enctype="multipart/form-data"><!--Form div.-->
 			<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
 			<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 			<input type="hidden" name="role" value="<?php echo esc_attr( $role ); ?>" />
@@ -7380,7 +7429,7 @@ function mjschool_support_staff_import_data() {
 					</div>
 					<?php wp_nonce_field( 'upload_csv_nonce' ); ?>
 					<div class="col-sm-6">
-						<input type="submit" value="<?php esc_html_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_staff_csv_file" class="btn btn-success mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_staff_csv_file" class="btn btn-success mjschool-save-btn" />
 					</div>
 				</div> <!--Row Div.-->
 			</div><!--Form Body div.-->
@@ -7404,7 +7453,7 @@ add_action( 'wp_ajax_mjschool_parent_import_data', 'mjschool_parent_import_data'
  */
 function mjschool_parent_import_data() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7458,7 +7507,7 @@ function mjschool_parent_import_data() {
 						<?php esc_html_e( 'Add your image path in ', 'mjschool' ); ?><strong><?php esc_html_e( 'user_profile', 'mjschool' ); ?></strong><?php esc_html_e( ' column in CSV. for example : ', 'mjschool' ); ?><strong><?php esc_html_e( 'user_profile/image.png', 'mjschool' ); ?></strong>
 					</p>
 					<div class="col-sm-6">
-						<input type="submit" value="<?php esc_html_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_parent_csv_file" class="btn btn-success mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_parent_csv_file" class="btn btn-success mjschool-save-btn" />
 					</div>
 				</div> <!--Row Div.-->
 			</div><!--Form Body div.-->
@@ -7482,7 +7531,7 @@ add_action( 'wp_ajax_mjschool_subject_import_data', 'mjschool_subject_import_dat
  */
 function mjschool_subject_import_data() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7559,7 +7608,7 @@ function mjschool_subject_import_data() {
 			<div class="form-body mjschool-user-form"> <!--Form Body div.-->
 				<div class="row"><!--Row Div.-->
 					<div class="col-sm-6">
-						<input type="submit" value="<?php esc_html_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_csv_file" class="btn btn-success mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Upload CSV File', 'mjschool' ); ?>" name="upload_csv_file" class="btn btn-success mjschool-save-btn" />
 					</div>
 				</div> <!--Row Div.-->
 			</div><!--Form Body div.-->
@@ -7582,7 +7631,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_multiple_day', 'mjschool_load_multiple
  */
 function mjschool_load_multiple_day() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7647,7 +7696,7 @@ add_action( 'wp_ajax_nopriv_mjschool_admission_repot_load_date', 'mjschool_admis
  */
 function mjschool_admission_repot_load_date() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7696,7 +7745,7 @@ add_action( 'wp_ajax_nopriv_mjschool_edit_section', 'mjschool_edit_section' );
  */
 function mjschool_edit_section() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7746,7 +7795,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_teacher_by_class', 'mjschool_load_teac
  */
 function mjschool_load_teacher_by_class() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7777,7 +7826,7 @@ add_action( 'wp_ajax_nopriv_mjschool_update_cetogory_popup_value', 'mjschool_upd
  */
 function mjschool_update_cetogory_popup_value() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7825,7 +7874,7 @@ add_action( 'wp_ajax_nopriv_mjschool_update_cancel_popup', 'mjschool_update_canc
  */
 function mjschool_update_cancel_popup() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7874,7 +7923,7 @@ add_action( 'wp_ajax_nopriv_mjschool_edit_popup_value', 'mjschool_edit_popup_val
  */
 function mjschool_edit_popup_value() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7928,7 +7977,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_more_document', 'mjschool_load_more_do
  */
 function mjschool_load_more_document() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -7952,7 +8001,7 @@ function mjschool_load_more_document() {
 					<div class="col-md-12 form-control mjschool-upload-profile-image-patient mjschool-res-rtl-height-50px mjschool-file-height-padding">
 						<label for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2"><?php esc_html_e( 'Document File', 'mjschool' ); ?></label>
 						<div class="col-sm-12 mjschool-display-flex">
-							<input name="document_file[]" type="file" class="p-1 form-control mjschool-file-validation file" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+							<input name="document_file[]" type="file" class="p-1 form-control mjschool-file-validation file" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 						</div>
 					</div>
 				</div>
@@ -7979,7 +8028,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_more_subject_information', 'mjschool_l
  */
 function mjschool_load_more_subject_information() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -8074,13 +8123,16 @@ add_action( 'wp_ajax_nopriv_mjschool_load_other_user_homework', 'mjschool_load_o
  */
 function mjschool_load_other_user_homework() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_POST['document_for'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	global $wpdb;
 	$document_for = sanitize_text_field(wp_unslash($_POST['document_for']));
@@ -8108,13 +8160,16 @@ add_action( 'wp_ajax_mjschool_ajax_view_result', 'mjschool_ajax_view_result' );
  */
 function mjschool_ajax_view_result() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_REQUEST['student_id'], $_REQUEST['exam_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	$obj_mark      = new Mjschool_Marks_Manage();
 	$uid           = intval( wp_unslash($_REQUEST['student_id'] ));
@@ -8339,7 +8394,7 @@ add_action( 'wp_ajax_nopriv_mjschool_load_more_contributions', 'mjschool_load_mo
  */
 function mjschool_load_more_contributions() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -8385,13 +8440,16 @@ add_action( 'wp_ajax_nopriv_mjschool_load_library_card_no', 'mjschool_load_libra
  */
 function mjschool_load_library_card_no() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_REQUEST['user_id']) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	$user_id           = intval( wp_unslash($_REQUEST['user_id']) );
 	$obj_lib           = new Mjschool_Library();
@@ -8418,7 +8476,7 @@ add_action( 'wp_ajax_nopriv_mjschool_add_more_merge_result', 'mjschool_add_more_
  */
 function mjschool_add_more_merge_result() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -8483,10 +8541,10 @@ function mjschool_student_list() {
 	}
 	$role = mjschool_get_user_role( get_current_user_id() );
 	if ( $role === 'administrator' ) {
-		$user_access_add    = 1;
-		$user_access_edit   = 1;
-		$user_access_delete = 1;
-		$user_access_view   = 1;
+		$user_access_add    = '1';
+		$user_access_edit   = '1';
+		$user_access_delete = '1';
+		$user_access_view   = '1';
 	} else {
 		$user_access        = mjschool_get_user_role_wise_filter_access_right_array( 'student' );
 		$user_access_add    = $user_access['add'];
@@ -8509,7 +8567,7 @@ function mjschool_student_list() {
 		}
 	} elseif ( $role === 'teacher' ) {
 		$own_data = $user_access['own_data'];
-		if ( $own_data === 1 ) {
+		if ( $own_data === '1' ) {
 			$user_id   = get_current_user_id();
 			$class_id  = get_user_meta( $user_id, 'class_name', true );
 			$exlude_id = mjschool_approve_student_list();
@@ -8524,7 +8582,7 @@ function mjschool_student_list() {
 	} elseif ( $role === 'supportstaff' ) {
 		$own_data = $user_access['own_data'];
 		$user_id  = get_current_user_id();
-		if ( $own_data === 1 ) {
+		if ( $own_data === '1' ) {
 			
 			$students = get_users([
 				'role' => 'student',
@@ -8552,7 +8610,7 @@ function mjschool_student_list() {
 	} elseif( $role === 'management' ){
         $own_data = $user_access['own_data'];
         $user_id  = get_current_user_id();
-        if ( $own_data === 1 ) {
+        if ( $own_data === '1' ) {
             
             $students = get_users([
                 'role' => 'student',
@@ -8681,14 +8739,14 @@ function mjschool_student_list() {
 					</a>
 				</li>';
 			}
-			if ($user_access_edit === 1 ) {
+			if ($user_access_edit === '1' ) {
 				$action .= '<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
 					<a href="?page=mjschool_student&tab=addstudent&action=edit&student_id=' . esc_attr($student_id) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) . '" class="mjschool-float-left-width-100px">
 						<i class="fas fa-edit"></i> ' . esc_html__( 'Edit', 'mjschool' ) . '
 					</a>
 				</li>';
 			}
-			if ($user_access_delete === 1 ) {
+			if ($user_access_delete === '1' ) {
 				$action .= '<li class="mjschool-float-left-width-100px">
 					<a href="?page=mjschool_student&tab=studentlist&action=delete&student_id=' . esc_attr($student_id) . '&_wpnonce=' . mjschool_get_nonce( 'delete_action' ) . '" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm(\'' . esc_js(esc_html__( 'Are you sure you want to delete this record?', 'mjschool' ) ) . '\' );">
 						<i class="fas fa-trash"></i> ' . esc_html__( 'Delete', 'mjschool' ) . '
@@ -8714,14 +8772,14 @@ function mjschool_student_list() {
 				</a>
 			</li>';
 			
-			if ( $user_access_edit === 1 ) {
+			if ( $user_access_edit === '1' ) {
 				$action .= '<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
 					<a href="?dashboard=mjschool_user&page=student&tab=addstudent&action=edit&student_id=' . esc_attr( $student_id ) . '&_wpnonce_action=' . mjschool_get_nonce( 'edit_action' ) . '" class="mjschool-float-left-width-100px">
 						<i class="fas fa-edit"></i> ' . esc_html__( 'Edit', 'mjschool' ) . '
 					</a>
 				</li>';
 			}
-			if ( $user_access_delete === 1 ) {
+			if ( $user_access_delete === '1' ) {
 				$action .= '<li class="mjschool-float-left-width-100px">
 					<a href="?dashboard=mjschool_user&page=student&tab=studentlist&action=delete&student_id=' . esc_attr( $student_id ) . '&_wpnonce_action=' . mjschool_get_nonce( 'delete_action' ) . '" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm(\'' . esc_js( esc_html__( 'Are you sure you want to delete this record?', 'mjschool' ) ) . '\' );">
 						<i class="fas fa-trash"></i> ' . esc_html__( 'Delete', 'mjschool' ) . '
@@ -8754,6 +8812,9 @@ function mjschool_create_transfer_letter() {
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_REQUEST['student_id'], $_REQUEST['teacher_id'], $_REQUEST['teacher_new_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	global $wpdb;
 	$obj_attend = new Mjschool_Attendence_Manage();
@@ -8840,10 +8901,10 @@ function mjschool_create_transfer_letter() {
 	$signature_path_new = isset( $metadata2['signature'][0] ) ? $metadata2['signature'][0] : '';
 	$signature_url_new  = $signature_path_new ? content_url( $signature_path_new ) : '';
 	if ( $curr_role === 'administrator' ) {
-		$user_access_add    = 1;
-		$user_access_edit   = 1;
-		$user_access_delete = 1;
-		$user_access_view   = 1;
+		$user_access_add    = '1';
+		$user_access_edit   = '1';
+		$user_access_delete = '1';
+		$user_access_view   = '1';
 	} else {
 		$user_access        = mjschool_get_user_role_wise_filter_access_right_array( 'teacher' );
 		$user_access_add    = $user_access['add'];
@@ -8859,7 +8920,7 @@ function mjschool_create_transfer_letter() {
 		if ( empty( $signature_path ) ) {
 			echo '<div class="alert alert-danger d-flex justify-content-between align-items-center mt-2">';
 			echo '<span>' . esc_html__( 'Class Teacher signature is not added. Please upload the signature.', 'mjschool' ) . '</span>';
-			if ( $user_access_edit === 1 ) {
+			if ( $user_access_edit === '1' ) {
 				$teacher_id_encrypted = mjschool_encrypt_id( sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) );
 				$nonce                = mjschool_get_nonce( 'edit_action' );
 				$edit_url             = $is_admin_or_management
@@ -8874,7 +8935,7 @@ function mjschool_create_transfer_letter() {
 		if ( empty( $signature_path_new ) ) {
 			echo '<div class="alert alert-danger d-flex justify-content-between align-items-center mt-2">';
 			echo '<span>' . esc_html__( 'Checked By (Teacher) signature is not added. Please upload the signature.', 'mjschool' ) . '</span>';
-			if ( $user_access_edit === 1 ) {
+			if ( $user_access_edit === '1' ) {
 				$teacher_new_id_encrypted = mjschool_encrypt_id( sanitize_text_field(wp_unslash($_REQUEST['teacher_new_id'])) );
 				$nonce                    = mjschool_get_nonce( 'edit_action' );
 				$edit_url                 = $is_admin_or_management
@@ -9160,13 +9221,16 @@ add_action( 'wp_ajax_mjschool_delete_letter', 'mjschool_delete_letter' );
  */
 function mjschool_delete_letter() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
 		wp_die( 'You must be logged in.' );
+	}
+	if ( ! isset( $_REQUEST['id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
 	}
 	global $wpdb;
 	$acc_id = intval( wp_unslash($_REQUEST['id']) );
@@ -9222,7 +9286,7 @@ add_action( 'wp_ajax_download_csv_log', 'mjschool_download_csv_log' );
  */
 function mjschool_download_csv_log() {
 	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
-	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
+	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_REQUEST['nonce'] ), 'mjschool_ajax_nonce' ) ) {
 		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
@@ -9291,6 +9355,9 @@ add_action( 'wp_ajax_mjschool_get_students_by_class', 'mjschool_get_students_by_
  */
 function mjschool_get_students_by_class() {
 
+	if ( ! isset( $_POST['class_id'] ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
+	}
     $class_id = intval(wp_unslash($_POST['class_id']));
     $students = mjschool_get_users_by_class_id($class_id); // your helper
 

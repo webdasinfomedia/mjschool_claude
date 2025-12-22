@@ -773,7 +773,7 @@ $GoogleCharts = new GoogleCharts();
 									</div>
 								</div>	
 								<div class="col-md-6 mb-2">
-									<input type="submit" name="library_report" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
+									<input type="submit" name="library_report" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
 								</div>
 							</div>
 							</div>	
@@ -965,7 +965,7 @@ $GoogleCharts = new GoogleCharts();
 									</div>
 								</div>
 								<div class="col-md-2">
-									<input type="submit" name="report_2" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
+									<input type="submit" name="report_2" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
 								</div>	
 							</div>
 						</div>	
@@ -1072,7 +1072,7 @@ $GoogleCharts = new GoogleCharts();
 										</select>       
 									</div>
 									<div class="col-md-2 mb-2">
-										<input type="submit" name="view_attendance" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
+										<input type="submit" name="view_attendance" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
 									</div>
 								</div>
 							</div>
@@ -1270,7 +1270,7 @@ $GoogleCharts = new GoogleCharts();
 										</div>
 									</div>
 									<div class="col-md-4">
-										<input type="submit" name="daily_attendance" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
+										<input type="submit" name="daily_attendance" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
 									</div>
 								</div>
 							</div>
@@ -1448,7 +1448,7 @@ $GoogleCharts = new GoogleCharts();
 										</div>
 									</div>
 									<div class="col-md-2">
-										<input type="submit" name="report_6" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
+										<input type="submit" name="report_6" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
 									</div>	
 								</div>
 							</div>	
@@ -1738,7 +1738,7 @@ $GoogleCharts = new GoogleCharts();
 										</div>
 									</div>
 									<div class="col-md-2">
-										<input type="submit" name="report_6" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
+										<input type="submit" name="report_6" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
 									</div>	
 								</div>
 							</div>	
@@ -2088,7 +2088,7 @@ $GoogleCharts = new GoogleCharts();
 									</div>
 								</div>
 								<div class="col-md-6">
-									<input type="submit" name="report_4" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
+									<input type="submit" name="report_4" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
 								</div>
 							</div>
 						</div><!-------------- Form body. ------------------>
@@ -2422,7 +2422,7 @@ $GoogleCharts = new GoogleCharts();
 								</select>
 							</div>
 							<div class="col-md-3">
-								<input type="submit" name="report_5" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
+								<input type="submit" name="report_5" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
 							</div>
 						</div>
 					</div>

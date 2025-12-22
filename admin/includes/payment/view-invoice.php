@@ -265,13 +265,13 @@ $format = get_option( 'mjschool_invoice_option' );
 												<h5 class="mjschool-align-left"><label class="mjschool-popup-label-heading text-transfer-upercase"><?php echo esc_html__( 'Status :', 'mjschool' ); ?> </label> &nbsp;<label class="mjschool-invoice-model-value">
 													<?php
 													if ( $payment_status === 'Paid' ) {
-														echo '<span class="mjschool-green-color">' . esc_attr__( 'Fully Paid', 'mjschool' ) . '</span>';
+														echo '<span class="mjschool-green-color">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
 													}
 													if ( $payment_status === 'Part Paid' ) {
-														echo '<span class="mjschool-purpal-color">' . esc_attr__( 'Partially Paid', 'mjschool' ) . '</span>';
+														echo '<span class="mjschool-purpal-color">' . esc_html__( 'Partially Paid', 'mjschool' ) . '</span>';
 													}
 													if ( $payment_status === 'Unpaid' ) {
-														echo '<span class="mjschool-red-color">' . esc_attr__( 'Not Paid', 'mjschool' ) . '</span>';
+														echo '<span class="mjschool-red-color">' . esc_html__( 'Not Paid', 'mjschool' ) . '</span>';
 													}
 													?>
 												</h5>
@@ -483,11 +483,11 @@ $format = get_option( 'mjschool_invoice_option' );
 									if ( isset( $tax_amount ) && ! empty( $tax_amount ) ) {
 										?>
 										<tr>
-											<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" align="right"><?php echo esc_attr__( 'Sub Total', 'mjschool' ) . '  :'; ?></td>
+											<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" align="right"><?php echo esc_html__( 'Sub Total', 'mjschool' ) . '  :'; ?></td>
 											<td align="right" class="mjschool-rtl-width-15px mjschool-padding-bottom-15px mjschool-rtl-text-align-left mjschool-total-value"><?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $sub_total, 2, '.', '' ) ) ); ?></td>
 										</tr>
 										<tr>
-											<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" align="right"><?php echo esc_attr__( 'Tax Amount', 'mjschool' ) . '( ' . esc_attr( $tax_name ) . ' )' . '  :'; ?></td>
+											<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" align="right"><?php echo esc_html__( 'Tax Amount', 'mjschool' ) . '( ' . esc_attr( $tax_name ) . ' )' . '  :'; ?></td>
 											<td align="right" class="mjschool-rtl-width-15px mjschool-padding-bottom-15px mjschool-rtl-text-align-left mjschool-total-value"><?php echo '+' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $tax_amount, 2, '.', '' ) ) ); ?></td>
 										</tr>
 										<?php
@@ -536,7 +536,7 @@ $format = get_option( 'mjschool_invoice_option' );
 										unlink( $file_path ); // Delete the file.
 									}
 									$generate_pdf = mjschool_fees_income_pdf_for_mobile_app( $idtest, $invoice_type );
-									wp_redirect( $file_path );
+									wp_safe_redirect( $file_path );
 									die();
 								}
 								?>

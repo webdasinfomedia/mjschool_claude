@@ -60,7 +60,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				if ( isset( $_REQUEST['issue_message'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['issue_message'])) === 'issue_success' ) ) {
 					?>
 					<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
-						<p><?php echo esc_attr__( 'Book Issued Successfully.', 'mjschool' ); ?></p>
+						<p><?php echo esc_html__( 'Book Issued Successfully.', 'mjschool' ); ?></p>
 						<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 					</div>
 					<?php
@@ -68,7 +68,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				if ( isset( $_REQUEST['issue_message'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['issue_message'])) === 'return_success' ) ) {
 					?>
 					<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
-						<p><?php echo esc_attr__( 'Book Returned Successfully.', 'mjschool' ); ?></p>
+						<p><?php echo esc_html__( 'Book Returned Successfully.', 'mjschool' ); ?></p>
 						<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 					</div>
 					<?php
@@ -76,7 +76,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				if ( isset( $_REQUEST['issue_message'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['issue_message'])) === 'exits_no' ) ) {
 					?>
 					<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
-						<p><?php echo esc_attr__( 'Library Card No is Exits.', 'mjschool' ); ?></p>
+						<p><?php echo esc_html__( 'Library Card No is Exits.', 'mjschool' ); ?></p>
 						<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 					</div>
 					<?php

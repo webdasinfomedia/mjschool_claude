@@ -128,11 +128,11 @@ if ( $active_tab === 'expenselist' ) {
 									<td>
 										<?php
 										if ( $retrieved_data->payment_status === 'Paid' ) {
-											echo "<span class='mjschool-green-color'> " . esc_attr__( 'Fully Paid', 'mjschool' ) . ' </span>';
+											echo "<span class='mjschool-green-color'> " . esc_html__( 'Fully Paid', 'mjschool' ) . ' </span>';
 										} elseif ( $retrieved_data->payment_status === 'Part Paid' ) {
-											echo "<span class='mjschool-purpal-color'> " . esc_attr__( 'Partially Paid', 'mjschool' ) . ' </span>';
+											echo "<span class='mjschool-purpal-color'> " . esc_html__( 'Partially Paid', 'mjschool' ) . ' </span>';
 										} else {
-											echo "<span class='mjschool-red-color'> " . esc_attr__( 'Not Paid', 'mjschool' ) . ' </span>';
+											echo "<span class='mjschool-red-color'> " . esc_html__( 'Not Paid', 'mjschool' ) . ' </span>';
 										}
 										?>
 										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Status', 'mjschool' ); ?>"></i>
@@ -165,7 +165,7 @@ if ( $active_tab === 'expenselist' ) {
 														<?php
 														if ( ! empty( $custom_field_value ) ) {
 															?>
-															<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+															<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
 																<button class="btn btn-default view_document" type="button"><i class="fas fa-download"></i><?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 															</a>
 															<?php
@@ -253,7 +253,7 @@ if ( $active_tab === 'expenselist' ) {
 	} elseif ( $user_access_add === '1' ) {
 		?>
 		<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-			<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_payment&tab=addexpense' ); ?>">
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_payment&tab=addexpense' ) ); ?>">
 				<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 			</a>
 			<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">

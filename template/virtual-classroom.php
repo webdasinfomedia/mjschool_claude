@@ -763,7 +763,7 @@ if ( $message ) {
 				<div class="form-body mjschool-user-form">
 					<div class="row">
 						<div class="col-md-6 mjschool-margin-top-10px_button">
-							<input type="submit" value="<?php esc_html_e( 'Save Meeting', 'mjschool' ); ?>" name="edit_meeting" class="btn btn-success mjschool-save-btn" />
+							<input type="submit" value="<?php esc_attr_e( 'Save Meeting', 'mjschool' ); ?>" name="edit_meeting" class="btn btn-success mjschool-save-btn" />
 						</div>
 					</div>
 				</div>

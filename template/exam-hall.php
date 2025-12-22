@@ -620,7 +620,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 							</select>
 						</div>
 						<div class="form-group col-md-3">
-							<input type="button" value="<?php esc_html_e( 'Search Exam', 'mjschool' ); ?>" name="search_exam" id="search_exam" class="btn btn-info search_exam mjschool-save-btn" />
+							<input type="button" value="<?php esc_attr_e( 'Search Exam', 'mjschool' ); ?>" name="search_exam" id="search_exam" class="btn btn-info search_exam mjschool-save-btn" />
 						</div>
 					</div>
 				</div><!-------- Form body. -------->

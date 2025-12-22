@@ -1318,9 +1318,9 @@ if ( $message ) {
 															<label class="mjschool-view-page-content-labels">
 																<?php
 																if ( $student_data->gender === 'male' ) {
-																	echo esc_attr__( 'Male', 'mjschool' );
+																	echo esc_html__( 'Male', 'mjschool' );
 																} elseif ( $student_data->gender === 'female' ) {
-																	echo esc_attr__( 'Female', 'mjschool' );
+																	echo esc_html__( 'Female', 'mjschool' );
 																}
 																?>
 															</label>
@@ -1506,9 +1506,9 @@ if ( $message ) {
 																	<p class="mjschool-view-page-content-labels">
 																		<?php
 																		if ( $parent->relation === 'Father' ) {
-																			echo esc_attr__( 'Father', 'mjschool' );
+																			echo esc_html__( 'Father', 'mjschool' );
 																		} elseif ( $parent->relation === 'Mother' ) {
-																			echo esc_attr__( 'Mother', 'mjschool' );
+																			echo esc_html__( 'Mother', 'mjschool' );
 																		}
 																		?>
 																	</p>
@@ -1520,7 +1520,7 @@ if ( $message ) {
 												} else {
 													?>
 													<div class="col-xl-12 col-md-12 col-sm-12 mjschool-margin-top-20px-rtl mjschool-margin-top-15px mjschool_text_align_center" >
-														<p class="mjschool-view-page-content-labels"><?php echo esc_attr__( 'No Any Parent.', 'mjschool' ); ?></p>
+														<p class="mjschool-view-page-content-labels"><?php echo esc_html__( 'No Any Parent.', 'mjschool' ); ?></p>
 													</div>
 													<?php
 												}
@@ -1787,9 +1787,9 @@ if ( $message ) {
 																						<td>
 																							<?php
 																							if ( $parent->relation === 'Father' ) {
-																								echo esc_attr__( 'Father', 'mjschool' );
+																								echo esc_html__( 'Father', 'mjschool' );
 																							} elseif ( $parent->relation === 'Mother' ) {
-																								echo esc_attr__( 'Mother', 'mjschool' );
+																								echo esc_html__( 'Mother', 'mjschool' );
 																							}
 																							?>
 																							<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Relation', 'mjschool' ); ?>"></i>
@@ -1811,7 +1811,7 @@ if ( $message ) {
 																							<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="
 																							<?php
 																							if ( $parent->address ) {
-																								echo esc_html( $parent->address );
+																								echo esc_attr( $parent->address );
 																							} else {
 																								echo esc_attr__( 'Address', 'mjschool' ); }
 																							?>
@@ -2818,7 +2818,7 @@ if ( $message ) {
 										</select>
 										</div>
 											<div class="col-md-2">        	
-											<input type="submit" value="<?php esc_html_e( 'GO', 'mjschool' ); ?>" name="save_latter" class="btn btn-success mjschool-save-btn" />
+											<input type="submit" value="<?php esc_attr_e( 'GO', 'mjschool' ); ?>" name="save_latter" class="btn btn-success mjschool-save-btn" />
 										</div> 
 									</div>
 								</form>
@@ -3641,7 +3641,7 @@ if ( $message ) {
 												echo esc_url( sanitize_text_field(wp_unslash($_POST['mjschool_user_avatar'])) );}
 											?>
 											" readonly />
-											<input id="upload_user_avatar_button" type="file" class="form-control file mjchool_border_0px" onchange="mjschool_file_check(this);" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+											<input id="upload_user_avatar_button" type="file" class="form-control file mjchool_border_0px" onchange="mjschool_file_check(this);" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 										</div>
 									</div>
 									<div class="clearfix"></div>
@@ -3744,7 +3744,7 @@ if ( $message ) {
 												<div class="col-md-12 form-control mjschool-upload-profile-image-patient mjschool-res-rtl-height-50px mjschool-file-height-padding">
 													<span for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2"><?php esc_html_e( 'Document File', 'mjschool' ); ?></span>
 													<div class="col-sm-12 mjschool-display-flex">
-														<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control mjschool-file-validation file" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+														<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control mjschool-file-validation file" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 													</div>
 												</div>
 											</div>
@@ -3773,7 +3773,7 @@ if ( $message ) {
 											<div class="col-md-12 form-control mjschool-upload-profile-image-patient mjschool-res-rtl-height-50px mjschool-file-height-padding">
 												<span for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2"><?php esc_html_e( 'Document File', 'mjschool' ); ?></span>
 												<div class="col-sm-12 mjschool-display-flex">
-													<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control file mjschool-file-validation" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+													<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control file mjschool-file-validation" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 												</div>
 											</div>
 										</div>

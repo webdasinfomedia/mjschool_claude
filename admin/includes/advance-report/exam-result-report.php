@@ -78,7 +78,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 				</div>
 				<?php wp_nonce_field( 'mjschool-exam-result-report-nonce' ); ?>
 				<div class="col-md-3">
-					<input type="submit" name="report_5" value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
+					<input type="submit" name="report_5" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
 				</div>
 			</div>
 		</div>

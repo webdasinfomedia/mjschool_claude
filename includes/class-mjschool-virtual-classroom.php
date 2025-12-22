@@ -173,7 +173,7 @@ class Mjschool_Virtual_Classroom
             }
             return $result;
         } catch ( Exception $e ) {
-            wp_redirect(admin_url() . 'admin.php?page=mjschool_virtual_classroom&tab=meeting_list&message=5');
+           wp_safe_redirect(admin_url( 'admin.php?page=mjschool_virtual_classroom&tab=meeting_list&message=5' ) );
             die();
         }
     }

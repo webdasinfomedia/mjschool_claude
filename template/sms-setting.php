@@ -204,7 +204,7 @@ if ( isset( $_REQUEST['save_mjschool_setting'] ) ) {
 						<div class="form-body mjschool-user-form">
 							<div class="row">
 								<div class="col-sm-6">
-									<input type="submit" value="<?php esc_html_e( 'Save', 'mjschool' ); ?>" name="save_mjschool_setting" class="btn btn-success mjschool-save-btn" />
+									<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_mjschool_setting" class="btn btn-success mjschool-save-btn" />
 								</div>
 							</div>
 						</div>

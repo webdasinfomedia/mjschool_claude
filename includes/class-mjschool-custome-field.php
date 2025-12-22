@@ -931,7 +931,7 @@ class Mjschool_Custome_Field {
 										if ( ! empty( $custom_field_value ) ) {
 											?>
 											<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>">
+												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>">
 													<i class="fa fa-download"></i>&nbsp;&nbsp;<?php esc_html_e( 'Download', 'mjschool' ); ?>
 												</a>
 											</div>
@@ -1185,7 +1185,7 @@ class Mjschool_Custome_Field {
 								} elseif ( $custom_field->field_type === 'file' ) {
 									if ( ! empty( $custom_field_value ) ) {
 										?>
-										<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+										<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
 											<button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 										</a>
 										<?php
@@ -1262,7 +1262,7 @@ class Mjschool_Custome_Field {
 									<p class="mjschool-label-value">
 										<strong><?php echo esc_html( $custom_field->field_label ); ?>:</strong>
 										<?php if ( ! empty( $custom_field_value ) ) { ?>
-											<a target="_blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+											<a target="_blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
 												<button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?> </button>
 											</a>
 											<?php
@@ -1324,7 +1324,7 @@ class Mjschool_Custome_Field {
 						} elseif ( $custom_field->field_type === 'file' ) {
 							if ( ! empty( $custom_field_value ) ) {
 								?>
-								<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+								<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
 									<button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 								</a>
 								<?php

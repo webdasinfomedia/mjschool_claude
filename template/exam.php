@@ -984,7 +984,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 							</select>
 						</div>
 						<div class="col-md-1 col-sm-1 input mjschool-res-width-25">
-							<input type="button" id="mjschool-addremove-cat" value="<?php esc_html_e( 'ADD', 'mjschool' ); ?>" model="term_category" class="btn btn-success mjschool-save-btn mjschool-margin-top-0px-rtl" />
+							<input type="button" id="mjschool-addremove-cat" value="<?php esc_attr_e( 'ADD', 'mjschool' ); ?>" model="term_category" class="btn btn-success mjschool-save-btn mjschool-margin-top-0px-rtl" />
 						</div>
 						<?php 
 						if ( $school_type === 'school' ) { ?>
@@ -1437,7 +1437,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 							</select>
 						</div>
 						<div class="col-md-3 col-sm-3 col-xs-12">
-							<input type="submit" id="save_exam_time_table" value="<?php esc_html_e( 'Manage Exam Time', 'mjschool' ); ?>" name="save_exam_time_table" class="btn btn-success mjschool-save-btn" />
+							<input type="submit" id="save_exam_time_table" value="<?php esc_attr_e( 'Manage Exam Time', 'mjschool' ); ?>" name="save_exam_time_table" class="btn btn-success mjschool-save-btn" />
 						</div>
 					</div>
 				</div>
@@ -1588,7 +1588,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 									if ( ! empty( $subject_data ) ) {
 										?>
 										<div class="col-md-3 mjschool-margin-top-20px mjschool-padding-top-25px-res mjschool-rtl-custom-padding-0px">
-											<input type="submit" id="save_exam_time" value="<?php esc_html_e( 'Save Time Table', 'mjschool' ); ?>" name="save_exam_table" class="btn btn-success mjschool-save-btn" />
+											<input type="submit" id="save_exam_time" value="<?php esc_attr_e( 'Save Time Table', 'mjschool' ); ?>" name="save_exam_table" class="btn btn-success mjschool-save-btn" />
 										</div>
 										<?php
 									}

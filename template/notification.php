@@ -614,7 +614,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 				<div class="form-body mjschool-user-form">
 					<div class="row">
 						<div class="col-sm-6">
-							<input type="submit" value="<?php esc_html_e( 'Add Notification', 'mjschool' ); ?>" name="save_notification" class="btn btn-success mjschool-save-btn" />
+							<input type="submit" value="<?php esc_attr_e( 'Add Notification', 'mjschool' ); ?>" name="save_notification" class="btn btn-success mjschool-save-btn" />
 						</div>
 					</div>
 				</div>

@@ -468,12 +468,12 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 						<?php $nonce = wp_create_nonce( 'mjschool_teacher_attendance_tab' ); ?>
 						<li class="<?php if ( $active_tab1 === 'teacher_attendences_list' ) { ?>active<?php } ?>">
 							<a href="<?php echo esc_url( '?page=mjschool_attendence&tab=teacher_attendance&tab1=teacher_attendences_list&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'teacher_attendences_list' ? 'nav-tab-active' : ''; ?>">
-								<?php echo esc_attr__( 'Teacher Attendance List', 'mjschool' ); ?>
+								<?php echo esc_html__( 'Teacher Attendance List', 'mjschool' ); ?>
 							</a>
 						</li>
 						<li class="<?php if ( $active_tab1 === 'teacher_attendences' ) { ?>active<?php } ?>">
 							<a href="<?php echo esc_url( '?page=mjschool_attendence&tab=teacher_attendance&tab1=teacher_attendences&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'teacher_attendences' ? 'nav-tab-active' : ''; ?>">
-								<?php echo esc_attr__( 'Teacher Attendance', 'mjschool' ); ?>
+								<?php echo esc_html__( 'Teacher Attendance', 'mjschool' ); ?>
 							</a>
 						</li>
 						<?php
@@ -483,17 +483,17 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 						<?php $nonce = wp_create_nonce( 'mjschool_student_attendance_tab' ); ?>
 						<li class="<?php if ( $active_tab1 === 'attendence_list' ) {?>active<?php } ?>">
 							<a href="<?php echo esc_url( '?page=mjschool_attendence&tab=student_attendance&tab1=attendence_list&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'attendence_list' ? 'nav-tab-active' : ''; ?>">
-								<?php echo esc_attr__( 'Attendance List', 'mjschool' ); ?>
+								<?php echo esc_html__( 'Attendance List', 'mjschool' ); ?>
 							</a>
 						</li>
 						<li class="<?php if ( $active_tab1 === 'subject_attendence' ) {?>active<?php } ?>">
 							<a href="<?php echo esc_url( '?page=mjschool_attendence&tab=student_attendance&tab1=subject_attendence&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'subject_attendence' ? 'nav-tab-active' : ''; ?>">
-								<?php echo esc_attr__( 'Attendance', 'mjschool' ); ?>
+								<?php echo esc_html__( 'Attendance', 'mjschool' ); ?>
 							</a>
 						</li>
 						<li class="<?php if ( $active_tab1 === 'attendence_with_qr' ) { ?>active<?php } ?>">
 							<a href="<?php echo esc_url( '?page=mjschool_attendence&tab=student_attendance&tab1=attendence_with_qr&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'attendence_with_qr' ? 'nav-tab-active' : ''; ?>">
-								<?php echo esc_attr__( 'Attendance With QR Code', 'mjschool' ); ?>
+								<?php echo esc_html__( 'Attendance With QR Code', 'mjschool' ); ?>
 							</a>
 						</li>
 						<?php
@@ -558,7 +558,7 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 										</select>
 									</div>
 									<div class="col-md-3 mb-3">
-										<input type="submit" value="<?php esc_html_e( 'Take Attendance', 'mjschool' ); ?>" name="attendence" class="mjschool-save-btn" />
+										<input type="submit" value="<?php esc_attr_e( 'Take Attendance', 'mjschool' ); ?>" name="attendence" class="mjschool-save-btn" />
 									</div>
 								</div>
 							</div>
@@ -686,7 +686,7 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 											</div>
 										</div>
 										<div class="col-md-6 mjschool-rtl-res-att-save">
-											<input type="submit" value="<?php esc_html_e( 'Save  Attendance', 'mjschool' ); ?>" name="save_attendence" class="col-sm-6 mjschool-save-btn" />
+											<input type="submit" value="<?php esc_attr_e( 'Save  Attendance', 'mjschool' ); ?>" name="save_attendence" class="col-sm-6 mjschool-save-btn" />
 										</div>
 									</form>
 								</div>
@@ -722,7 +722,7 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 									</div>
 								</div>
 								<div class="col-md-3">
-									<input type="submit" value="<?php esc_html_e( 'Take Attendance', 'mjschool' ); ?>" name="teacher_attendence" class="mjschool-save-btn" />
+									<input type="submit" value="<?php esc_attr_e( 'Take Attendance', 'mjschool' ); ?>" name="teacher_attendence" class="mjschool-save-btn" />
 								</div>
 							</div>
 						</div>
@@ -761,7 +761,7 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 										</select>
 									</div>
 									<div class="col-sm-3">
-										<input type="submit" value="<?php esc_html_e( 'Export Teacher Attendance', 'mjschool' ); ?>" name="export_teacher_attendance_in_csv" class="mjschool-save-attr-btn" />
+										<input type="submit" value="<?php esc_attr_e( 'Export Teacher Attendance', 'mjschool' ); ?>" name="export_teacher_attendance_in_csv" class="mjschool-save-attr-btn" />
 									</div>
 								</div>
 							</div>
@@ -843,7 +843,7 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 								</div>
 								<div class="cleatrfix"></div>
 								<div class="col-sm-12 padding_top_10px mjschool-rtl-res-att-save">
-									<input type="submit" value="<?php esc_html_e( 'Save Attendance', 'mjschool' ); ?>" name="save_teach_attendence" id="mjschool-res-rtl-width-100px mjschool-res-rtl-width-100px" class="col-sm-6 mjschool-save-attr-btn " />
+									<input type="submit" value="<?php esc_attr_e( 'Save Attendance', 'mjschool' ); ?>" name="save_teach_attendence" id="mjschool-res-rtl-width-100px mjschool-res-rtl-width-100px" class="col-sm-6 mjschool-save-attr-btn " />
 								</div>
 							</form>
 						</div><!-- mjschool-panel-body. -->

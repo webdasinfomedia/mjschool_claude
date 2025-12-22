@@ -200,7 +200,7 @@ if ( isset( $_GET['tab'] ) ) {
 													$attchment_array = explode( ',', $attchment );
 													foreach ( $attchment_array as $attchment_data ) {
 														?>
-														<a target="blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . sanitize_file_name( $attchment_data ) ); ?>" class="btn btn-default"><i class="fas fa-download"></i> <?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+														<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . sanitize_file_name( $attchment_data ) ) ); ?>" class="btn btn-default"><i class="fas fa-download"></i> <?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
 														<?php
 													}
 												} else {
@@ -297,7 +297,7 @@ if ( isset( $_GET['tab'] ) ) {
 												$attchment_array = explode( ',', $attchment );
 												foreach ( $attchment_array as $attchment_data ) {
 													?>
-													<a target="blank" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . sanitize_file_name( $attchment_data ) ); ?>" class="btn btn-default"><i class="fas fa-download"></i> <?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+													<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . sanitize_file_name( $attchment_data ) ) ); ?>" class="btn btn-default"><i class="fas fa-download"></i> <?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
 													<?php
 												}
 											} else {

@@ -483,7 +483,7 @@ if ( $active_tab === 'addstudent' ) {
 								<span for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2 mjschool-label-position-rtl"><?php esc_html_e( 'Image', 'mjschool' ); ?></span>
 								<div class="col-sm-12 mjschool-display-flex">
 									<input type="text" id="smgt_user_avatar_url" class="mjschool-image-path-dots form-control" name="smgt_user_avatar" value="<?php if ( $edit ) { echo esc_url( $user_info->smgt_user_avatar ); } elseif ( isset( $_POST['mjschool_user_avatar'] ) ) { echo esc_url( sanitize_text_field(wp_unslash($_POST['mjschool_user_avatar'])) ); }?>" readonly />
-									<input id="upload_user_avatar_button" type="button" class="button mjschool-upload-image-btn mjschool_float_right"  value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+									<input id="upload_user_avatar_button" type="button" class="button mjschool-upload-image-btn mjschool_float_right"  value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 								</div>
 							</div>
 							<div class="clearfix"></div>
@@ -540,7 +540,7 @@ if ( $active_tab === 'addstudent' ) {
 														<input name="document_file[]" type="file" class="form-control mjschool-file-validation file" />
 													</div>
 													<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 p-0">
-														<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $value->document_file ); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+														<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $value->document_file ) ); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 													</div>
 												</div>
 											</div>
@@ -586,7 +586,7 @@ if ( $active_tab === 'addstudent' ) {
 										<div class="col-md-12 form-control mjschool-upload-profile-image-patient mjschool-res-rtl-height-50px mjschool-file-height-padding">
 											<span for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2"><?php esc_html_e( 'Document File', 'mjschool' ); ?></span>
 											<div class="col-sm-12 mjschool-display-flex">
-												<input name="document_file[]" type="file" class="form-control mjschool-file-validation file" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+												<input name="document_file[]" type="file" class="form-control mjschool-file-validation file" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 											</div>
 										</div>
 									</div>
@@ -617,7 +617,7 @@ if ( $active_tab === 'addstudent' ) {
 									<div class="col-md-12 form-control mjschool-upload-profile-image-patient mjschool-res-rtl-height-50px mjschool-file-height-padding">
 										<span for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2"><?php esc_html_e( 'Document File', 'mjschool' ); ?></span>
 										<div class="col-sm-12 mjschool-display-flex">
-											<input name="document_file[]" type="file" class="form-control file mjschool-file-validation" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>"  />
+											<input name="document_file[]" type="file" class="form-control file mjschool-file-validation" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>"  />
 										</div>
 									</div>
 								</div>
@@ -647,7 +647,7 @@ if ( $active_tab === 'addstudent' ) {
 			<div class="form-body mjschool-user-form">
 				<div class="row">
 					<div class="col-sm-6">
-						<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Student', 'mjschool' ); } else { esc_html_e( 'Add Student', 'mjschool' );} ?>" name="save_student" class="btn btn-success mjschool-save-btn" />
+						<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Student', 'mjschool' ); } else { esc_attr_e( 'Add Student', 'mjschool' );} ?>" name="save_student" class="btn btn-success mjschool-save-btn" />
 					</div>
 				</div>
 			</div>

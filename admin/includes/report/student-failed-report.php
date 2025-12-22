@@ -116,7 +116,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 		<div class="form-body mjschool-user-form">
 			<div class="row">
 				<div class="col-md-6">
-					<input type="submit" name="report_1" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
+					<input type="submit" name="report_1" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
 				</div>
 			</div>
 		</div>

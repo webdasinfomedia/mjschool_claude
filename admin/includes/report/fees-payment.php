@@ -222,7 +222,7 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 						</select>
 					</div>
 					<div class="col-md-3">
-						<input type="submit" name="report_4" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
+						<input type="submit" name="report_4" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
 					</div>
 				</div>
 			</div>

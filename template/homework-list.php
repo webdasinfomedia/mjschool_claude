@@ -75,7 +75,7 @@ $mjschool_role_name      = mjschool_get_user_role( get_current_user_id() );
 			if ( $mjschool_role_name === 'supportstaff' ) {
 				?>
 				<div class="mjschool-print-button pull-left">
-					<input id="delete_selected" type="submit" value="<?php esc_html_e( 'Delete Selected', 'mjschool' ); ?>" name="delete_selected" class="btn btn-danger delete_selected"/>
+					<input id="delete_selected" type="submit" value="<?php esc_attr_e( 'Delete Selected', 'mjschool' ); ?>" name="delete_selected" class="btn btn-danger delete_selected"/>
 				</div>
 				<?php
 			}

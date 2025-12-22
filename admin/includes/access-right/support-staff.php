@@ -436,7 +436,7 @@ if ( isset( $_POST['save_access_right'] ) ) {
 		);
 		$result = update_option( 'mjschool_access_right_supportstaff', $role_access_right );
 		$nonce = wp_create_nonce( 'mjschool_access_rights_tab' );
-		wp_redirect( admin_url() . 'admin.php?page=mjschool_access_right&tab=Support_staff&_wpnonce='.esc_attr( $nonce ).'&message=1' );
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_access_right&tab=Support_staff&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
 		die();
 	}
 	else {
@@ -2159,7 +2159,7 @@ if ( $message ) {
 			</div>
 			<?php wp_nonce_field( 'mjschool_save_staff_access_right_nonce' ); ?>
 			<div class="col-sm-6 mjschool-row-bottom mjschool-rtl-access-save-btn">
-				<input type="submit" value="<?php esc_html_e( 'Save', 'mjschool' ); ?>" name="save_access_right" class="btn btn-success mjschool-save-btn" />
+				<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_access_right" class="btn btn-success mjschool-save-btn" />
 			</div>
 		</form>
 	</div><!---END PANEL BODY DIV. -->

@@ -164,7 +164,7 @@ if ( isset( $_POST['save_issue_book'] ) ) {
 			if( isset( $_POST['library_card'] ) ){
 				$exits = $mjschool_obj_lib->mjschool_exits_library_card_no_submit(sanitize_text_field(wp_unslash($_POST['library_card'])));
 				if ( $exits > 0){
-					wp_safe_redirect( admin_url() . 'admin.php?page=mjschool_library&tab=view_book&book_id=' . sanitize_text_field(wp_unslash($_GET['book_id'])) . '&issue_message=exits_no' );
+					wp_safe_redirect( admin_url( 'admin.php?page=mjschool_library&tab=view_book&book_id=' . rawurlencode(sanitize_text_field(wp_unslash($_GET['book_id']))) . '&issue_message=exits_no' ) );
 				}	
 				else{
 					$result = $mjschool_obj_lib->mjschool_add_issue_book( wp_unslash($_POST) );
@@ -962,7 +962,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 		} elseif ( $user_access_add === '1' ) {
 			 ?>
 			<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_library&tab=issuebook' ); ?>">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_library&tab=issuebook' ) ); ?>">
 					<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 				</a>
 				<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -1268,7 +1268,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 													<div class="form-body mjschool-user-form">
 														<div class="row">
 															<div class="col-sm-6">
-																<input type="submit" value="<?php esc_html_e( 'Issue Book', 'mjschool' ); ?>" name="save_issue_book" class="mjschool-save-btn btn btn-success book_for_alert mjschool-rtl-margin-0px" />
+																<input type="submit" value="<?php esc_attr_e( 'Issue Book', 'mjschool' ); ?>" name="save_issue_book" class="mjschool-save-btn btn btn-success book_for_alert mjschool-rtl-margin-0px" />
 															</div>
 														</div>
 													</div>
@@ -1719,7 +1719,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																$category_data = $mjschool_obj_lib->mjschool_get_period_list();
 																if ( ! empty( $category_data ) ) {
 																	foreach ( $category_data as $retrieved_data ) {
-																		echo '<option value="' . esc_attr( $retrieved_data->ID ) . '" ' . selected( $period_id, $retrieved_data->ID ) . '>' . esc_html( $retrieved_data->post_title ) . ' ' . esc_attr__( 'Days', 'mjschool' ) . '</option>';
+																		echo '<option value="' . esc_attr( $retrieved_data->ID ) . '" ' . selected( $period_id, $retrieved_data->ID ) . '>' . esc_html( $retrieved_data->post_title ) . ' ' . esc_html__( 'Days', 'mjschool' ) . '</option>';
 																	}
 																}
 																?>
@@ -1762,7 +1762,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 												<div class="form-body mjschool-user-form">
 													<div class="row">
 														<div class="col-sm-6">
-															<input type="submit" value="<?php esc_html_e( 'Issue Book', 'mjschool' ); ?>" name="save_issue_book" class="mjschool-save-btn btn btn-success book_for_alert mjschool-rtl-margin-0px" />
+															<input type="submit" value="<?php esc_attr_e( 'Issue Book', 'mjschool' ); ?>" name="save_issue_book" class="mjschool-save-btn btn btn-success book_for_alert mjschool-rtl-margin-0px" />
 														</div>
 													</div>
 												</div>

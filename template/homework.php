@@ -589,7 +589,7 @@ if ( isset( $_GET['deleteselectedsuccess'] ) && sanitize_text_field(wp_unslash($
 															<div class="form-body mjschool-user-form"> <!------  Form Body. -------->
 																<div class="row">
 																	<div class="col-sm-6">        	
-																		<input type="submit" value="<?php esc_html_e( 'Submit Homework', 'mjschool' ); ?>" name="student_upload_homework" class="btn btn-success save_homework mjschool-save-btn" />
+																		<input type="submit" value="<?php esc_attr_e( 'Submit Homework', 'mjschool' ); ?>" name="student_upload_homework" class="btn btn-success save_homework mjschool-save-btn" />
 																	</div> 
 																</div>
 															</div>
@@ -982,7 +982,7 @@ if ( isset( $_GET['deleteselectedsuccess'] ) && sanitize_text_field(wp_unslash($
 												<div class="form-body mjschool-user-form"><!------  Form Body. -------->
 													<div class="row">
 														<div class="col-sm-6">        	
-															<input type="submit" value="<?php esc_html_e( 'Evaluate Homework', 'mjschool' ); ?>" name="student_review_homework" class="btn btn-success save_homework mjschool-save-btn" />
+															<input type="submit" value="<?php esc_attr_e( 'Evaluate Homework', 'mjschool' ); ?>" name="student_review_homework" class="btn btn-success save_homework mjschool-save-btn" />
 														</div> 
 													</div>
 												</div>
@@ -1045,7 +1045,7 @@ if ( isset( $_GET['deleteselectedsuccess'] ) && sanitize_text_field(wp_unslash($
 								</select>
 							</div>
 							<div class="col-md-3 col-sm-3 col-xs-3 mjschool-res-rtl-width-100px">
-								<input type="submit" value="<?php esc_html_e( 'View', 'mjschool' ); ?>" name="view"  class="mjschool-save-btn mjschool-custom-class"/>
+								<input type="submit" value="<?php esc_attr_e( 'View', 'mjschool' ); ?>" name="view"  class="mjschool-save-btn mjschool-custom-class"/>
 							</div>
 						</div><!--Row div.--> 
 					</div> <!-- Mjschool-user-form div.--> 

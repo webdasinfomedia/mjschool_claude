@@ -386,7 +386,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																	<?php
 																	if ( ! empty( $custom_field_value ) ) {
 																		?>
-																		<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+																		<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
 																			<button class="btn btn-default view_document" type="button"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 																		</a>
 																		<?php

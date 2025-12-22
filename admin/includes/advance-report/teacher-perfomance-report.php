@@ -37,72 +37,7 @@ if ( isset( $_GET['tab'] ) ) {
 		$class_name
 	);
 	?>
-	<!-- <script type="text/javascript">
-		(function(jQuery) {
-			"use strict";
-			jQuery(document).ready(function() {
-				var class_name = <?php echo json_encode( $class_name_list ); ?>;
-				function mjschool_build_class_filter(class_name) {
-					var new_class_var = class_name + ' ';
-					return {
-						logic: 'AND',
-						criteria: [
-							{
-								data: 'Class Name', // Match the Class Name column in the table.
-								condition: '=',
-								value: [new_class_var]
-							},
-							{
-								data: 'Average Mark', // Match the Average Mark column in the table.
-								condition: '>',
-								value: ['80']
-							}
-						]
-					};
-				}
-				var classFilters = class_name.map(function(class_item) {
-					return mjschool_build_class_filter(class_item);
-				});
-				var table = jQuery( '#teacher_advance_report' ).DataTable({
-					responsive: true,
-					"order": [[1, "asc"]],
-					"dom": 'QlBfrtip',
-					searchBuilder: {
-						preDefined: {
-							criteria: classFilters, // Apply all the class filters.
-							logic: 'OR'
-						}
-					},
-					buttons: [
-						{
-							extend: 'csv',
-							text: '<?php echo esc_attr__( 'CSV', 'mjschool' ); ?>',
-							title: '<?php echo esc_attr__( 'Leave Report', 'mjschool' ); ?>',
-							exportOptions: { columns: [1,2,3,4,5,6] }
-						},
-						{
-							extend: 'print',
-							text: '<?php echo esc_attr__( 'PRINT', 'mjschool' ); ?>',
-							title: '<?php echo esc_attr__( 'Leave Report', 'mjschool' ); ?>',
-							exportOptions: { columns: [1,2,3,4,5,6] }
-						}
-					],
-					"aoColumns": [
-						{ "bSortable": true },
-						{ "bSortable": true },
-						{ "bSortable": true },
-						{ "bSortable": true },
-						{ "bSortable": true },
-						{ "bSortable": true },
-						{ "bSortable": true }
-					],
-					language: <?php echo wp_json_encode( mjschool_datatable_multi_language() ); ?>
-				});
-				jQuery( '.btn-place' ).html(table.buttons().container( ) );
-				jQuery( '.dataTables_filter input' ).attr( "placeholder", "<?php esc_html_e( 'Search...', 'mjschool' ); ?>");
-			});
-		})(jQuery);
-	</script> -->
+	
 	<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-rtl-margin-0px mjschool-padding-top-15px-res">
 		<?php
 		if ( ! empty( $perfomance_report_data ) ) {

@@ -497,7 +497,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 											</select>         
 										</div>
 										<div class="col-md-3">
-											<input type="submit" name="view_student_list" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
+											<input type="submit" name="view_student_list" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info mjschool-save-btn"/>
 										</div>
 									</div>
 								</div>

@@ -287,7 +287,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 													</div>
 													<div class="col-xl-3 col-md-3 col-sm-12 mjschool-margin-top-15px">
 														<label class="mjschool-guardian-labels mjschool-view-page-header-labels"><?php esc_html_e( 'Gender', 'mjschool' ); ?> </label><br>
-														<label class="mjschool-word-break mjschool-view-page-content-labels font_transfer_capitalize"> <?php if ( ! empty( $student_data->fathe_gender ) ) { if ( $student_data->fathe_gender === 'male' ) { echo esc_attr__( 'Male', 'mjschool' ); } elseif ( $student_data->fathe_gender === 'female' ) { echo esc_attr__( 'Female', 'mjschool' ); } } else { esc_html_e( 'Not Provided', 'mjschool' ); } ?> </label>
+														<label class="mjschool-word-break mjschool-view-page-content-labels font_transfer_capitalize"> <?php if ( ! empty( $student_data->fathe_gender ) ) { if ( $student_data->fathe_gender === 'male' ) { echo esc_html__( 'Male', 'mjschool' ); } elseif ( $student_data->fathe_gender === 'female' ) { echo esc_html__( 'Female', 'mjschool' ); } } else { esc_html_e( 'Not Provided', 'mjschool' ); } ?> </label>
 													</div>
 													<div class="col-xl-3 col-md-3 col-sm-12 mjschool-margin-top-15px">
 														<label class="mjschool-guardian-labels mjschool-view-page-header-labels"><?php esc_html_e( 'Date of Birth', 'mjschool' ); ?> </label><br>
@@ -345,7 +345,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 																<?php
 																if ( ! empty( $father_doc_info[0]->value ) ) {
 																	?>
-																	<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $father_doc_info[0]->value ); ?>" class="mjschool-status-read btn btn-default"><i class="fa fa-download"></i> <?php if ( ! empty( $father_doc_info[0]->title ) ) { echo esc_html( $father_doc_info[0]->title ); } else { esc_html_e( ' Download', 'mjschool' ); } ?> </a>
+																	<a download href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $father_doc_info[0]->value ) ); ?>" class="mjschool-status-read btn btn-default"><i class="fa fa-download"></i> <?php if ( ! empty( $father_doc_info[0]->title ) ) { echo esc_html( $father_doc_info[0]->title ); } else { esc_html_e( ' Download', 'mjschool' ); } ?> </a>
 																	<?php
 																} else {
 																	esc_html_e( 'Not Provided', 'mjschool' );
@@ -376,7 +376,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 													</div>
 													<div class="col-xl-3 col-md-3 col-sm-12 mjschool-margin-top-15px">
 														<label class="mjschool-guardian-labels mjschool-view-page-header-labels"><?php esc_html_e( 'Gender', 'mjschool' ); ?> </label><br>
-														<label class="mjschool-word-break mjschool-view-page-content-labels font_transfer_capitalize"> <?php if ( ! empty( $student_data->mother_gender ) ) { if ( $student_data->mother_gender === 'male' ) { echo esc_attr__( 'Male', 'mjschool' ); } elseif ( $student_data->mother_gender === 'female' ) { echo esc_attr__( 'Female', 'mjschool' ); } } else { esc_html_e( 'Not Provided', 'mjschool' ); } ?>
+														<label class="mjschool-word-break mjschool-view-page-content-labels font_transfer_capitalize"> <?php if ( ! empty( $student_data->mother_gender ) ) { if ( $student_data->mother_gender === 'male' ) { echo esc_html__( 'Male', 'mjschool' ); } elseif ( $student_data->mother_gender === 'female' ) { echo esc_html__( 'Female', 'mjschool' ); } } else { esc_html_e( 'Not Provided', 'mjschool' ); } ?>
 														</label>
 													</div>
 													<div class="col-xl-3 col-md-3 col-sm-12 mjschool-margin-top-15px">
@@ -435,7 +435,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 																<?php
 																if ( ! empty( $mother_doc_info[0]->value ) ) {
 																	?>
-																	<a download href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $mother_doc_info[0]->value ); ?>" class=" btn btn-default"  <?php if ( empty( $mother_doc_info[0] ) ) { ?> disabled <?php } ?>><i class="fas fa-download"></i> <?php if ( ! empty( $mother_doc_info[0]->title ) ) { echo esc_html( $mother_doc_info[0]->title ); } else { esc_html_e( ' Download', 'mjschool' ); } ?></a>
+																	<a download href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $mother_doc_info[0]->value ) ); ?>" class=" btn btn-default"  <?php if ( empty( $mother_doc_info[0] ) ) { ?> disabled <?php } ?>><i class="fas fa-download"></i> <?php if ( ! empty( $mother_doc_info[0]->title ) ) { echo esc_html( $mother_doc_info[0]->title ); } else { esc_html_e( ' Download', 'mjschool' ); } ?></a>
 																	<?php
 																} else {
 																	esc_html_e( 'Not Provided', 'mjschool' );

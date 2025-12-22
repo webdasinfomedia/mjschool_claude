@@ -382,7 +382,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 													<label class="mjschool-view-page-content-labels">
 														<?php
 														if ( ! empty( $signature_file ) ) {
-															$signature_url = esc_url( content_url() . '/' . ltrim( $signature_file, '/' ) );
+															$signature_url = esc_url( content_url( '/' . ltrim( $signature_file, '/' ) ) );
 															echo '<a class="btn btn-default" href="' . esc_url( $signature_url ) . '" target="_blank"><i class="fas fa-download"></i> ' . esc_html__( 'Download', 'mjschool' ) . '</a>';
 														} else {
 															echo esc_html__( 'Not Provided', 'mjschool' );

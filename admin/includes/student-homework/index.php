@@ -104,7 +104,7 @@ if ( isset( $_POST['Save_Homework'] ) ) {
 				$module              = 'homework';
 				$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $homework_id );
 				if ( $update_data ) {
-					wp_safe_redirect( esc_url_raw( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.esc_attr( $nonce ).'&message=2' ) );
+					wp_safe_redirect( esc_url_raw( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.rawurlencode( $nonce ).'&message=2' ) ) );
 					die();
 				}
 			} else {
@@ -117,7 +117,7 @@ if ( isset( $_POST['Save_Homework'] ) ) {
 			
 			$users = new WP_User_Query( $args );
 			if ( $users->get_total() === 0 ) {
-				wp_safe_redirect( esc_url_raw( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.esc_attr( $nonce ).'&message=4' ) );
+				wp_safe_redirect( esc_url_raw( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.rawurlencode( $nonce ).'&message=4' ) ) );
 				die();
 			} else {
 				if ( isset( $_FILES['homework_document'] ) && ! empty( $_FILES['homework_document'] ) && $_FILES['homework_document']['size'] != 0 ) {
@@ -142,7 +142,7 @@ if ( isset( $_POST['Save_Homework'] ) ) {
 				$module             = 'homework';
 				$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $insert_data );
 				if ( $insert_data ) {
-					wp_safe_redirect( esc_url_raw( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.esc_attr( $nonce ).'&message=1' ) );
+					wp_safe_redirect( esc_url_raw( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) ) );
 					die();
 				}
 			}
@@ -159,7 +159,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 			$delete = $ojc->mjschool_get_delete_records( $tablename, intval( $id ) );
 		}
 		if ( $delete ) {
-			wp_safe_redirect( esc_url_raw( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.esc_attr( $nonce ).'&message=3' ) );
+			wp_safe_redirect( esc_url_raw( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.rawurlencode( $nonce ).'&message=3' ) ) );
 			die();
 		}
 	}
@@ -171,7 +171,7 @@ if ( $action === 'delete' ) {
 		$homework_id_raw = isset( $_REQUEST['homework_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['homework_id'] ) ) : '';
 		$dele   = $delete->mjschool_get_delete_record( mjschool_decrypt_id( $homework_id_raw ) );
 		if ( $dele ) {
-			wp_safe_redirect( esc_url_raw( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.esc_attr( $nonce ).'&message=3' ) );
+			wp_safe_redirect( esc_url_raw( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.rawurlencode( $nonce ).'&message=3' ) ) );
 			die();
 		}
 	} else {
@@ -397,7 +397,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																		<?php
 																		if ( ! empty( $custom_field_value ) ) {
 																			?>
-																			<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+																			<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
 																				<button class="btn btn-default view_document" type="button"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 																			</a>
 																			<?php
@@ -483,7 +483,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 						if ($user_access_add === '1' ) {
 							?>
 							<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-								<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_student_homewrok&tab=addhomework' ); ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework' ) ); ?>">
 									<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 								</a>
 								<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -633,7 +633,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																		<?php
 																		if ( ! empty( $custom_field_value ) ) {
 																			?>
-																			<a target="" href="<?php echo esc_url( content_url() . '/uploads/school_assets/' . $custom_field_value ); ?>" download="CustomFieldfile">
+																			<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value ) ); ?>" download="CustomFieldfile">
 																				<button class="btn btn-default view_document" type="button"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button>
 																			</a>
 																			<?php

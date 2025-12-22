@@ -720,7 +720,7 @@ if ( $active_tab === 'mjschool-admission-form' ) {
 										$safe_filename = sanitize_file_name( $father_doc_info[0]->value );
 										?>
 										<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-											<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $safe_filename ); ?>"><i class="fa fa-download"></i><?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+											<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $safe_filename ) ); ?>"><i class="fa fa-download"></i><?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 										</div>
 										<?php
 									}
@@ -940,7 +940,7 @@ if ( $active_tab === 'mjschool-admission-form' ) {
 										$safe_filename = sanitize_file_name( $mother_doc_info[0]->value );
 										?>
 										<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-											<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url() . '/uploads/school_assets/' . $safe_filename ); ?>"><i class="fa fa-download"></i><?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+											<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $safe_filename ) ); ?>"><i class="fa fa-download"></i><?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 										</div>
 										<?php
 									}

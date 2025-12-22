@@ -13830,6 +13830,11 @@ function mjschool_all_date_type_value( $date_type ) {
  * @return string Status letter (P/A/L/H/F).
  */
 function mjschool_attendance_report_all_status_value( $date, $class_id, $user_id ) {
+	// Sanitize inputs immediately.
+	$date     = sanitize_text_field( $date );
+	$class_id = absint( $class_id );
+	$user_id  = absint( $user_id );
+	
 	// Replace this with your desired date.
 	$current = new DateTime( $date );
 	$dayName = $current->format( 'l' );
@@ -13837,33 +13842,33 @@ function mjschool_attendance_report_all_status_value( $date, $class_id, $user_id
 	// HOLIDAY ATTENDANCE DATA.
 	$tbl_name = $wpdb->prefix . 'mjschool_holiday';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$holiday_att_data = $wpdb->get_results( "SELECT * FROM $tbl_name WHERE '$date' between date and end_date" );
+	$holiday_att_data = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $tbl_name WHERE %s between date and end_date", $date ) );
 	// ATTENDANCE DATA WITH STATUS.
 	$tbl_name = $wpdb->prefix . 'mjschool_sub_attendance';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$attendance_data = $wpdb->get_row( "SELECT status FROM $tbl_name WHERE user_id = $user_id AND class_id = $class_id AND attendance_date = '$date'" );
+	$attendance_data = $wpdb->get_row( $wpdb->prepare( "SELECT status FROM $tbl_name WHERE user_id = %d AND class_id = %d AND attendance_date = %s", $user_id, $class_id, $date ) );
 	if ( ! empty( $holiday_att_data ) ) {
-		$result = esc_attr__( 'H', 'mjschool' );
+		$result = esc_html__( 'H', 'mjschool' );
 	} elseif ( ! empty( $attendance_data ) ) {
 		if ( $attendance_data->status === 'Present' ) {
-			$status = esc_attr__( 'P', 'mjschool' );
+			$status = esc_html__( 'P', 'mjschool' );
 		} elseif ( $attendance_data->status === 'Absent' ) {
-			$status = esc_attr__( 'A', 'mjschool' );
+			$status = esc_html__( 'A', 'mjschool' );
 		} elseif ( $attendance_data->status === 'Late' ) {
-			$status = esc_attr__( 'L', 'mjschool' );
+			$status = esc_html__( 'L', 'mjschool' );
 		} elseif ( $attendance_data->status === 'Half Day' ) {
-			$status = esc_attr__( 'F', 'mjschool' );
+			$status = esc_html__( 'F', 'mjschool' );
 		}
 		$result = $status;
 	} elseif ( $dayName === 'Sunday' ) {
-		$result = esc_attr__( 'H', 'mjschool' );
+		$result = esc_html__( 'H', 'mjschool' );
 	} else {
 		// CHECK ATTENDANCE ADDED FOR CLASS.
 		$query = $wpdb->prepare( "SELECT status FROM $tbl_name WHERE class_id = %d AND attendance_date = %s AND sub_id IS NULL", $class_id, $date );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$attendance_data = $wpdb->get_row( $query );
 		if ( ! empty( $attendance_data ) ) {
-			$result = $status = esc_attr__( 'A', 'mjschool' );
+			$result = $status = esc_html__( 'A', 'mjschool' );
 		} else {
 			$result = '';
 		}
@@ -13883,13 +13888,16 @@ function mjschool_attendance_report_all_status_value( $date, $class_id, $user_id
 function mjschool_view_attendance_report_for_start_date_enddate_total_present( $start_date, $end_date, $cid ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_attendence';
-	$class_id = intval( $cid );
+	
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	$class_id   = absint( $cid );
+	
 	// Prepare the query with placeholders.
 	$query = "SELECT * FROM $tbl_name WHERE role_name = %s AND attendence_date BETWEEN %s AND %s AND class_id = %d AND status = %s";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( $query, 'student', $start_date, $end_date, $class_id, 'Present' ) );
-	// Return the count of results.
+	$result = $wpdb->get_results( $wpdb->prepare( $query, $id ) );
 	return count( $result );
 }
 /**
@@ -13905,7 +13913,11 @@ function mjschool_view_attendance_report_for_start_date_enddate_total_present( $
 function mjschool_view_attendance_report_for_start_date_enddate_absent( $start_date, $end_date, $cid ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_attendence';
-	$class_id = intval( $cid );
+	
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	$class_id   = absint( $cid );
+	
 	// Prepare the query with placeholders.
 	$query = "SELECT * FROM $tbl_name WHERE role_name = %s AND attendence_date BETWEEN %s AND %s AND class_id = %d AND status = %s";
 	// Prepare and execute the query.
@@ -13927,7 +13939,11 @@ function mjschool_view_attendance_report_for_start_date_enddate_absent( $start_d
 function mjschool_view_attendance_report_for_start_date_enddate_Late( $start_date, $end_date, $cid ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_attendence';
-	$class_id = intval( $cid );
+	
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	$class_id   = absint( $cid );
+	
 	// Prepare the query with placeholders.
 	$query = "SELECT * FROM $tbl_name WHERE role_name = %s AND attendence_date BETWEEN %s AND %s AND class_id = %d AND status = %s";
 	// Prepare and execute the query.
@@ -13949,7 +13965,11 @@ function mjschool_view_attendance_report_for_start_date_enddate_Late( $start_dat
 function mjschool_view_attendance_report_for_start_date_enddate_Half_day( $start_date, $end_date, $cid ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_attendence';
-	$class_id = intval( $cid );
+	
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	$class_id   = absint( $cid );
+	
 	// Prepare the query with placeholders.
 	$query = "SELECT * FROM $tbl_name WHERE role_name = %s AND attendence_date BETWEEN %s AND %s AND class_id = %d AND status = %s";
 	// Prepare and execute the query.
@@ -13968,6 +13988,7 @@ function mjschool_view_attendance_report_for_start_date_enddate_Half_day( $start
  */
 function mjschool_view_attendance_report_for_start_date_enddate_total( $class_id ) {
 	global $wpdb;
+	$class_id = absint( $class_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$exlude_id = mjschool_approve_student_list();
 
@@ -13993,7 +14014,10 @@ function mjschool_view_attendance_report_for_start_date_enddate_total( $class_id
 function mjschool_view_leave_student_for_data( $leave_date, $sid, $status ) {
 	global $wpdb;
 	$tbl_name   = $wpdb->prefix . 'mjschool_leave';
-	$Student_id = intval( $sid );
+	$leave_date = sanitize_text_field( $leave_date );
+	$sid        = sanitize_text_field( $sid );
+	$status     = sanitize_text_field( $status );
+	$Student_id = ( $sid === 'all_student' ) ? 'all_student' : absint( $sid );
 	// Prepare the query based on the conditions.
 	if ( $Student_id === 'all_student' && $status === 'all_status' ) {
 		$query = "SELECT * FROM $tbl_name WHERE start_date = %s";
@@ -14028,9 +14052,9 @@ function mjschool_get_user_detail_by_id( $student_id ) {
 	$last_name   = get_user_meta( $student_id, 'last_name', true );
 	$student_id  = get_user_meta( $student_id, 'patient_id', true );
 	$user_return = array(
-		'id'         => $student_id,
-		'first_name' => $first_name,
-		'last_name'  => $last_name,
+		'id'         => sanitize_text_field($student_id),
+		'first_name' => sanitize_text_field($first_name),
+		'last_name'  => sanitize_text_field($last_name),
 	);
 	return $user_return;
 }
@@ -14046,7 +14070,7 @@ function mjschool_get_user_detail_by_id( $student_id ) {
 function mjschool_message_dashboard( $sid ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_message';
-	$user_id  = intval( $sid );
+	$user_id  = absint( $sid );
 	// Prepare the query with placeholders.
 	$query = "SELECT * FROM $tbl_name WHERE receiver = %d ORDER BY message_id DESC LIMIT 5";
 	// Prepare and execute the query.
@@ -14097,7 +14121,7 @@ function mjschool_notification_dashboard() {
 function mjschool_user_notification_dashboard( $student_id ) {
 	global $wpdb;
 	$mjschool_notification = $wpdb->prefix . 'mjschool_notification';
-	$id                    = intval( $student_id );
+	$id                    = absint( $student_id );
 	// Prepare the query with placeholders.
 	$query = "SELECT * FROM $mjschool_notification WHERE student_id = %d ORDER BY notification_id DESC LIMIT 5";
 	// Prepare and execute the query.
@@ -14131,7 +14155,7 @@ function mjschool_class_dashboard() {
 function mjschool_get_feespayment_by_id( $student_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_fees_payment';
-	$id         = intval( $student_id );
+	$id         = absint( $student_id );
 	// Prepare the query with a placeholder.
 	$query = "SELECT * FROM $table_name WHERE fees_pay_id = %d";
 	// Prepare and execute the query.
@@ -14149,7 +14173,7 @@ function mjschool_get_feespayment_by_id( $student_id ) {
 function mjschool_feespayment_detail( $student_id ) {
 	global $wpdb;
 	$table_mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
-	$id                          = intval( $student_id );
+	$id                          = absint( $student_id );
 	// Prepare the query with a placeholder for the student_id.
 	$query = "SELECT * FROM $table_mjschool_fees_payment WHERE student_id = %d ORDER BY fees_pay_id DESC LIMIT 4";
 	// Prepare and execute the query.
@@ -14167,7 +14191,7 @@ function mjschool_feespayment_detail( $student_id ) {
 function mjschool_get_fees_payment_detailpage( $student_id ) {
 	global $wpdb;
 	$table_mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
-	$id                          = intval( $student_id );
+	$id                          = absint( $student_id );
 	// Prepare the query with a placeholder for the student_id.
 	$query = "SELECT * FROM $table_mjschool_fees_payment WHERE student_id = %d";
 	// Prepare and execute the query.
@@ -14185,11 +14209,11 @@ function mjschool_get_fees_payment_detailpage( $student_id ) {
 function mjschool_monthly_attendence( $student_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_sub_attendance';
+	$id = absint( $student_id );
 	// Get the current date, first day, and last day of the month.
 	$curr_date = date( 'Y-m-d' );
 	$sdate     = date( 'Y-m-d', strtotime( 'first day of this month' ) );
 	$edate     = date( 'Y-m-d', strtotime( 'last day of this month' ) );
-	$id        = intval( $student_id );
 	// Prepare the query with placeholders for the dynamic values.
 	$query = "SELECT * FROM $table_name WHERE attendance_date BETWEEN %s AND %s AND user_id = %d ORDER BY attendance_date DESC";
 	// Prepare and execute the query.
@@ -14207,19 +14231,29 @@ function mjschool_monthly_attendence( $student_id ) {
 function mjschool_monthly_attendence_for_parent( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_sub_attendance';
-	$date       = date( 'Y-m-d' );
-	$curr_date  = date( 'Y-m-d', strtotime( $date ) );
-	$user_data  = mjschool_get_parents_child_id( $id );
-	$sdate      = date( 'Y-m-d', strtotime( 'first day of this month' ) );
-	$edate      = date( 'Y-m-d', strtotime( 'last day of this month' ) );
+	
+	$id        = absint( $id );
+	$date      = date( 'Y-m-d' );
+	$curr_date = date( 'Y-m-d', strtotime( $date ) );
+	$user_data = mjschool_get_parents_child_id( $id );
+	$sdate     = date( 'Y-m-d', strtotime( 'first day of this month' ) );
+	$edate     = date( 'Y-m-d', strtotime( 'last day of this month' ) );
+	$result    = array();
+	
 	if ( ! empty( $user_data ) ) {
 		foreach ( $user_data as $student_id ) {
+			$student_id = absint( $student_id );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$result[] = $wpdb->get_results( "SELECT * FROM $table_name WHERE `attendance_date` BETWEEN '$sdate' AND '$edate' AND  user_id=$student_id" );
+			$result[] = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE attendance_date BETWEEN %s AND %s AND user_id = %d", $sdate, $edate, $student_id ) );
 		}
 	}
-	$mergedArray  = array_merge( ...$result );
-	$unique_array = array_unique( $mergedArray, SORT_REGULAR );
+	if ( ! empty( $result ) ) {
+		$mergedArray  = array_merge( ...$result );
+		$unique_array = array_unique( $mergedArray, SORT_REGULAR );
+	} else {
+		$unique_array = array();
+	}
+	
 	return $unique_array;
 }
 /**
@@ -14232,9 +14266,9 @@ function mjschool_monthly_attendence_for_parent( $id ) {
 function mjschool_hall_ticket_list( $student_id ) {
 	global $wpdb;
 	$table_name_mjschool_exam_hall_receipt = $wpdb->prefix . 'mjschool_exam_hall_receipt';
-	$id                                    = intval( $student_id );
+	$id                                    = absint( $student_id );
 	// Prepare the query with a placeholder for user_id.
-	$query = "SELECT * FROM $table_name_mjschool_exam_hall_receipt WHERE user_id = %d";
+	$query = "SELECT * FROM {$table_name_mjschool_exam_hall_receipt} WHERE user_id = %d";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $wpdb->prepare( $query, $id ) );
@@ -14253,10 +14287,10 @@ function mjschool_hall_ticket_list( $student_id ) {
 function mjschool_hall_ticket_by_exam_id( $student_id, $exam_id ) {
 	global $wpdb;
 	$table_name_mjschool_exam_hall_receipt = $wpdb->prefix . 'mjschool_exam_hall_receipt';
-	$id                                    = intval( $student_id );
-	$exam_id                               = intval( $exam_id );
+	$id                                    = absint( $student_id );
+	$exam_id                               = absint( $exam_id );
 	// Prepare the query with a placeholder for user_id.
-	$query = "SELECT * FROM $table_name_mjschool_exam_hall_receipt WHERE user_id = %d && exam_id = %d";
+	$query = "SELECT * FROM $table_name_mjschool_exam_hall_receipt WHERE user_id = %d AND exam_id = %d";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $wpdb->prepare( $query, $id, $exam_id ) );
@@ -14275,8 +14309,8 @@ function mjschool_hall_ticket_by_exam_id( $student_id, $exam_id ) {
 function mjschool_check_result( $student_id, $exam_id ) {
 	global $wpdb;
 	$table_name_marks = $wpdb->prefix . 'mjschool_marks';
-	$id               = intval( $student_id );
-	$exam_id          = intval( $exam_id );
+	$id               = absint( $student_id );
+	$exam_id          = absint( $exam_id );
 	$query            = "SELECT COUNT(*) FROM $table_name_marks WHERE (marks > 0 OR contributions = 'yes' ) AND student_id = %d AND exam_id = %d";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -14294,15 +14328,16 @@ function mjschool_check_result( $student_id, $exam_id ) {
  */
 function mjschool_student_homework_detail( $student_id ) {
 	global $wpdb;
+	$student_id  = absint( $student_id );
 	$class_id    = get_user_meta( $student_id, 'class_name', true );
+	$class_id    = absint( $class_id );
 	$table_name  = $wpdb->prefix . 'mjschool_homework';
 	$table_name2 = $wpdb->prefix . 'mjschool_student_homework';
-	$id          = intval( $student_id );
 	// Prepare the query with placeholders for the student_id and class_name.
-	$query = "SELECT * FROM $table_name AS a LEFT JOIN $table_name2 AS b ON a.homework_id = b.homework_id WHERE b.student_id = %d AND a.class_name = %s";
+	$query = "SELECT * FROM $table_name AS a LEFT JOIN $table_name2 AS b ON a.homework_id = b.homework_id WHERE b.student_id = %d AND a.class_name = %d";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( $query, $id, $class_id ) );
+	$result = $wpdb->get_results( $wpdb->prepare( $query, $student_id, $class_id ) );
 	return $result;
 }
 /**
@@ -14317,7 +14352,7 @@ function mjschool_student_homework_detail( $student_id ) {
 function mjschool_student_issuebook_detail( $student_id ) {
 	global $wpdb;
 	$table_issuebook = $wpdb->prefix . 'mjschool_library_book_issue';
-	$id              = intval( $student_id );
+	$id              = absint( $student_id );
 	// Prepare the query with a placeholder for student_id.
 	$query = "SELECT * FROM $table_issuebook WHERE student_id = %d";
 	// Prepare and execute the query.
@@ -14337,7 +14372,7 @@ function mjschool_student_issuebook_detail( $student_id ) {
 function mjschool_message_detail( $student_id ) {
 	global $wpdb;
 	$tbl_name_message = $wpdb->prefix . 'mjschool_message';
-	$id               = intval( $student_id );
+	$id               = absint( $student_id );
 	// Prepare the query with a placeholder for receiver.
 	$query = "SELECT * FROM $tbl_name_message WHERE receiver = %d";
 	// Prepare and execute the query.
@@ -14381,7 +14416,7 @@ function mjschool_time_convert( $time ) {
 function mjschool_get_all_notification_created_by( $student_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_notification';
-	$user_id    = intval( $student_id );
+	$user_id    = absint( $student_id );
 	// Prepare the query with a placeholder for created_by.
 	$query = "SELECT * FROM $table_name WHERE created_by = %d";
 	// Prepare and execute the query.
@@ -14401,8 +14436,9 @@ function mjschool_get_all_notification_created_by( $student_id ) {
 function mjschool_get_all_notification_created_by_for_dashboard( $user_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_notification';
+	$user_id = absint( $user_id );
 	// Fetch the last 5 notifications created by the given user_id, ordered by the created_at column.
-	$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE created_by = %d ORDER BY notification_id DESC LIMIT 5", $user_id );
+	$query = $wpdb->prepare( "SELECT * FROM {$table_name }WHERE created_by = %d ORDER BY notification_id DESC LIMIT 5", $user_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	return $wpdb->get_results( $query );
 }
@@ -14416,13 +14452,14 @@ function mjschool_get_all_notification_created_by_for_dashboard( $user_id ) {
  * @return array List of unique notification records.
  */
 function mjschool_get_all_notification_for_parent( $user_id ) {
+	$user_id = absint( $user_id );
 	$user_data = mjschool_get_parents_child_id( $user_id );
 	if ( ! empty( $user_data ) ) {
 		foreach ( $user_data as $student_id ) {
 			global $wpdb;
 			$table_name = $wpdb->prefix . 'mjschool_notification';
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$result[] = $wpdb->get_results( "SELECT * FROM $table_name WHERE student_id=" . $student_id );
+			$result[] = $wpdb->get_results( "SELECT * FROM {$table_name} WHERE student_id=" . $student_id );
 		}
 	}
 	if ( ! empty( $result ) ) {
@@ -14443,6 +14480,7 @@ function mjschool_get_all_notification_for_parent( $user_id ) {
  * @return array List of recent notifications.
  */
 function mjschool_get_all_notification_for_parent_for_dashboard( $user_id ) {
+	$user_id = absint( $user_id );
 	$user_data = mjschool_get_parents_child_id( $user_id );
 	$result    = array();
 	if ( ! empty( $user_data ) ) {
@@ -14484,7 +14522,7 @@ function mjschool_get_all_notification_for_parent_for_dashboard( $user_id ) {
 function mjschool_get_student_own_notification_created_by( $student_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_notification';
-	$user_id    = intval( $student_id );
+	$user_id    = absint( $student_id );
 	// Prepare the query with a placeholder for student_id.
 	$query = "SELECT * FROM $table_name WHERE student_id = %d";
 	// Prepare and execute the query.
@@ -14504,7 +14542,7 @@ function mjschool_get_student_own_notification_created_by( $student_id ) {
 function mjschool_get_student_own_notification_created_by_for_dashboard( $student_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_notification';
-	$user_id    = intval( $student_id );
+	$user_id    = absint( $student_id );
 	// Fetch the last 5 notifications for the given student_id, ordered by the created_at column.
 	$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE student_id = %d ORDER BY notification_id DESC LIMIT 5", $user_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -14521,7 +14559,7 @@ function mjschool_get_trasport_data_for_dashboard() {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_transport';
 	// Prepare the query (no dynamic data here, but it is still a good practice).
-	$query = "SELECT * FROM $table_name ORDER BY transport_id DESC LIMIT 5";
+	$query = "SELECT * FROM {$table_name} ORDER BY transport_id DESC LIMIT 5";
 	// Execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $query );
@@ -14539,7 +14577,7 @@ function mjschool_get_trasport_data_for_dashboard() {
 function mjschool_get_assign_transport_by_id( $transport_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_assign_transport';
-	$tid        = intval( $transport_id );
+	$tid        = absint( $transport_id );
 	// Prepare the query with a placeholder for transport_id.
 	$query = "SELECT * FROM $table_name WHERE transport_id = %d";
 	// Prepare and execute the query.
@@ -14558,7 +14596,7 @@ function mjschool_get_all_assign_transport() {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_assign_transport';
 	// Prepare the query (no dynamic data here, but it's still a good practice).
-	$query = "SELECT * FROM $table_name";
+	$query = "SELECT * FROM {$table_name}";
 	// Execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_results( $query );
@@ -14576,9 +14614,9 @@ function mjschool_get_all_assign_transport() {
 function mjschool_get_single_assign_transport_by_id( $transport_id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_assign_transport';
-	$tid        = intval( $transport_id );
+	$tid        = absint( $transport_id );
 	// Prepare the query with a placeholder for assign_transport_id.
-	$query = "SELECT * FROM $table_name WHERE assign_transport_id = %d";
+	$query = "SELECT * FROM {$table_name} WHERE assign_transport_id = %d";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_row( $wpdb->prepare( $query, $tid ) );
@@ -14596,9 +14634,9 @@ function mjschool_get_single_assign_transport_by_id( $transport_id ) {
 function mjschool_student_assign_bed_data_by_student_id( $studnet_id ) {
 	global $wpdb;
 	$table_mjschool_assign_beds = $wpdb->prefix . 'mjschool_assign_beds';
-	$id                     = intval( $studnet_id );
+	$id                         = absint( $studnet_id );
 	// Prepare the query with a placeholder for student_id.
-	$query = "SELECT * FROM $table_mjschool_assign_beds WHERE student_id = %d";
+	$query = "SELECT * FROM {$table_mjschool_assign_beds} WHERE student_id = %d";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_row( $wpdb->prepare( $query, $id ) );
@@ -14617,10 +14655,10 @@ function mjschool_student_assign_bed_data_by_student_id( $studnet_id ) {
 function mjschool_student_assign_bed_data_by_student_and_hostel_id( $studnet_id, $hostel_id ) {
 	global $wpdb;
 	$table_mjschool_assign_beds = $wpdb->prefix . 'mjschool_assign_beds';
-	$id                     = intval( $studnet_id );
-	$hostel_id              = intval( $hostel_id );
+	$id                         = absint( $studnet_id );
+	$hostel_id                  = absint( $hostel_id );
 	// Prepare the query with a placeholder for student_id.
-	$query = "SELECT * FROM $table_mjschool_assign_beds WHERE student_id = %d AND hostel_id = %d";
+	$query = "SELECT * FROM {$table_mjschool_assign_beds} WHERE student_id = %d AND hostel_id = %d";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_row( $wpdb->prepare( $query, $id, $hostel_id ) );
@@ -14638,9 +14676,9 @@ function mjschool_student_assign_bed_data_by_student_and_hostel_id( $studnet_id,
 function mjschool_get_room__data_by_room_id( $id ) {
 	global $wpdb;
 	$table_mjschool_room = $wpdb->prefix . 'mjschool_room';
-	$room_id         = intval( $id );
+	$room_id         = absint( $id );
 	// Prepare the query with a placeholder for room_id.
-	$query = "SELECT * FROM $table_mjschool_room WHERE id = %d";
+	$query = "SELECT * FROM {$table_mjschool_room} WHERE id = %d";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_row( $wpdb->prepare( $query, $room_id ) );
@@ -14658,8 +14696,9 @@ function mjschool_get_room__data_by_room_id( $id ) {
 function mjschool_hostel_type_by_id( $hostel_id ) {
 	global $wpdb;
 	$table_mjschool_hostel = $wpdb->prefix . 'mjschool_hostel';
+	$hostel_id = absint( $hostel_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_row( "SELECT * FROM $table_mjschool_hostel where id=" . $hostel_id );
+	$result = $wpdb->get_row( "SELECT * FROM {$table_mjschool_hostel} where id=" . $hostel_id );
 	if ( ! empty( $result->hostel_type ) ) {
 		return $result->hostel_type;
 	} else {
@@ -14716,8 +14755,10 @@ function mjschool_frontend_dashboard_card_access() {
 function mjschool_get_total_income( $start_date, $end_date ) {
 	global $wpdb;
 	$table_income = $wpdb->prefix . 'mjschool_income_expense';
+	$start_date = sanitize_text_field( $start_date );
+	$end_date = sanitize_text_field( $end_date );
 	// Prepare the query with placeholders for start_date and end_date.
-	$query = "SELECT * FROM $table_income WHERE invoice_type = %s AND income_create_date BETWEEN %s AND %s";
+	$query = "SELECT * FROM {$table_income} WHERE invoice_type = %s AND income_create_date BETWEEN %s AND %s";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $wpdb->prepare( $query, 'income', $start_date, $end_date ) );
@@ -14736,8 +14777,10 @@ function mjschool_get_total_income( $start_date, $end_date ) {
 function mjschool_get_total_expense( $start_date, $end_date ) {
 	global $wpdb;
 	$table_income = $wpdb->prefix . 'mjschool_income_expense';
+	$start_date = sanitize_text_field( $start_date );
+	$end_date = sanitize_text_field( $end_date );
 	// Prepare the query with placeholders for start_date and end_date.
-	$query = "SELECT * FROM $table_income WHERE invoice_type = %s AND income_create_date BETWEEN %s AND %s";
+	$query = "SELECT * FROM {$table_income} WHERE invoice_type = %s AND income_create_date BETWEEN %s AND %s";
 	// Prepare and execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $wpdb->prepare( $query, 'expense', $start_date, $end_date ) );
@@ -14760,12 +14803,12 @@ function mjschool_append_audit_log( $audit_action, $user_id, $created_by, $actio
 	global $wpdb;
 	$table_mjschool_audit_log   = $wpdb->prefix . 'mjschool_audit_log';
 	$ip_address             = getHostByName( getHostName() );
-	$data['audit_action']   = $audit_action;
-	$data['user_id']        = $user_id;
-	$data['action']         = $action;
+	$data['audit_action']   = sanitize_text_field( $audit_action );
+	$data['user_id']        = absint( $user_id );
+	$data['action']         = sanitize_text_field( $action );
 	$data['ip_address']     = $ip_address;
-	$data['created_by']     = $created_by;
-	$data['module']         = $module;
+	$data['created_by']     = sanitize_text_field( $created_by );
+	$data['module']         = sanitize_text_field( $module );
 	$data['created_at']     = date( 'Y-m-d' );
 	$data['deleted_status'] = 0;
 	$data['date_time']      = date( 'Y-m-d H:i:s' );
@@ -14787,8 +14830,8 @@ function mjschool_append_user_log( $user_login, $role ) {
 	global $wpdb;
 	$table_mjschool_user_log    = $wpdb->prefix . 'mjschool_user_log';
 	$ip_address             = getHostByName( getHostName() );
-	$data['user_login']     = "$user_login";
-	$data['role']           = "$role";
+	$data['user_login']     = $user_login;
+	$data['role']           = $role;
 	$data['ip_address']     = $ip_address;
 	$data['created_at']     = date( 'Y-m-d' );
 	$data['deleted_status'] = 0;
@@ -14989,9 +15032,9 @@ function mjschool_generate_admission_fees_invoice_draft( $admission_fees_amount,
 function mjschool_delete_audit_log( $id ) {
 	global $wpdb;
 	$table_mjschool_audit_log = $wpdb->prefix . 'mjschool_audit_log';
-	$audit_id             = intval( $id );
+	$audit_id             = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_mjschool_audit_log WHERE id=%d", $audit_id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM {$table_mjschool_audit_log} WHERE id = %d", $audit_id ) );
 	return $result;
 }
 /**
@@ -15006,9 +15049,9 @@ function mjschool_delete_audit_log( $id ) {
 function mjschool_delete_migration_log( $id ) {
 	global $wpdb;
 	$table_mjschool_migration_log = $wpdb->prefix . 'mjschool_migration_log';
-	$audit_id                 = intval( $id );
+	$audit_id                 = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_mjschool_migration_log WHERE id=%d", $audit_id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM {$table_mjschool_migration_log} WHERE id = %d", $audit_id ) );
 	return $result;
 }
 /**
@@ -15024,8 +15067,11 @@ function mjschool_delete_migration_log( $id ) {
  */
 function mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $type ) {
 	global $wpdb;
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	$type       = sanitize_text_field( $type );
 	$table_name = $wpdb->prefix . 'mjschool_attendence';
-	$query      = $wpdb->prepare( "SELECT * FROM $table_name WHERE role_name = %s AND attendence_date BETWEEN %s AND %s ORDER BY attendence_date DESC", $type, $start_date, $end_date );
+	$query      = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE role_name = %s AND attendence_date BETWEEN %s AND %s ORDER BY attendence_date DESC", $type, $start_date, $end_date );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $query );
 	return $result;
@@ -15044,8 +15090,10 @@ function mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $st
 function mjschool_get_member_attendence_beetween_satrt_date_to_enddate_for_admin( $start_date, $end_date, $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_attendence';
-	$member_id  = intval( $id );
-	$query      = $wpdb->prepare( "SELECT * FROM $table_name WHERE user_id = %d AND attendence_date BETWEEN %s AND %s ORDER BY attendence_date DESC", $member_id, $start_date, $end_date );
+	$start_date = sanitize_text_field( $start_date );
+	$end_date = sanitize_text_field( $end_date );
+	$member_id  = absint( $id );
+	$query      = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE user_id = %d AND attendence_date BETWEEN %s AND %s ORDER BY attendence_date DESC", $member_id, $start_date, $end_date );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$member_result = $wpdb->get_results( $query );
 	return $member_result;
@@ -15062,9 +15110,9 @@ function mjschool_get_member_attendence_beetween_satrt_date_to_enddate_for_admin
 function mjschool_get_class_name_by_teacher_id( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_teacher_class';
-	$teacher_id = intval( $id );
+	$teacher_id = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$teacher = $wpdb->get_row( $wpdb->prepare( "SELECT class_id FROM $table_name WHERE teacher_id=%d", $teacher_id ) );
+	$teacher = $wpdb->get_row( $wpdb->prepare( "SELECT class_id FROM {$table_name} WHERE teacher_id=%d", $teacher_id ) );
 	return $teacher;
 }
 /**
@@ -15081,8 +15129,10 @@ function mjschool_get_class_name_by_teacher_id( $id ) {
 function mjschool_get_student_attendence_beetween_satrt_date_to_enddate_class_wise_for_admin( $start_date, $end_date, $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_attendence';
-	$class_id   = intval( $id );
-	$query      = $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d AND attendence_date BETWEEN %s AND %s ORDER BY attendence_date DESC", $class_id, $start_date, $end_date );
+	$start_date = sanitize_text_field( $start_date );
+	$end_date = sanitize_text_field( $end_date );
+	$class_id   = absint( $id );
+	$query      = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id = %d AND attendence_date BETWEEN %s AND %s ORDER BY attendence_date DESC", $class_id, $start_date, $end_date );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$member_result = $wpdb->get_results( $query );
 	return $member_result;
@@ -15118,12 +15168,12 @@ function mjschool_get_student_attendence_beetween_satrt_date_to_enddate( $start_
 		$start_date = $response[0];
 		$end_date   = $response[1];
 		if ( ! empty( $class_id ) && $class_id != 'all class' ) {
-			$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d AND attendance_date BETWEEN %s AND %s ORDER BY attendance_date DESC", $class_id, $start_date, $end_date );
+			$query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id = %d AND attendance_date BETWEEN %s AND %s ORDER BY attendance_date DESC", $class_id, $start_date, $end_date );
 		} else {
-			$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE role_name = %s AND attendance_date BETWEEN %s AND %s ORDER BY attendance_date DESC", $type, $start_date, $end_date );
+			$query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE role_name = %s AND attendance_date BETWEEN %s AND %s ORDER BY attendance_date DESC", $type, $start_date, $end_date );
 		}
 	} else {
-		$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE role_name = %s AND attendance_date BETWEEN %s AND %s ORDER BY attendance_date DESC", $type, $start_date, $end_date );
+		$query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE role_name = %s AND attendance_date BETWEEN %s AND %s ORDER BY attendance_date DESC", $type, $start_date, $end_date );
 	}
 	if ( ! empty( $query ) ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -15146,8 +15196,12 @@ function mjschool_get_student_attendence_beetween_satrt_date_to_enddate( $start_
 function mjschool_teacher_view_attendance_for_report( $start_date, $end_date, $teacher_id, $status ) {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_attendence';
+	$start_date = sanitize_text_field( $start_date );
+	$end_date = sanitize_text_field( $end_date );
+	$status = sanitize_text_field( $status );
+	$teacher_id = absint( $teacher_id );
 	// Base query and parameters.
-	$query  = "SELECT * FROM $tbl_name WHERE role_name = %s AND attendence_date BETWEEN %s AND %s";
+	$query  = "SELECT * FROM {$tbl_name} WHERE role_name = %s AND attendence_date BETWEEN %s AND %s";
 	$params = array( 'teacher', $start_date, $end_date );
 	// Additional filters.
 	if ( $teacher_id !== 'all_teacher' ) {
@@ -15216,9 +15270,9 @@ function mjschool_send_push_notification( $json ) {
 function mjschool_get_class_by_teacher_id( $id ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_teacher_class';
-	$teacher_id = intval( $id );
+	$teacher_id = absint( $id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$teacher = $wpdb->get_results( $wpdb->prepare( "SELECT class_id FROM $table_name WHERE teacher_id=%d", $teacher_id ) );
+	$teacher = $wpdb->get_results( $wpdb->prepare( "SELECT class_id FROM {$table_name} WHERE teacher_id=%d", $teacher_id ) );
 	return $teacher;
 }
 /**
@@ -15240,9 +15294,9 @@ function mjschool_student_attendance_by_class_id( $start_date, $end_date, $id, $
 	// Sanitize and format the dates properly.
 	$start_date = date( 'Y-m-d', strtotime( 'first day of this month' ) );
 	$end_date   = date( 'Y-m-d', strtotime( 'last day of this month' ) );
-	$class_id   = intval( $id );
+	$class_id   = absint( $id );
 	// Use prepare for the query.
-	$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE role_name = %s AND class_id = %d AND attendance_date BETWEEN %s AND %s", $type, $class_id, $start_date, $end_date );
+	$query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE role_name = %s AND class_id = %d AND attendance_date BETWEEN %s AND %s", $type, $class_id, $start_date, $end_date );
 	// Execute the query and return the result.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $query );
@@ -15259,6 +15313,7 @@ function mjschool_student_attendance_by_class_id( $start_date, $end_date, $id, $
  * @return string Formatted student display name.
  */
 function mjschool_student_display_name_class_and_roll_wise( $user_id ) {
+	$user_id      = absint( $user_id );
 	$user_info    = get_userdata( $user_id );
 	$user_name    = $user_info->display_name;
 	$class_id     = get_user_meta( $user_id, 'class_name', true );
@@ -15278,6 +15333,7 @@ function mjschool_student_display_name_class_and_roll_wise( $user_id ) {
  * @return string Student name with roll number or 'N/A' if user not found.
  */
 function mjschool_student_display_name_with_roll( $user_id ) {
+	$user_id   = absint( $user_id );
 	$user_info = get_userdata( $user_id );
 	if ( ! empty( $user_info ) ) {
 		$user_name     = $user_info->display_name;
@@ -15298,6 +15354,7 @@ function mjschool_student_display_name_with_roll( $user_id ) {
  * @return string Display name or 'N/A' if not found.
  */
 function mjschool_user_display_name( $user_id ) {
+	$user_id   = absint( $user_id );
 	$user_info = get_userdata( $user_id );
 	if ( ! empty( $user_info ) ) {
 		$user_name = $user_info->display_name;
@@ -15316,9 +15373,9 @@ function mjschool_user_display_name( $user_id ) {
 function mjschool_delete_attendance( $id ) {
 	global $wpdb;
 	$table_mjschool_attendance = $wpdb->prefix . 'mjschool_sub_attendance';
-	$attendance_id         = intval( $id );
+	$attendance_id             = absint( $id );
 	// Use prepare for the query.
-	$query = $wpdb->prepare( "DELETE FROM $table_mjschool_attendance WHERE attendance_id = %d", $attendance_id );
+	$query = $wpdb->prepare( "DELETE FROM {$table_mjschool_attendance} WHERE attendance_id = %d", $attendance_id );
 	// Execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->query( $query );
@@ -15334,9 +15391,9 @@ function mjschool_delete_attendance( $id ) {
 function mjschool_delete_attendance_teacher( $id ) {
 	global $wpdb;
 	$table_mjschool_attendance = $wpdb->prefix . 'mjschool_attendence';
-	$attendance_id         = intval( $id );
+	$attendance_id             = absint( $id );
 	// Use prepare to safely include the ID in the query.
-	$query = $wpdb->prepare( "DELETE FROM $table_mjschool_attendance WHERE attendence_id = %d", $attendance_id );
+	$query = $wpdb->prepare( "DELETE FROM {$table_mjschool_attendance} WHERE attendence_id = %d", $attendance_id );
 	// Execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->query( $query );
@@ -15373,6 +15430,7 @@ function mjschool_setup_wizard_steps_updates( $step ) {
  * @return array Exam data list.
  */
 function mjschool_get_exam_data_for_parent( $student_id ) {
+	$student_id   = absint( $student_id );
 	$class_id   = get_user_meta( $student_id, 'class_name', true );
 	$section_id = get_user_meta( $student_id, 'class_section', true );
 	$obj_exam = new Mjschool_Exam();
@@ -15398,15 +15456,17 @@ function mjschool_get_user_document_list( $user_id, $user_type ) {
 	global $wpdb;
 	$obj_document = new mjschool_document();
 	$table_name   = $wpdb->prefix . 'mjschool_document';
+	$user_id   = absint( $user_id );
+	$user_type = sanitize_text_field( $user_type );
 	if ( $user_type === 'student' ) {
 		$section_id = get_user_meta( $user_id, 'class_section', true );
 		$class_id   = get_user_meta( $user_id, 'class_name', true );
 		if ( ! empty( $section_id ) ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$result = $wpdb->get_results( "SELECT * FROM $table_name where (class_id='all class' AND section_id='all section' AND student_id='all student' ) OR (student_id= $user_id) OR (class_id= $class_id AND section_id='all section' AND student_id='all student' ) OR (class_id= $class_id AND section_id = $section_id AND student_id='all student' ) ORDER BY created_date DESC" );
+			$result = $wpdb->get_results( "SELECT * FROM {$table_name} where (class_id='all class' AND section_id='all section' AND student_id='all student' ) OR (student_id= $user_id) OR (class_id= $class_id AND section_id='all section' AND student_id='all student' ) OR (class_id= $class_id AND section_id = $section_id AND student_id='all student' ) ORDER BY created_date DESC" );
 		} else {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$result = $wpdb->get_results( "SELECT * FROM $table_name where (class_id='all class' AND section_id='all section' AND student_id='all student' ) OR (student_id= $user_id) OR (class_id= $class_id AND section_id='all section' AND student_id='all student' ) ORDER BY created_date DESC" );
+			$result = $wpdb->get_results( "SELECT * FROM {$table_name} where (class_id='all class' AND section_id='all section' AND student_id='all student' ) OR (student_id= $user_id) OR (class_id= $class_id AND section_id='all section' AND student_id='all student' ) ORDER BY created_date DESC" );
 		}
 		return $result;
 	} elseif ( $user_type === 'parent' ) {
@@ -15416,24 +15476,24 @@ function mjschool_get_user_document_list( $user_id, $user_type ) {
 			$class_id   = get_user_meta( $student_id, 'class_name', true );
 			if ( ! empty( $section_id ) ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$result[] = $wpdb->get_results( "SELECT * FROM $table_name where (class_id='all class' AND section_id='all section' AND student_id='all student' ) OR (student_id= $student_id) OR (class_id= $class_id AND section_id='all section' AND student_id='all student' ) OR (class_id= $class_id AND section_id = $section_id AND student_id='all student' ) ORDER BY created_date DESC" );
+				$result[] = $wpdb->get_results( "SELECT * FROM {$table_name} where (class_id='all class' AND section_id='all section' AND student_id='all student' ) OR (student_id= $student_id) OR (class_id= $class_id AND section_id='all section' AND student_id='all student' ) OR (class_id= $class_id AND section_id = $section_id AND student_id='all student' ) ORDER BY created_date DESC" );
 			} else {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$result[] = $wpdb->get_results( "SELECT * FROM $table_name where (class_id='all class' AND section_id='all section' AND student_id='all student' ) OR (student_id= $student_id) OR (class_id= $class_id AND section_id='all section' AND student_id='all student' ) ORDER BY created_date DESC" );
+				$result[] = $wpdb->get_results( "SELECT * FROM {$table_name} where (class_id='all class' AND section_id='all section' AND student_id='all student' ) OR (student_id= $student_id) OR (class_id= $class_id AND section_id='all section' AND student_id='all student' ) ORDER BY created_date DESC" );
 			}
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$result[] = $wpdb->get_results( "SELECT * FROM $table_name WHERE document_for ='parent' AND (student_id='all parent' ) OR (student_id= $user_id) ORDER BY created_date DESC" );
+			$result[] = $wpdb->get_results( "SELECT * FROM {$table_name} WHERE document_for ='parent' AND (student_id='all parent' ) OR (student_id= $user_id) ORDER BY created_date DESC" );
 		}
 		$mergedArray  = array_merge( ...$result );
 		$unique_array = array_unique( $mergedArray, SORT_REGULAR );
 		return $unique_array;
 	} elseif ( $user_type === 'teacher' ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_results( "SELECT * FROM $table_name WHERE document_for ='teacher' AND (student_id='all teacher' ) OR (student_id= $user_id) OR (createdby= $user_id) ORDER BY created_date DESC" );
+		$result = $wpdb->get_results( "SELECT * FROM {$table_name} WHERE document_for ='teacher' AND (student_id='all teacher' ) OR (student_id= $user_id) OR (createdby= $user_id) ORDER BY created_date DESC" );
 		return $result;
 	} elseif ( $user_type === 'supportstaff' ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_results( "SELECT * FROM $table_name WHERE document_for ='supportstaff' AND (student_id='all supportstaff' ) OR (student_id= $user_id) OR (createdby= $user_id) ORDER BY created_date DESC" );
+		$result = $wpdb->get_results( "SELECT * FROM {$table_name} WHERE document_for ='supportstaff' AND (student_id='all supportstaff' ) OR (student_id= $user_id) OR (createdby= $user_id) ORDER BY created_date DESC" );
 		return $result;
 	} else {
 		$result = $obj_document->mjschool_get_own_documents( $user_id );
@@ -15452,7 +15512,7 @@ function mjschool_check_book_issued_by_status() {
 	global $wpdb;
 	$table_issuebook = $wpdb->prefix . 'mjschool_library_book_issue';
 	// Use prepare for the query.
-	$query = $wpdb->prepare( "SELECT * FROM $table_issuebook WHERE status = %s OR status = %s", 'Issue', 'Submitted' );
+	$query = $wpdb->prepare( "SELECT * FROM {$table_issuebook} WHERE status = %s OR status = %s", 'Issue', 'Submitted' );
 	// Execute the query.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$booklist = $wpdb->get_results( $query );
@@ -15474,10 +15534,11 @@ function mjschool_user_wise_fees_payment_for_dashboard( $id, $user_role ) {
 	$table_name      = $wpdb->prefix . 'mjschool_fees_payment';
 	$obj_feespayment = new mjschool_feespayment();
 	$result          = array();
-	$user_id         = intval( $id );
+	$user_id         = absint( $id );
+	$user_role       = sanitize_text_field( $user_role );
 	// For Student.
 	if ( $user_role === 'student' ) {
-		$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE student_id = %d ORDER BY fees_id DESC LIMIT 5", $user_id );
+		$query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE student_id = %d ORDER BY fees_id DESC LIMIT 5", $user_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$result = $wpdb->get_results( $query );
 	}
@@ -15486,7 +15547,7 @@ function mjschool_user_wise_fees_payment_for_dashboard( $id, $user_role ) {
 		$user_meta = get_user_meta( $user_id, 'child', true );
 		if ( ! empty( $user_meta ) && is_array( $user_meta ) ) {
 			$placeholders = implode( ',', array_fill( 0, count( $user_meta ), '%d' ) );
-			$query        = $wpdb->prepare( "SELECT * FROM $table_name WHERE student_id IN ($placeholders) ORDER BY fees_id DESC LIMIT 5", $user_meta );
+			$query        = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE student_id IN ($placeholders) ORDER BY fees_id DESC LIMIT 5", $user_meta );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result = $wpdb->get_results( $query );
 		}
@@ -15496,7 +15557,7 @@ function mjschool_user_wise_fees_payment_for_dashboard( $id, $user_role ) {
 		$class_id = get_user_meta( get_current_user_id(), 'class_name', true );
 		if ( ! empty( $class_id ) && is_array( $class_id ) ) {
 			$placeholders = implode( ',', array_fill( 0, count( $class_id ), '%d' ) );
-			$query        = $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id IN ($placeholders) ORDER BY fees_id DESC LIMIT 5", $class_id );
+			$query        = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id IN ($placeholders) ORDER BY fees_id DESC LIMIT 5", $class_id );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result = $wpdb->get_results( $query );
 		}
@@ -15519,6 +15580,8 @@ function mjschool_teacher_count_for_dashboard_card( $user_id, $role ) {
 	$page          = 'teacher';
 	$user_access   = mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( $page );
 	$own_data      = $user_access['own_data'];
+	$user_id       = absint( $user_id );
+	$role          = sanitize_text_field( $role );
 	$teacher_count = array();
 	if ( $own_data === '1' ) {
 		if ( $role === 'student' ) {
@@ -15586,6 +15649,9 @@ function mjschool_get_class_section_subject( $class_id, $section_id, $subject_id
 	$subject_name        = '';
 	$class_sections_name = '';
 	$class_name          = mjschool_get_class_name( $class_id );
+	$class_id            = absint( $class_id );
+	$section_id          = absint( $section_id );
+	$subject_id          = absint( $subject_id );
 	if ( ! empty( $section_id ) ) {
 		$class_sections_name = mjschool_get_class_sections_name( $section_id );
 	}
@@ -15618,9 +15684,9 @@ function mjschool_monthly_attendence_teacher( $id ) {
 	// Get the first and last day of the current month.
 	$sdate   = date( 'Y-m-d', strtotime( 'first day of this month' ) );
 	$edate   = date( 'Y-m-d', strtotime( 'last day of this month' ) );
-	$user_id = intval( $id );
+	$user_id = absint( $id );
 	// Use prepare to securely query the database.
-	$query = $wpdb->prepare( "SELECT * FROM $table_name WHERE attendence_date BETWEEN %s AND %s AND user_id = %d ORDER BY attendence_date DESC", $sdate, $edate, $user_id );
+	$query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE attendence_date BETWEEN %s AND %s AND user_id = %d ORDER BY attendence_date DESC", $sdate, $edate, $user_id );
 	// Execute the query and return the result.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $query );
@@ -15641,11 +15707,14 @@ function mjschool_view_attendance_report_for_start_date_enddate_for_teacher( $st
 	global $wpdb;
 	$tbl_name     = $wpdb->prefix . 'mjschool_sub_attendance';
 	$classes      = mjschool_get_class_by_teacher_id( $teacher_id );
+	$start_date   = sanitize_text_field( $start_date );
+	$end_date     = sanitize_text_field( $end_date );
+	$teacher_id   = absint( $teacher_id );
 	$unique_array = array();
 	foreach ( $classes as $class ) {
 		$class_id = $class->class_id;
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$report_2     = $wpdb->get_results( "SELECT * FROM $tbl_name where role_name = 'student' and class_id = '$class_id' and attendance_date between '$start_date' and '$end_date'" );
+		$report_2     = $wpdb->get_results( "SELECT * FROM {$tbl_name} where role_name = 'student' and class_id = '$class_id' and attendance_date between '$start_date' and '$end_date'" );
 		$unique_array = array_merge( $unique_array, $report_2 );
 	}
 	$result = array_unique( $unique_array, SORT_REGULAR );
@@ -15661,8 +15730,8 @@ function mjschool_view_attendance_report_for_start_date_enddate_for_teacher( $st
 function mjschool_get_section_by_class_id( $id ) {
 	global $wpdb;
 	$table_name         = $wpdb->prefix . 'mjschool_class_section';
-	$class_id           = intval( $id );
-	$prepared_statement = $wpdb->prepare( "SELECT section_name FROM $table_name WHERE class_id = %d", $class_id );
+	$class_id           = absint( $id );
+	$prepared_statement = $wpdb->prepare( "SELECT section_name FROM {$table_name} WHERE class_id = %d", $class_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $prepared_statement );
 	return $result;
@@ -15677,6 +15746,8 @@ function mjschool_get_section_by_class_id( $id ) {
  */
 function mjschool_get_class_section_name_wise( $class_id, $section_id ) {
 	$class_sections_name = '';
+	$class_id            = absint( $class_id );
+	$section_id          = absint( $section_id );
 	$class_name          = mjschool_get_class_name( $class_id );
 	if ( ! empty( $section_id ) ) {
 		$class_sections_name = mjschool_get_class_sections_name( $section_id );
@@ -15698,10 +15769,11 @@ function mjschool_get_class_section_name_wise( $class_id, $section_id ) {
  */
 function mjschool_get_section_id_by_section_name( $section_name, $id ) {
 	global $wpdb;
-	$table_name = $wpdb->prefix . 'mjschool_class_section';
-	$class_id   = intval( $id );
+	$table_name   = $wpdb->prefix . 'mjschool_class_section';
+	$class_id     = absint( $id );
+	$section_name = sanitize_text_field( $section_name );
 	// Use prepare to securely include dynamic values in the query.
-	$query = $wpdb->prepare( "SELECT id FROM $table_name WHERE class_id = %d AND section_name = %s", $class_id, $section_name );
+	$query = $wpdb->prepare( "SELECT id FROM {$table_name} WHERE class_id = %d AND section_name = %s", $class_id, $section_name );
 	// Execute the query and return the result.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $query );
@@ -15719,14 +15791,15 @@ function mjschool_get_section_id_by_section_name( $section_name, $id ) {
 function mjschool_get_subject_id_by_subject_name( $subject_name, $id, $sid ) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_subject';
-	$class_id   = intval( $id );
-	$section_id = intval( $sid );
+	$class_id   = absint( $id );
+	$section_id = absint( $sid );
+	$subject_name = sanitize_text_field( $subject_name );
 	if ( ! empty( $section_id ) ) {
 		// Use prepare for the query when section_id is provided.
-		$query = $wpdb->prepare( "SELECT subid FROM $table_name WHERE sub_name = %s AND class_id = %d AND section_id = %d", $subject_name, $class_id, $section_id );
+		$query = $wpdb->prepare( "SELECT subid FROM {$table_name} WHERE sub_name = %s AND class_id = %d AND section_id = %d", $subject_name, $class_id, $section_id );
 	} else {
 		// Use prepare for the query when section_id is not provided.
-		$query = $wpdb->prepare( "SELECT subid FROM $table_name WHERE sub_name = %s AND class_id = %d", $subject_name, $class_id );
+		$query = $wpdb->prepare( "SELECT subid FROM {$table_name} WHERE sub_name = %s AND class_id = %d", $subject_name, $class_id );
 	}
 	// Execute the query and return the result.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -15748,27 +15821,40 @@ function mjschool_get_subject_id_by_subject_name( $subject_name, $id, $sid ) {
  */
 function mjschool_get_leave_data_filter_wise( $Student_id, $status, $date_type, $start_date, $end_date ) {
 	global $wpdb;
+	
+	// Sanitize all inputs immediately.
+	$Student_id = sanitize_text_field( $Student_id );
+	$status     = sanitize_text_field( $status );
+	$date_type  = sanitize_text_field( $date_type );
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	
 	$user_id    = get_current_user_id();
 	$role       = mjschool_get_user_role( get_current_user_id() );
 	$tbl_name   = $wpdb->prefix . 'mjschool_leave';
 	$school_obj = new MJSchool_Management( get_current_user_id() );
+	
 	if ( $date_type === 'period' ) {
-	$start_date = isset( $_REQUEST['start_date'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['start_date'] ) ) : '';
-    $end_date = isset( $_REQUEST['end_date'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['end_date'] ) ) : '';
+		$start_date = isset( $_REQUEST['start_date'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['start_date'] ) ) : '';
+		$end_date   = isset( $_REQUEST['end_date'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['end_date'] ) ) : '';
 	} elseif ( $date_type === 'today' || $date_type === 'this_week' || $date_type === 'last_week' || $date_type === 'this_month' || $date_type === 'last_month' || $date_type === 'last_3_month' || $date_type === 'last_6_month' || $date_type === 'last_12_month' || $date_type === 'this_year' || $date_type === 'last_year' ) {
 		$result     = mjschool_all_date_type_value( $date_type );
 		$response   = json_decode( $result );
-		$start_date = $response[0];
-		$end_date   = $response[1];
+		$start_date = sanitize_text_field( $response[0] );
+		$end_date   = sanitize_text_field( $response[1] );
 	}
+	
+	$leave_data = array();
+	
 	if ( $role === 'teacher' ) {
 		$user_id     = get_current_user_id();
-		$class_id    = get_user_meta( $user_id, 'class_name', true );
+		$class_id    = absint( get_user_meta( $user_id, 'class_name', true ) );
 		$studentdata = $school_obj->mjschool_get_teacher_student_list( $class_id );
 		if ( $Student_id === 'all_student' && $status === 'all_status' ) {
 			foreach ( $studentdata as $student ) {
+				$student_id = absint( $student->ID );
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$leave_data[] = $wpdb->get_results( "SELECT * FROM $tbl_name WHERE student_id = $student->ID AND start_date between '$start_date' and '$end_date' ORDER BY start_date DESC" );
+				$leave_data[] = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE student_id = %d AND start_date between %s and %s ORDER BY start_date DESC", $student_id, $start_date, $end_date ) );
 			}
 			if ( ! empty( $leave_data ) ) {
 				$mergedArray = array_merge( ...$leave_data );
@@ -15778,8 +15864,9 @@ function mjschool_get_leave_data_filter_wise( $Student_id, $status, $date_type, 
 			}
 		} elseif ( $Student_id === 'all_student' && $status != 'all_status' ) {
 			foreach ( $studentdata as $student ) {
+				$student_id = absint( $student->ID );
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$leave_data[] = $wpdb->get_results( "SELECT * FROM $tbl_name WHERE student_id = $student->ID AND status= '$status' AND start_date between '$start_date' and '$end_date' ORDER BY start_date DESC" );
+				$leave_data[] = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE student_id = %d AND status= %s AND start_date between %s and %s ORDER BY start_date DESC", $student_id, $status, $start_date, $end_date ) );
 			}
 			if ( ! empty( $leave_data ) ) {
 				$mergedArray = array_merge( ...$leave_data );
@@ -15787,25 +15874,29 @@ function mjschool_get_leave_data_filter_wise( $Student_id, $status, $date_type, 
 			} else {
 				$result = array();
 			}
-		} elseif ( $status === 'all_status' && $Student_id === !empty( 'all_student' ) ) {
+		} elseif ( $status === 'all_status' && $Student_id !== 'all_student' ) {
+			$Student_id = absint( $Student_id );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$result = $wpdb->get_results( "SELECT * FROM $tbl_name WHERE student_id = $Student_id AND start_date between '$start_date' and '$end_date' ORDER BY start_date DESC" );
+			$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE student_id = %d AND start_date between %s and %s ORDER BY start_date DESC", $Student_id, $start_date, $end_date ) );
 		} else {
+			$Student_id = absint( $Student_id );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$result = $wpdb->get_results( "SELECT * FROM $tbl_name WHERE status = '$status' AND student_id = $Student_id AND start_date between '$start_date' and '$end_date' ORDER BY start_date DESC" );
+			$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE status = %s AND student_id = %d AND start_date between %s and %s ORDER BY start_date DESC", $status, $Student_id, $start_date, $end_date ) );
 		}
 	} elseif ( $Student_id === 'all_student' && $status === 'all_status' ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_results( "SELECT * FROM $tbl_name ORDER BY start_date DESC" );
+		$result = $wpdb->get_results( "SELECT * FROM {$tbl_name} ORDER BY start_date DESC" );
 	} elseif ( $Student_id === 'all_student' && $status != 'all_status' ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_results( "SELECT * FROM $tbl_name WHERE status= '$status' AND start_date between '$start_date' and '$end_date' ORDER BY start_date DESC" );
-	} elseif ( $status === 'all_status' && $Student_id === !empty( 'all_student' ) ) {
+		$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE status= %s AND start_date between %s and %s ORDER BY start_date DESC", $status, $start_date, $end_date ) );
+	} elseif ( $status === 'all_status' && $Student_id !== 'all_student' ) {
+		$Student_id = absint( $Student_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_results( "SELECT * FROM $tbl_name WHERE student_id = $Student_id AND start_date between '$start_date' and '$end_date' ORDER BY start_date DESC" );
+		$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE student_id = %d AND start_date between %s and %s ORDER BY start_date DESC", $Student_id, $start_date, $end_date ) );
 	} else {
+		$Student_id = absint( $Student_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_results( "SELECT * FROM $tbl_name WHERE status = '$status' AND student_id = $Student_id AND start_date between '$start_date' and '$end_date' ORDER BY start_date DESC" );
+		$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE status = %s AND student_id = %d AND start_date between %s and %s ORDER BY start_date DESC", $status, $Student_id, $start_date, $end_date ) );
 	}
 	return $result;
 }
@@ -15817,9 +15908,10 @@ function mjschool_get_leave_data_filter_wise( $Student_id, $status, $date_type, 
  * @return string Full parent name or 'N/A'.
  */
 function mjschool_get_parent_name_by_id( $user_id ) {
+	$user_id   = absint( $user_id );
 	$user_info = get_userdata( $user_id );
 	if ( $user_info ) {
-		return $user_info->first_name . ' ' . $user_info->middle_name . ' ' . $user_info->last_name;
+		return sanitize_text_field( $user_info->first_name ) . ' ' . sanitize_text_field( $user_info->middle_name ) . ' ' . sanitize_text_field( $user_info->last_name );
 	} else {
 		return 'N/A';
 	}
@@ -15842,10 +15934,10 @@ function mjschool_attendance_migratation_for_new_table() {
 		$mjschool_sub_attendance = $wpdb->prefix . 'mjschool_sub_attendance';
 		$table_name              = $wpdb->prefix . 'mjschool_attendence';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$attendence_data = $wpdb->get_results( "SELECT * FROM $table_name WHERE role_name='student'" );
+		$attendence_data = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE role_name=%s", 'student' ) );
 		if ( ! empty( $attendence_data ) ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$migration_success = $wpdb->query( "INSERT INTO $mjschool_sub_attendance (user_id, class_id, attend_by,attendance_date,status,role_name,comment,attendence_type,categories) SELECT user_id, class_id, attend_by,attendence_date,status,role_name,comment,attendence_type,'class' FROM $attendence where role_name='student'" );
+			$migration_success = $wpdb->query( $wpdb->prepare( "INSERT INTO $mjschool_sub_attendance (user_id, class_id, attend_by,attendance_date,status,role_name,comment,attendence_type,categories) SELECT user_id, class_id, attend_by,attendence_date,status,role_name,comment,attendence_type,'class' FROM $attendence where role_name=%s", 'student' ) );
 			if ( $migration_success ) {
 				update_option( 'mjschool_attendence_migration_status', 'yes' );
 			}
@@ -15862,6 +15954,7 @@ function mjschool_attendance_migratation_for_new_table() {
 function mjschool_get_class_data_by_class_id( $class_id ) {
 	global $wpdb;
 	$table_name         = $wpdb->prefix . 'mjschool_class';
+	$class_id           = absint( $class_id );
 	$prepared_statement = $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d", $class_id );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_row( $prepared_statement );
@@ -15878,7 +15971,11 @@ function mjschool_get_class_data_by_class_id( $class_id ) {
  * @return void
  */
 function mjschool_send_mail_for_homework( $email, $subject, $message, $attechment ) {
-	$from      = get_option( 'mjschool_name' );
+	$email   = sanitize_email( $email );
+	$subject = sanitize_text_field( $subject );
+	$message = wp_kses_post( $message );
+	
+	$from      = sanitize_text_field( get_option( 'mjschool_name' ) );
 	$headers   = "MIME-Version: 1.0\r\n";
 	$headers  .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
 	$headers  .= 'From: ' . $from . ' <noreplay@gmail.com>' . "\r\n";
@@ -15903,25 +16000,43 @@ function mjschool_send_mail_for_homework( $email, $subject, $message, $attechmen
 function mjschool_get_bed_data_user_access_right_wise( $user_id, $hostel_id, $user_role ) {
 	global $wpdb;
 	$table_mjschool_beds = $wpdb->prefix . 'mjschool_beds';
+	
+	$user_id    = absint( $user_id );
+	$hostel_id  = absint( $hostel_id );
+	$user_role  = sanitize_text_field( $user_role );
+	$result     = array();
+	
 	// GET DATA FOR STUDENT.
 	if ( $user_role === 'student' ) {
 		$assign_bed = mjschool_student_assign_bed_data_by_student_and_hostel_id( $user_id, $hostel_id );
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_results( "SELECT * FROM $table_mjschool_beds where id=" . $assign_bed->bed_id );
+		if ( ! empty( $assign_bed ) && isset( $assign_bed->bed_id ) ) {
+			$bed_id = absint( $assign_bed->bed_id );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+			$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_beds where id=%d", $bed_id ) );
+		}
 	}
 	// GET DATA FOR PARENT.
 	elseif ( $user_role === 'parent' ) {
 		$child_id = get_user_meta( $user_id, 'child', true );
-		foreach ( $child_id as $id ) {
-			$assign_bed = mjschool_student_assign_bed_data_by_student_and_hostel_id( $id, $hostel_id );
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$data[] = $wpdb->get_results( "SELECT * FROM $table_mjschool_beds where id=" . $assign_bed->bed_id );
+		$data     = array();
+		if ( ! empty( $child_id ) && is_array( $child_id ) ) {
+			foreach ( $child_id as $id ) {
+				$id         = absint( $id );
+				$assign_bed = mjschool_student_assign_bed_data_by_student_and_hostel_id( $id, $hostel_id );
+				if ( ! empty( $assign_bed ) && isset( $assign_bed->bed_id ) ) {
+					$bed_id = absint( $assign_bed->bed_id );
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+					$data[] = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_beds where id=%d", $bed_id ) );
+				}
+			}
+			if ( ! empty( $data ) ) {
+				$mergedArray = array_merge( ...$data );
+				$result      = array_unique( $mergedArray, SORT_REGULAR );
+			}
 		}
-		$mergedArray = array_merge( ...$data );
-		$result      = array_unique( $mergedArray, SORT_REGULAR );
 	} else {
 		$obj_hostel = new smgt_hostel();
-		$result     = $obj_hostel->mjschool_get_bed_by_hostel_id( intval( $hostel_id ) );
+		$result     = $obj_hostel->mjschool_get_bed_by_hostel_id( $hostel_id );
 	}
 	return $result;
 }
@@ -15940,31 +16055,46 @@ function mjschool_get_bed_data_user_access_right_wise( $user_id, $hostel_id, $us
 function mjschool_get_room_data_user_access_right_wise( $user_id, $hostel_id, $user_role ) {
 	global $wpdb;
 	$table_mjschool_room = $wpdb->prefix . 'mjschool_room';
-	$result          = array();
+	
+	$user_id   = absint( $user_id );
+	$hostel_id = absint( $hostel_id );
+	$user_role = sanitize_text_field( $user_role );
+	$result    = array();
+	
 	// GET DATA FOR STUDENT.
 	if ( $user_role === 'student' ) {
 		$assign_bed = mjschool_student_assign_bed_data_by_student_and_hostel_id( $user_id, $hostel_id );
-		$query      = $wpdb->prepare( "SELECT * FROM $table_mjschool_room WHERE id = %d", $assign_bed->room_id );
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_results( $query );
+		if ( ! empty( $assign_bed ) && isset( $assign_bed->room_id ) ) {
+			$room_id = absint( $assign_bed->room_id );
+			$query   = $wpdb->prepare( "SELECT * FROM {$table_mjschool_room} WHERE id = %d", $room_id );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+			$result = $wpdb->get_results( $query );
+		}
 	}
 	// GET DATA FOR PARENT.
 	elseif ( $user_role === 'parent' ) {
 		$child_id = get_user_meta( $user_id, 'child', true );
-		if ( ! empty( $child_id ) ) {
+		$data     = array();
+		if ( ! empty( $child_id ) && is_array( $child_id ) ) {
 			foreach ( $child_id as $id ) {
+				$id         = absint( $id );
 				$assign_bed = mjschool_student_assign_bed_data_by_student_and_hostel_id( $id, $hostel_id );
-				$query      = $wpdb->prepare( "SELECT * FROM $table_mjschool_room WHERE id = %d", $assign_bed->room_id );
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$data[] = $wpdb->get_results( $query );
+				if ( ! empty( $assign_bed ) && isset( $assign_bed->room_id ) ) {
+					$room_id = absint( $assign_bed->room_id );
+					$query   = $wpdb->prepare( "SELECT * FROM {$table_mjschool_room} WHERE id = %d", $room_id );
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+					$data[] = $wpdb->get_results( $query );
+				}
 			}
-			$mergedArray = array_merge( ...$data );
-			$result      = array_unique( $mergedArray, SORT_REGULAR );
+			if ( ! empty( $data ) ) {
+				$mergedArray = array_merge( ...$data );
+				$result      = array_unique( $mergedArray, SORT_REGULAR );
+			}
 		}
 	}
 	// GET DATA FOR STAFF OR TEACHER.
 	elseif ( $user_role === 'supportstaff' || $user_role === 'teacher' ) {
-		$query = $wpdb->prepare( "SELECT * FROM $table_mjschool_room WHERE created_by = %d AND hostel_id = %d", $user_id, $hostel_id );
+		$query = $wpdb->prepare( "SELECT * FROM {$table_mjschool_room} WHERE created_by = %d AND hostel_id = %d", $user_id, $hostel_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$result = $wpdb->get_results( $query );
 	}
@@ -15989,27 +16119,44 @@ function mjschool_get_room_data_user_access_right_wise( $user_id, $hostel_id, $u
 function mjschool_get_hostel_data_user_access_right_wise( $user_id, $user_role ) {
 	global $wpdb;
 	$table_mjschool_hostel = $wpdb->prefix . 'mjschool_hostel';
+	
+	$user_id   = absint( $user_id );
+	$user_role = sanitize_text_field( $user_role );
+	$result    = array();
+	
 	// GET DATA FOR STUDENT.
 	if ( $user_role === 'student' ) {
 		$assign_bed = mjschool_student_assign_bed_data_by_student_id( $user_id );
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_results( "SELECT * FROM $table_mjschool_hostel where id=" . $assign_bed->hostel_id );
+		if ( ! empty( $assign_bed ) && isset( $assign_bed->hostel_id ) ) {
+			$hostel_id = absint( $assign_bed->hostel_id );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+			$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_hostel where id=%d", $hostel_id ) );
+		}
 	}
 	// GET DATA FOR PARENT.
 	elseif ( $user_role === 'parent' ) {
 		$child_id = get_user_meta( $user_id, 'child', true );
-		foreach ( $child_id as $id ) {
-			$assign_bed = mjschool_student_assign_bed_data_by_student_id( $id );
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$data[] = $wpdb->get_results( "SELECT * FROM $table_mjschool_hostel where id=" . $assign_bed->hostel_id );
+		$data     = array();
+		if ( ! empty( $child_id ) && is_array( $child_id ) ) {
+			foreach ( $child_id as $id ) {
+				$id         = absint( $id );
+				$assign_bed = mjschool_student_assign_bed_data_by_student_id( $id );
+				if ( ! empty( $assign_bed ) && isset( $assign_bed->hostel_id ) ) {
+					$hostel_id = absint( $assign_bed->hostel_id );
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+					$data[] = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_hostel where id=%d", $hostel_id ) );
+				}
+			}
+			if ( ! empty( $data ) ) {
+				$mergedArray = array_merge( ...$data );
+				$result      = array_unique( $mergedArray, SORT_REGULAR );
+			}
 		}
-		$mergedArray = array_merge( ...$data );
-		$result      = array_unique( $mergedArray, SORT_REGULAR );
 	}
 	// GET DATA FOR STAFF OR TEACHER.
 	elseif ( $user_role === 'supportstaff' || $user_role === 'teacher' ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result = $wpdb->get_results( "SELECT * FROM $table_mjschool_hostel where created_by=" . $user_id );
+		$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_hostel where created_by=%d", $user_id ) );
 	} else {
 		$tablename = 'mjschool_beds';
 		$result    = mjschool_get_all_data( $tablename );
@@ -16026,10 +16173,10 @@ function mjschool_get_hostel_data_user_access_right_wise( $user_id, $user_role )
  */
 function mjschool_delete_inbox_message( $id ) {
 	global $wpdb;
-	$message_id       = intval( $id );
+	$message_id       = absint( $id );
 	$tbl_name_message = $wpdb->prefix . 'mjschool_message';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $tbl_name_message where message_id=%d", $message_id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM {$tbl_name_message} where message_id=%d", $message_id ) );
 	return $result;
 }
 /**
@@ -16041,6 +16188,7 @@ function mjschool_delete_inbox_message( $id ) {
  * @since 1.0.0
  */
 function mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( $page ) {
+	$page       = sanitize_text_field( $page );
 	$school_obj = new MJSchool_Management( get_current_user_id() );
 	$role       = $school_obj->role;
 	if ( ! empty( $page ) ) {
@@ -16076,10 +16224,12 @@ function mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( 
  * @since 1.0.0
  */
 function mjschool_student_count_for_dashboard_card( $user_id, $user_role ) {
+	$user_id     = absint( $user_id );
+	$user_role   = sanitize_text_field( $user_role );
 	$page        = 'student';
 	$user_access = mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( $page );
 	$school_obj  = new MJSchool_Management( get_current_user_id() );
-	$own_data    = $user_access['own_data'];
+	$own_data    = isset( $user_access['own_data'] ) ? $user_access['own_data'] : '0';
 	$studentdata = array();
 	if ( $own_data === '1' ) {
 		if ( $user_role === 'student' ) {
@@ -16087,7 +16237,7 @@ function mjschool_student_count_for_dashboard_card( $user_id, $user_role ) {
 		} elseif ( $user_role === 'parent' ) {
 			$studentdata = $school_obj->child_list;
 		} elseif ( $user_role === 'teacher' ) {
-			$class_id    = get_user_meta( $user_id, 'class_name', true );
+			$class_id    = absint( get_user_meta( $user_id, 'class_name', true ) );
 			$studentdata = $school_obj->mjschool_get_teacher_student_list( $class_id );
 		} elseif ( $user_role === 'supportstaff' ) {
 			
@@ -16120,6 +16270,8 @@ function mjschool_student_count_for_dashboard_card( $user_id, $user_role ) {
  * @since 1.0.0
  */
 function mjschool_parent_count_for_dashboard_card( $user_id, $user_role ) {
+	$user_id     = absint( $user_id );
+	$user_role   = sanitize_text_field( $user_role );
 	$parentdata  = array();
 	$page        = 'parent';
 	$school_obj  = new MJSchool_Management( get_current_user_id() );
@@ -16175,19 +16327,24 @@ function mjschool_parent_count_for_dashboard_card( $user_id, $user_role ) {
 function mjschool_parent_own_data_for_teacher() {
 	$user_id     = get_current_user_id();
 	$school_obj  = new MJSchool_Management( get_current_user_id() );
-	$class_id    = get_user_meta( $user_id, 'class_name', true );
+	$class_id    = absint( get_user_meta( $user_id, 'class_name', true ) );
 	$studentdata = $school_obj->mjschool_get_teacher_student_list( $class_id );
-	foreach ( $studentdata as $student ) {
-		$data = get_user_meta( $student->ID, 'parent_id', true );
-		if ( ! empty( $data ) ) {
-			$user_meta[] = $data;
+	$user_meta   = array();
+	
+	if ( ! empty( $studentdata ) ) {
+		foreach ( $studentdata as $student ) {
+			$data = get_user_meta( $student->ID, 'parent_id', true );
+			if ( ! empty( $data ) ) {
+				$user_meta[] = $data;
+			}
 		}
 	}
+	
 	if ( ! empty( $user_meta ) ) {
 		$mergedArray = array_merge( ...$user_meta );
 		$result      = array_unique( $mergedArray, SORT_REGULAR );
 	} else {
-		$result = '';
+		$result = array();
 	}
 	return $result;
 }
@@ -16202,31 +16359,38 @@ function mjschool_parent_own_data_for_teacher() {
  * @since 1.0.0
  */
 function mjschool_exam_list_data_with_access_for_dashboard( $user_role ) {
-	$page        = 'exam';
-	$obj_exam    = new mjschool_exam();
-	$user_access = mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( $page );
-	$own_data    = $user_access['own_data'];
-	$user_id     = get_current_user_id();
+	$user_role       = sanitize_text_field( $user_role );
+	$page            = 'exam';
+	$obj_exam        = new mjschool_exam();
+	$user_access     = mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( $page );
+	$own_data        = isset( $user_access['own_data'] ) ? $user_access['own_data'] : '0';
+	$user_id         = get_current_user_id();
+	$retrieve_class  = array();
+	
 	if ( $own_data === '1' ) {
 		if ( $user_role === 'student' ) {
-			$class_id   = get_user_meta( get_current_user_id(), 'class_name', true );
-			$section_id = get_user_meta( get_current_user_id(), 'class_section', true );
-			if ( isset( $class_id ) && $section_id === '' ) {
+			$class_id   = absint( get_user_meta( get_current_user_id(), 'class_name', true ) );
+			$section_id = absint( get_user_meta( get_current_user_id(), 'class_section', true ) );
+			if ( isset( $class_id ) && $section_id === 0 ) {
 				$retrieve_class = $obj_exam->mjschool_get_all_exam_by_class_id( $class_id );
 			} else {
 				$retrieve_class = mjschool_get_all_exam_by_class_id_and_section_id_array( $class_id, $section_id );
 			}
 		} elseif ( $user_role === 'parent' ) {
 			$user_meta = get_user_meta( $user_id, 'child', true );
-			if ( ! empty( $user_meta ) ) {
+			if ( ! empty( $user_meta ) && is_array( $user_meta ) ) {
+				$result = array();
 				foreach ( $user_meta as $student_id ) {
-					$result[] = mjschool_get_exam_data_for_parent( $student_id );
+					$student_id = absint( $student_id );
+					$result[]   = mjschool_get_exam_data_for_parent( $student_id );
 				}
-				$mergedArray    = array_merge( ...$result );
-				$retrieve_class = array_unique( $mergedArray, SORT_REGULAR );
+				if ( ! empty( $result ) ) {
+					$mergedArray    = array_merge( ...$result );
+					$retrieve_class = array_unique( $mergedArray, SORT_REGULAR );
+				}
 			}
 		} elseif ( $user_role === 'teacher' ) {
-			$class_id       = get_user_meta( get_current_user_id(), 'class_name', true );
+			$class_id       = absint( get_user_meta( get_current_user_id(), 'class_name', true ) );
 			$retrieve_class = $obj_exam->mjschool_get_all_exam_by_class_id_created_by( $class_id, $user_id );
 		} elseif ( $user_role === 'supportstaff' ) {
 			$retrieve_class = $obj_exam->mjschool_get_all_exam_created_by( $user_id );
@@ -16235,7 +16399,12 @@ function mjschool_exam_list_data_with_access_for_dashboard( $user_role ) {
 		$tablename      = 'mjschool_exam';
 		$retrieve_class = mjschool_get_all_data( $tablename );
 	}
-	$firstFive = array_slice( $retrieve_class, 0, 5 );
+	
+	if ( ! empty( $retrieve_class ) ) {
+		$firstFive = array_slice( $retrieve_class, 0, 5 );
+	} else {
+		$firstFive = array();
+	}
 	return $firstFive;
 }
 /**
@@ -16252,29 +16421,39 @@ function mjschool_attendance_report_for_teacher_and_staff( $user_role ) {
 	global $wpdb;
 	$table_attendance = $wpdb->prefix . 'mjschool_sub_attendance';
 	$table_class      = $wpdb->prefix . 'mjschool_class';
-	$page             = 'attendance';
-	$user_access      = mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( $page );
-	$own_data         = $user_access['own_data'];
-	$user_id          = get_current_user_id();
+	
+	$user_role   = sanitize_text_field( $user_role );
+	$page        = 'attendance';
+	$user_access = mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( $page );
+	$own_data    = isset( $user_access['own_data'] ) ? $user_access['own_data'] : '0';
+	$user_id     = get_current_user_id();
+	$report_1    = array();
+	
 	if ( $own_data === '1' ) {
 		if ( $user_role === 'teacher' ) {
 			// Assuming $wpdb and $table_attendance, $table_class are defined elsewhere.
 			$class  = get_user_meta( $user_id, 'class_name', true );
 			$report = array();
-			foreach ( $class as $class_id ) {
-				$query = $wpdb->prepare( "SELECT at.class_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent FROM $table_attendance as at JOIN $table_class as cl ON at.class_id = cl.class_id WHERE at.attendance_date > DATE_SUB(NOW(), INTERVAL 1 DAY) AND at.class_id = %d GROUP BY at.class_id", $class_id );
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$result[] = $wpdb->get_results( $query );
+			$result = array();
+			if ( ! empty( $class ) && is_array( $class ) ) {
+				foreach ( $class as $class_id ) {
+					$class_id = absint( $class_id );
+					$query    = $wpdb->prepare( "SELECT at.class_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent FROM {$table_attendance} as at JOIN $table_class as cl ON at.class_id = cl.class_id WHERE at.attendance_date > DATE_SUB(NOW(), INTERVAL 1 DAY) AND at.class_id = %d GROUP BY at.class_id", $class_id );
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+					$result[] = $wpdb->get_results( $query );
+				}
+				if ( ! empty( $result ) ) {
+					$mergedArray = array_merge( ...$result );
+					$report_1    = array_unique( $mergedArray, SORT_REGULAR );
+				}
 			}
-			$mergedArray = array_merge( ...$result );
-			$report_1    = array_unique( $mergedArray, SORT_REGULAR );
 		} else {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-			$report_1 = $wpdb->get_results( "SELECT  at.class_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent from $table_attendance as at,$table_class as cl where at.attendance_date >  DATE_SUB(NOW(), INTERVAL 1 DAY) AND attend_by = $user_id GROUP BY at.class_id" );
+			$report_1 = $wpdb->get_results( $wpdb->prepare( "SELECT  at.class_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent from {$table_attendance} as at,$table_class as cl where at.attendance_date >  DATE_SUB(NOW(), INTERVAL 1 DAY) AND attend_by = %d GROUP BY at.class_id", $user_id ) );
 		}
 	} else {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$report_1 = $wpdb->get_results( "SELECT  at.class_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent from $table_attendance as at,$table_class as cl where at.attendance_date >  DATE_SUB(NOW(), INTERVAL 1 DAY) AND at.class_id = cl.class_id GROUP BY at.class_id" );
+		$report_1 = $wpdb->get_results( "SELECT  at.class_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent from {$table_attendance} as at,$table_class as cl where at.attendance_date >  DATE_SUB(NOW(), INTERVAL 1 DAY) AND at.class_id = cl.class_id GROUP BY at.class_id" );
 	}
 	return $report_1;
 }
@@ -16287,19 +16466,20 @@ function mjschool_attendance_report_for_teacher_and_staff( $user_role ) {
  * @since 1.0.0
  */
 function mjschool_notice_list_with_user_access_right( $user_role ) {
+	$user_role   = sanitize_text_field( $user_role );
 	$page        = 'notice';
 	$user_access = mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( $page );
-	$own_data    = $user_access['own_data'];
+	$own_data    = isset( $user_access['own_data'] ) ? $user_access['own_data'] : '0';
 	$user_id     = get_current_user_id();
 	if ( $own_data === '1' ) {
 		if ( $user_role === 'student' ) {
-			$class_name    = get_user_meta( get_current_user_id(), 'class_name', true );
-			$class_section = get_user_meta( get_current_user_id(), 'class_section', true );
+			$class_name    = absint( get_user_meta( get_current_user_id(), 'class_name', true ) );
+			$class_section = absint( get_user_meta( get_current_user_id(), 'class_section', true ) );
 			$notice_list   = mjschool_student_notice_dashboard_with_access_right( $class_name, $class_section );
 		} elseif ( $user_role === 'parent' ) {
 			$notice_list = mjschool_parent_notice_dashboard_with_access_right();
 		} elseif ( $user_role === 'teacher' ) {
-			$class_name  = get_user_meta( get_current_user_id(), 'class_name', true );
+			$class_name  = absint( get_user_meta( get_current_user_id(), 'class_name', true ) );
 			$notice_list = mjschool_teacher_notice_board( $class_name );
 		} else {
 			$notice_list = mjschool_supportstaff_notice_dashbord();
@@ -16339,7 +16519,7 @@ function mjschool_get_homework_data_for_dashboard() {
  */
 function mjschool_get_homework_by_id( $tid ) {
 	global $wpdb;
-	$homework_id = intval( $tid );
+	$homework_id = absint( $tid );
 	$table_name  = $wpdb->prefix . 'mjschool_homework';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	return $retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE homework_id =%d", $homework_id ) );
@@ -16355,17 +16535,21 @@ function mjschool_get_homework_by_id( $tid ) {
 function mjschool_get_homework_data_for_frontend_dashboard() {
 	$page        = 'homework';
 	$user_access = mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( $page );
-	$own_data    = $user_access['own_data'];
+	$own_data    = isset( $user_access['own_data'] ) ? $user_access['own_data'] : '0';
 	$homewrk     = new mjschool_Homework();
 	$user_id     = get_current_user_id();
 	$role_name   = mjschool_get_user_role( $user_id );
+	$result      = array();
+	
 	if ( $own_data === '1' ) {
 		if ( $role_name === 'student' ) {
 			$result = $homewrk->mjschool_student_view_detail_for_dashboard();
 		} elseif ( $role_name === 'parent' ) {
-			$result        = mjschool_get_parents_child_id( $user_id );
-			$homework_data = implode( ',', $result );
-			$result        = $homewrk->mjschool_parent_view_detail_for_dashboard( $homework_data );
+			$child_ids = mjschool_get_parents_child_id( $user_id );
+			if ( ! empty( $child_ids ) && is_array( $child_ids ) ) {
+				$homework_data = implode( ',', array_map( 'absint', $child_ids ) );
+				$result        = $homewrk->mjschool_parent_view_detail_for_dashboard( $homework_data );
+			}
 		} elseif ( $role_name === 'teacher' ) {
 			$result = $homewrk->mjschool_get_all_own_upcoming_homework_list_for_teacher();
 		} else {
@@ -16374,7 +16558,12 @@ function mjschool_get_homework_data_for_frontend_dashboard() {
 	} else {
 		$result = $homewrk->mjschool_get_all_upcoming_homework();
 	}
-	$firstFive = array_slice( $result, 0, 5 );
+	
+	if ( ! empty( $result ) ) {
+		$firstFive = array_slice( $result, 0, 5 );
+	} else {
+		$firstFive = array();
+	}
 	return $firstFive;
 }
 /**
@@ -16387,6 +16576,8 @@ function mjschool_get_homework_data_for_frontend_dashboard() {
  * @since 1.0.0
  */
 function mjschool_get_student_by_class_id_and_section( $class_id, $section_id ) {
+	$class_id   = absint( $class_id );
+	$section_id = absint( $section_id );
 
 	if ( ! empty( $section_id ) ) {
 		$results = get_users(array(
@@ -16396,7 +16587,6 @@ function mjschool_get_student_by_class_id_and_section( $class_id, $section_id ) 
 			'role' => 'student'
 		 ) );
 	} else {
-		global $wpdb;
 		$results = get_users(array( 'meta_key' => 'class_name', 'meta_value' => $class_id ) );
 	}
 
@@ -16413,9 +16603,9 @@ function mjschool_get_student_by_class_id_and_section( $class_id, $section_id ) 
 function mjschool_get_fees_by_class_id( $cid ) {
 	global $wpdb;
 	$table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
-	$class_id            = intval( $cid );
+	$class_id            = absint( $cid );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees where class_id=" . $class_id ) );
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_mjschool_fees} where class_id=%d", $class_id ) );
 	return $result;
 }
 /**
@@ -16427,11 +16617,9 @@ function mjschool_get_fees_by_class_id( $cid ) {
 function mjschool_get_all_holiday_data() {
 	global $wpdb;
 	$table_mjschool_fees = $wpdb->prefix . 'mjschool_holiday';
-	// Use prepare for querying all holiday data.
-	$query = $wpdb->prepare( "SELECT * FROM $table_mjschool_fees" );
 	// Execute the query and return the result.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $query );
+	$result = $wpdb->get_results( "SELECT * FROM {$table_mjschool_fees}" );
 	return $result;
 }
 /**
@@ -16446,8 +16634,10 @@ function mjschool_get_all_holiday_data() {
 function mjschool_get_single_custom_field_data_by_name( $custom_field_name, $module ) {
 	global $wpdb;
 	$wpnc_custom_fields = $wpdb->prefix . 'mjschool_custom_field';
+	$custom_field_name = sanitize_text_field( $custom_field_name );
+	$module            = sanitize_text_field( $module );
 	// Use prepare to securely include dynamic values in the query.
-	$query = $wpdb->prepare( "SELECT * FROM $wpnc_custom_fields WHERE field_label = %s AND form_name = %s", $custom_field_name, $module );
+	$query = $wpdb->prepare( "SELECT * FROM {$wpnc_custom_fields} WHERE field_label = %s AND form_name = %s", $custom_field_name, $module );
 	// Execute the query and return the result.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$single_custom_field_data = $wpdb->get_row( $query );
@@ -16460,7 +16650,7 @@ function mjschool_get_single_custom_field_data_by_name( $custom_field_name, $mod
  * @since 1.0.0
  */
 function mjschool_return_date_format_for_shorting() {
-	$format = get_option( 'mjschool_datepicker_format' );
+	$format = sanitize_text_field( get_option( 'mjschool_datepicker_format' ) );
 	if ( $format === 'yy-mm-dd' ) {
 		$change_formate = 'YYYY-MM-DD';
 	} elseif ( $format === 'yy/mm/dd' ) {
@@ -16487,7 +16677,12 @@ function mjschool_return_date_format_for_shorting() {
 function mjschool_get_payment_paid_data_by_date_method( $method, $start_date, $end_date ) {
 	global $wpdb;
 	$table_mjschool_fees_history = $wpdb->prefix . 'mjschool_fee_payment_history';
-	$query                       = $wpdb->prepare( "SELECT amount FROM $table_mjschool_fees_history WHERE paid_by_date BETWEEN %s AND %s AND payment_method = %s", $start_date, $end_date, $method );
+	
+	$method     = sanitize_text_field( $method );
+	$start_date = sanitize_text_field( $start_date );
+	$end_date   = sanitize_text_field( $end_date );
+	
+	$query  = $wpdb->prepare( "SELECT amount FROM {$table_mjschool_fees_history} WHERE paid_by_date BETWEEN %s AND %s AND payment_method = %s", $start_date, $end_date, $method );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $query );
 	return $result;
@@ -16503,15 +16698,15 @@ function mjschool_get_payment_paid_data_by_date_method( $method, $start_date, $e
 function mjschool_teacher_by_subject_id( $subject_id ) {
 	global $wpdb;
 	$teacher_rows = array();
-	$subid        = intval( $subject_id );
-	if ( isset( $subid ) ) {
+	$subid        = absint( $subject_id );
+	if ( isset( $subid ) && $subid > 0 ) {
 		$table_mjschool_subject = $wpdb->prefix . 'mjschool_teacher_subject';
 		// Use prepare to securely include the subject_id in the query.
-		$query = $wpdb->prepare( "SELECT * FROM $table_mjschool_subject WHERE subject_id = %d", $subid );
+		$query = $wpdb->prepare( "SELECT * FROM {$table_mjschool_subject} WHERE subject_id = %d", $subid );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$result = $wpdb->get_results( $query );
 		foreach ( $result as $tch_result ) {
-			$teacher_rows[] = $tch_result->teacher_id;
+			$teacher_rows[] = absint( $tch_result->teacher_id );
 		}
 	}
 	return $teacher_rows;
@@ -16527,10 +16722,14 @@ function mjschool_teacher_by_subject_id( $subject_id ) {
  * @since 1.0.0
  */
 function mjschool_send_mjschool_notification( $user_id, $type, $message_content ) {
+	$user_id         = absint( $user_id );
+	$type            = sanitize_text_field( $type );
+	$message_content = sanitize_textarea_field( $message_content );
+	
 	$userdata                 = get_userdata( $user_id );
 	$mobile_number            = array();
-	$mobile_number[]          = '+' . mjschool_get_country_phonecode( get_option( 'mjschool_contry' ) ) . $userdata->mobile_number;
-	$to_mobile_number         = $userdata->mobile_number;
+	$mobile_number[]          = '+' . mjschool_get_country_phonecode( get_option( 'mjschool_contry' ) ) . sanitize_text_field( $userdata->mobile_number );
+	$to_mobile_number         = sanitize_text_field( $userdata->mobile_number );
 	$country_code             = '+' . mjschool_get_country_phonecode( get_option( 'mjschool_contry' ) );
 	$current_mjschool_service = get_option( 'mjschool_service' );
 	if ( is_plugin_active( 'sms-pack/sms-pack.php' ) ) {
@@ -16538,7 +16737,7 @@ function mjschool_send_mjschool_notification( $user_id, $type, $message_content 
 		$args['mobile']       = $mobile_number;
 		$args['message_from'] = $type;
 		$args['message']      = $message_content;
-		if ( $current_mjschool_service === 'telerivet' || $current_mjschool_service = 'MSG91' || $current_mjschool_service === 'bulksmsgateway.in' || $current_mjschool_service === 'textlocal.in' || $current_mjschool_service === 'bulksmsnigeria' || $current_mjschool_service === 'africastalking' || $current_mjschool_service === 'clickatell' ) {
+		if ( $current_mjschool_service === 'telerivet' || $current_mjschool_service === 'MSG91' || $current_mjschool_service === 'bulksmsgateway.in' || $current_mjschool_service === 'textlocal.in' || $current_mjschool_service === 'bulksmsnigeria' || $current_mjschool_service === 'africastalking' || $current_mjschool_service === 'clickatell' ) {
 			send_sms( $args );
 		}
 	} else {
@@ -16562,6 +16761,9 @@ function mjschool_send_mjschool_notification( $user_id, $type, $message_content 
  * @since 1.0.0
  */
 function mjschool_clickatell_send_mail_function( $mobiles, $message, $country_code ) {
+	$mobiles      = sanitize_text_field( $mobiles );
+	$message      = sanitize_textarea_field( $message );
+	$country_code = sanitize_text_field( $country_code );
 	$clickatell = get_option( 'mjschool_clickatell_mjschool_service' );
 	$api_key    = $clickatell['api_key'];
 	if ( strpos( $mobiles, '+' ) !== 0 ) {
@@ -16612,6 +16814,9 @@ function mjschool_clickatell_send_mail_function( $mobiles, $message, $country_co
  * @since 1.0.0
  */
 function mjschool_msg91_send_mail_function( $mobile, $message, $countary_code ) {
+	$mobile       = sanitize_text_field( $mobile );
+	$message      = sanitize_textarea_field( $message );
+	$countary_code = sanitize_text_field( $countary_code );
 	$msg91    = get_option( 'mjschool_msg91_mjschool_service' );
 	$authKey  = $msg91['mjschool_auth_key']; // Replace with your actual MSG91 Auth Key.
 	$senderId = $msg91['msg91_senderID'];     // Replace with your approved Sender ID.
@@ -16664,6 +16869,7 @@ function mjschool_msg91_send_mail_function( $mobile, $message, $countary_code ) 
  * @since 1.0.0
  */
 function mjschool_attendance_status_color( $status ) {
+	$status = sanitize_text_field( $status );
 	$color = '';
 	if ( $status === 'Present' ) {
 		$color = '#28A745';
@@ -16696,7 +16902,7 @@ function mjschool_get_tax_amount( $amount, $tax_ids ) {
 		if ( ! is_numeric( $tax_id ) ) {
 			continue;
 		}
-		$query = $wpdb->prepare( "SELECT tax_value FROM $table_name WHERE tax_id = %d", $tax_id );
+		$query = $wpdb->prepare( "SELECT tax_value FROM {$table_name} WHERE tax_id = %d", $tax_id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$result = $wpdb->get_row( $query );
 		if ( $result ) {
@@ -16785,19 +16991,20 @@ function mjschool_get_payment_amout_by_payment_status( $status ) {
 	$user_access           = mjschool_get_userrole_wise_access_right_page_wise_array_for_dashboard( $page );
 	$user_id               = get_current_user_id();
 	$role_name             = mjschool_get_user_role( $user_id );
+	$status = sanitize_text_field( $status );
 	if ( isset( $user_access['own_data'] ) && $user_access['own_data'] === '1' ) {
 		// STUDENT OWN PAYMENT AMOUNT.
 		if ( $role_name === 'student' ) {
 			if ( $status === 'total' ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$result     = $wpdb->get_results( "SELECT total_amount FROM $mjschool_fees_payment WHERE student_id='$user_id'" );
+				$result     = $wpdb->get_results( "SELECT total_amount FROM {$mjschool_fees_payment} WHERE student_id='$user_id'" );
 				$cashAmount = 0;
 				foreach ( $result as $value ) {
 					$cashAmount += $value->total_amount;
 				}
 			} else {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$result     = $wpdb->get_results( "SELECT fees_paid_amount FROM $mjschool_fees_payment WHERE student_id='$user_id'" );
+				$result     = $wpdb->get_results( "SELECT fees_paid_amount FROM {$mjschool_fees_payment} WHERE student_id='$user_id'" );
 				$cashAmount = 0;
 				foreach ( $result as $value ) {
 					$cashAmount += $value->fees_paid_amount;
@@ -16812,14 +17019,14 @@ function mjschool_get_payment_amout_by_payment_status( $status ) {
 				foreach ( $user_data as $student_id ) {
 					if ( $status === 'total' ) {
 						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-						$result        = $wpdb->get_results( "SELECT total_amount FROM $mjschool_fees_payment WHERE student_id='$student_id'" );
+						$result        = $wpdb->get_results( "SELECT total_amount FROM {$mjschool_fees_payment} WHERE student_id='$student_id'" );
 						$studentAmount = 0;
 						foreach ( $result as $value ) {
 							$studentAmount += $value->total_amount;
 						}
 					} else {
 						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-						$result        = $wpdb->get_results( "SELECT fees_paid_amount FROM $mjschool_fees_payment WHERE student_id='$student_id'" );
+						$result        = $wpdb->get_results( "SELECT fees_paid_amount FROM {$mjschool_fees_payment} WHERE student_id='$student_id'" );
 						$studentAmount = 0;
 						foreach ( $result as $value ) {
 							$studentAmount += $value->fees_paid_amount;
@@ -16832,14 +17039,14 @@ function mjschool_get_payment_amout_by_payment_status( $status ) {
 			// OWN PAYMENT AMOUNT.
 			if ( $status === 'total' ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$result     = $wpdb->get_results( "SELECT total_amount FROM $mjschool_fees_payment WHERE created_by='$user_id'" );
+				$result     = $wpdb->get_results( "SELECT total_amount FROM {$mjschool_fees_payment} WHERE created_by='$user_id'" );
 				$cashAmount = 0;
 				foreach ( $result as $value ) {
 					$cashAmount += $value->total_amount;
 				}
 			} else {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$result     = $wpdb->get_results( "SELECT fees_paid_amount FROM $mjschool_fees_payment WHERE created_by='$user_id'" );
+				$result     = $wpdb->get_results( "SELECT fees_paid_amount FROM {$mjschool_fees_payment} WHERE created_by='$user_id'" );
 				$cashAmount = 0;
 				foreach ( $result as $value ) {
 					$cashAmount += $value->fees_paid_amount;
@@ -16848,14 +17055,14 @@ function mjschool_get_payment_amout_by_payment_status( $status ) {
 		}
 	} elseif ( $status === 'total' ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result     = $wpdb->get_results( "SELECT total_amount FROM $mjschool_fees_payment" );
+		$result     = $wpdb->get_results( "SELECT total_amount FROM {$mjschool_fees_payment}" );
 		$cashAmount = 0;
 		foreach ( $result as $value ) {
 			$cashAmount += $value->total_amount;
 		}
 	} else {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$result     = $wpdb->get_results( "SELECT fees_paid_amount FROM $mjschool_fees_payment" );
+		$result     = $wpdb->get_results( "SELECT fees_paid_amount FROM {$mjschool_fees_payment}" );
 		$cashAmount = 0;
 		foreach ( $result as $value ) {
 			$cashAmount += $value->fees_paid_amount;
@@ -16881,18 +17088,21 @@ function mjschool_attendance_data_by_status( $start_date, $end_date, $status ) {
 	$user_id     = get_current_user_id();
 	$role_name   = mjschool_get_user_role( $user_id );
 	$results     = array();
+	$start_date  = sanitize_text_field( $start_date );
+	$end_date    = sanitize_text_field( $end_date );
+	$status      = sanitize_text_field( $status );
 	if ( isset( $user_access['own_data'] ) && $user_access['own_data'] === '1' ) {
 		switch ( $role_name ) {
 			case 'student':
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE status=%s AND user_id=%d AND role_name='student' AND attendance_date BETWEEN %s AND %s", $status, $user_id, $start_date, $end_date ) );
+				$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE status=%s AND user_id=%d AND role_name='student' AND attendance_date BETWEEN %s AND %s", $status, $user_id, $start_date, $end_date ) );
 				break;
 			case 'parent':
 				$user_data = mjschool_get_parents_child_id( $user_id );
 				if ( ! empty( $user_data ) ) {
 					foreach ( $user_data as $student_id ) {
 						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-						$student_results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE status=%s AND user_id=%d AND role_name='student' AND attendance_date BETWEEN %s AND %s", $status, $student_id, $start_date, $end_date ) );
+						$student_results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE status=%s AND user_id=%d AND role_name='student' AND attendance_date BETWEEN %s AND %s", $status, $student_id, $start_date, $end_date ) );
 						$results         = array_merge( $results, $student_results );
 					}
 				}
@@ -16909,16 +17119,16 @@ function mjschool_attendance_data_by_status( $start_date, $end_date, $status ) {
 				break;
 			case 'supportstaff':
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE status=%s AND attend_by=%d AND role_name='student' AND attendance_date BETWEEN %s AND %s", $status, $user_id, $start_date, $end_date ) );
+				$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE status=%s AND attend_by=%d AND role_name='student' AND attendance_date BETWEEN %s AND %s", $status, $user_id, $start_date, $end_date ) );
 				break;
 			default:
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-				$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE status=%s AND role_name='student' AND attendance_date BETWEEN %s AND %s", $status, $start_date, $end_date ) );
+				$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE status=%s AND role_name='student' AND attendance_date BETWEEN %s AND %s", $status, $start_date, $end_date ) );
 				break;
 		}
 	} else {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE status=%s AND role_name='student' AND attendance_date BETWEEN %s AND %s", $status, $start_date, $end_date ) );
+		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE status=%s AND role_name='student' AND attendance_date BETWEEN %s AND %s", $status, $start_date, $end_date ) );
 	}
 	// Ensure unique results.
 	$results = array_unique( $results, SORT_REGULAR );
@@ -16993,6 +17203,8 @@ function mjschool_currency_symbol_position_language_wise( $amount ) {
  * @since 1.0.0
  */
 function mjschool_wp_check_file_type_and_ext( $tmp_name, $name ) {
+	$tmp_name  = sanitize_text_field( $tmp_name );
+	$name    = sanitize_text_field( $name );
 	$file_info = wp_check_filetype_and_ext( $tmp_name, $name );
 	// Step 2: Define custom allowed MIME types and extensions.
 	$allowed_mime_types = array(
@@ -17032,6 +17244,8 @@ function mjschool_wp_check_file_type_and_ext( $tmp_name, $name ) {
  * @since 1.0.0
  */
 function mjschool_wp_check_file_type_and_ext_image( $tmp_name, $name ) {
+	$tmp_name = sanitize_text_field( $tmp_name );
+	$name = sanitize_text_field( $name );
 	$file_info = wp_check_filetype_and_ext( $tmp_name, $name );
 	// Step 2: Define custom allowed MIME types and extensions.
 	$allowed_mime_types = array(
@@ -17094,6 +17308,7 @@ function mjschool_upload_document_user_multiple( $file, $x, $document_title ) {
  * @since 1.0.0
  */
 function mjschool_show_document_for( $document_for ) {
+	$document_for = sanitize_text_field( $document_for );
 	if ( $document_for !== '' ) {
 		return $document_for;
 	} else {
@@ -17108,6 +17323,7 @@ function mjschool_show_document_for( $document_for ) {
  * @since 1.0.0
  */
 function mjschool_show_document_user( $student_id ) {
+	$student_id = sanitize_text_field( $student_id );
 	if ( $student_id === 'all student' || $student_id === '' ) {
 		esc_html_e( 'All Student', 'mjschool' );
 	} elseif ( $student_id === 'all teacher' ) {
@@ -17194,11 +17410,13 @@ function mjschool_get_costribution_data_jason( $data ) {
  * @since 1.0.0
  */
 function mjschool_check_reminder_send_or_not( $student_id, $fees_id ) {
+	$student_id = absint( $student_id );
+	$fees_id    = absint( $fees_id );
 	$date = date( 'Y-m-d' );
 	global $wpdb;
 	$mjschool_cron_reminder_log = $wpdb->prefix . 'mjschool_cron_reminder_log';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $mjschool_cron_reminder_log WHERE student_id=%d AND fees_pay_id=%d AND date_time=%s", $student_id, $fees_id, $date ) );
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$mjschool_cron_reminder_log} WHERE student_id=%d AND fees_pay_id=%d AND date_time=%s", $student_id, $fees_id, $date ) );
 	return $result;
 }
 /**
@@ -17415,10 +17633,13 @@ function mjschool_get_format_for_db( $date ) {
  */
 function mjschool_get_failed_student_report_data( $exam_id, $class_id, $section_id, $passing_mark ) {
 	global $wpdb;
+	$exam_id       = absint( $exam_id );
+	$class_id      = absint( $class_id );
+	$section_id    = absint( $section_id );
 	$table_marks   = $wpdb->prefix . 'mjschool_marks';
 	$table_users   = $wpdb->prefix . 'users';
 	$where_section = $section_id != '' ? 'AND m.section_id = %d' : '';
-	$sql           = "SELECT m.*, u.* FROM $table_marks AS m JOIN $table_users AS u ON m.student_id = u.ID WHERE m.exam_id = %d AND m.class_id = %d $where_section AND m.marks < %d";
+	$sql           = "SELECT m.*, u.* FROM {$table_marks} AS m JOIN $table_users AS u ON m.student_id = u.ID WHERE m.exam_id = %d AND m.class_id = %d $where_section AND m.marks < %d";
 	// Prepare query with proper bindings.
 	if ( $section_id != '' ) {
 		$query = $wpdb->prepare( $sql, $exam_id, $class_id, $section_id, $passing_mark );
@@ -17638,8 +17859,8 @@ function mjschool_generate_exam_receipt_mobile_app( $student_id, $exam_id, $name
 function mjschool_generate_result_for_mobile_app( $student_id, $exam_id, $name, $class_id, $section_id ) {
 	ob_start();
 	error_reporting( 0 );
-	$uid      = intval( $student_id );
-	$exam_id  = intval( $exam_id );
+	$uid      = absint( $student_id );
+	$exam_id  = absint( $exam_id );
 	$obj_mark = new mjschool_Marks_Manage();
 	$exam_obj = new mjschool_exam();
 	$user          = get_userdata( $uid );
@@ -17823,17 +18044,17 @@ function mjschool_generate_result_for_mobile_app( $student_id, $exam_id, $name, 
 		<table style="float:right;width:100%;border:1px solid #000;margin-bottom:8px;" cellpadding="10" cellspacing="0">
 			<thead>
 				<tr style="border-bottom: 1px solid #000;background-color:#b8daff;">
-					<th style="border-bottom: 1px solid #000;text-align:right;border-right: 1px solid #000;"> <?php esc_html_e( 'Marks Obtainable', 'mjschool' ); ?></th>
-					<th style="border-bottom: 1px solid #000;text-align:right;border-right: 1px solid #000;"> <?php esc_html_e( 'Marks Obtained', 'mjschool' ); ?></th>
-					<th style="border-bottom: 1px solid #000;text-align:right;border-right: 1px solid #000;"> <?php esc_html_e( 'Percentage(%)', 'mjschool' ); ?></th>
-					<th style="border-bottom: 1px solid #000;text-align:right;border-right: 1px solid #000;"> <?php esc_html_e( 'GPA', 'mjschool' ); ?></th>
-					<th style="border-bottom: 1px solid #000;text-align:right;border-right: 1px solid #000;"> <?php esc_html_e( 'Result', 'mjschool' ); ?></th>
+					<th style="border-bottom: 1px solid #000;text-align:right;border-right: 1px solid #000;"><?php esc_html_e( 'Marks Obtainable', 'mjschool' ); ?></th>
+					<th style="border-bottom: 1px solid #000;text-align:right;border-right: 1px solid #000;"><?php esc_html_e( 'Marks Obtained', 'mjschool' ); ?></th>
+					<th style="border-bottom: 1px solid #000;text-align:right;border-right: 1px solid #000;"><?php esc_html_e( 'Percentage(%)', 'mjschool' ); ?></th>
+					<th style="border-bottom: 1px solid #000;text-align:right;border-right: 1px solid #000;"><?php esc_html_e( 'GPA', 'mjschool' ); ?></th>
+					<th style="border-bottom: 1px solid #000;text-align:right;border-right: 1px solid #000;"><?php esc_html_e( 'Result', 'mjschool' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr style="border-bottom: 1px solid #000;">
-					<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"> <?php echo esc_html( $total_max_mark ); ?></td>
-					<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"> <?php echo esc_html( $total ); ?></td>
+					<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $total_max_mark ); ?></td>
+					<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $total ); ?></td>
 					<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;">
 						<?php
 						if ( ! empty( $percentage ) ) {
@@ -17843,7 +18064,7 @@ function mjschool_generate_result_for_mobile_app( $student_id, $exam_id, $name, 
 						}
 						?>
 					</td>
-					<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"> <?php echo esc_html( round( $GPA, 2 ) ); ?></td>
+					<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( round( $GPA, 2 ) ); ?></td>
 					<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;">
 						<?php
 						$result  = array();
@@ -18098,7 +18319,7 @@ function mjschool_generate_result_for_mobile_app( $student_id, $exam_id, $name, 
 						}
 						?>
 					</td>
-					<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"> <?php echo esc_html( round( $GPA, 2 ) ); ?></td>
+					<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( round( $GPA, 2 ) ); ?></td>
 					<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;">
 						<?php
 						$result  = array();
@@ -18196,6 +18417,7 @@ function mjschool_generate_result_for_mobile_app( $student_id, $exam_id, $name, 
  */
 function mjschool_get_module_name_for_custom_field($page){
 	$module = '';
+	$page = sanitize_text_field( $page );
 	$sanitize_tab = isset($_REQUEST['tab']) ? sanitize_text_field(wp_unslash($_REQUEST['tab'])) : '';
 	if(isset($page) && ($page === 'mjschool_library' || $page === 'library')) {
 		$module = 'library';
@@ -18345,6 +18567,7 @@ function mjschool_print_weightage_data_pdf( $merge_config ) {
  * @return string 'yes' if contributions are enabled, otherwise returns other value.
  */
 function mjschool_check_contribution( $exam_id ) {
+	$exam_id         = absint( $exam_id );
 	$exam_obj      = new mjschool_exam();
 	$exam_data     = $exam_obj->mjschool_exam_data( $exam_id );
 	$contributions = $exam_data->contributions;
@@ -18390,7 +18613,7 @@ function mjschool_get_all_class_array() {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_class';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$results = $wpdb->get_results( $wpdb->prepare( "SELECT class_name FROM $table_name limit 1" ) );
+	$results = $wpdb->get_results( $wpdb->prepare( "SELECT class_name FROM {$table_name} limit 1" ) );
 	return $results;
 }
 /**
@@ -18406,7 +18629,7 @@ function mjschool_attedance_advance_report() {
 	$start_date = date( 'Y-m-01' );
 	$end_date   = date( 'Y-m-t' );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$results = $wpdb->get_results( $wpdb->prepare( "SELECT user_id, class_id, section_id, COUNT(DISTINCT attendance_date) AS total_working_days, SUM(CASE WHEN daily_status = 'Present' THEN 1 ELSE 0 END) AS total_present, SUM(CASE WHEN daily_status = 'Absent' THEN 1 ELSE 0 END) AS total_absent, ROUND( (SUM(CASE WHEN daily_status = 'Present' THEN 1 ELSE 0 END) / NULLIF(COUNT(DISTINCT attendance_date), 0 ) ) * 100, 2 ) AS attendance_percentage FROM ( SELECT user_id, class_id, section_id, attendance_date, CASE WHEN SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) > 0 THEN 'Present' ELSE 'Absent' END AS daily_status FROM $table_name WHERE role_name = 'student' AND attendance_date BETWEEN %s AND %s GROUP BY user_id, attendance_date ) AS daily_attendance GROUP BY user_id, class_id, section_id", $start_date, $end_date ) );
+	$results = $wpdb->get_results( $wpdb->prepare( "SELECT user_id, class_id, section_id, COUNT(DISTINCT attendance_date) AS total_working_days, SUM(CASE WHEN daily_status = 'Present' THEN 1 ELSE 0 END) AS total_present, SUM(CASE WHEN daily_status = 'Absent' THEN 1 ELSE 0 END) AS total_absent, ROUND( (SUM(CASE WHEN daily_status = 'Present' THEN 1 ELSE 0 END) / NULLIF(COUNT(DISTINCT attendance_date), 0 ) ) * 100, 2 ) AS attendance_percentage FROM ( SELECT user_id, class_id, section_id, attendance_date, CASE WHEN SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) > 0 THEN 'Present' ELSE 'Absent' END AS daily_status FROM {$table_name} WHERE role_name = 'student' AND attendance_date BETWEEN %s AND %s GROUP BY user_id, attendance_date ) AS daily_attendance GROUP BY user_id, class_id, section_id", $start_date, $end_date ) );
 	return $results;
 }
 /**
@@ -18426,7 +18649,7 @@ function mjschool_get_teacher_perfomance_report() {
 	$wp_users_table        = $wpdb->prefix . 'users';
 	// Get raw data.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$raw_results = $wpdb->get_results( "SELECT m.marks, m.contributions, m.class_marks, m.subject_id, m.class_id, s.sub_name AS subject_name, ts.teacher_id, u.display_name AS teacher_name, c.class_name FROM $marks_table m INNER JOIN $subject_table s ON s.subid = m.subject_id INNER JOIN $teacher_subject_table ts ON ts.subject_id = s.subid INNER JOIN $teacher_class_table tc ON tc.teacher_id = ts.teacher_id AND tc.class_id = m.class_id INNER JOIN $wp_users_table u ON u.ID = ts.teacher_id INNER JOIN $class_table c ON c.class_id = m.class_id");
+	$raw_results = $wpdb->get_results( "SELECT m.marks, m.contributions, m.class_marks, m.subject_id, m.class_id, s.sub_name AS subject_name, ts.teacher_id, u.display_name AS teacher_name, c.class_name FROM {$marks_table} m INNER JOIN {$subject_table} s ON s.subid = m.subject_id INNER JOIN {$teacher_subject_table} ts ON ts.subject_id = s.subid INNER JOIN {$teacher_class_table} tc ON tc.teacher_id = ts.teacher_id AND tc.class_id = m.class_id INNER JOIN {$wp_users_table} u ON u.ID = ts.teacher_id INNER JOIN {$class_table} c ON c.class_id = m.class_id");
 	// Processed results.
 	$final_data = array();
 	foreach ( $raw_results as $row ) {
@@ -18490,7 +18713,7 @@ function mjschool_get_leave_data_advance_report() {
 	global $wpdb;
 	$tbl_name = $wpdb->prefix . 'mjschool_leave';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( "SELECT * FROM $tbl_name ORDER BY start_date DESC" );
+	$result = $wpdb->get_results( "SELECT * FROM {$tbl_name} ORDER BY start_date DESC" );
 	return $result;
 }
 /**
@@ -18503,7 +18726,7 @@ function mjschool_get_leave_data_advance_report() {
 function mjschool_get_payment_report_front_all_advance() {
 	global $wpdb;
 	$mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
-	$sql                   = "SELECT * FROM $mjschool_fees_payment  ";
+	$sql                   = "SELECT * FROM {$mjschool_fees_payment}  ";
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$result = $wpdb->get_results( $sql );
 	return $result;
@@ -18536,7 +18759,7 @@ function mjschool_delete_letter_table_by_id( $id ) {
 	$id    = intval( $id );
 	$table = $wpdb->prefix . 'mjschool_certificate';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table WHERE id = %d", $id ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE id = %d", $id ) );
 	return $result;
 }
 /**
@@ -18562,7 +18785,7 @@ function mjschool_clone_certificate_template( $base_option_name, $new_option_pre
 	do {
 		$cert_name = $new_option_prefix . "_{$i}";
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		$exists = $wpdb->get_var($wpdb->prepare( "SELECT COUNT(*) FROM $table WHERE certificate_name = %s", $cert_name ) );
+		$exists = $wpdb->get_var($wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE certificate_name = %s", $cert_name ) );
 		++$i;
 	} while ( $exists > 0 );
 	// Now insert into custom table.
@@ -18659,7 +18882,7 @@ function mjschool_generate_invoice_number( $fees_pay_id ) {
 	$table = $wpdb->prefix . 'mjschool_fees_payment';
 	// Get the invoice_id from the table.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$invoice_id = $wpdb->get_var( $wpdb->prepare( "SELECT invoice_id FROM $table WHERE fees_pay_id = %d", intval( $fees_pay_id ) ) );
+	$invoice_id = $wpdb->get_var( $wpdb->prepare( "SELECT invoice_id FROM {$table} WHERE fees_pay_id = %d", intval( $fees_pay_id ) ) );
 	// If it's empty or NULL, return 'N/A'.
 	if ( empty( $invoice_id ) ) {
 		return 'N/A';
@@ -18703,6 +18926,10 @@ function mjschool_generate_receipt_number( $fees_pay_id ) {
  */
 function mjschool_append_csv_log( $log, $created_by, $module, $status ) {
 	global $wpdb;
+	$log        = sanitize_text_field( $log );
+	$created_by = sanitize_text_field( $created_by );
+	$module     = sanitize_text_field( $module );
+	$status     = sanitize_text_field( $status );
 	$mjschool_csv_log = $wpdb->prefix . 'mjschool_csv_log';
 	$data               = array(
 		'error_log'  => $log,
@@ -18916,14 +19143,15 @@ function mjschool_check_table_exist( $table_name ) {
  */
 function mjschool_delete_class_room($tablenm, $id) {
 	global $wpdb;
+	$tablenm = sanitize_text_field( $tablenm );
 	$table_name = $wpdb->prefix . $tablenm;
-	$record_id = intval($id);
+	$record_id = absint($id);
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$event = $wpdb->get_row($wpdb->prepare( "SELECT * FROM $table_name where room_id=%d", $record_id ) );
+	$event = $wpdb->get_row($wpdb->prepare( "SELECT * FROM {$table_name} where room_id=%d", $record_id ) );
 	$room_name = $event->room_name;
 	mjschool_append_audit_log( '' . esc_html__( 'Class Room Deleted', 'mjschool' ) . '( ' . $room_name . ' )' . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field(wp_unslash($_REQUEST['page'])));
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	return $result = $wpdb->query($wpdb->prepare( "DELETE FROM $table_name WHERE room_id= %d", $record_id ) );
+	return $result = $wpdb->query($wpdb->prepare( "DELETE FROM {$table_name} WHERE room_id= %d", $record_id ) );
 }
 /**
  * Retrieves a classroom record by its ID.
@@ -18937,9 +19165,9 @@ function mjschool_delete_class_room($tablenm, $id) {
 function mjschool_get_class_room_by_id($id) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . "mjschool_class_room";
-	$sid = intval($id);
+	$sid = absint($id);
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$retrieve_room = $wpdb->get_row($wpdb->prepare( "SELECT * FROM $table_name WHERE room_id=%d", $sid ) );
+	$retrieve_room = $wpdb->get_row($wpdb->prepare( "SELECT * FROM {$table_name} WHERE room_id=%d", $sid ) );
 	return $retrieve_room;
 }
 /**
@@ -18954,9 +19182,9 @@ function mjschool_get_class_room_by_id($id) {
 function mjschool_get_class_room_name($id) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . "mjschool_class_room";
-	$sid = intval($id);
+	$sid = absint($id);
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$retrieve_room = $wpdb->get_row($wpdb->prepare( "SELECT room_name FROM $table_name WHERE room_id=%d", $sid ) );
+	$retrieve_room = $wpdb->get_row($wpdb->prepare( "SELECT room_name FROM {$table_name} WHERE room_id=%d", $sid ) );
 	return $retrieve_room;
 }
 /**
@@ -18971,6 +19199,7 @@ function mjschool_get_class_room_name($id) {
  * @return string The class name, possibly combined with categories.
  */
 function mjschool_get_class_name_category_wise($class_id) {
+	$class_id   = absint( $class_id );
 	$class_data = mjschool_get_class_by_id($class_id);
 	$event_categories = array();
 	$class_cat_name = '';
@@ -19012,9 +19241,10 @@ function mjschool_get_class_name_category_wise($class_id) {
  */
 function mjschool_get_assign_class_room_for_single_class($class_id) {
 	global $wpdb;
+	$class_id   = absint( $class_id );
 	$table_name = $wpdb->prefix . "mjschool_class_room";
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE JSON_CONTAINS(class_id, %s, '$' )", json_encode($class_id) ) );
+	$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE JSON_CONTAINS(class_id, %s, '$' )", json_encode($class_id) ) );
 	return $results;
 }
 /**
@@ -19029,10 +19259,10 @@ function mjschool_get_assign_class_room_for_single_class($class_id) {
 function mjschool_subject_list_univercity($id) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_subject';
-	$class_id = intval($id);
+	$class_id = absint($id);
 	$current_user_id = get_current_user_id();
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d AND FIND_IN_SET(%d, selected_students)", $class_id, $current_user_id ) );
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id = %d AND FIND_IN_SET(%d, selected_students)", $class_id, $current_user_id ) );
 	return $result;
 }
 /**
@@ -19048,10 +19278,10 @@ function mjschool_subject_list_univercity($id) {
 function mjschool_subject_list_univercity_parents($id,$child_id) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_subject';
-	$class_id = intval($id);
-	$current_user_id = $child_id;
+	$class_id = absint($id);
+	$current_user_id = absint($child_id);
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d AND FIND_IN_SET(%d, selected_students)", $class_id, $current_user_id ) );
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id = %d AND FIND_IN_SET(%d, selected_students)", $class_id, $current_user_id ) );
 	return $result;
 }
 /**
@@ -19067,10 +19297,10 @@ function mjschool_subject_list_univercity_parents($id,$child_id) {
 function mjschool_subject_list_univercity_for_child($class_id, $student_id) {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mjschool_subject';
-	$class_id = intval($class_id);
-	$student_id = intval($student_id);
+	$class_id = absint($class_id);
+	$student_id = absint($student_id);
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id = %d AND FIND_IN_SET(%d, selected_students)", $class_id, $student_id ) );
+	$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id = %d AND FIND_IN_SET(%d, selected_students)", $class_id, $student_id ) );
 	return $result;
 }
 /**
@@ -19083,7 +19313,7 @@ function mjschool_subject_list_univercity_for_child($class_id, $student_id) {
  * @return array List of WP_User objects for students in the class.
  */
 function mjschool_get_users_by_class_id($class_id) {
-
+	$class_id = absint($class_id);
     $args = array(
         'role' => 'student',
         'meta_key' => 'class_name',
@@ -19104,6 +19334,7 @@ function mjschool_get_users_by_class_id($class_id) {
  */
 function mjschool_get_students_assigned_to_subject($subid) {
 	global $wpdb;
+	$subid = absint($subid);
 	$table_name = $wpdb->prefix . 'mjschool_subject';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$subject = $wpdb->get_row( $wpdb->prepare( "SELECT selected_students FROM $table_name WHERE subid = %d", $subid) );
@@ -19143,7 +19374,7 @@ function mjschool_get_all_class_data_by_class_room_array($class_id_array) {
 	$like_sql = implode( " OR ", $like_conditions);
 
 	// Build full SQL manually with user ID inserted.
-	$query = "SELECT * FROM $table_name WHERE ($like_sql) OR created_by = $user_id";
+	$query = "SELECT * FROM {$table_name} WHERE ($like_sql) OR created_by = $user_id";
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	return $wpdb->get_results($query);
 }
@@ -19164,6 +19395,7 @@ function mjschool_get_user_own_data($tablename)
 {
 	global $wpdb;
 	$user_id = get_current_user_id();
+	$tablename = sanitize_text_field( $tablename );
 
 	// Whitelist of allowed tables (without prefix).
 	$allowed_tables = ['subjects', 'classes', 'students', 'mjschool_class_room']; // Add your actual table names.
@@ -19868,11 +20100,10 @@ function mjschool_migrate_options() {
 function mjschool_get_single_notification_by_id($id)
 {
 	global $wpdb;
-
+	$id = absint($id);
 	$mjschool_notification=$wpdb->prefix. 'mjschool_notification';
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-	$result= $wpdb->get_row( "SELECT * FROM $mjschool_notification WHERE notification_id=$id");
-
+	$result= $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $mjschool_notification WHERE notification_id= %d", $id));
 	return $result;
 }
 
@@ -19891,8 +20122,6 @@ function mjschool_get_student_name_with_class_and_section($class_id, $section_id
 {
 	// Fetch list of student IDs that should be excluded.
 	$exclude_ids = mjschool_approve_student_list();
-	var_dump($class_id);
-	var_dump($section_id);
 	// Ensure the exclude list is always an array.
 	if (!is_array($exclude_ids)) {
 		$exclude_ids = array();
@@ -19984,22 +20213,12 @@ function mjschool_get_student_name_with_class($class_id)
  */
 function mjschool_get_certificate_id_and_name() {
     global $wpdb;
-
     $table = $wpdb->prefix . 'mjschool_daynamic_certificate';
-
     // Use prepare() even if no variable is used (for consistency & safety).
-    $query = $wpdb->prepare(
-        "SELECT id, certificate_name 
-         FROM {$table}
-         ORDER BY id ASC",
-         array()
-    );
-
+    $query = $wpdb->prepare( "SELECT id, certificate_name FROM {$table} ORDER BY id ASC", array() );
     $results = $wpdb->get_results( $query );
-
     // Ensure always returning an array
     $results = is_array( $results ) ? $results : array();
-
     return $results;
 }
 
@@ -20032,14 +20251,11 @@ function mjschool_get_time_table_using_class_and_section( $class_id, $section_na
     global $wpdb;
 
     // Table name
-    $table_name = $wpdb->prefix . "mjschool_time_table";
-
+    $table_name   = $wpdb->prefix . "mjschool_time_table";
+	$class_id     = absint($class_id);
+	$section_name = sanitize_text_field( $section_name );
     // Prepare and execute query (section_name is TEXT → use %s)
-    $query = $wpdb->prepare(
-        "SELECT * FROM {$table_name} WHERE class_id = %d AND section_name = %s",
-        $class_id,
-        $section_name
-    );
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id = %d AND section_name = %s", $class_id, $section_name );
 
     $results = $wpdb->get_results( $query );
 
@@ -20058,15 +20274,12 @@ function mjschool_get_time_table_using_class_and_section( $class_id, $section_na
  */
 function mjschool_get_manage_marks_exam_id_using_student_id( $uid ) {
     global $wpdb;
-
+	$uid = absint($uid);
     // Table name
     $table_name = $wpdb->prefix . "mjschool_marks";
-
     $query = $wpdb->prepare( "SELECT DISTINCT exam_id FROM {$table_name} WHERE student_id = %d", $uid );
-
     // Fetch column results
     $exam_ids = $wpdb->get_col( $query );
-
     // Always return an array
     return is_array( $exam_ids ) ? $exam_ids : array();
 }
@@ -20082,19 +20295,13 @@ function mjschool_get_manage_marks_exam_id_using_student_id( $uid ) {
  */
 function mjschool_get_manage_marks_class_id_using_student_id( $uid ) {
     global $wpdb;
-
+	$uid = absint($uid);
     // Table name
     $table_name = $wpdb->prefix . "mjschool_marks";
-
     // Corrected query: table name should not be in quotes
-    $query = $wpdb->prepare(
-        "SELECT DISTINCT class_id FROM {$table_name} WHERE student_id = %d",
-        $uid
-    );
-
+    $query = $wpdb->prepare( "SELECT DISTINCT class_id FROM {$table_name} WHERE student_id = %d", $uid );
     // Fetch column results
     $class_ids = $wpdb->get_col( $query );
-
     // Always return an array
     return is_array( $class_ids ) ? $class_ids : array();
 }
@@ -20109,19 +20316,13 @@ function mjschool_get_manage_marks_class_id_using_student_id( $uid ) {
  */
 function mjschool_get_manage_marks_subject_id_using_student_id( $uid ) {
     global $wpdb;
-
+	$uid = absint($uid);
     // Table name
     $table_name = $wpdb->prefix . "mjschool_marks";
-
     // Corrected query: table name should not be in quotes
-    $query = $wpdb->prepare(
-        "SELECT DISTINCT subject_id FROM {$table_name} WHERE student_id = %d",
-        $uid
-    );
-
+    $query = $wpdb->prepare( "SELECT DISTINCT subject_id FROM {$table_name} WHERE student_id = %d", $uid );
     // Fetch column results
     $subject_ids = $wpdb->get_col( $query );
-
     // Always return an array
     return is_array( $subject_ids ) ? $subject_ids : array();
 }
@@ -20154,11 +20355,7 @@ function mjschool_get_exam_details_by_ids( array $exam_ids ) {
     $placeholders = implode( ',', array_fill( 0, count( $exam_ids ), '%d' ) );
 
     // Query (add source_table field, as in your original code)
-    $query = "
-        SELECT *, 'mjschool_exam' AS source_table
-        FROM {$table_name}
-        WHERE exam_id IN ($placeholders)
-    ";
+    $query = " SELECT *, 'mjschool_exam' AS source_table FROM {$table_name} WHERE exam_id IN ($placeholders) ";
 
     // Prepare and execute query
     $prepared_query = $wpdb->prepare( $query, ...$exam_ids );
@@ -20182,19 +20379,13 @@ function mjschool_get_exam_details_by_ids( array $exam_ids ) {
  */
 function mjschool_get_class_section_pairs_by_student( $student_id ) {
     global $wpdb;
-
+	$student_id = absint($student_id);
     // Table name
     $table_name = $wpdb->prefix . "mjschool_marks";
-
     // Prepare query
-    $query = $wpdb->prepare(
-        "SELECT DISTINCT class_id, section_id FROM {$table_name} WHERE student_id = %d",
-        $student_id
-    );
-
+    $query = $wpdb->prepare( "SELECT DISTINCT class_id, section_id FROM {$table_name} WHERE student_id = %d", $student_id );
     // Fetch results
     $results = $wpdb->get_results( $query );
-
     // Ensure array return
     return is_array( $results ) ? $results : array();
 }
@@ -20215,18 +20406,12 @@ function mjschool_get_exam_merge_settings( $class_id, $section_id, $status ) {
 
     // Table name
     $table_name = $wpdb->prefix . "mjschool_exam_merge_settings";
+	$class_id   = absint($class_id);
+	$section_id = absint($section_id);
+	$status     = sanitize_text_field( $status );
 
     // Prepare query safely
-    $query = $wpdb->prepare(
-        "SELECT *, 'mjschool_exam_merge_settings' AS source_table 
-         FROM {$table_name} 
-         WHERE class_id = %d 
-           AND section_id = %d 
-           AND status = %s",
-        $class_id,
-        $section_id,
-        $status
-    );
+    $query = $wpdb->prepare( "SELECT *, 'mjschool_exam_merge_settings' AS source_table FROM {$table_name} WHERE class_id = %d AND section_id = %d AND status = %s", $class_id, $section_id, $status );
 
     // Fetch results
     $results = $wpdb->get_results( $query );
@@ -20248,19 +20433,13 @@ function mjschool_get_exam_merge_settings( $class_id, $section_id, $status ) {
  */
 function mjschool_get_class_id_by_exam_and_student( $exam_id, $student_id ) {
     global $wpdb;
-
+	$exam_id = absint($exam_id);
+	$student_id = absint($student_id);
     // Table name
     $table_name = $wpdb->prefix . "mjschool_marks";
 
     // Prepare SQL query
-    $query = $wpdb->prepare(
-        "SELECT class_id 
-         FROM {$table_name} 
-         WHERE exam_id = %d AND student_id = %d 
-         LIMIT 1",
-        $exam_id,
-        $student_id
-    );
+    $query = $wpdb->prepare( "SELECT class_id FROM {$table_name} WHERE exam_id = %d AND student_id = %d LIMIT 1", $exam_id, $student_id );
 
     // Fetch single value
     $class_id = $wpdb->get_var( $query );
@@ -20281,12 +20460,10 @@ function mjschool_get_class_id_by_exam_and_student( $exam_id, $student_id ) {
  */
 function mjschool_get_subject_by_class_and_code( $class_id, $subject_code ) {
     global $wpdb;
+	$class_id = absint($class_id);
+	$subject_code = sanitize_text_field( $subject_code );
     $table_name = $wpdb->prefix . 'mjschool_subject';
-    $query = $wpdb->prepare(
-        "SELECT * FROM {$table_name} WHERE class_id = %d AND subject_code = %s",
-        $class_id,
-        $subject_code
-    );
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id = %d AND subject_code = %s", $class_id, $subject_code );
     $result = $wpdb->get_row( $query );
     return $result ? $result : null;
 }
@@ -20302,16 +20479,11 @@ function mjschool_get_subject_by_class_and_code( $class_id, $subject_code ) {
  */
 function mjschool_delete_teacher_class_assignments( $teacher_id ) {
     global $wpdb;
-
+	$teacher_id = absint($teacher_id);
     // Table name
     $table_name = $wpdb->prefix . 'mjschool_teacher_class';
-
     // Prepare delete query safely
-    $query = $wpdb->prepare(
-        "DELETE FROM {$table_name} WHERE teacher_id = %d",
-        $teacher_id
-    );
-
+    $query = $wpdb->prepare( "DELETE FROM {$table_name} WHERE teacher_id = %d", $teacher_id );
     // Execute delete operation
     return $wpdb->query( $query );
 }
@@ -20330,26 +20502,16 @@ function mjschool_delete_teacher_class_assignments( $teacher_id ) {
  */
 function mjschool_get_income_expense_by_date( $year, $month, $day, $invoice_type ) {
     global $wpdb;
-
+	$year = absint($year);
+	$month = absint($month);
+	$day = absint($day);
+	$invoice_type = sanitize_text_field( $invoice_type );
     // Table name
     $table_name = $wpdb->prefix . 'mjschool_income_expense';
-
     // Prepare SQL query
-    $query = $wpdb->prepare(
-        "SELECT * FROM {$table_name}
-         WHERE YEAR(income_create_date) = %d
-           AND MONTH(income_create_date) = %d
-           AND DAY(income_create_date) = %d
-           AND invoice_type = %s",
-        $year,
-        $month,
-        $day,
-        $invoice_type
-    );
-
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE YEAR(income_create_date) = %d AND MONTH(income_create_date) = %d AND DAY(income_create_date) = %d AND invoice_type = %s", $year, $month, $day, $invoice_type );
     // Execute and return results
     $results = $wpdb->get_results( $query );
-
     return is_array( $results ) ? $results : array();
 }
 
@@ -20367,20 +20529,14 @@ function mjschool_get_income_expense_by_date( $year, $month, $day, $invoice_type
  */
 function mjschool_get_fee_payment_history_by_date( $year, $month, $day ) {
     global $wpdb;
-
+	$year = absint($year);
+	$month = absint($month);
+	$day = absint($day);
     // Table name
     $table_name = $wpdb->prefix . 'mjschool_fee_payment_history';
 
     // Prepare SQL query
-    $query = $wpdb->prepare(
-        "SELECT * FROM {$table_name}
-         WHERE YEAR(paid_by_date) = %d
-           AND MONTH(paid_by_date) = %d
-           AND DAY(paid_by_date) = %d",
-        $year,
-        $month,
-        $day
-    );
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE YEAR(paid_by_date) = %d AND MONTH(paid_by_date) = %d AND DAY(paid_by_date) = %d", $year, $month, $day );
 
     // Execute and return results
     $results = $wpdb->get_results( $query );
@@ -20403,25 +20559,15 @@ function mjschool_get_fee_payment_history_by_date( $year, $month, $day ) {
  */
 function mjschool_check_existing_class( $class_name, $class_num_name, $exclude_id ) {
     global $wpdb;
-
+	$class_name     = sanitize_text_field( $class_name );
+	$class_num_name = sanitize_text_field( $class_num_name );
+	$exclude_id     = absint($exclude_id);
     // Table name
     $table_name = $wpdb->prefix . 'mjschool_class';
-
     // Prepare SQL query
-    $query = $wpdb->prepare(
-        "SELECT *
-         FROM {$table_name}
-         WHERE class_name = %s
-           AND class_num_name = %s
-           AND class_id != %d",
-        $class_name,
-        $class_num_name,
-        $exclude_id
-    );
-
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_name = %s AND class_num_name = %s AND class_id != %d", $class_name, $class_num_name, $exclude_id );
     // Fetch result
     $result = $wpdb->get_row( $query );
-
     return $result ? $result : null;
 }
 
@@ -20438,23 +20584,14 @@ function mjschool_check_existing_class( $class_name, $class_num_name, $exclude_i
  */
 function mjschool_get_existing_class( $class_name, $class_num_name ) {
     global $wpdb;
-
+	$class_name     = sanitize_text_field( $class_name );
+	$class_num_name = sanitize_text_field( $class_num_name );
     // Table name
     $table_name = $wpdb->prefix . 'mjschool_class';
-
     // Prepare query
-    $query = $wpdb->prepare(
-        "SELECT * 
-         FROM {$table_name}
-         WHERE class_name = %s
-           AND class_num_name = %s",
-        $class_name,
-        $class_num_name
-    );
-
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_name = %s AND class_num_name = %s", $class_name, $class_num_name );
     // Run the query
     $result = $wpdb->get_row( $query );
-
     // Return result or null
     return $result ?: null;
 }
@@ -20471,27 +20608,18 @@ function mjschool_get_existing_class( $class_name, $class_num_name ) {
  */
 function mjschool_get_teacher_class_assignments_by_class_ids( array $class_ids ) {
     global $wpdb;
-
     // Return empty if no IDs provided
     if ( empty( $class_ids ) ) {
         return array();
     }
-
     // Table name
     $table_name = $wpdb->prefix . 'mjschool_teacher_class';
-
     // Build placeholders dynamically (%d for each class_id)
     $placeholders = implode( ',', array_fill( 0, count( $class_ids ), '%d' ) );
-
     // Prepare SQL query
-    $query = $wpdb->prepare(
-        "SELECT * FROM {$table_name} WHERE class_id IN ($placeholders)",
-        ...$class_ids
-    );
-
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id IN ($placeholders)", ...$class_ids );
     // Fetch results
     $results = $wpdb->get_results( $query );
-
     return is_array( $results ) ? $results : array();
 }
 
@@ -20507,12 +20635,10 @@ function mjschool_get_teacher_class_assignments_by_class_ids( array $class_ids )
  */
 function mjschool_get_assigned_students_by_exam( $exam_id ) {
     global $wpdb;
+	$exam_id    = absint($exam_id);
     $table_name = $wpdb->prefix . 'mjschool_exam_hall_receipt';
-    $query = $wpdb->prepare(
-        "SELECT user_id FROM {$table_name} WHERE exam_id = %d",
-        $exam_id
-    );
-    $results = $wpdb->get_results( $query );
+    $query      = $wpdb->prepare( "SELECT user_id FROM {$table_name} WHERE exam_id = %d", $exam_id );
+    $results    = $wpdb->get_results( $query );
     return is_array( $results ) ? $results : array();
 }
 
@@ -20531,14 +20657,11 @@ function mjschool_get_fees_payment_by_class_ids( $class_ids ) {
         return array();
     }
     if ( ! is_array( $class_ids ) ) {
-        $class_ids = array( $class_ids ); // convert single value to array
+        $class_ids = array( $class_ids ); // convert single value to array.
     }
     $table_name = $wpdb->prefix . 'mjschool_fees_payment';
     $placeholders = implode( ',', array_fill( 0, count( $class_ids ), '%d' ) );
-    $query = $wpdb->prepare(
-        "SELECT * FROM {$table_name} WHERE class_id IN ($placeholders)",
-        ...$class_ids
-    );
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id IN ($placeholders)", ...$class_ids );
     $results = $wpdb->get_results( $query );
     return is_array( $results ) ? $results : array();
 }
@@ -20557,15 +20680,10 @@ function mjschool_get_fees_payment_by_class_ids( $class_ids ) {
 function mjschool_get_other_beds_in_room( $room_id, $exclude_bed_id ) 
 {
     global $wpdb;
+	$room_id        = absint($room_id);
+	$exclude_bed_id = absint($exclude_bed_id);
     $table_name = $wpdb->prefix . 'mjschool_beds';
-    $query = $wpdb->prepare(
-        "SELECT * 
-         FROM {$table_name}
-         WHERE room_id = %d
-           AND id != %d",
-        $room_id,
-        $exclude_bed_id
-    );
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE room_id = %d AND id != %d", $room_id, $exclude_bed_id );
     $results = $wpdb->get_results( $query );
     return is_array( $results ) ? $results : array();
 }
@@ -20581,19 +20699,13 @@ function mjschool_get_other_beds_in_room( $room_id, $exclude_bed_id )
  */
 function mjschool_get_message_by_post_id( $post_id ) {
     global $wpdb;
-
-    // Table name
+	$post_id = absint($post_id);
+    // Table name.
     $table_name = $wpdb->prefix . 'mjschool_message';
-
-    // Prepare SQL query
-    $query = $wpdb->prepare(
-        "SELECT * FROM {$table_name} WHERE post_id = %d",
-        $post_id
-    );
-
-    // Execute query
+    // Prepare SQL query.
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE post_id = %d", $post_id );
+    // Execute query.
     $result = $wpdb->get_row( $query );
-
     return $result ? $result : null;
 }
 
@@ -20610,19 +20722,13 @@ function mjschool_get_message_by_post_id( $post_id ) {
  */
 function mjschool_get_existing_library_book( $book_name, $isbn ) {
     global $wpdb;
-
-    // Table name
+	$book_name = sanitize_text_field( $book_name );
+	$isbn      = sanitize_text_field( $isbn );
+    // Table name.
     $table_name = $wpdb->prefix . 'mjschool_library_book';
-
-    // Prepare and execute query
-    $query = $wpdb->prepare(
-        "SELECT id FROM {$table_name} WHERE book_name = %s AND ISBN = %s",
-        $book_name,
-        $isbn
-    );
-
+    // Prepare and execute query.
+    $query = $wpdb->prepare( "SELECT id FROM {$table_name} WHERE book_name = %s AND ISBN = %s", $book_name, $isbn );
     $result = $wpdb->get_row( $query );
-
     return $result ?: null;
 }
 
@@ -20639,24 +20745,14 @@ function mjschool_get_existing_library_book( $book_name, $isbn ) {
 function mjschool_get_subjects_by_ids( array $subject_ids ) 
 {
     global $wpdb;
-
     if ( empty( $subject_ids ) ) {
         return array();
     }
-
     $subject_ids = array_map( 'intval', $subject_ids );
-
     $table_name = $wpdb->prefix . 'mjschool_subject';
-
     $placeholders = implode( ',', array_fill( 0, count( $subject_ids ), '%d' ) );
-
-    $query = $wpdb->prepare(
-        "SELECT * FROM {$table_name} WHERE subid IN ($placeholders)",
-        ...$subject_ids
-    );
-
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE subid IN ($placeholders)", ...$subject_ids );
     $results = $wpdb->get_results( $query );
-
     return is_array( $results ) ? $results : array();
 }
 
@@ -20674,38 +20770,16 @@ function mjschool_get_subjects_by_ids( array $subject_ids )
  */
 function mjschool_get_teachers_created_by_user( $created_by ) {
     global $wpdb;
-
     // Sanitize user ID
     $created_by = intval( $created_by );
-
     // WordPress capabilities meta key
     $cap_key = $wpdb->prefix . 'capabilities';
-
     // LIKE parameter for searching 'teacher'
     $role_like = '%teacher%';
-
     // Prepare query
-    $query = $wpdb->prepare(
-        "
-        SELECT u.ID
-        FROM {$wpdb->users} u
-        INNER JOIN {$wpdb->usermeta} um1 
-            ON u.ID = um1.user_id 
-           AND um1.meta_key = 'created_by'
-           AND um1.meta_value = %d
-        INNER JOIN {$wpdb->usermeta} um2 
-            ON u.ID = um2.user_id 
-           AND um2.meta_key = %s
-           AND um2.meta_value LIKE %s
-        ",
-        $created_by,
-        $cap_key,
-        $role_like
-    );
-
+    $query = $wpdb->prepare( " SELECT u.ID FROM {$wpdb->users} u INNER JOIN {$wpdb->usermeta} um1 ON u.ID = um1.user_id AND um1.meta_key = 'created_by' AND um1.meta_value = %d INNER JOIN {$wpdb->usermeta} um2 ON u.ID = um2.user_id AND um2.meta_key = %s AND um2.meta_value LIKE %s ", $created_by, $cap_key, $role_like );
     // Execute
     $teacher_ids = $wpdb->get_col( $query );
-
     return is_array( $teacher_ids ) ? $teacher_ids : array();
 }
 
@@ -20721,20 +20795,14 @@ function mjschool_get_teachers_created_by_user( $created_by ) {
  */
 function mjschool_get_subjects_by_class_and_section( $class_id, $section_id ) {
     global $wpdb;
-
-    // Table name
+	$class_id   = absint($class_id);
+	$section_id = absint($section_id);
+    // Table name.
     $table_name = $wpdb->prefix . 'mjschool_subject';
-
-    // Prepare query
-    $query = $wpdb->prepare(
-        "SELECT * FROM {$table_name} WHERE class_id = %d AND section_id = %d",
-        $class_id,
-        $section_id
-    );
-
-    // Execute
+    // Prepare query.
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE class_id = %d AND section_id = %d", $class_id, $section_id );
+    // Execute.
     $subjects = $wpdb->get_results( $query );
-
     return is_array( $subjects ) ? $subjects : array();
 }
 
@@ -20749,19 +20817,13 @@ function mjschool_get_subjects_by_class_and_section( $class_id, $section_id ) {
  */
 function mjschool_get_certificate_by_id( $certificate_id ) {
     global $wpdb;
-
-    // Table name
+    // Table name.
+	$certificate_id = absint($certificate_id);
     $table_name = $wpdb->prefix . 'mjschool_certificate';
-
-    // Prepare query
-    $query = $wpdb->prepare(
-        "SELECT * FROM {$table_name} WHERE id = %d",
-        $certificate_id
-    );
-
+    // Prepare query.
+    $query = $wpdb->prepare( "SELECT * FROM {$table_name} WHERE id = %d", $certificate_id );
     // Execute query
     $result = $wpdb->get_row( $query );
-
     return $result ?: null;
 }
 ?>

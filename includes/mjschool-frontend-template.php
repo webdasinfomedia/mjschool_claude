@@ -110,7 +110,7 @@ if ( $action === 'paypal_payment_form' && $payment_status_sanitize === 'Complete
 }
 $user_role = $school_obj->role;
 if ( $user_role != 'teacher' && $user_role != 'student' && $user_role != 'parent' && $user_role != 'supportstaff' ) {
-	wp_safe_redirect( esc_url_raw( admin_url() . 'admin.php?page=mjschool' ) );
+	wp_safe_redirect(admin_url( 'admin.php?page=mjschool' ) );
 	die();
 }
 if ( isset( $_REQUEST['print'] ) && sanitize_text_field(wp_unslash($_REQUEST['print'])) === 'pdf' ) {

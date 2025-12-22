@@ -101,7 +101,7 @@ if ( isset( $_GET['tab'] ) ) {
 				if ( $access === 1 ) {
 					?>
 					<div class="col-md-3">
-						<input type="submit" value="<?php esc_html_e( 'Export Marks', 'mjschool' ); ?>" name="export_marks" class="btn btn-info mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Export Marks', 'mjschool' ); ?>" name="export_marks" class="btn btn-info mjschool-save-btn" />
 					</div>
 					<?php
 				}

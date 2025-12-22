@@ -696,7 +696,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 												$end_min         = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
 												$end_am_pm       = $end_time_data[2];
 												$end_time        = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
-												$obj_subject = new Mjschool_subjects();
+												$obj_subject = new Mjschool_Subject();
 												?>
 												<tr>
 													<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px mjschool_border_1px_white" ><?php echo esc_html( $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>

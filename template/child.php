@@ -97,7 +97,7 @@ if ( $access ) {
 						</div>
 						<div class="form-group col-md-3 button-possition">
 							<label for="subject_id">&nbsp;</label>
-							<input type="submit" name="view_attendance" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info"/>
+							<input type="submit" name="view_attendance" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>"  class="btn btn-info"/>
 						</div>	
 					</form>
 					<div class="clearfix"></div>

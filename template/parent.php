@@ -828,7 +828,7 @@ if ( $message ) {
 										<div class="col-sm-12">
 											<input type="hidden" id="smgt_user_avatar_url" class="form-control" name="smgt_user_avatar" value="<?php if ( $edit ) { echo esc_html( $user_info->smgt_user_avatar ); } elseif ( isset( $_POST['mjschool_user_avatar'] ) ) { echo esc_url( sanitize_text_field(wp_unslash($_POST['mjschool_user_avatar'])) ); } ?>" readonly />
 											<input type="hidden" name="hidden_upload_user_avatar_image" value="<?php if ( $edit ) { echo esc_html( $user_info->smgt_user_avatar ); } elseif ( isset( $_POST['hidden_upload_user_avatar_image'] ) ) { echo esc_url( sanitize_text_field(wp_unslash($_POST['hidden_upload_user_avatar_image'])) ); } ?>">
-											<input id="upload_user_avatar" name="upload_user_avatar_image" type="file" class="form-control file mjchool_border_0px" onchange="mjschool_file_check(this);" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+											<input id="upload_user_avatar" name="upload_user_avatar_image" type="file" class="form-control file mjchool_border_0px" onchange="mjschool_file_check(this);" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 										</div>
 									</div>
 									<div class="clearfix"></div>
@@ -936,7 +936,7 @@ if ( $message ) {
 												<div class="col-md-12 form-control mjschool-upload-profile-image-patient mjschool-res-rtl-height-50px mjschool-file-height-padding">
 													<span for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2"><?php esc_html_e( 'Document File', 'mjschool' ); ?></span>
 													<div class="col-sm-12 mjschool-display-flex">
-														<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control mjschool-file-validation file" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+														<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control mjschool-file-validation file" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 													</div>
 												</div>
 											</div>
@@ -967,7 +967,7 @@ if ( $message ) {
 											<div class="col-md-12 form-control mjschool-upload-profile-image-patient mjschool-res-rtl-height-50px mjschool-file-height-padding">
 												<span for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2"><?php esc_html_e( 'Document File', 'mjschool' ); ?></span>
 												<div class="col-sm-12 mjschool-display-flex">
-													<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control file mjschool-file-validation" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
+													<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control file mjschool-file-validation" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
 												</div>
 											</div>
 										</div>

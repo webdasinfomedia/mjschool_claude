@@ -33,7 +33,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 	<div class="penal-body"><!----- Panel Body. --------->
 		<div id="Fees_invoice"><!----- Fees Invoice. --------->
 			<div class="modal-body mjschool-border-invoice-page mjschool-margin-top-25px-rs mjschool-invoice-model-body mjschool-float-left-width-100px mjschool-custom-padding-0_res mjschool_height_1600px" >
-				<?php if ( $format === 0 ) { 
+				<?php if ( $format === '0' ) { 
 					 ?>
 					<img class="mjschool-rtl-image-set-invoice mjschool-invoice-image mjschool-float-left mjschool-image-width-98px mjschool-invoice-image-model" src="<?php echo esc_url( plugins_url( '/mjschool/assets/images/listpage-icon/mjschool-invoice.png' ) ); ?>" width="100%">
 					<?php  
@@ -41,7 +41,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 				<div id="mjschool-invoice-print" class="mjschool-main-div mjschool-float-left-width-100px mjschool-payment-invoice-popup-main-div">
 					<div class="mjschool-invoice-width-100px mjschool-float-left" border="0">
 						<div class="row mjschool-margin-top-20px">
-							<?php if ( $format === 1 ) { ?>
+							<?php if ( $format === '1' ) { ?>
 								<div id="rtl_heads_logo" class="mjschool-width-print mjschool-rtl-heads rtl_heads_logo mjschool_fees_style" >
 									<div class="mjschool_float_left_width_100">
 										<div class="mjschool_float_left_width_25">
@@ -109,7 +109,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 							<?php } ?>
 						</div>
 						<div class="col-md-12 col-sm-12 col-xl-12 mjschool-mozila-display-css mjschool-margin-top-20px">
-							<?php if ( $format === 1 ) { ?>
+							<?php if ( $format === '1' ) { ?>
 								<div class="mjschool-width-print mjschool_fees_padding_border_2px">
 									<div class="mjschool_float_left_width_100">
 										<?php
@@ -191,7 +191,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 							} else {
 								?>
 								<div class="row">
-									<div class="mjschool-width-50px mjschool-float-left-width-100px">
+									<div class="mjschool-float-left-width-100px">
 										<div class="col-md-8 col-sm-8 col-xs-5 mjschool-custom-padding-0 mjschool-float-left mjschool-display-grid mjschool-display-inherit-res mjschool-margin-bottom-20px">
 											<div class="mjschool-billed-to mjschool-display-flex mjschool-display-inherit-res mjschool-invoice-address-heading">
 												<h3 class="mjschool-billed-to-lable mjschool-invoice-model-heading mjschool-bill-to-width-12px">
@@ -226,7 +226,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 											</div>
 										</div>
 										<div class="col-md-3 col-sm-4 col-xs-7 mjschool-float-left">
-											<div class="mjschool-width-50px">
+											<div class="">
 												<div class="mjschool-width-20px" align="center">
 													<h5 class="mjschool-align-left"> 
 														<label class="mjschool-popup-label-heading text-transfer-upercase"><?php echo esc_html__( 'Invoice Number :', 'mjschool' ); ?></label>&nbsp; <label class="mjschool-invoice-model-value"><?php echo esc_html( $invoice_number ); ?></label>
@@ -274,7 +274,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 							</tbody>
 						</table>
 						<div class="table-responsive mjschool-padding-bottom-15px mjschool-rtl-padding-left-40px">
-							<?php if ( $format === 1 ) { ?>
+							<?php if ( $format === '1' ) { ?>
 								<div class="table-responsive">
 									<table class="table table-bordered mjschool-model-invoice-table mjschool_border_black_2px">
 										<thead class="mjschool-entry-heading mjschool-invoice-model-entry-heading mjschool_border_color_2px">
@@ -404,7 +404,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 							<?php } ?>
 						</div>
 						<?php
-						if ( $format === 1 ) {
+						if ( $format === '1' ) {
 							?>
 							<div class="table-responsive mjschool-rtl-padding-left-40px mjschool-rtl-float-left-width-100px">
 								<table class="table table-bordered mjschool_fees_collapse_width_100">
@@ -658,7 +658,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 											unlink( $file_path ); // Delete the file.
 										}
 										$generate_pdf = mjschool_fees_payment_pdf_for_mobile_app( wp_unslash($_REQUEST['idtest']) );
-										wp_redirect( $file_path );
+										wp_safe_redirect( $file_path );
 										die();
 									}
 									?>
@@ -905,7 +905,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 											unlink( $file_path ); // Delete the file.
 										}
 										$generate_pdf = mjschool_fees_receipt_pdf_for_mobile_app(  wp_unslash($_REQUEST['idtest']),  wp_unslash($_REQUEST['payment_id']) );
-										wp_redirect( $file_path );
+										wp_safe_redirect( $file_path );
 										die();
 									}
 									?>

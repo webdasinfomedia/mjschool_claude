@@ -1521,7 +1521,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 											<div class="form-body mjschool-user-form">
 												<div class="row">
 													<div class="col-sm-6">
-														<input type="submit" id="Assign_bed" value="<?php esc_html_e( 'Assign Bed', 'mjschool' ); ?>" name="assign_room" class="btn btn-success mjschool-save-btn mjschool-assign-room-for-alert" />
+														<input type="submit" id="Assign_bed" value="<?php esc_attr_e( 'Assign Bed', 'mjschool' ); ?>" name="assign_room" class="btn btn-success mjschool-save-btn mjschool-assign-room-for-alert" />
 													</div>
 												</div>
 											</div>

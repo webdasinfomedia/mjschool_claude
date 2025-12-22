@@ -202,7 +202,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 									</div>
 								</div>
 								<div class="col-md-2">
-									<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_drop" value="<?php esc_html_e( 'Add More', 'mjschool' ); ?>">
+									<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_drop" value="<?php esc_attr_e( 'Add More', 'mjschool' ); ?>">
 								</div>
 							</div>
 						</div>
@@ -237,7 +237,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 									</div>
 								</div>
 								<div class="col-md-2">
-									<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_checkbox" value="<?php esc_html_e( 'Add More', 'mjschool' ); ?>">
+									<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_checkbox" value="<?php esc_attr_e( 'Add More', 'mjschool' ); ?>">
 								</div>
 							</div>
 						</div>
@@ -274,7 +274,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 									</div>
 								</div>
 								<div class="col-md-2">
-									<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_radio" value="<?php esc_html_e( 'Add More', 'mjschool' ); ?>">
+									<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_radio" value="<?php esc_attr_e( 'Add More', 'mjschool' ); ?>">
 								</div>
 							</div>
 						</div>
@@ -404,7 +404,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 								</div>
 							</div>
 							<div class="col-md-2">
-								<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_drop" value="<?php esc_html_e( 'Add More', 'mjschool' ); ?>">
+								<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_drop" value="<?php esc_attr_e( 'Add More', 'mjschool' ); ?>">
 							</div>
 						</div>
 					</div>
@@ -423,7 +423,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 								</div>
 							</div>
 							<div class="col-md-2">
-								<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_checkbox" value="<?php esc_html_e( 'Add More', 'mjschool' ); ?>">
+								<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_checkbox" value="<?php esc_attr_e( 'Add More', 'mjschool' ); ?>">
 							</div>
 						</div>
 					</div>
@@ -444,7 +444,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 								</div>
 							</div>
 							<div class="col-md-2">
-								<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_radio" value="<?php esc_html_e( 'Add More', 'mjschool' ); ?>">
+								<input type="button" name="menu_web" class="btn btn-primary mjschool-save-btn add_more_radio" value="<?php esc_attr_e( 'Add More', 'mjschool' ); ?>">
 							</div>
 						</div>
 					</div>

@@ -75,21 +75,21 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		if ( isset( $_REQUEST['payment_id'] ) ) {
 			$result = mjschool_delete_payment( $tablename, mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['payment_id'])) ) );
 			if ( $result ) {
-				wp_redirect( admin_url() . 'admin.php?page=mjschool_payment&tab=payment&_wpnonce='.esc_attr( $nonce ).'&message=payment_del' );
+				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_payment&tab=payment&_wpnonce='.rawurlencode( $nonce ).'&message=payment_del' ) );
 				die();
 			}
 		}
 		if ( isset( $_REQUEST['income_id'] ) ) {
 			$result = $mjschool_obj_invoice->mjschool_delete_income( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['income_id'])) ) );
 			if ( $result ) {
-				wp_redirect( admin_url() . 'admin.php?page=mjschool_payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=income_del' );
+				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_payment&tab=incomelist&_wpnonce='.rawurlencode( $nonce ).'&message=income_del' ) );
 				die();
 			}
 		}
 		if ( isset( $_REQUEST['expense_id'] ) ) {
 			$result = $mjschool_obj_invoice->mjschool_delete_expense( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['expense_id'])) ) );
 			if ( $result ) {
-				wp_redirect( admin_url() . 'admin.php?page=mjschool_payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=expense_del' );
+				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_payment&tab=expenselist&_wpnonce='.rawurlencode( $nonce ).'&message=expense_del' ) );
 				die();
 			}
 		}
@@ -111,7 +111,7 @@ if ( isset( $_REQUEST['delete_selected_income'] ) ) {
 		}
 	}
 	if ( $result ) {
-		wp_redirect( admin_url() . 'admin.php?page=mjschool_payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=income_del' );
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_payment&tab=incomelist&_wpnonce='.rawurlencode( $nonce ).'&message=income_del' ) );
 		die();
 	}
 }
@@ -121,12 +121,12 @@ if ( isset( $_REQUEST['delete_selected_expense'] ) ) {
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
 			$result = $mjschool_obj_invoice->mjschool_delete_expense( $id );
-			wp_redirect( admin_url() . 'admin.php?page=mjschool_payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=3' );
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_payment&tab=expenselist&_wpnonce='.rawurlencode( $nonce ).'&message=3' ) );
 			die();
 		}
 	}
 	if ( $result ) {
-		wp_redirect( admin_url() . 'admin.php?page=mjschool_payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=3' );
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_payment&tab=expenselist&_wpnonce='.rawurlencode( $nonce ).'&message=3' ) );
 		die();
 	}
 }
@@ -141,7 +141,7 @@ if ( isset( $_POST['save_income'] ) ) {
 			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 			$module                    = 'income';
 			$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $income_id );
-			wp_redirect( admin_url() . 'admin.php?page=mjschool_payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=income_edit' );
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_payment&tab=incomelist&_wpnonce='.rawurlencode( $nonce ).'&message=income_edit' ) );
 			die();
 		} else {
 			$result                    = $mjschool_obj_invoice->mjschool_add_income( wp_unslash($_POST) );
@@ -149,7 +149,7 @@ if ( isset( $_POST['save_income'] ) ) {
 			$module                    = 'income';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
-				wp_redirect( admin_url() . 'admin.php?page=mjschool_payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=income_add' );
+				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_payment&tab=incomelist&_wpnonce='.rawurlencode( $nonce ).'&message=income_add' ) );
 				die();
 			}
 		}
@@ -166,7 +166,7 @@ if ( isset( $_POST['save_expense'] ) ) {
 			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 			$module                    = 'expense';
 			$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $expense_id );
-			wp_redirect( admin_url() . 'admin.php?page=mjschool_payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=expense_edit' );
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_payment&tab=expenselist&_wpnonce='.rawurlencode( $nonce ).'&message=expense_edit' ) );
 			die();
 		} else {
 			$result                    = $mjschool_obj_invoice->mjschool_add_expense( wp_unslash($_POST) );
@@ -174,7 +174,7 @@ if ( isset( $_POST['save_expense'] ) ) {
 			$module                    = 'expense';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
-				wp_redirect( admin_url() . 'admin.php?page=mjschool_payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=expense_add' );
+				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_payment&tab=expenselist&_wpnonce='.rawurlencode( $nonce ).'&message=expense_add' ) );
 				die();
 			}
 		}

@@ -110,7 +110,7 @@ if ( $active_tab1 === 'subject_attendence' ) {
 			<div class="form-body mjschool-user-form">
 				<div class="row">
 					<div class="col-md-6">
-						<input type="submit" value="<?php esc_html_e( 'Take Attendance', 'mjschool' ); ?>" name="attendence" class="mjschool-save-btn" />
+						<input type="submit" value="<?php esc_attr_e( 'Take Attendance', 'mjschool' ); ?>" name="attendence" class="mjschool-save-btn" />
 					</div>
 				</div>
 			</div>
@@ -254,7 +254,7 @@ if ( $active_tab1 === 'subject_attendence' ) {
 								</div>
 							</div>
 							<div class="col-sm-12 mjschool-rtl-res-att-save">
-								<input type="submit" value="<?php esc_html_e( 'Save Attendance', 'mjschool' ); ?>" name="save_sub_attendence" id="mjschool-res-rtl-width-100px mjschool-res-rtl-width-100px" class="col-sm-6 mjschool-save-attr-btn" />
+								<input type="submit" value="<?php esc_attr_e( 'Save Attendance', 'mjschool' ); ?>" name="save_sub_attendence" id="mjschool-res-rtl-width-100px mjschool-res-rtl-width-100px" class="col-sm-6 mjschool-save-attr-btn" />
 							</div>
 						</form>
 					</div><!-- mjschool-panel-body. -->

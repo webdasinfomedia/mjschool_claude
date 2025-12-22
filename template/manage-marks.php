@@ -436,7 +436,7 @@ if ( $message ) {
 								</div>
 							<?php } ?>
 							<div class="col-md-6">
-								<input type="submit" value="<?php esc_html_e( 'Manage Marks', 'mjschool' ); ?>" name="manage_mark"  class="btn btn-info mjschool-save-btn"/>
+								<input type="submit" value="<?php esc_attr_e( 'Manage Marks', 'mjschool' ); ?>" name="manage_mark"  class="btn btn-info mjschool-save-btn"/>
 							</div>
 						</div>
 					</div>
@@ -535,7 +535,7 @@ if ( $message ) {
 										</span>
 									</div>
 								</div>
-								<input type="submit" name="upload_csv_file" value="<?php esc_html_e( 'Fill data from CSV File', 'mjschool' ); ?>" class="fill_data btn mjschool-save-btn_1 mt-3" /> 
+								<input type="submit" name="upload_csv_file" value="<?php esc_attr_e( 'Fill data from CSV File', 'mjschool' ); ?>" class="fill_data btn mjschool-save-btn_1 mt-3" /> 
 								<br /><p></p>
 								<?php
 							}
@@ -699,7 +699,7 @@ if ( $message ) {
 							if ( $access === 1 ) {
 								?>
 								<div class="col-sm-6 mjschool-margin-top-15px">
-									<input type="submit" class="mjschool-save-btn btn btn-success mjschool-table-bottom-margin-rtl" name="save_all_marks" value="<?php esc_html_e( 'Update All Marks', 'mjschool' ); ?>">
+									<input type="submit" class="mjschool-save-btn btn btn-success mjschool-table-bottom-margin-rtl" name="save_all_marks" value="<?php esc_attr_e( 'Update All Marks', 'mjschool' ); ?>">
 								</div>
 								<?php
 							}

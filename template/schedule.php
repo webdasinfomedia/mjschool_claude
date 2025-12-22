@@ -159,7 +159,7 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 			} elseif ( $mjschool_page_name === 'schedule' && $active_tab === 'addroute' ) {
 				?>
 				<li class="<?php if ( $active_tab === 'addroute' ) { ?> active<?php } ?>">
-					<a href="<?php echo esc_url( '?page=mjschool_library&tab=addbook' ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addroute' ? 'nav-tab-active' : ''; ?>"> <?php echo esc_attr__( 'Add Class Time Table', 'mjschool' ); ?></a>
+					<a href="<?php echo esc_url( '?page=mjschool_library&tab=addbook' ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'addroute' ? 'nav-tab-active' : ''; ?>"> <?php echo esc_html__( 'Add Class Time Table', 'mjschool' ); ?></a>
 				</li>
 				<?php
 			}
@@ -250,17 +250,17 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																		if ( get_option( 'mjschool_enable_virtual_classroom' ) === 'yes' ) {
 																			$meeting_data = $obj_virtual_classroom->mjschool_get_single_meeting_by_route_data_in_zoom( $period_data->route_id );
 																			if ( empty( $meeting_data ) ) {
-																				$create_meeting = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none show-popup" href="#" id="' . esc_attr( $period_data->route_id ) . '">' . esc_attr__( 'Create Virtual Class', 'mjschool' ) . '</a></li>';
+																				$create_meeting = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none show-popup" href="#" id="' . esc_attr( $period_data->route_id ) . '">' . esc_html__( 'Create Virtual Class', 'mjschool' ) . '</a></li>';
 																			} else {
 																				$create_meeting = '';
 																			}
 																			if ( ! empty( $meeting_data ) ) {
 																				$update_meeting      = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url(
-																					'?dashboard=mjschool_user&page=virtual-classroom&tab=edit_meeting&action=edit&meeting_id=' . $meeting_data->meeting_id ) . '">' . esc_attr__( 'Edit Virtual Class', 'mjschool' ) . '</a></li>';
+																					'?dashboard=mjschool_user&page=virtual-classroom&tab=edit_meeting&action=edit&meeting_id=' . $meeting_data->meeting_id ) . '">' . esc_html__( 'Edit Virtual Class', 'mjschool' ) . '</a></li>';
 																				$delete_meeting      = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url(
-																					'?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&action=delete&meeting_id=' . $meeting_data->meeting_id ) . '" onclick="return confirm(\'' . esc_attr__( 'Are you sure you want to delete this record?', 'mjschool' ) . '\' );">' . esc_attr__( 'Delete Virtual Class', 'mjschool' ) . '</a></li>';
+																					'?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&action=delete&meeting_id=' . $meeting_data->meeting_id ) . '" onclick="return confirm(\'' . esc_attr__( 'Are you sure you want to delete this record?', 'mjschool' ) . '\' );">' . esc_html__( 'Delete Virtual Class', 'mjschool' ) . '</a></li>';
 																				$meeting_statrt_link = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url(
-																					  $meeting_data->meeting_start_link ). '" target="_blank">' . esc_attr__( 'Start Virtual Class', 'mjschool' ) . '</a></li>';
+																					  $meeting_data->meeting_start_link ). '" target="_blank">' . esc_html__( 'Start Virtual Class', 'mjschool' ) . '</a></li>';
 																			} else {
 																				$update_meeting      = '';
 																				$delete_meeting      = '';
@@ -271,13 +271,13 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																		echo '</span><span class="caret"></span></button>';
 																		if ( $user_access['edit'] === '1' ) {
 																			$edit_route = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url(
-																					'?dashboard=mjschool_user&page=schedule&tab=addroute&action=edit&route_id=' . esc_attr( mjschool_encrypt_id( $period_data->route_id ) ) ) . '">' . esc_attr__( 'Edit Route', 'mjschool' ) . '</a></li>';
+																					'?dashboard=mjschool_user&page=schedule&tab=addroute&action=edit&route_id=' . esc_attr( mjschool_encrypt_id( $period_data->route_id ) ) ) . '">' . esc_html__( 'Edit Route', 'mjschool' ) . '</a></li>';
 																		} else {
 																			$edit_route = '';
 																		}
 																		if ( $user_access['delete'] === '1' ) {
 																			$delete_route = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" onclick="return confirm(\'Do you want to to delet route?\' );" href="' . esc_url(
-																					'?dashboard=mjschool_user&page=schedule&tab=schedulelist&action=delete&route_id=' . esc_attr( mjschool_encrypt_id( $period_data->route_id ) ) ) . '">' . esc_attr__( 'Delete', 'mjschool' ) . '</a></li>';
+																					'?dashboard=mjschool_user&page=schedule&tab=schedulelist&action=delete&route_id=' . esc_attr( mjschool_encrypt_id( $period_data->route_id ) ) ) . '">' . esc_html__( 'Delete', 'mjschool' ) . '</a></li>';
 																		} else {
 																			$delete_route = '';
 																		}
@@ -377,19 +377,22 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																					$meeting_data = $obj_virtual_classroom->mjschool_get_single_meeting_by_route_data_in_zoom( $period_data->route_id );
 																					if ( empty( $meeting_data ) ) {
 																						if ( $virtual_classroom_access_right['add'] === '1' ) {
-																							$create_meeting = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none show-popup" href="#" id="' . $period_data->route_id . '">' . esc_attr__( 'Create Virtual Class', 'mjschool' ) . '</a></li>';
+																							$create_meeting = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none show-popup" href="#" id="' . $period_data->route_id . '">' . esc_html__( 'Create Virtual Class', 'mjschool' ) . '</a></li>';
 																						}
 																					} else {
 																						$create_meeting = '';
 																					}
 																					if ( ! empty( $meeting_data ) ) {
 																						if ( $virtual_classroom_access_right['edit'] === '1' ) {
-																							$update_meeting = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url('?dashboard=mjschool_user&page=virtual-classroom&tab=edit_meeting&action=edit&meeting_id=' . $meeting_data->meeting_id ). '">' . esc_attr__( 'Edit Virtual Class', 'mjschool' ) . '</a></li>';
+																							$update_meeting = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url('?dashboard=mjschool_user&page=virtual-classroom&tab=edit_meeting&action=edit&meeting_id=' . $meeting_data->meeting_id ). '">' . esc_html__( 'Edit Virtual Class', 'mjschool' ) . '</a></li>';
 																						}
 																						if ( $virtual_classroom_access_right['delete'] === '1' ) {
-																							$delete_meeting = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url('?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&action=delete&meeting_id=' . $meeting_data->meeting_id .) '" onclick="return confirm(\'' . esc_attr__( 'Are you sure you want to delete this record?', 'mjschool' ) . '\' );">' . esc_attr__( 'Delete Virtual Class', 'mjschool' ) . '</a></li>';
+																							$delete_meeting = '<li class="mjschool-float-left width-100px">
+	<a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url('?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&action=delete&meeting_id=' . $meeting_data->meeting_id ) . '" onclick="return confirm(\'' . esc_attr__( 'Are you sure you want to delete this record?', 'mjschool' ) . '\');"> ' . esc_html__( 'Delete Virtual Class', 'mjschool' ) . '</a>
+</li>';
+
 																						}
-																						$meeting_statrt_link = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url($meeting_data->meeting_start_link .) '" target="_blank">' . esc_attr__( 'Start Virtual Class', 'mjschool' ) . '</a></li>';
+																						$meeting_statrt_link = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url($meeting_data->meeting_start_link ). '" target="_blank">' . esc_html__( 'Start Virtual Class', 'mjschool' ) . '</a></li>';
 																					} else {
 																						$update_meeting      = '';
 																						$delete_meeting      = '';
@@ -398,12 +401,12 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																				}
 																			}
 																			if ( $user_access['edit'] === '1' ) {
-																				$edit_route = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url('?dashboard=mjschool_user&page=schedule&tab=addroute&action=edit&route_id=' . mjschool_encrypt_id( $period_data->route_id ) ) . '">' . esc_attr__( 'Edit Route', 'mjschool' ) . '</a></li>';
+																				$edit_route = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url('?dashboard=mjschool_user&page=schedule&tab=addroute&action=edit&route_id=' . mjschool_encrypt_id( $period_data->route_id ) ) . '">' . esc_html__( 'Edit Route', 'mjschool' ) . '</a></li>';
 																			} else {
 																				$edit_route = '';
 																			}
 																			if ( $user_access['delete'] === '1' ) {
-																				$delete_route = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" onclick="return confirm(\'Do you want to to delet route?\' );" href="' . esc_url('?dashboard=mjschool_user&page=schedule&tab=schedulelist&action=delete&route_id=' . mjschool_encrypt_id( $period_data->route_id ) ) . '">' . esc_attr__( 'Delete', 'mjschool' ) . '</a></li>';
+																				$delete_route = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" onclick="return confirm(\'Do you want to to delet route?\' );" href="' . esc_url('?dashboard=mjschool_user&page=schedule&tab=schedulelist&action=delete&route_id=' . mjschool_encrypt_id( $period_data->route_id ) ) . '">' . esc_html__( 'Delete', 'mjschool' ) . '</a></li>';
 																			} else {
 																				$delete_route = '';
 																			}
@@ -958,14 +961,14 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																				if ( get_option( 'mjschool_enable_virtual_classroom' ) === 'yes' ) {
 																					$meeting_data = $obj_virtual_classroom->mjschool_get_single_meeting_by_route_data_in_zoom( $period_data->route_id );
 																					if ( empty( $meeting_data ) ) {
-																						$create_meeting = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none show-popup" href="#" id="' . esc_attr( $period_data->route_id ) . '">' . esc_attr__( 'Create Virtual Class', 'mjschool' ) . '</a></li>';
+																						$create_meeting = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none show-popup" href="#" id="' . esc_attr( $period_data->route_id ) . '">' . esc_html__( 'Create Virtual Class', 'mjschool' ) . '</a></li>';
 																					} else {
 																						$create_meeting = '';
 																					}
 																					if ( ! empty( $meeting_data ) ) {
-																						$update_meeting      = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url('?dashboard=mjschool_user&page=virtual-classroom&tab=edit_meeting&action=edit&meeting_id=' . $meeting_data->meeting_id ). '">' . esc_attr__( 'Edit Virtual Class', 'mjschool' ) . '</a></li>';
-																						$delete_meeting      = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url('?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&action=delete&meeting_id=' . $meeting_data->meeting_id ). '" onclick="return confirm(\'' . esc_attr__( 'Are you sure you want to delete this record?', 'mjschool' ) . '\' );">' . esc_attr__( 'Delete Virtual Class', 'mjschool' ) . '</a></li>';
-																						$meeting_statrt_link = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url( . $meeting_data->meeting_start_link ). '" target="_blank">' . esc_attr__( 'Virtual Class Start', 'mjschool' ) . '</a></li>';
+																						$update_meeting      = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url('?dashboard=mjschool_user&page=virtual-classroom&tab=edit_meeting&action=edit&meeting_id=' . $meeting_data->meeting_id ). '">' . esc_html__( 'Edit Virtual Class', 'mjschool' ) . '</a></li>';
+																						$delete_meeting      = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url('?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&action=delete&meeting_id=' . $meeting_data->meeting_id ). '" onclick="return confirm(\'' . esc_attr__( 'Are you sure you want to delete this record?', 'mjschool' ) . '\' );">' . esc_html__( 'Delete Virtual Class', 'mjschool' ) . '</a></li>';
+																						$meeting_statrt_link = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url(  $meeting_data->meeting_start_link ). '" target="_blank">' . esc_html__( 'Virtual Class Start', 'mjschool' ) . '</a></li>';
 																					} else {
 																						$update_meeting      = '';
 																						$delete_meeting      = '';
@@ -980,12 +983,12 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																						<?php
 																						if ( $user_access['edit'] === '1' ) {
 																							?>
-																							<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="<?php echo esc_url('?dashboard=mjschool_user&page=schedule&tab=addroute&action=edit&route_id='. mjschool_encrypt_id( $period_data->route_id )); ?>"><?php echo esc_attr__( 'Edit', 'mjschool' ); ?></a></li>
+																							<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="<?php echo esc_url('?dashboard=mjschool_user&page=schedule&tab=addroute&action=edit&route_id='. mjschool_encrypt_id( $period_data->route_id )); ?>"><?php echo esc_html__( 'Edit', 'mjschool' ); ?></a></li>
 																							<?php
 																						}
 																						if ( $user_access['delete'] === '1' ) {
 																							?>
-																							<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="<?php echo esc_url( '?dashboard=mjschool_user&page=schedule&tab=teacher_timetable&action=delete_teacher&route_id=' . mjschool_encrypt_id( $period_data->route_id ) ); ?>" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><?php echo esc_attr__( 'Delete', 'mjschool' ); ?></a></li>
+																							<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="<?php echo esc_url( '?dashboard=mjschool_user&page=schedule&tab=teacher_timetable&action=delete_teacher&route_id=' . mjschool_encrypt_id( $period_data->route_id ) ); ?>" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><?php echo esc_html__( 'Delete', 'mjschool' ); ?></a></li>
 																							<?php echo wp_kses_post( $create_meeting ) . '' . wp_kses_post( $update_meeting ) . '' . wp_kses_post( $delete_meeting ) . '' . wp_kses_post( $meeting_statrt_link ); ?>
 																							<?php
 																						}
@@ -1078,7 +1081,7 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 															if ( get_option( 'mjschool_enable_virtual_classroom' ) === 'yes' ) {
 																if ( $virtual_classroom_access_right['view'] === '1' ) {
 																	if ( ! empty( $meeting_data ) ) {
-																		$meeting_join_link = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url( $meeting_data->meeting_join_link ) . '" target="_blank">' . esc_attr__( 'Join Virtual Class', 'mjschool' ) . '</a></li>';
+																		$meeting_join_link = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url( $meeting_data->meeting_join_link ) . '" target="_blank">' . esc_html__( 'Join Virtual Class', 'mjschool' ) . '</a></li>';
 																	} else {
 																		$meeting_join_link = '';
 																	}
@@ -1156,7 +1159,7 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																if ( get_option( 'mjschool_enable_virtual_classroom' ) === 'yes' ) {
 																	if ( $virtual_classroom_access_right['view'] === '1' ) {
 																		if ( ! empty( $meeting_data ) ) {
-																			$meeting_join_link = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url($meeting_data->meeting_join_link ). '" target="_blank">' . esc_attr__( 'Join Virtual Class', 'mjschool' ) . '</a></li>';
+																			$meeting_join_link = '<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="' . esc_url($meeting_data->meeting_join_link ). '" target="_blank">' . esc_html__( 'Join Virtual Class', 'mjschool' ) . '</a></li>';
 																		} else {
 																			$meeting_join_link = '';
 																		}

@@ -102,7 +102,7 @@ if ( isset( $_GET['tab'] ) ) {
 			</div>
 			<input type="hidden" name="security" id="mjschool_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_attendance_list_nonce' ) ); ?>">
 			<div class="col-md-3 mb-2">
-				<input type="submit" name="view_attendance" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
+				<input type="submit" name="view_attendance" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
 			</div>
 		</div>
 	</div>

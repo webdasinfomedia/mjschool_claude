@@ -134,7 +134,7 @@ if ( isset( $_GET['tab'] ) ) {
 		<div class="form-body mjschool-user-form">
 			<div class="row">
 				<div class="col-md-3">
-					<input type="submit" name="report_5" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
+					<input type="submit" name="report_5" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
 				</div>
 			</div>
 		</div>

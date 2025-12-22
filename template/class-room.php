@@ -147,13 +147,13 @@ $active_tab = isset( $_REQUEST['tab'] ) ? sanitize_text_field( wp_unslash( $_REQ
 		switch ($message) 
 		{
 			case '1':
-				 = esc_html__( 'Class Room Added Successfully.', 'mjschool' );
+				esc_html__( 'Class Room Added Successfully.', 'mjschool' );
 				break;
 			case '2':
-				 = esc_html__( 'Class Room Updated Successfully.', 'mjschool' );
+				esc_html__( 'Class Room Updated Successfully.', 'mjschool' );
 				break;
 			case '3':
-				 = esc_html__( 'Class Room Deleted Successfully.', 'mjschool' );
+				esc_html__( 'Class Room Deleted Successfully.', 'mjschool' );
 				break;
 		}
 		if ($message) 
@@ -427,8 +427,7 @@ $active_tab = isset( $_REQUEST['tab'] ) ? sanitize_text_field( wp_unslash( $_REQ
 												$classes = json_decode($classroomdata->class_id, true); // Ensure associative array.
 											} 
 											elseif ( isset( $_POST['class_name'] ) ) {
-										elseif ( isset( $_POST['class_name'] ) ) {
-											$classes = array_map('intval', (array) $_POST['class_name'] );
+												$classes = array_map('intval', (array) $_POST['class_name'] );
 												$classes = array(); // Initialize as empty array.
 											}
 											?>

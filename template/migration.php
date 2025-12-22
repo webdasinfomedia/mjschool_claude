@@ -162,7 +162,7 @@ if ( isset( $_REQUEST['migration'] ) ) {
 						<div class="form-body mjschool-user-form">
 							<div class="row">
 								<div class="form-group col-md-6 mjschool-button-possition-padding">
-									<input type="submit" value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" name="migration" class="btn btn-info mjschool-save-btn" />
+									<input type="submit" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" name="migration" class="btn btn-info mjschool-save-btn" />
 								</div>
 							</div>
 						</div>

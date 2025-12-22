@@ -30,7 +30,7 @@ if ( $school_obj->role === 'student' ) {
 <!-- Tab panes. -->
 <div class="tab-content">
 	<div class="tab-pane fade active in" id="examlist">
-		<h2><?php echo esc_html( esc_attr__( 'Subject list', 'mjschool' ) ); ?></h2>       
+		<h2><?php echo esc_html( esc_html__( 'Subject list', 'mjschool' ) ); ?></h2>       
 		<table id="mjschool-subject-list" class="table table-bordered display dataTable" cellspacing="0" width="100%">
 			<thead>
 				<tr>                

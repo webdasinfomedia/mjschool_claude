@@ -263,7 +263,7 @@ if ( isset( $_GET['delete_certificate'] ) ) {
                 	?>
                     <li class="<?php if ($active_tab === 'assign_certificate' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
                         <a href="#" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'assign_certificate' ? 'nav-tab-active' : ''; ?>">
-                            <?php echo esc_attr__( 'Assign Certificate', 'mjschool' ); ?>
+                            <?php echo esc_html__( 'Assign Certificate', 'mjschool' ); ?>
                         </a>
                     </li>
             		<?php
@@ -404,7 +404,7 @@ if ( isset( $_GET['delete_certificate'] ) ) {
                 // SECURITY FIX 7: Add nonce field for clone certificate
                 wp_nonce_field( 'mjschool_clone_certificate_nonce' ); 
                 ?>
-                <input type="submit" name="clone_cert" value="<?php esc_html_e( 'Add More Certificate', 'mjschool' ); ?>" class="button button-primary mjschool-save-btn">
+                <input type="submit" name="clone_cert" value="<?php esc_attr_e( 'Add More Certificate', 'mjschool' ); ?>" class="button button-primary mjschool-save-btn">
             </form>
             <?php
             // SECURITY FIX 7: Add nonce verification for clone certificate

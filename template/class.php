@@ -923,7 +923,7 @@ if ( isset( $_GET['message'] ) && sanitize_text_field( wp_unslash( $_GET['messag
 															</div>
 															<?php wp_nonce_field( 'save_class_section_nonce' ); ?>
 															<div class="col-sm-3 col-md-3 col-lg-3 col-xs-12">
-																<input type="submit" value="<?php esc_html_e( 'Add Section', 'mjschool' ); ?>" name="save_class_section" class="mjschool-save-btn" />
+																<input type="submit" value="<?php esc_attr_e( 'Add Section', 'mjschool' ); ?>" name="save_class_section" class="mjschool-save-btn" />
 															</div>
 														</div>
 													</div>
@@ -1066,7 +1066,7 @@ if ( isset( $_GET['message'] ) && sanitize_text_field( wp_unslash( $_GET['messag
 												</select>
 											</div>
 											<div class="col-md-3">
-												<input type="submit" name="view_student_list" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
+												<input type="submit" name="view_student_list" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
 											</div>
 										</div>
 									</div>

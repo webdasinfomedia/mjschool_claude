@@ -611,7 +611,7 @@ $subject_id = isset( $_REQUEST['subject_id'] ) ? intval( wp_unslash( $_REQUEST['
 											</label>
 										</div>
 									</div>
-									<input type="submit" name="upload_csv_file" value="<?php esc_html_e( 'Fill data from CSV File', 'mjschool' ); ?>" class="fill_data btn mjschool-save-btn_1 mjschool-margin-top-20px" />
+									<input type="submit" name="upload_csv_file" value="<?php esc_attr_e( 'Fill data from CSV File', 'mjschool' ); ?>" class="fill_data btn mjschool-save-btn_1 mjschool-margin-top-20px" />
 									<br/>
 									<p></p>
 									<div class="table-responsive">
@@ -674,7 +674,7 @@ $subject_id = isset( $_REQUEST['subject_id'] ) ? intval( wp_unslash( $_REQUEST['
 														}
 													} else {
 														$nonce = wp_create_nonce( 'mjschool_exam_result_tab' );
-														wp_redirect(admin_url() . "admin.php?page=mjschool_result&_wpnonce=".esc_attr( $nonce )."&message={$msg}");
+														wp_safe_redirect(admin_url( "admin.php?page=mjschool_result&_wpnonce=".rawurlencode( $nonce )."&message={$msg}" ) );
 														die();
 													}
 												}
@@ -767,13 +767,13 @@ $subject_id = isset( $_REQUEST['subject_id'] ) ? intval( wp_unslash( $_REQUEST['
 										</table>
 									</div>
 									<div class="col-sm-6 mjschool-margin-top-15px">
-										<input type="submit" class="btn btn-success mjschool-save-btn" name="save_all_marks" value="<?php esc_html_e( 'Update All Marks', 'mjschool' ); ?>">
+										<input type="submit" class="btn btn-success mjschool-save-btn" name="save_all_marks" value="<?php esc_attr_e( 'Update All Marks', 'mjschool' ); ?>">
 									</div>
 									<?php
 								} else {
 									?>
 									<div>
-										<h4><?php echo esc_attr__( 'No Student Available In This Class.', 'mjschool' ); ?></h3>
+										<h4><?php echo esc_html__( 'No Student Available In This Class.', 'mjschool' ); ?></h3>
 									</div>
 									<?php
 								}

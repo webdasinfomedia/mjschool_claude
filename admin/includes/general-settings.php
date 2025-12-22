@@ -26,7 +26,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field( wp_unslash($_GET['tab']
 $mjschool_role       = mjschool_get_user_role( get_current_user_id() );
 $mjschool_role_array = explode( ',', $mjschool_role );
 if ( in_array( 'administrator', $mjschool_role_array ) ) {
-	$user_access_add    = 1;
+	$user_access_add    = '1';
 	$user_access_edit   = 1;
 	$user_access_delete = 1;
 	$user_access_view   = 1;
@@ -755,7 +755,7 @@ if ( $school_obj->role === 'administrator' ) {
 																		</a>
 																		<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																			<?php
-																			if ( $user_access_edit === '1' ) {
+																			if ( $user_access_edit === 1 ) {
 																				?>
 																				<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
 																					<a href="<?php echo esc_url('?&page=mjschool_general_settings&tab=exam_merge_settings&merge_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ).'&action=edit_merge&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
@@ -954,7 +954,7 @@ if ( $school_obj->role === 'administrator' ) {
 													<div class="">
 														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for="mjschool_class_room"><?php esc_attr_e( 'Enable Class Room', 'mjschool' ); ?></label>
 														<input id="mjschool_class_room" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_class_room" value="1" <?php echo checked( get_option( 'mjschool_class_room' ), '1' ); ?> />
-														<span><?php esc_attr_e( 'Enable', 'mjschool' ); ?></span>
+														<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 													</div>
 												</div>
 											</div>
@@ -975,7 +975,7 @@ if ( $school_obj->role === 'administrator' ) {
 													<div class="">
 														<label class="mjschool-custom-top-label" for="mjschool_custom_class_display"><?php esc_attr_e( 'Enable Custom Class Student card', 'mjschool' ); ?></label>
 														<input id="mjschool_custom_class_display" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_custom_class_display" value="1" <?php echo checked( get_option( 'mjschool_custom_class_display' ), '1' ); ?> />
-														<span><?php esc_attr_e( 'Enable', 'mjschool' ); ?></span>
+														<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 													</div>
 												</div>
 											</div>
@@ -1312,7 +1312,7 @@ if ( $school_obj->role === 'administrator' ) {
 												$category_data = $obj_lib->mjschool_get_period_list();
 												if ( ! empty( $category_data ) ) {
 													foreach ( $category_data as $retrieved_data ) {
-														echo '<option value="' . esc_attr( $retrieved_data->ID ) . '" ' . selected( $period_id, $retrieved_data->ID ) . '>' . esc_html( $retrieved_data->post_title ) . ' ' . esc_attr__( 'Days', 'mjschool' ) . '</option>';
+														echo '<option value="' . esc_attr( $retrieved_data->ID ) . '" ' . selected( $period_id, $retrieved_data->ID ) . '>' . esc_html( $retrieved_data->post_title ) . ' ' . esc_html__( 'Days', 'mjschool' ) . '</option>';
 													}
 												}
 												?>
@@ -1756,7 +1756,7 @@ if ( $school_obj->role === 'administrator' ) {
 										</div>
 									</div>
 									<?php
-									if ( $user_access_edit === '1' ) {
+									if ( $user_access_edit === 1 ) {
 										?>
 										<div class="form-body mjschool-user-form">
 											<div class="row">
@@ -2012,7 +2012,7 @@ if ( $school_obj->role === 'administrator' ) {
 								</div>
 							</div>
 							<?php
-							if ( $user_access_edit === '1' ) {
+							if ( $user_access_edit === 1 ) {
 								?>
 								<div class="form-body mjschool-user-form">
 									<div class="row">
@@ -2102,7 +2102,7 @@ if ( $school_obj->role === 'administrator' ) {
 								</div>
 							</div>
 							<?php
-							if ( $user_access_edit === '1' ) {
+							if ( $user_access_edit === 1 ) {
 								?>
 								<div class="form-body mjschool-user-form"> <!-- Mjschool-user-form start.-->
 									<div class="row"><!--Row div start.-->

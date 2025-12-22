@@ -100,7 +100,7 @@ if ( isset( $_POST['active_user'] ) ) {
     $userbyroll_no = get_users( $args );
     $is_rollno     = count( $userbyroll_no );
     if ( $is_rollno ) {
-        wp_redirect( admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=3' );
+        wp_safe_redirect( admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=3' ) );
         die();
     } else {
         // Update roll id - sanitize stored value
@@ -153,7 +153,7 @@ if ( isset( $_POST['active_user'] ) ) {
         if ( get_user_meta( $active_user_id, 'hash', true ) ) {
             delete_user_meta( $active_user_id, 'hash' );
         }
-        wp_redirect( admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=7' );
+        wp_safe_redirect( admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=7' ) );
         die();
     }
 }
@@ -166,7 +166,7 @@ if ( isset( $_REQUEST['action'] ) && $action === 'deactivate' ) {
         delete_user_meta( $student_id, 'roll_id' );
         $result = update_user_meta( $student_id, 'hash', $hash );
         if ( $result ) {
-            wp_redirect( admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=15' );
+            wp_safe_redirect( admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=15' ) );
             die();
         }
     } else {
@@ -179,10 +179,10 @@ if ( isset( $_POST['approve_comment'] ) ) {
     $result       = $mjschool_obj_leave->mjschool_approve_leave( $approve_post );
     $student_id_param = isset( $_REQUEST['student_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['student_id'] ) ) : '';
     if ( $result ) {
-        wp_redirect( admin_url() . 'admin.php?page=mjschool_student&tab=view_student&tab1=leave_list&student_id=' . esc_attr( $student_id_param ) . '&message=12&_wpnonce=' . esc_attr( mjschool_get_nonce( 'view_action' ) ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=mjschool_student&tab=view_student&tab1=leave_list&student_id=' .rawurlencode( $student_id_param ) . '&message=12&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) );
         die();
     } else {
-        wp_redirect( admin_url() . 'admin.php?page=mjschool_student&tab=view_student&tab1=leave_list&student_id=' . esc_attr( $student_id_param ) . '&message=14&_wpnonce=' . esc_attr( mjschool_get_nonce( 'view_action' ) ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=mjschool_student&tab=view_student&tab1=leave_list&student_id=' . rawurlencode( $student_id_param ) . '&message=14&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) );
         die();
     }
 }
@@ -192,10 +192,10 @@ if ( isset( $_POST['reject_leave'] ) ) {
     $result      = $mjschool_obj_leave->mjschool_reject_leave( $reject_post );
     $student_id_param = isset( $_REQUEST['student_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['student_id'] ) ) : '';
     if ( $result ) {
-        wp_redirect( admin_url() . 'admin.php?page=mjschool_student&tab=view_student&tab1=leave_list&student_id=' . esc_attr( $student_id_param ) . '&message=13&_wpnonce=' . esc_attr( mjschool_get_nonce( 'view_action' ) ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=mjschool_student&tab=view_student&tab1=leave_list&student_id=' . rawurlencode( $student_id_param ) . '&message=13&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) );
         die();
     } else {
-        wp_redirect( admin_url() . 'admin.php?page=mjschool_student&tab=view_student&tab1=leave_list&student_id=' . esc_attr( $student_id_param ) . '&message=14&_wpnonce=' . esc_attr( mjschool_get_nonce( 'view_action' ) ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=mjschool_student&tab=view_student&tab1=leave_list&student_id=' . rawurlencode( $student_id_param ) . '&message=14&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) );
         die();
     }
 }
@@ -213,7 +213,7 @@ if ( $action_req === 'delete' && isset( $_REQUEST['leave_id'] ) ) {
         $result       = $mjschool_obj_leave->mjschool_delete_leave( $leave_id );
         $student_id_action = isset( $_REQUEST['student_id_action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['student_id_action'] ) ) : '';
         if ( $result ) {
-            wp_redirect( admin_url() . 'admin.php?page=mjschool_student&tab=view_student&tab1=leave_list&student_id=' . esc_attr( $student_id_action ) . '&message=11&_wpnonce=' . esc_attr( mjschool_get_nonce( 'view_action' ) ) );
+            wp_safe_redirect( admin_url( 'admin.php?page=mjschool_student&tab=view_student&tab1=leave_list&student_id=' . rawurlencode( $student_id_action ) . '&message=11&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) );
             die();
         }
     } else {
@@ -356,7 +356,7 @@ if ( isset( $_REQUEST['exportstudentin_csv'] ) ) {
         readfile($file);
         die();
     } else {
-        wp_redirect(admin_url() . 'admin.php?page=mjschool_student&message=10');
+        wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&message=10' ) );
         die();
     }
 }
@@ -474,7 +474,7 @@ if ( isset( $_POST['save_student'] ) ) {
                 $admission_user_id = $user_query->get_results()[0];
             }
             if (! empty($admission_user_id) && $admission_user_id != $student_id ) {
-                wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=16');
+                wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=16' ) );
                 die();
             }
             if (isset($_GET['_wpnonce']) && wp_verify_nonce($_GET['_wpnonce'], 'edit_action') ) {
@@ -516,10 +516,10 @@ if ( isset( $_POST['save_student'] ) ) {
                     // Custom field file update. //
                     $module              = 'student';
                     $custom_field_update = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise($module, $result);
-                    wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=2');
+                    wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=2' ) );
                     die();
                 } else {
-                    wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=3');
+                    wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=3' ) );
                     die();
                 }
             } else {
@@ -543,12 +543,12 @@ if ( isset( $_POST['save_student'] ) ) {
                 $admission_user_id = $user_query->get_results()[0];
             }
             if (! empty($admission_user_id) ) {
-                wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=16');
+                wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=16' ) );
                 die();
             }
             if (! email_exists($_POST['email']) ) {
                 if ($is_rollno ) {
-                    wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=3');
+                    wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=3' ) );
                     die();
                 } else {
                     $result     = mjschool_add_new_user($userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role);
@@ -588,12 +588,12 @@ if ( isset( $_POST['save_student'] ) ) {
                     $module             = 'student';
                     $insert_custom_data = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise($module, $result);
                     if ($result ) {
-                        wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=1');
+                        wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=1' ) );
                         die();
                     }
                 }
             } else {
-                wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=4');
+                wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=4' ) );
                 die();
             }
         }
@@ -617,7 +617,7 @@ if ($action === 'delete' ) {
         }
         $result = mjschool_delete_usedata(intval($student_id));
         if ($result ) {
-            wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=5');
+            wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=5' ) );
             die();
         }
     } else {
@@ -644,7 +644,7 @@ if (isset($_REQUEST['delete_selected']) ) {
         }
     }
     if ($result ) {
-        wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=5');
+        wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=5' ));
         die();
     }
 }
@@ -676,13 +676,13 @@ if (isset($_REQUEST['upload_csv_file']) ) {
                 mjschool_append_csv_log($log_message, get_current_user_id(), $module, $status);
                 $err      = esc_attr__('This file not allowed, please choose a CSV file.', 'mjschool');
                 $errors[] = $err;
-                wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=uploadstudent&message=8');
+                wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=uploadstudent&message=8' ) );
                 die();
             }
             // ------------ Check file size. ------------//
             if ($file_size > 2097152 ) {
                 $errors[] = 'File size limit 2 MB';
-                wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=uploadstudent&message=9');
+                wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=uploadstudent&message=9' ) );
                 die();
             }
             if (empty($errors) === true ) {
@@ -941,7 +941,7 @@ if (isset($_REQUEST['upload_csv_file']) ) {
                 }
             }
             if (isset($success) ) {
-                wp_redirect(admin_url() . 'admin.php?page=mjschool_student&tab=studentlist&message=6');
+                wp_safe_redirect(admin_url( 'admin.php?page=mjschool_student&tab=studentlist&message=6' ) );
                 die();
             }
         }

@@ -112,7 +112,7 @@ function mjschool_is_selected( $value, $selected_value ) {
 						?>
 					</div>
 					<div class="col-md-3 mb-2">
-						<input type="submit" name="migration_report" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
+						<input type="submit" name="migration_report" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
 					</div>
 				</div>
 			</div>

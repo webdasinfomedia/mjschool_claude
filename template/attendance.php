@@ -673,7 +673,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 			if ($mjschool_role === 'administrator' || $fattendance_1['add'] === '1' ) {
 				?>
 				<div class="mjschool-no-data-list-div">
-					<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_attendence' ); ?>">
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence' ) ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -903,7 +903,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 						?>
 					</div>
 					<div class="col-md-3 mb-2">
-						<input type="submit" name="view_attendance" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
+						<input type="submit" name="view_attendance" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
 					</div>
 				</div>
 			</div>
@@ -1924,7 +1924,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 			if ($mjschool_role === 'administrator' || $fattendance_1['add'] === '1' ) {
 				?>
 				<div class="mjschool-no-data-list-div">
-					<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_attendence' ); ?>">
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence' ) ); ?>">
 						<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 					</a>
 					<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -2019,7 +2019,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 						?>
 					</div>
 					<div class="col-md-3 mb-2">
-						<input type="submit" name="view_attendance" Value="<?php esc_html_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
+						<input type="submit" name="view_attendance" value="<?php esc_attr_e( 'Go', 'mjschool' ); ?>" class="btn btn-info mjschool-save-btn" />
 					</div>
 				</div>
 			</div>
@@ -2296,7 +2296,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 			<?php
 		} else { ?>
 			<div class="mjschool-no-data-list-div">
-				<a href="<?php echo esc_url( admin_url() . 'admin.php?page=mjschool_attendence&tab=teacher_attendence' ); ?>">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence&tab=teacher_attendence' ) ); ?>">
 					<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 				</a>
 				<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">

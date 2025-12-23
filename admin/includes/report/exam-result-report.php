@@ -274,30 +274,7 @@ if ( isset( $_GET['tab'] ) ) {
 						if ( ! empty( $student ) ) {
 							$i = 0;
 							foreach ( $student as $mjschool_user ) {
-								if ( $i === 10 ) {
-									$i = 0;
-								}
-								if ( $i === 0 ) {
-									$color_class_css = 'mjschool-class-color0';
-								} elseif ( $i === 1 ) {
-									$color_class_css = 'mjschool-class-color1';
-								} elseif ( $i === 2 ) {
-									$color_class_css = 'mjschool-class-color2';
-								} elseif ( $i === 3 ) {
-									$color_class_css = 'mjschool-class-color3';
-								} elseif ( $i === 4 ) {
-									$color_class_css = 'mjschool-class-color4';
-								} elseif ( $i === 5 ) {
-									$color_class_css = 'mjschool-class-color5';
-								} elseif ( $i === 6 ) {
-									$color_class_css = 'mjschool-class-color6';
-								} elseif ( $i === 7 ) {
-									$color_class_css = 'mjschool-class-color7';
-								} elseif ( $i === 8 ) {
-									$color_class_css = 'mjschool-class-color8';
-								} elseif ( $i === 9 ) {
-									$color_class_css = 'mjschool-class-color9';
-								}
+								$color_class_css = mjschool_table_list_background_color( $i );
 								$total = 0;
 								?>
 								<tr>
@@ -333,7 +310,7 @@ if ( isset( $_GET['tab'] ) ) {
 												$result1[] = 'fail';
 											}
 											?>
-											<td><?php echo esc_html( $marks ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_html( $sub_id->sub_name ); ?> <?php esc_html_e( 'Mark', 'mjschool' ); ?>"></i></td>
+											<td><?php echo esc_html( $marks ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_attr( $sub_id->sub_name ); ?> <?php esc_html_e( 'Mark', 'mjschool' ); ?>"></i></td>
 											<?php
 										}
 										?>

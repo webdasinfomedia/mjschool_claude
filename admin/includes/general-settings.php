@@ -529,10 +529,13 @@ if ( $school_obj->role === 'administrator' ) {
 									}
 								}
 								if ( isset( $_REQUEST['delete_selected_exam_setting'] ) ) {
+									if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'mjschool_general_setting_tab' ) ) {
+										wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+									}
 									if ( ! empty( $_REQUEST['merge_id'] ) ) {
 										mjschool_append_audit_log( '' . esc_html__( 'Group Exam Merge Setting Deleted', 'mjschool' ) . '', get_current_user_id(), get_current_user_id(), 'delete', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
 										foreach ( $_REQUEST['merge_id'] as $id ) {
-											$result = $exam_obj->mjschool_delete_exam_setting( $id );
+											$result = $exam_obj->mjschool_delete_exam_setting( intval( sanitize_text_field( wp_unslash( $id ) ) ) );
 										}
 										$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 										wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.rawurlencode( $nonce ).'&message=6' ) );
@@ -711,6 +714,7 @@ if ( $school_obj->role === 'administrator' ) {
 							<div class="mjschool-panel-body">
 								<div class="table-responsive">
 									<form id="mjschool-common-form" name="mjschool-common-form" method="post">
+										<?php wp_nonce_field( 'mjschool_general_setting_tab' ); ?>
 										<table id="exam_merge_list" class="display" cellspacing="0" width="100%">
 											<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 												<tr>

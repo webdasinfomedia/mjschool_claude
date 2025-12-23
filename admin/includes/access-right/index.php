@@ -21,7 +21,8 @@ $tabs = array(
     'Management'    => 'management.php',
 );
 
-$active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'Student';
+// Verify nonce if present, or use default tab (improved for WordPress Coding Standards).
+$active_tab = isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'mjschool_access_rights_tab' ) && isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'Student';
 
 // Validate that the active tab exists in the allowed tabs array.
 if ( ! array_key_exists( $active_tab, $tabs ) ) {

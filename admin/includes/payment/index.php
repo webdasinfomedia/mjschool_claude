@@ -242,7 +242,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 		<div class="mjschool-panel-white"><!--------- Panel White. ---------->
 			<div class="mjschool-panel-body"> <!--------- Panel Body. ---------->
 				<?php
-				if ( $active_tab != 'view_invoice' ) {
+				if ( $active_tab !== 'view_invoice' ) {
 					$mjschool_action = '';
 					if ( ! empty( $_REQUEST['action'] ) ) {
 						$mjschool_action = sanitize_text_field(wp_unslash($_REQUEST['action']));

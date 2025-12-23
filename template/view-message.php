@@ -225,7 +225,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 							echo esc_html( mjschool_get_display_name( $reply->receiver_id ) );
 							esc_html_e( ' || ', 'mjschool' );
 							?>
-							<span class="timeago"  title="<?php echo esc_html( mjschool_convert_date_time( $reply->created_date ) ); ?>"></span>
+							<span class="timeago"  title="<?php echo esc_attr( mjschool_convert_date_time( $reply->created_date ) ); ?>"></span>
 							<?php
 							if ( $reply->sender_id === get_current_user_id() ) {
 								if ( $user_access['delete'] === '1' ) {

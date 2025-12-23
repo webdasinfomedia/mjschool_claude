@@ -11,7 +11,7 @@
  * @since      1.0.0
  * 
  */
-if (!defined( 'ABSPATH' ) ) {
+if ( ! defined( 'ABSPATH' ) ) {
 	die();
 }
 
@@ -163,11 +163,11 @@ if ( isset( $_POST['save_access_right'] ) ) {
 				'menu_icone' => esc_url(plugins_url( 'mjschool/assets/images/icons/mjschool-class.png' ) ),
 				'menu_title' => 'Class Room',
 				'page_link'  => 'class_room',
-				"own_data"   => isset( $_REQUEST['class_room_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_own_data'] ) ) : 0,
-				"add"	   	 => isset( $_REQUEST['class_room_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_add'] ) ) : 0,
-				"edit"	   	 =>isset( $_REQUEST['class_room_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_edit'] ) ) : 0,
-				"view"	   	 =>isset( $_REQUEST['class_room_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_view'] ) ) : 0,
-				"delete"	 =>isset( $_REQUEST['class_room_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_delete'] ) ) : 0
+				'own_data'   => isset( $_REQUEST['class_room_own_data'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_own_data'] ) ) : 0,
+				'add'        => isset( $_REQUEST['class_room_add'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_add'] ) ) : 0,
+				'edit'       => isset( $_REQUEST['class_room_edit'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_edit'] ) ) : 0,
+				'view'       => isset( $_REQUEST['class_room_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_view'] ) ) : 0,
+				'delete'     => isset( $_REQUEST['class_room_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_delete'] ) ) : 0
 			),
 			'exam_hall'         => array(
 				'menu_icone' => esc_url(plugins_url( 'mjschool/assets/images/icons/mjschool-exam_hall.png' ) ),
@@ -436,8 +436,8 @@ if ( isset( $_POST['save_access_right'] ) ) {
 		);
 		$result = update_option( 'mjschool_access_right_supportstaff', $role_access_right );
 		$nonce = wp_create_nonce( 'mjschool_access_rights_tab' );
-		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_access_right&tab=Support_staff&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
-		die();
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_access_right&tab=Support_staff&_wpnonce=' . rawurlencode( $nonce ) . '&message=1' ) );
+		exit; // Replaced die() with exit for clarity (both are equivalent in WordPress context).
 	}
 	else {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );

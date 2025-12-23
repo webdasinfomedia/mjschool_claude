@@ -886,30 +886,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 										$i = 0;
 										if ( ! empty( $fees_payment ) ) {
 											foreach ( $fees_payment as $retrieved_data ) {
-												if ( $i === 10 ) {
-													$i = 0;
-												}
-												if ( $i === 0 ) {
-													$color_class_css = 'mjschool-class-color0';
-												} elseif ( $i === 1 ) {
-													$color_class_css = 'mjschool-class-color1';
-												} elseif ( $i === 2 ) {
-													$color_class_css = 'mjschool-class-color2';
-												} elseif ( $i === 3 ) {
-													$color_class_css = 'mjschool-class-color3';
-												} elseif ( $i === 4 ) {
-													$color_class_css = 'mjschool-class-color4';
-												} elseif ( $i === 5 ) {
-													$color_class_css = 'mjschool-class-color5';
-												} elseif ( $i === 6 ) {
-													$color_class_css = 'mjschool-class-color6';
-												} elseif ( $i === 7 ) {
-													$color_class_css = 'mjschool-class-color7';
-												} elseif ( $i === 8 ) {
-													$color_class_css = 'mjschool-class-color8';
-												} elseif ( $i === 9 ) {
-													$color_class_css = 'mjschool-class-color9';
-												}
+											$color_class_css = mjschool_table_list_background_color( $i );
 												?>
 												<?php
 												$Due_amt    = $retrieved_data->total_amount - $retrieved_data->fees_paid_amount;
@@ -1031,30 +1008,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 											foreach ( $attendance_list as $retrieved_data ) {
 												$class_section_sub_name = mjschool_get_class_section_subject( $retrieved_data->class_id, $retrieved_data->section_id, $retrieved_data->sub_id );
 												$created_by             = get_userdata( $retrieved_data->attend_by );
-												if ( $i === 10 ) {
-													$i = 0;
-												}
-												if ( $i === 0 ) {
-													$color_class_css = 'mjschool-class-color0';
-												} elseif ( $i === 1 ) {
-													$color_class_css = 'mjschool-class-color1';
-												} elseif ( $i === 2 ) {
-													$color_class_css = 'mjschool-class-color2';
-												} elseif ( $i === 3 ) {
-													$color_class_css = 'mjschool-class-color3';
-												} elseif ( $i === 4 ) {
-													$color_class_css = 'mjschool-class-color4';
-												} elseif ( $i === 5 ) {
-													$color_class_css = 'mjschool-class-color5';
-												} elseif ( $i === 6 ) {
-													$color_class_css = 'mjschool-class-color6';
-												} elseif ( $i === 7 ) {
-													$color_class_css = 'mjschool-class-color7';
-												} elseif ( $i === 8 ) {
-													$color_class_css = 'mjschool-class-color8';
-												} elseif ( $i === 9 ) {
-													$color_class_css = 'mjschool-class-color9';
-												}
+												$color_class_css = mjschool_table_list_background_color( $i );
 												?>
 												<tr>
 													<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -1175,30 +1129,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 										$i = 0;
 										foreach ( $leave_data as $retrieved_data ) {
 											$leave_id = mjschool_encrypt_id( $retrieved_data->id );
-											if ( $i === 10 ) {
-												$i = 0;
-											}
-											if ( $i === 0 ) {
-												$color_class_css = 'mjschool-class-color0';
-											} elseif ( $i === 1 ) {
-												$color_class_css = 'mjschool-class-color1';
-											} elseif ( $i === 2 ) {
-												$color_class_css = 'mjschool-class-color2';
-											} elseif ( $i === 3 ) {
-												$color_class_css = 'mjschool-class-color3';
-											} elseif ( $i === 4 ) {
-												$color_class_css = 'mjschool-class-color4';
-											} elseif ( $i === 5 ) {
-												$color_class_css = 'mjschool-class-color5';
-											} elseif ( $i === 6 ) {
-												$color_class_css = 'mjschool-class-color6';
-											} elseif ( $i === 7 ) {
-												$color_class_css = 'mjschool-class-color7';
-											} elseif ( $i === 8 ) {
-												$color_class_css = 'mjschool-class-color8';
-											} elseif ( $i === 9 ) {
-												$color_class_css = 'mjschool-class-color9';
-											}
+										$color_class_css = mjschool_table_list_background_color( $i );
 											?>
 											<tr>
 												<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -1380,30 +1311,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 												$exam_data  = mjschool_get_exam_by_id( $retrieved_data->exam_id );
 												$start_date = $exam_data->exam_start_date;
 												$end_date   = $exam_data->exam_end_date;
-												if ( $i === 10 ) {
-													$i = 0;
-												}
-												if ( $i === 0 ) {
-													$color_class_css = 'mjschool-class-color0';
-												} elseif ( $i === 1 ) {
-													$color_class_css = 'mjschool-class-color1';
-												} elseif ( $i === 2 ) {
-													$color_class_css = 'mjschool-class-color2';
-												} elseif ( $i === 3 ) {
-													$color_class_css = 'mjschool-class-color3';
-												} elseif ( $i === 4 ) {
-													$color_class_css = 'mjschool-class-color4';
-												} elseif ( $i === 5 ) {
-													$color_class_css = 'mjschool-class-color5';
-												} elseif ( $i === 6 ) {
-													$color_class_css = 'mjschool-class-color6';
-												} elseif ( $i === 7 ) {
-													$color_class_css = 'mjschool-class-color7';
-												} elseif ( $i === 8 ) {
-													$color_class_css = 'mjschool-class-color8';
-												} elseif ( $i === 9 ) {
-													$color_class_css = 'mjschool-class-color9';
-												}
+												$color_class_css = mjschool_table_list_background_color( $i );
 												?>
 												<tr>
 													<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -1424,6 +1332,9 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 																		<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-more.png"); ?>">
 																	</a>
 																	<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
+																		<li class="mjschool-float-left-width-100px">
+																			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&action=view_student_hallticket&tab=view_hall_ticket&student_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->user_id ) ).'&exam_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->exam_id ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-print"> </i><?php esc_html_e( 'View Hall Ticket', 'mjschool' ); ?></a>
+																		</li>
 																		<li class="mjschool-float-left-width-100px">
 																			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&student_exam_receipt=student_exam_receipt&student_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->user_id ) ).'&exam_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->exam_id ) ) ) ); ?>" target="_blank" class="mjschool-float-left-width-100px"><i class="fas fa-print"> </i><?php esc_html_e( 'Hall Ticket Print', 'mjschool' ); ?></a>
 																		</li>
@@ -1534,30 +1445,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 										$i = 0;
 										if ( ! empty( $student_homework ) ) {
 											foreach ( $student_homework as $retrieved_data ) {
-												if ( $i === 10 ) {
-													$i = 0;
-												}
-												if ( $i === 0 ) {
-													$color_class_css = 'mjschool-class-color0';
-												} elseif ( $i === 1 ) {
-													$color_class_css = 'mjschool-class-color1';
-												} elseif ( $i === 2 ) {
-													$color_class_css = 'mjschool-class-color2';
-												} elseif ( $i === 3 ) {
-													$color_class_css = 'mjschool-class-color3';
-												} elseif ( $i === 4 ) {
-													$color_class_css = 'mjschool-class-color4';
-												} elseif ( $i === 5 ) {
-													$color_class_css = 'mjschool-class-color5';
-												} elseif ( $i === 6 ) {
-													$color_class_css = 'mjschool-class-color6';
-												} elseif ( $i === 7 ) {
-													$color_class_css = 'mjschool-class-color7';
-												} elseif ( $i === 8 ) {
-													$color_class_css = 'mjschool-class-color8';
-												} elseif ( $i === 9 ) {
-													$color_class_css = 'mjschool-class-color9';
-												}
+												$color_class_css = mjschool_table_list_background_color( $i );
 												?>
 												<tr>
 													<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -1722,30 +1610,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 										$i = 0;
 										if ( ! empty( $student_issuebook ) ) {
 											foreach ( $student_issuebook as $retrieved_data ) {
-												if ( $i === 10 ) {
-													$i = 0;
-												}
-												if ( $i === 0 ) {
-													$color_class_css = 'mjschool-class-color0';
-												} elseif ( $i === 1 ) {
-													$color_class_css = 'mjschool-class-color1';
-												} elseif ( $i === 2 ) {
-													$color_class_css = 'mjschool-class-color2';
-												} elseif ( $i === 3 ) {
-													$color_class_css = 'mjschool-class-color3';
-												} elseif ( $i === 4 ) {
-													$color_class_css = 'mjschool-class-color4';
-												} elseif ( $i === 5 ) {
-													$color_class_css = 'mjschool-class-color5';
-												} elseif ( $i === 6 ) {
-													$color_class_css = 'mjschool-class-color6';
-												} elseif ( $i === 7 ) {
-													$color_class_css = 'mjschool-class-color7';
-												} elseif ( $i === 8 ) {
-													$color_class_css = 'mjschool-class-color8';
-												} elseif ( $i === 9 ) {
-													$color_class_css = 'mjschool-class-color9';
-												}
+												$color_class_css = mjschool_table_list_background_color( $i );
 												?>
 												<tr>
 													<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -1899,30 +1764,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 													$section_id      = $retrieved_data->section_id;
 
 												}
-												if ( $i === 10 ) {
-													$i = 0;
-												}
-												if ( $i === 0 ) {
-													$color_class_css = 'mjschool-class-color0';
-												} elseif ( $i === 1 ) {
-													$color_class_css = 'mjschool-class-color1';
-												} elseif ( $i === 2 ) {
-													$color_class_css = 'mjschool-class-color2';
-												} elseif ( $i === 3 ) {
-													$color_class_css = 'mjschool-class-color3';
-												} elseif ( $i === 4 ) {
-													$color_class_css = 'mjschool-class-color4';
-												} elseif ( $i === 5 ) {
-													$color_class_css = 'mjschool-class-color5';
-												} elseif ( $i === 6 ) {
-													$color_class_css = 'mjschool-class-color6';
-												} elseif ( $i === 7 ) {
-													$color_class_css = 'mjschool-class-color7';
-												} elseif ( $i === 8 ) {
-													$color_class_css = 'mjschool-class-color8';
-												} elseif ( $i === 9 ) {
-													$color_class_css = 'mjschool-class-color9';
-												}
+												$color_class_css = mjschool_table_list_background_color( $i );
 												?>
 												<tr>
 													<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -2083,30 +1925,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 											foreach ( $student_message as $retrieved_data ) {
 												$sender_id = $retrieved_data->sender;
 												$sender    = mjschool_get_display_name( $sender_id );
-												if ( $i === 10 ) {
-													$i = 0;
-												}
-												if ( $i === 0 ) {
-													$color_class_css = 'mjschool-class-color0';
-												} elseif ( $i === 1 ) {
-													$color_class_css = 'mjschool-class-color1';
-												} elseif ( $i === 2 ) {
-													$color_class_css = 'mjschool-class-color2';
-												} elseif ( $i === 3 ) {
-													$color_class_css = 'mjschool-class-color3';
-												} elseif ( $i === 4 ) {
-													$color_class_css = 'mjschool-class-color4';
-												} elseif ( $i === 5 ) {
-													$color_class_css = 'mjschool-class-color5';
-												} elseif ( $i === 6 ) {
-													$color_class_css = 'mjschool-class-color6';
-												} elseif ( $i === 7 ) {
-													$color_class_css = 'mjschool-class-color7';
-												} elseif ( $i === 8 ) {
-													$color_class_css = 'mjschool-class-color8';
-												} elseif ( $i === 9 ) {
-													$color_class_css = 'mjschool-class-color9';
-												}
+											$color_class_css = mjschool_table_list_background_color( $i );
 												?>
 												<tr>
 													<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -2163,6 +1982,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 					}
 				}
 				// Message Tab End.
+				
 				?>
 			</div><!-- End panel body div.-->
 		</section>

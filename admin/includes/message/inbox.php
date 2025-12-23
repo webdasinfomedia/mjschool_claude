@@ -82,30 +82,7 @@ if ( isset( $_GET['tab'] ) ) {
 						if ( ! empty( $message ) ) {
 							$i = 0;
 							foreach ( $message as $msg ) {
-								if ( $i === 10 ) {
-									$i = 0;
-								}
-								if ( $i === 0 ) {
-									$color_class_css = 'mjschool-class-color0';
-								} elseif ( $i === 1 ) {
-									$color_class_css = 'mjschool-class-color1';
-								} elseif ( $i === 2 ) {
-									$color_class_css = 'mjschool-class-color2';
-								} elseif ( $i === 3 ) {
-									$color_class_css = 'mjschool-class-color3';
-								} elseif ( $i === 4 ) {
-									$color_class_css = 'mjschool-class-color4';
-								} elseif ( $i === 5 ) {
-									$color_class_css = 'mjschool-class-color5';
-								} elseif ( $i === 6 ) {
-									$color_class_css = 'mjschool-class-color6';
-								} elseif ( $i === 7 ) {
-									$color_class_css = 'mjschool-class-color7';
-								} elseif ( $i === 8 ) {
-									$color_class_css = 'mjschool-class-color8';
-								} elseif ( $i === 9 ) {
-									$color_class_css = 'mjschool-class-color9';
-								}
+								$color_class_css = mjschool_table_list_background_color( $i );
 								$message_for = get_post_meta( $msg->post_id, 'message_for', true );
 								$attchment   = get_post_meta( $msg->post_id, 'message_attachment', true );
 								if ( $message_for === 'student' || $message_for === 'supportstaff' || $message_for === 'teacher' || $message_for === 'parent' || $message_for === 'administrator' ) {

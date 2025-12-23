@@ -6772,30 +6772,7 @@ function mjschool_view_all_relpy() {
 	);
 	$i      = 0;
 	foreach ( $rResult as $aRow ) {
-		if ( $i === 10 ) {
-			$i = 0;
-		}
-		if ( $i === 0 ) {
-			$color_class_css = 'mjschool-class-color0';
-		} elseif ( $i === 1 ) {
-			$color_class_css = 'mjschool-class-color1';
-		} elseif ( $i === 2 ) {
-			$color_class_css = 'mjschool-class-color2';
-		} elseif ( $i === 3 ) {
-			$color_class_css = 'mjschool-class-color3';
-		} elseif ( $i === 4 ) {
-			$color_class_css = 'mjschool-class-color4';
-		} elseif ( $i === 5 ) {
-			$color_class_css = 'mjschool-class-color5';
-		} elseif ( $i === 6 ) {
-			$color_class_css = 'mjschool-class-color6';
-		} elseif ( $i === 7 ) {
-			$color_class_css = 'mjschool-class-color7';
-		} elseif ( $i === 8 ) {
-			$color_class_css = 'mjschool-class-color8';
-		} elseif ( $i === 9 ) {
-			$color_class_css = 'mjschool-class-color9';
-		}
+		$color_class_css = mjschool_table_list_background_color( $i );
 		$sender_info       = get_userdata( $aRow['sender_id'] );
 		$receiver_info     = get_userdata( $aRow['receiver_id'] );
 		$image_src         = esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-more.png' );
@@ -6921,30 +6898,7 @@ function mjschool_view_all_message() {
 	);
 	$i      = 0;
 	foreach ( $rResult as $aRow ) {
-		if ( $i === 10 ) {
-			$i = 0;
-		}
-		if ( $i === 0 ) {
-			$color_class_css = 'mjschool-class-color0';
-		} elseif ( $i === 1 ) {
-			$color_class_css = 'mjschool-class-color1';
-		} elseif ( $i === 2 ) {
-			$color_class_css = 'mjschool-class-color2';
-		} elseif ( $i === 3 ) {
-			$color_class_css = 'mjschool-class-color3';
-		} elseif ( $i === 4 ) {
-			$color_class_css = 'mjschool-class-color4';
-		} elseif ( $i === 5 ) {
-			$color_class_css = 'mjschool-class-color5';
-		} elseif ( $i === 6 ) {
-			$color_class_css = 'mjschool-class-color6';
-		} elseif ( $i === 7 ) {
-			$color_class_css = 'mjschool-class-color7';
-		} elseif ( $i === 8 ) {
-			$color_class_css = 'mjschool-class-color8';
-		} elseif ( $i === 9 ) {
-			$color_class_css = 'mjschool-class-color9';
-		}
+		$color_class_css = mjschool_table_list_background_color( $i );
 		$user_id           = $aRow['receiver'];
 		$school_obj        = new MJSchool_Management( $user_id );
 		$attchment         = get_post_meta( $aRow['post_id'], 'message_attachment', true );

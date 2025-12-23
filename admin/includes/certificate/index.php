@@ -234,7 +234,7 @@ if ( isset( $_GET['delete_certificate'] ) ) {
         <?php $nonce = wp_create_nonce( 'mjschool_certificate_tab' ); ?>
         <ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
             <li class="<?php if ($active_tab === 'certificatelist' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
-                <a href="<?php echo esc_url( '?page=mjschool_certificate&tab=certificatelist&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'certificatelist' ? 'active' : ''; ?>">
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_certificate&tab=certificatelist&_wpnonce=' .rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'certificatelist' ? 'active' : ''; ?>">
                     <?php esc_html_e( 'Certificate List', 'mjschool' ); ?>
                 </a>
             </li>
@@ -245,7 +245,7 @@ if ( isset( $_GET['delete_certificate'] ) ) {
             }
             ?>
             <li class="<?php if ($active_tab === 'assign_list' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
-                <a href="<?php echo esc_url( '?page=mjschool_certificate&tab=assign_list&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'assign_list' ? 'active' : ''; ?>">
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_certificate&tab=assign_list&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'assign_list' ? 'active' : ''; ?>">
                     <?php esc_html_e( 'issued Certificate', 'mjschool' ); ?>
                 </a>
             </li>
@@ -263,7 +263,7 @@ if ( isset( $_GET['delete_certificate'] ) ) {
                 	?>
                     <li class="<?php if ($active_tab === 'assign_certificate' ) { esc_html_e( 'active', 'mjschool' ); } ?>">
                         <a href="#" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'assign_certificate' ? 'nav-tab-active' : ''; ?>">
-                            <?php echo esc_html__( 'Assign Certificate', 'mjschool' ); ?>
+                            <?php esc_html_e( 'Assign Certificate', 'mjschool' ); ?>
                         </a>
                     </li>
             		<?php

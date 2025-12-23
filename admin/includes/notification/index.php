@@ -218,7 +218,7 @@ if ( isset( $_POST['save_notification'] ) ) {
 		} else {
 			?>
 			<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
-				<p><?php echo esc_html__( 'Please Add least one student', 'mjschool' ); ?></p>
+				<p><?php esc_html_e( 'Please Add least one student', 'mjschool' ); ?></p>
 				<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 			</div>
 			<?php
@@ -326,30 +326,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) )
 													foreach ( $result as $retrieved_data ) {
 														$class_id     = get_user_meta( $retrieved_data->student_id, 'class_name', true );
 														$section_name = get_user_meta( $retrieved_data->student_id, 'class_section', true );
-														if ( $i === 10 ) {
-															$i = 0;
-														}
-														if ( $i === 0 ) {
-															$color_class_css = 'mjschool-class-color0';
-														} elseif ( $i === 1 ) {
-															$color_class_css = 'mjschool-class-color1';
-														} elseif ( $i === 2 ) {
-															$color_class_css = 'mjschool-class-color2';
-														} elseif ( $i === 3 ) {
-															$color_class_css = 'mjschool-class-color3';
-														} elseif ( $i === 4 ) {
-															$color_class_css = 'mjschool-class-color4';
-														} elseif ( $i === 5 ) {
-															$color_class_css = 'mjschool-class-color5';
-														} elseif ( $i === 6 ) {
-															$color_class_css = 'mjschool-class-color6';
-														} elseif ( $i === 7 ) {
-															$color_class_css = 'mjschool-class-color7';
-														} elseif ( $i === 8 ) {
-															$color_class_css = 'mjschool-class-color8';
-														} elseif ( $i === 9 ) {
-															$color_class_css = 'mjschool-class-color9';
-														}
+														$color_class_css = mjschool_table_list_background_color( $i );
 														?>
 														<tr>
 															<td class="mjschool-checkbox-width-10px">

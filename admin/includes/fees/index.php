@@ -110,19 +110,19 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 		<div class="panel mjschool-panel-white">
 			<div class="mjschool-panel-body">     
 				<h2 class="nav-tab-wrapper">
-					<a href="<?php echo esc_url( '?page=mjschool_fees&tab=feeslist' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab  ) === 'feeslist' ? 'nav-tab-active' : ''; ?>">
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees&tab=feeslist' ) ); ?>" class="nav-tab <?php echo esc_attr( $active_tab  ) === 'feeslist' ? 'nav-tab-active' : ''; ?>">
 						<?php echo '<span class="dashicons dashicons-menu"></span>'. esc_html__( 'Fees Type List', 'mjschool' ); //phpcs:ignore ?>
 					</a>
 					<?php
 					if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'edit' && $_REQUEST['tab'] === 'addfeetype' ) {
 						?>
-						<a href="<?php echo esc_url( '?page=mjschool_fees&tab=addfeetype&action=edit&fees_id='. sanitize_text_field( wp_unslash( $_REQUEST['fees_id'] ) ) ); ?>" class="nav-tab <?php echo esc_attr( $active_tab  ) === 'addfeetype' ? 'nav-tab-active' : ''; ?>">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees&tab=addfeetype&action=edit&fees_id='. rawurlencode( sanitize_text_field( wp_unslash( $_REQUEST['fees_id'] ) ) ) ) ); ?>" class="nav-tab <?php echo esc_attr( $active_tab  ) === 'addfeetype' ? 'nav-tab-active' : ''; ?>">
 							<?php esc_html_e( 'Edit Fees Type', 'mjschool' ); ?>
 						</a>  
 						<?php
 					} else {
 						?>
-						<a href="<?php echo esc_url( '?page=mjschool_fees&tab=addfeetype' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab  ) === 'addfeetype' ? 'nav-tab-active' : ''; ?>">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees&tab=addfeetype' ) ); ?>" class="nav-tab <?php echo esc_attr( $active_tab  ) === 'addfeetype' ? 'nav-tab-active' : ''; ?>">
 							<?php echo '<span class="dashicons dashicons-plus-alt"></span>'. esc_html__( 'Add Fee Type', 'mjschool' ); //phpcs:ignore ?>
 						</a>  
 						<?php

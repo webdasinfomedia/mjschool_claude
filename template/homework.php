@@ -37,7 +37,7 @@ if ( isset( $_REQUEST ['page'] ) ) {
 		die();
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
-		if ( isset( $_REQUEST ['page'] ) && sanitize_text_field(wp_unslash($_REQUEST ['page'])) === $user_access['page_link'] && ( $sanitize_text_field(wp_unslash(_REQUEST['action'])) === 'edit' ) ) {
+		if ( isset( $_REQUEST ['page'] ) && sanitize_text_field(wp_unslash($_REQUEST ['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( isset($user_access['edit']) && $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
 				die();
@@ -797,7 +797,7 @@ if ( isset( $_GET['deleteselectedsuccess'] ) && sanitize_text_field(wp_unslash($
 								$result = $objj->mjschool_update_student_homework($stud_homework_id, $file_name, $obtain_marks, $teacher_comment, $evaluate_date, $status);
 								// Redirect with appropriate message.
 								if ( $result !== false ) {
-									wp_safe_redirect(rect( home_url( '?dashboard=mjschool_user&page=homework&tab=view_homework&tab1=submission&id=' . mjschool_encrypt_id( $data->homework_id ) . '&review_success=review_success' ) );
+									wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=homework&tab=view_homework&tab1=submission&id=' . mjschool_encrypt_id( $data->homework_id ) . '&review_success=review_success' ) );
 									die();
 								} else {
 									wp_die( 'Failed to update homework review.' );
@@ -1163,30 +1163,7 @@ if ( isset( $_GET['deleteselectedsuccess'] ) && sanitize_text_field(wp_unslash($
 										<?php
 										$i = 0;
 										foreach ( $result as $retrieved_data ) {
-											if ( $i === 10 ) {
-												$i = 0;
-											}
-											if ( $i === 0 ) {
-												$color_class_css = 'mjschool-class-color0';
-											} elseif ( $i === 1 ) {
-												$color_class_css = 'mjschool-class-color1';
-											} elseif ( $i === 2 ) {
-												$color_class_css = 'mjschool-class-color2';
-											} elseif ( $i === 3 ) {
-												$color_class_css = 'mjschool-class-color3';
-											} elseif ( $i === 4 ) {
-												$color_class_css = 'mjschool-class-color4';
-											} elseif ( $i === 5 ) {
-												$color_class_css = 'mjschool-class-color5';
-											} elseif ( $i === 6 ) {
-												$color_class_css = 'mjschool-class-color6';
-											} elseif ( $i === 7 ) {
-												$color_class_css = 'mjschool-class-color7';
-											} elseif ( $i === 8 ) {
-												$color_class_css = 'mjschool-class-color8';
-											} elseif ( $i === 9 ) {
-												$color_class_css = 'mjschool-class-color9';
-											}
+											$color_class_css = mjschool_table_list_background_color( $i );
 											?>
 											<tr>
 												<?php
@@ -1551,30 +1528,7 @@ if ( isset( $_GET['deleteselectedsuccess'] ) && sanitize_text_field(wp_unslash($
 										<?php
 										$i = 0;
 										foreach ( $result as $retrieved_data ) {
-											if ( $i === 10 ) {
-												$i = 0;
-											}
-											if ( $i === 0 ) {
-												$color_class_css = 'mjschool-class-color0';
-											} elseif ( $i === 1 ) {
-												$color_class_css = 'mjschool-class-color1';
-											} elseif ( $i === 2 ) {
-												$color_class_css = 'mjschool-class-color2';
-											} elseif ( $i === 3 ) {
-												$color_class_css = 'mjschool-class-color3';
-											} elseif ( $i === 4 ) {
-												$color_class_css = 'mjschool-class-color4';
-											} elseif ( $i === 5 ) {
-												$color_class_css = 'mjschool-class-color5';
-											} elseif ( $i === 6 ) {
-												$color_class_css = 'mjschool-class-color6';
-											} elseif ( $i === 7 ) {
-												$color_class_css = 'mjschool-class-color7';
-											} elseif ( $i === 8 ) {
-												$color_class_css = 'mjschool-class-color8';
-											} elseif ( $i === 9 ) {
-												$color_class_css = 'mjschool-class-color9';
-											}
+											$color_class_css = mjschool_table_list_background_color( $i );
 											?>
 											<tr>
 												<?php

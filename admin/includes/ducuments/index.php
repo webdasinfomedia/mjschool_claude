@@ -215,30 +215,7 @@ if ( isset( $_POST['delete_selected'] ) ) {
 												$i = 0;
 												foreach ( $documentdata as $retrieved_data ) {
 													$document_id = mjschool_encrypt_id( $retrieved_data->document_id );
-													if ( $i === 10 ) {
-														$i = 0;
-													}
-													if ( $i === 0 ) {
-														$color_class_css = 'mjschool-class-color0';
-													} elseif ( $i === 1 ) {
-														$color_class_css = 'mjschool-class-color1';
-													} elseif ( $i === 2 ) {
-														$color_class_css = 'mjschool-class-color2';
-													} elseif ( $i === 3 ) {
-														$color_class_css = 'mjschool-class-color3';
-													} elseif ( $i === 4 ) {
-														$color_class_css = 'mjschool-class-color4';
-													} elseif ( $i === 5 ) {
-														$color_class_css = 'mjschool-class-color5';
-													} elseif ( $i === 6 ) {
-														$color_class_css = 'mjschool-class-color6';
-													} elseif ( $i === 7 ) {
-														$color_class_css = 'mjschool-class-color7';
-													} elseif ( $i === 8 ) {
-														$color_class_css = 'mjschool-class-color8';
-													} elseif ( $i === 9 ) {
-														$color_class_css = 'mjschool-class-color9';
-													}
+													$color_class_css = mjschool_table_list_background_color( $i );
 													?>
 													<tr>
 														<td class="mjschool-checkbox-width-10px">

@@ -21,10 +21,14 @@ defined( 'ABSPATH' ) || exit;
 $obj            = new Mjschool_Homework();
 $retrieve_class_data = $obj->mjschool_get_all_homework_list();
 $mjschool_role_name      = mjschool_get_user_role( get_current_user_id() );
+if ( ! isset( $user_access ) ) {
+	$user_access = mjschool_get_user_role_wise_access_right_array();
+}
 ?>
 <div class="mjschool-panel-body">
 	<div class="table-responsive">
 		<form id="mjschool-common-form" name="mjschool-common-form" method="post">
+			<?php wp_nonce_field( 'homework_list_action_nonce' ); ?>
 			<table id="homework_list_1" class="display" cellspacing="0" width="100%">
 				<tbody>
 				<?php

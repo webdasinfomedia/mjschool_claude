@@ -35,7 +35,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 									<div class="col-xl-12 col-md-12 col-sm-12 mjschool-float-left-width-100px">
 										<span class="mjschool-view-user-name-label"><?php echo esc_html( ucfirst($book_data->book_name ) ); ?></span>
 										<div class="mjschool-view-user-edit-btn">
-											<a class="mjschool-color-white mjschool-margin-left-2px" href="?page=mjschool_library&tab=addbook&action=edit&book_id=<?php echo esc_attr(sanitize_text_field(wp_unslash($_REQUEST['book_id']))); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>">
+											<a class="mjschool-color-white mjschool-margin-left-2px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id='.rawurlencode( sanitize_text_field(wp_unslash($_REQUEST['book_id']))).'&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>">
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-edit.png"); ?>">
 											</a>
 										</div>
@@ -60,7 +60,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				if ( isset( $_REQUEST['issue_message'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['issue_message'])) === 'issue_success' ) ) {
 					?>
 					<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
-						<p><?php echo esc_html__( 'Book Issued Successfully.', 'mjschool' ); ?></p>
+						<p><?php esc_html_e( 'Book Issued Successfully.', 'mjschool' ); ?></p>
 						<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 					</div>
 					<?php
@@ -68,7 +68,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				if ( isset( $_REQUEST['issue_message'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['issue_message'])) === 'return_success' ) ) {
 					?>
 					<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
-						<p><?php echo esc_html__( 'Book Returned Successfully.', 'mjschool' ); ?></p>
+						<p><?php esc_html_e( 'Book Returned Successfully.', 'mjschool' ); ?></p>
 						<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 					</div>
 					<?php
@@ -76,7 +76,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 				if ( isset( $_REQUEST['issue_message'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['issue_message'])) === 'exits_no' ) ) {
 					?>
 					<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
-						<p><?php echo esc_html__( 'Library Card No is Exits.', 'mjschool' ); ?></p>
+						<p><?php esc_html_e( 'Library Card No is Exits.', 'mjschool' ); ?></p>
 						<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 					</div>
 					<?php

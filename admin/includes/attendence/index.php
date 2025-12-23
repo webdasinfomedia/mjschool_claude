@@ -467,13 +467,13 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 						?>
 						<?php $nonce = wp_create_nonce( 'mjschool_teacher_attendance_tab' ); ?>
 						<li class="<?php if ( $active_tab1 === 'teacher_attendences_list' ) { ?>active<?php } ?>">
-							<a href="<?php echo esc_url( '?page=mjschool_attendence&tab=teacher_attendance&tab1=teacher_attendences_list&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'teacher_attendences_list' ? 'nav-tab-active' : ''; ?>">
-								<?php echo esc_html__( 'Teacher Attendance List', 'mjschool' ); ?>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence&tab=teacher_attendance&tab1=teacher_attendences_list&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'teacher_attendences_list' ? 'nav-tab-active' : ''; ?>">
+								<?php esc_html_e( 'Teacher Attendance List', 'mjschool' ); ?>
 							</a>
 						</li>
 						<li class="<?php if ( $active_tab1 === 'teacher_attendences' ) { ?>active<?php } ?>">
-							<a href="<?php echo esc_url( '?page=mjschool_attendence&tab=teacher_attendance&tab1=teacher_attendences&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'teacher_attendences' ? 'nav-tab-active' : ''; ?>">
-								<?php echo esc_html__( 'Teacher Attendance', 'mjschool' ); ?>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence&tab=teacher_attendance&tab1=teacher_attendences&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'teacher_attendences' ? 'nav-tab-active' : ''; ?>">
+								<?php esc_html_e( 'Teacher Attendance', 'mjschool' ); ?>
 							</a>
 						</li>
 						<?php
@@ -482,18 +482,18 @@ if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 						?>
 						<?php $nonce = wp_create_nonce( 'mjschool_student_attendance_tab' ); ?>
 						<li class="<?php if ( $active_tab1 === 'attendence_list' ) {?>active<?php } ?>">
-							<a href="<?php echo esc_url( '?page=mjschool_attendence&tab=student_attendance&tab1=attendence_list&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'attendence_list' ? 'nav-tab-active' : ''; ?>">
-								<?php echo esc_html__( 'Attendance List', 'mjschool' ); ?>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence&tab=student_attendance&tab1=attendence_list&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'attendence_list' ? 'nav-tab-active' : ''; ?>">
+								<?php esc_html_e( 'Attendance List', 'mjschool' ); ?>
 							</a>
 						</li>
 						<li class="<?php if ( $active_tab1 === 'subject_attendence' ) {?>active<?php } ?>">
-							<a href="<?php echo esc_url( '?page=mjschool_attendence&tab=student_attendance&tab1=subject_attendence&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'subject_attendence' ? 'nav-tab-active' : ''; ?>">
-								<?php echo esc_html__( 'Attendance', 'mjschool' ); ?>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence&tab=student_attendance&tab1=subject_attendence&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'subject_attendence' ? 'nav-tab-active' : ''; ?>">
+								<?php esc_html_e( 'Attendance', 'mjschool' ); ?>
 							</a>
 						</li>
 						<li class="<?php if ( $active_tab1 === 'attendence_with_qr' ) { ?>active<?php } ?>">
-							<a href="<?php echo esc_url( '?page=mjschool_attendence&tab=student_attendance&tab1=attendence_with_qr&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'attendence_with_qr' ? 'nav-tab-active' : ''; ?>">
-								<?php echo esc_html__( 'Attendance With QR Code', 'mjschool' ); ?>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence&tab=student_attendance&tab1=attendence_with_qr&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab1  ) === 'attendence_with_qr' ? 'nav-tab-active' : ''; ?>">
+								<?php esc_html_e( 'Attendance With QR Code', 'mjschool' ); ?>
 							</a>
 						</li>
 						<?php

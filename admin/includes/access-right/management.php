@@ -11,7 +11,7 @@
  * @since      1.0.0
  * 
  */
-if (!defined( 'ABSPATH' ) ) {
+if ( ! defined( 'ABSPATH' ) ) {
 	die();
 }
 // Check nonce for management access rights tab.
@@ -422,10 +422,10 @@ if ( isset( $_POST['save_access_right'] ) ) {
 		);
 		$result = update_option( 'mjschool_access_right_management', $role_access_right );
 		$nonce = wp_create_nonce( 'mjschool_access_rights_tab' );
-		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_access_right&tab=Management&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
-		die();
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_access_right&tab=Management&_wpnonce=' . rawurlencode( $nonce ) . '&message=1' ) );
+		exit; 
 	}
-	else{
+	else {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
 }
@@ -444,8 +444,7 @@ switch ( $message ) {
 		$message_string = esc_html__( 'Management Access Right Updated Successfully.', 'mjschool' );
 		break;
 }
-if ( $message ) 
-{
+if ( $message ) {
 	?>
 	<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
 		<p><?php echo esc_html( $message_string ); ?></p>

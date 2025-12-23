@@ -12,9 +12,7 @@
  * 
  */
 
-defined( 'ABSPATH' ) || exit;
-?>
-<?php
+defined( 'ABSPATH' ) || exit;	
 $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {

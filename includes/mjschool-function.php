@@ -8784,273 +8784,187 @@ add_action( 'wp_ajax_nopriv_mjschool_load_exam_hall_receipt_div', 'mjschool_load
  * @return void Outputs HTML and terminates execution.
  */
 function mjschool_load_exam_hall_receipt_div() {
-	// 1. CHECK THE NONCE FIRST.
+	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
 	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
-		wp_send_json_error( 'Security check failed.' );
-		wp_die();
+		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
+
 	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
-		wp_send_json_error( 'You must be logged in.' );
-		wp_die();
+		wp_die( 'You must be logged in.' );
 	}
 	global $wpdb;
-	$exam_id = isset( $_REQUEST['exam_id'] ) ? absint( $_REQUEST['exam_id'] ) : 0;
-	if ( empty( $exam_id ) ) {
-		wp_send_json_error( 'Invalid exam ID' );
-		wp_die();
-	}
-	$exam_data = mjschool_get_exam_by_id( $exam_id );
-	if ( empty( $exam_data ) ) {
-		wp_send_json_error( 'Exam not found' );
-		wp_die();
-	}
-	$start_date = isset( $exam_data->exam_start_date ) ? $exam_data->exam_start_date : '';
-	$end_date   = isset( $exam_data->exam_end_date ) ? $exam_data->exam_end_date : '';
-	$class_id   = isset( $exam_data->class_id ) ? absint( $exam_data->class_id ) : 0;
-	$section_id = isset( $exam_data->section_id ) ? absint( $exam_data->section_id ) : 0;
-	if ( empty( $class_id ) ) {
-		wp_send_json_error( 'Invalid class ID' );
-		wp_die();
-	}
-	// Get excluded student list.
+	$exam_data  = mjschool_get_exam_by_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id'])) );
+	$exam_id    = isset($_REQUEST['exam_id']) ? absint(wp_unslash($_REQUEST['exam_id'])) : '';
+	$array_var  = array();
+	$start_date = $exam_data->exam_start_date;
+	$end_date   = $exam_data->exam_end_date;
+	$class_id   = $exam_data->class_id;
+	$section_id = $exam_data->section_id;
+	// ----------- All Student Data. ------------//
 	$exlude_id = mjschool_approve_student_list();
-	
-	// Get student data based on class and section.
-	if ( ! empty( $class_id ) && ! empty( $section_id ) ) {
+
+	if ( isset( $class_id) && $section_id != 0) {
 		$student_data = get_users(
 			array(
-				'role'       => 'student',
-				'exclude'    => $exlude_id,
+				'role' => 'student',
+				'exclude' => $exlude_id,
 				'meta_query' => array(
 					array(
-						'key'     => 'class_name',
-						'value'   => $class_id,
-						'compare' => '==',
+						'key' => 'class_name',
+						'value' => $class_id,
+						'compare' => '=='
 					),
 					array(
-						'key'     => 'class_section',
-						'value'   => $section_id,
-						'compare' => '==',
-					),
-				),
+						'key' => 'class_section',
+						'value' => $section_id,
+						'compare' => '=='
+					)
+				)
 			)
 		);
 	} else {
-		$student_data = get_users(
-			array(
-				'meta_key'   => 'class_name',
-				'meta_value' => $class_id,
-				'role'       => 'student',
-				'exclude'    => $exlude_id,
-			)
-		);
+		$student_data = get_users(array( 'meta_key' => 'class_name', 'meta_value' => $class_id, 'role' => 'student', 'exclude' => $exlude_id ) );
 	}
-	$student_id  = array();
-	$student_id1 = array();
-	
-	// Build student ID array
+
 	if ( ! empty( $student_data ) ) {
 		foreach ( $student_data as $s_id ) {
-			if ( isset( $s_id->ID ) ) {
-				$student_id[] = absint( $s_id->ID );
-			}
+			$student_id[] = $s_id->ID;
 		}
 	}
-	
-	// Get assigned students
+	// ---------- Assigned Student Data. --------//
 	$table_name_mjschool_exam_hall_receipt = $wpdb->prefix . 'mjschool_exam_hall_receipt';
-	
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$student_data_asigned = $wpdb->get_results(
-		$wpdb->prepare( "SELECT user_id FROM {$table_name_mjschool_exam_hall_receipt} WHERE exam_id = %d", $exam_id )
-	);
-	
-	// Build assigned student ID array
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+	$student_data_asigned = $wpdb->get_results( $wpdb->prepare( "SELECT user_id FROM {$table_name_mjschool_exam_hall_receipt} WHERE exam_id=%d", $exam_id ) );
 	if ( ! empty( $student_data_asigned ) ) {
 		foreach ( $student_data_asigned as $s_id1 ) {
-			if ( isset( $s_id1->user_id ) ) {
-				$student_id1[] = absint( $s_id1->user_id );
-			}
+			$student_id1[] = $s_id1->user_id;
 		}
 	}
-	
-	// Calculate unassigned students
 	if ( empty( $student_data_asigned ) ) {
 		$student_show_data = $student_id;
 	} else {
 		$student_show_data = array_diff( $student_id, $student_id1 );
 	}
-	
-	// Build HTML response
-	$array_var  = '<div class="exam_hall_receipt_main_div">';
-	$array_var .= '<form name="receipt_form" action="" method="post" class="mjschool-form-horizontal" id="receipt_form">';
-	$array_var .= '<input type="hidden" name="exam_id" value="' . esc_attr( $exam_id ) . '">';
-	$array_var .= '<div class="form-group row">';
-	$array_var .= '<div class="table-responsive rtl_mjschool-padding-15px">';
-	$array_var .= '<table class="table exam_hall_table mjschool_examhall_border_1px_center" id="exam_hall_table">';
-	$array_var .= '<thead><tr>';
-	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading_medium">' . esc_html__( 'Exam', 'mjschool' ) . '</th>';
-	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_library_table">' . esc_html__( 'Class', 'mjschool' ) . '</th>';
-	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_library_table">' . esc_html__( 'Section', 'mjschool' ) . '</th>';
-	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_library_table">' . esc_html__( 'Term', 'mjschool' ) . '</th>';
-	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_library_table">' . esc_html__( 'Start Date', 'mjschool' ) . '</th>';
-	$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head">' . esc_html__( 'End Date', 'mjschool' ) . '</th>';
-	$array_var .= '</tr></thead>';
-	$array_var .= '<tfoot></tfoot>';
-	$array_var .= '<tbody>';
-	$exam_name    = isset( $exam_data->exam_name ) ? esc_html( $exam_data->exam_name ) : '';
-	$class_name   = mjschool_get_class_name( $class_id );
-	$exam_term_id = isset( $exam_data->exam_term ) ? absint( $exam_data->exam_term ) : 0;
-	
-	$array_var .= '<tr>';
-	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px">' . $exam_name . '</td>';
-	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px">' . esc_html( $class_name ) . '</td>';
-	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px">';
-	
-	if ( ! empty( $section_id ) ) {
-		$array_var .= esc_html( mjschool_get_section_name( $section_id ) );
+	$array_var = '<div class="exam_hall_receipt_main_div">
+		<form name="receipt_form" action="" method="post" class="mjschool-form-horizontal" id="receipt_form">
+			<input type="hidden" name="exam_id" value="' . $exam_id . '">
+			<div class="form-group row">
+				<div class="table-responsive rtl_mjschool-padding-15px">
+					<table class="table exam_hall_table mjschool_examhall_border_1px_center" id="exam_hall_table" >
+						<thead>
+							<tr>
+								<th  class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading_medium" >' . esc_attr__( 'Exam', 'mjschool' ) . '</th>
+								<th  class="mjschool-exam-hall-receipt-table-heading mjschool_library_table" >' . esc_attr__( 'Class', 'mjschool' ) . '</th>
+								<th  class="mjschool-exam-hall-receipt-table-heading mjschool_library_table" >' . esc_attr__( 'Section', 'mjschool' ) . '</th>
+								<th  class="mjschool-exam-hall-receipt-table-heading mjschool_library_table" >' . esc_attr__( 'Term', 'mjschool' ) . '</th>
+								<th  class="mjschool-exam-hall-receipt-table-heading mjschool_library_table" >' . esc_attr__( 'Start Date', 'mjschool' ) . '</th>
+								<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head " >' . esc_attr__( 'End Date', 'mjschool' ); '</th>
+							</tr>
+						</thead>
+						<tfoot></tfoot>
+						<tbody>';
+	$array_var .= '<tr> <td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >' . $exam_data->exam_name . '</td> <td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >' . mjschool_get_class_name( $exam_data->class_id );
+	$array_var .= '</td> <td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >';
+	if ( $exam_data->section_id != 0 ) {
+		$array_var .= mjschool_get_section_name( $exam_data->section_id );
 	} else {
-		$array_var .= esc_html__( 'No Section', 'mjschool' );
+		$array_var .= esc_attr__( 'No Section', 'mjschool' );
 	}
-	
-	$array_var .= '</td>';
-	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px">' . esc_html( get_the_title( $exam_term_id ) ) . '</td>';
-	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px">' . esc_html( mjschool_get_date_in_input_box( $start_date ) ) . '</td>';
-	$array_var .= '<td class="mjschool-exam-hall-receipt-table-value">' . esc_html( mjschool_get_date_in_input_box( $end_date ) ) . '</td>';
-	$array_var .= '</tr>';
-	$array_var .= '</tbody></table></div></div>';
-	
-	// Exam hall dropdown
-	$array_var .= '<div class="form-body mjschool-user-form mjschool-margin-top-20px mjschool-padding-top-25px-res">';
-	$array_var .= '<div class="row"><div class="col-md-6 col-sm-6 col-xs-12">';
-	
+	$array_var .= '</td> <td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >' . get_the_title( $exam_data->exam_term );
+	$array_var .= '</td> <td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" >' . mjschool_get_date_in_input_box( $start_date );
+	$array_var .= '</td> <td class="mjschool-exam-hall-receipt-table-value">' . mjschool_get_date_in_input_box( $end_date );
+	$array_var .= '</td> </tr> </tbody> </table> </div> </div>
+	<div class="form-body mjschool-user-form mjschool-margin-top-20px mjschool-padding-top-25px-res">
+	<div class="row">
+	<div class="col-md-6 col-sm-6 col-xs-12">';
 	$table_name = $wpdb->prefix . 'mjschool_hall';
-	
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$retrieve_subject = $wpdb->get_results( "SELECT * FROM {$table_name}" );
-	
-	$array_var .= '<select name="exam_hall" class="mjschool-line-height-30px form-control validate[required]" id="exam_hall">';
-	$array_var .= '<option value="">' . esc_html__( 'Select Exam Hall', 'mjschool' ) . '</option>';
-	
-	if ( ! empty( $retrieve_subject ) ) {
-		foreach ( $retrieve_subject as $retrieved_data ) {
-			if ( ! isset( $retrieved_data->hall_id ) || ! isset( $retrieved_data->hall_name ) ) {
-				continue;
-			}
-			
-			$hall_id       = absint( $retrieved_data->hall_id );
-			$hall_name     = esc_html( stripslashes( $retrieved_data->hall_name ) );
-			$hall_capacity = isset( $retrieved_data->hall_capacity ) ? absint( $retrieved_data->hall_capacity ) : 0;
-			
-			$array_var .= '<option id="exam_hall_capacity_' . esc_attr( $hall_id ) . '" ';
-			$array_var .= 'hall_capacity="' . esc_attr( $hall_capacity ) . '" ';
-			$array_var .= 'value="' . esc_attr( $hall_id ) . '">';
-			$array_var .= $hall_name;
-			$array_var .= '</option>';
-		}
+	$array_var       .= '<select name="exam_hall" class="mjschool-line-height-30px form-control validate[required]" id="exam_hall">';
+	$defaultmsg       = esc_attr__( 'Select Exam Hall', 'mjschool' );
+	$array_var       .= '<option value="">' . esc_attr( $defaultmsg ) . '</option>';
+	foreach ( $retrieve_subject as $retrieved_data ) {
+		$array_var .= '<option id="exam_hall_capacity_' . esc_attr( $retrieved_data->hall_id ) . '" hall_capacity="' . $retrieved_data->hall_capacity . '" value="' . esc_attr( $retrieved_data->hall_id ) . '"> ' . esc_html( stripslashes( $retrieved_data->hall_name ) ) . '</option>';
 	}
-	$array_var .= '</select></div></div></div>';
-	// Student lists section.
-	$array_var .= '<div class="form-group row mjschool-margin-top-20px mjschool-padding-top-25px-res">';
-	$array_var .= '<div class="col-md-12"><div class="row">';
+	$array_var .= '</select> </div> </div> </div>
+	<div class="form-group row mjschool-margin-top-20px mjschool-padding-top-25px-res">
+	<div class="col-md-12">
+	<div class="row">';
 	if ( ! empty( $student_show_data ) || ! empty( $student_data_asigned ) ) {
-		// Unassigned students table.
-		$array_var .= '<div class="col-md-6 col-sm-6 col-xs-12">';
-		$array_var .= '<h4 class="exam_hall_lable">' . esc_html__( 'Not Assigned Exam Hall Student List', 'mjschool' ) . '</h4>';
-		if ( isset( $student_show_data ) && ! empty( $student_show_data ) ) {
-			$array_var .= '<table id="not_approve_table" class="display exam_timelist mjschool_examhall_border_1px_center" cellspacing="0" width="100%">';
-			$array_var .= '<thead><tr>';
-			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_names">';
-			$array_var .= '<input name="select_all[]" value="all" class="hall_receipt_checkbox my_all_check" id="checkbox-select-all" type="checkbox" />';
-			$array_var .= '</th>';
-			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading">' . esc_html__( 'Student Name', 'mjschool' ) . '</th>';
-			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head">' . esc_html__( 'Student Roll No', 'mjschool' ) . '</th>';
-			$array_var .= '</tr></thead><tbody>';
-			$has_students = false;
-			foreach ( $student_show_data as $retrieve_data ) {
-				$userdata = get_userdata( absint( $retrieve_data ) );
-				if ( empty( $userdata ) || ! isset( $userdata->display_name ) ) {
-					continue;
+		$array_var .= "<div class='col-md-6 col-sm-6 col-xs-12'>";
+		$array_var .= '<h4 class="exam_hall_lable">' . esc_attr__( 'Not Assign Exam Hall Student List', 'mjschool' ) . '</h4>';
+		if ( isset( $student_show_data ) ) {
+			$array_var .= '<table id="not_approve_table" class="display exam_timelist mjschool_examhall_border_1px_center" cellspacing="0" width="100%" >
+			<thead>
+				<tr>
+					<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_names" ><input name="select_all[]" value="all" class="hall_receipt_checkbox my_all_check " id="checkbox-select-all" type="checkbox" /></th>
+					<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading">' . esc_attr__( 'Student Name', 'mjschool' ) . '</th>
+					<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head" >' . esc_attr__( 'Student Roll No', 'mjschool' ) . '</th>
+				</tr>
+			</thead>
+			<tbody>';
+			if ( ! empty( $student_show_data ) ) {
+				foreach ( $student_show_data as $retrieve_data ) {
+					$userdata   = get_userdata( $retrieve_data );
+					$array_var .= '<tr id="' . $retrieve_data . '" class="mjschool_border_1px_white">
+					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center"><input type="checkbox" class="hall_receipt_checkbox select-checkbox my_check hall_receipt_checkbox" name="id[]" dataid="' . $retrieve_data . '"  value="' . $retrieve_data . '"></td>
+					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $userdata->display_name . '</td>
+					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . get_user_meta( $retrieve_data, 'roll_id', true );
+					$array_var .= '</td> </tr>';
 				}
-				$has_students = true;
-				$user_id      = absint( $retrieve_data );
-				$display_name = esc_html( $userdata->display_name );
-				$roll_id      = esc_html( get_user_meta( $user_id, 'roll_id', true ) );
-				$array_var .= '<tr id="' . esc_attr( $user_id ) . '" class="mjschool_border_1px_white">';
-				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">';
-				$array_var .= '<input type="checkbox" class="hall_receipt_checkbox select-checkbox my_check" ';
-				$array_var .= 'name="id[]" dataid="' . esc_attr( $user_id ) . '" value="' . esc_attr( $user_id ) . '">';
-				$array_var .= '</td>';
-				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $display_name . '</td>';
-				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $roll_id . '</td>';
-				$array_var .= '</tr>';
+			} else {
+				$array_var .= '<td class="no_data_td_remove" style="text-align:center;" colspan="3">' . esc_attr__( 'No Student Available', 'mjschool' ) . '</td>';
 			}
-			if ( ! $has_students ) {
-				$array_var .= '<tr><td class="no_data_td_remove" style="text-align:center;" colspan="3">';
-				$array_var .= esc_html__( 'No Student Available', 'mjschool' );
-				$array_var .= '</td></tr>';
-			}
-			$array_var .= '</tbody></table>';
-			$array_var .= '<tr><td>';
-			$array_var .= '<button type="button" class="mt-2 btn btn-success mjschool-save-btn mjschool-assign-exam-hall" ';
-			$array_var .= 'name="assign_exam_hall" id="assign_exam_hall">';
-			$array_var .= esc_html__( 'Assign Exam Hall', 'mjschool' );
-			$array_var .= '</button>';
-			$array_var .= '</td></tr>';
+			$array_var .= '</tbody> </table>
+			<tr>
+				<td>
+					<button type="button" class="mt-2 btn btn-success mjschool-save-btn mjschool-assign-exam-hall" name="assign_exam_hall" id="assign_exam_hall">' . esc_attr__( 'Assign Exam Hall', 'mjschool' ) . '</button>
+				</td>
+			</tr>';
 		}
 		$array_var .= '</div>';
-		// Assigned students table.
-		$array_var .= '<div class="col-md-6 col-sm-6 col-xs-12">';
-		$array_var .= '<h4 class="exam_hall_lable">' . esc_html__( 'Assigned Exam Hall Student List', 'mjschool' ) . '</h4>';
-		if ( isset( $student_data_asigned ) && ! empty( $student_data_asigned ) ) {
-			$array_var .= '<table id="approve_table" class="display exam_timelist mjschool_examhall_border_1px_center" cellspacing="0" width="100%">';
-			$array_var .= '<thead><tr>';
-			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_names"></th>';
-			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading">' . esc_html__( 'Student Name', 'mjschool' ) . '</th>';
-			$array_var .= '<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head">' . esc_html__( 'Student Roll No', 'mjschool' ) . '</th>';
-			$array_var .= '</tr></thead><tbody>';
-			$has_assigned = false;
-			foreach ( $student_data_asigned as $retrieve_data1 ) {
-				if ( ! isset( $retrieve_data1->user_id ) ) {
-					continue;
+		$array_var .= "<div class='col-md-6 col-sm-6 col-xs-12'>";
+		$array_var .= '<h4 class="exam_hall_lable">' . esc_attr__( 'Assigned Exam Hall Student List', 'mjschool' ) . '</h4>';
+		if ( isset( $student_data_asigned ) ) {
+			$array_var .= '<table id="approve_table" class="display exam_timelist mjschool_examhall_border_1px_center" cellspacing="0" width="100%" >
+			<thead>
+				<tr >
+					<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_names" ></th>
+					<th class="mjschool-exam-hall-receipt-table-heading mjschool_examhall_heading" >' . esc_attr__( 'Student Name', 'mjschool' ) . '</th>
+					<th class="mjschool-exam-hall-receipt-table-heading mjchool_receipt_table_head">' . esc_attr__( 'Student Roll No', 'mjschool' ) . '</th>
+				</tr>
+			</thead>
+			<tbody>';
+			if ( ! empty( $student_data_asigned ) ) {
+				foreach ( $student_data_asigned as $retrieve_data1 ) {
+					$userdata       = get_userdata( $retrieve_data1->user_id );
+					$dlt_image_icon = esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/mjschool-delete.png' );
+
+					$array_var .= '<tr class="assign_student_exam_lis mjschool_border_1px_white" id="' . $retrieve_data1->user_id . '" >
+					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">
+					<a class="delete_receipt_record" href="#" dataid="' . $retrieve_data1->user_id . '"  id=' . $retrieve_data1->user_id . '><img src="' . $dlt_image_icon . '" class="mjschool-massage-image"></a></td>
+					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $userdata->display_name . '</td>
+					<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . get_user_meta($retrieve_data1->user_id, 'roll_id', true);
+					$array_var .= '</td> </tr>';
+
 				}
-				$userdata = get_userdata( absint( $retrieve_data1->user_id ) );
-				if ( empty( $userdata ) || ! isset( $userdata->display_name ) ) {
-					continue;
-				}
-				$has_assigned     = true;
-				$user_id          = absint( $retrieve_data1->user_id );
-				$display_name     = esc_html( $userdata->display_name );
-				$roll_id          = esc_html( get_user_meta( $user_id, 'roll_id', true ) );
-				$dlt_image_icon   = esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/Delete.png' );
-				$array_var .= '<tr class="assign_student_exam_lis mjschool_border_1px_white" id="' . esc_attr( $user_id ) . '">';
-				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">';
-				$array_var .= '<a class="delete_receipt_record" href="#" dataid="' . esc_attr( $user_id ) . '" id="' . esc_attr( $user_id ) . '">';
-				$array_var .= '<img src="' . $dlt_image_icon . '" class="mjschool-massage-image" alt="' . esc_attr__( 'Delete', 'mjschool' ) . '">';
-				$array_var .= '</a></td>';
-				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $display_name . '</td>';
-				$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $roll_id . '</td>';
-				$array_var .= '</tr>';
 			}
-			if ( ! $has_assigned ) {
-				$array_var .= '<tr><td colspan="3" style="text-align:center;">' . esc_html__( 'No students assigned yet', 'mjschool' ) . '</td></tr>';
-			}
-			$array_var .= '</tbody></table>';
-			$array_var .= '<tr><td>';
-			$array_var .= '<button type="submit" class="mt-2 btn mjschool-save-btn btn-success" ';
-			$array_var .= 'name="send_mail_exam_receipt" id="send_mail_exam_receipt">';
-			$array_var .= esc_html__( 'Send Mail', 'mjschool' );
-			$array_var .= '</button>';
-			$array_var .= '</td></tr>';
+			$array_var .= '</tbody> </table>
+			<tr>
+				<td>
+					<button type="submit" class="mt-2 btn mjschool-save-btn btn-success" name="send_mail_exam_receipt" id="send_mail_exam_receipt">' . esc_attr__( 'Send Mail', 'mjschool' ) . '</button>
+				</td>
+			</tr>';
 		}
 		$array_var .= '</div>';
 	} else {
-		$array_var .= '<div><h4>' . esc_html__( 'No Student Available', 'mjschool' ) . '</h4></div>';
+		$array_var .= '<div><h4 >' . esc_attr__( 'No Student Available', 'mjschool' ) . '</h4></div>';
 	}
-	$array_var .= '</div></div></div></form></div>';
-	wp_send_json_success( array( $array_var ) );
-	wp_die();
+	$array_var .= '</div> </div> </div> </form> </div>';
+	$data[]     = $array_var;
+	echo json_encode( $data );
+	die();
 }
 add_action( 'wp_ajax_mjschool_delete_receipt_record', 'mjschool_delete_receipt_record' );
 add_action( 'wp_ajax_nopriv_mjschool_delete_receipt_record', 'mjschool_delete_receipt_record' );
@@ -9065,64 +8979,34 @@ add_action( 'wp_ajax_nopriv_mjschool_delete_receipt_record', 'mjschool_delete_re
  * @return void Outputs JSON encoded HTML row.
  */
 function mjschool_delete_receipt_record() {
-	// 1. CHECK THE NONCE FIRST
+	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
 	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
-		wp_send_json_error( 'Security check failed.' );
-		wp_die();
+		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
-	// 2. CHECK IF USER IS LOGGED IN
+	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
-		wp_send_json_error( 'You must be logged in.' );
-		wp_die();
+		wp_die( 'You must be logged in.' );
 	}
-	$id      = isset( $_POST['record_id'] ) ? absint( $_POST['record_id'] ) : 0;
-	$exam_id = isset( $_POST['exam_id'] ) ? absint( $_POST['exam_id'] ) : 0;
-	
-	if ( empty( $id ) || empty( $exam_id ) ) {
-		wp_send_json_error( 'Invalid parameters' );
-		wp_die();
-	}
-	
+	$array_var = array();
+	$id        = isset($_POST['record_id']) ? absint(wp_unslash($_POST['record_id'])) : '';
+	$exam_id   = isset($_POST['exam_id']) ? absint(wp_unslash($_POST['exam_id'])) : '';
 	global $wpdb;
 	$table_name_mjschool_exam_hall_receipt = $wpdb->prefix . 'mjschool_exam_hall_receipt';
-	
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$deleted = $wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM {$table_name_mjschool_exam_hall_receipt} WHERE exam_id = %d AND user_id = %d",
-			$exam_id,
-			$id
-		)
-	);
-	
-	if ( $deleted ) {
-		$userdata = get_userdata( $id );
-		
-		if ( empty( $userdata ) || ! isset( $userdata->display_name ) ) {
-			wp_send_json_error( 'User not found' );
-			wp_die();
-		}
-		
-		$display_name = esc_html( $userdata->display_name );
-		$roll_id      = esc_html( get_user_meta( $id, 'roll_id', true ) );
-		
-		// Build HTML row for unassigned list
-		$array_var  = '<tr id="' . esc_attr( $id ) . '" class="mjschool_border_1px_white">';
-		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">';
-		$array_var .= '<input type="checkbox" class="select-checkbox my_check hall_receipt_checkbox" ';
-		$array_var .= 'name="id[]" dataid="' . esc_attr( $id ) . '" value="' . esc_attr( $id ) . '">';
-		$array_var .= '</td>';
-		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $display_name . '</td>';
-		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $roll_id . '</td>';
-		$array_var .= '</tr>';
-		
-		wp_send_json_success( array( $array_var ) );
-	} else {
-		wp_send_json_error( 'Delete failed' );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+	$user_id = $wpdb->query( $wpdb->prepare( "Delete from {$table_name_mjschool_exam_hall_receipt} where exam_id=%d AND user_id=%d", $exam_id, $id ) );
+	if ( $user_id ) {
+		$userdata   = get_userdata( $id );
+		$array_var .= '<tr id="' . $id . '" class="mjschool_border_1px_white">
+		<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center"><input type="checkbox" class="select-checkbox my_check hall_receipt_checkbox" name="id[]" dataid="' . $id . '"  value="' . $id . '"></td>
+		<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $userdata->display_name . '</td>
+		<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . get_user_meta( $id, 'roll_id', true );
+		$array_var .= '</td>
+		</tr>';
 	}
-	
-	wp_die();
+	$data[] = $array_var;
+	echo json_encode( $data );
+	die();
 }
 add_action( 'wp_ajax_mjschool_add_receipt_record', 'mjschool_add_receipt_record' );
 add_action( 'wp_ajax_nopriv_mjschool_add_receipt_record', 'mjschool_add_receipt_record' );
@@ -9137,64 +9021,40 @@ add_action( 'wp_ajax_nopriv_mjschool_add_receipt_record', 'mjschool_add_receipt_
  * @return void Outputs JSON encoded HTML rows.
  */
 function mjschool_add_receipt_record() {
-	// 1. CHECK THE NONCE FIRST
+	// 1. CHECK THE NONCE FIRST - Proof of intent from a valid form.
 	if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( $_REQUEST['nonce'], 'mjschool_ajax_nonce' ) ) {
-		wp_send_json_error( 'Security check failed.' );
-		wp_die();
+		wp_die( 'Security check failed.' ); // Stop if the nonce is invalid.
 	}
 
-	// 2. CHECK IF USER IS LOGGED IN
+	// 2. CHECK IF USER IS LOGGED IN.
 	if ( ! is_user_logged_in() ) {
-		wp_send_json_error( 'You must be logged in.' );
-		wp_die();
+		wp_die( 'You must be logged in.' );
 	}
-	$user_id_array = isset( $_POST['id_array'] ) && is_array( $_POST['id_array'] ) ? array_map( 'absint', $_POST['id_array'] ) : array();
-	$exam_hall = isset( $_POST['exam_hall'] ) ? absint( $_POST['exam_hall'] ) : 0;
-	$exam_id   = isset( $_POST['exam_id'] ) ? absint( $_POST['exam_id'] ) : 0;
-	
-	if ( empty( $user_id_array ) || empty( $exam_hall ) || empty( $exam_id ) ) {
-		wp_send_json_error( 'Invalid parameters' );
-		wp_die();
+	$array_var     = array();
+	$user_id_array = isset( $_POST['id_array'] ) ? array_map( 'intval', wp_unslash( $_POST['id_array'] ) ) : array();
+	$exam_hall = isset( $_POST['exam_hall'] ) ? absint( wp_unslash( $_POST['exam_hall'] ) ) : 0;
+	$exam_id = isset( $_POST['exam_id'] ) ? absint( wp_unslash( $_POST['exam_id'] ) ) : 0;
+	if ( ! empty( $user_id_array ) ) {
+		foreach ( $user_id_array as $id ) {
+			$user_id  = mjschool_insert_exam_reciept( $id, $exam_hall, $exam_id );
+			$userdata = get_userdata( $user_id );
+
+			if ($user_id) {
+				$dlt_image_icon = esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-delete.png");
+				$array_var .= '<tr id="' . $user_id . '" class="mjschool_border_1px_white">
+				<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">
+					<a class="delete_receipt_record " href="#" id=' . $user_id . '><img src="' . $dlt_image_icon . '" class="mjschool-massage-image"></a></td>
+				<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $userdata->display_name . '</td>
+				<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . get_user_meta($user_id, 'roll_id', true);
+				$array_var .= '</td>
+				</tr>';
+			}
+
+		}
 	}
-	
-	$array_var = '';
-	$dlt_image_icon = esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/Delete.png' );
-	
-	foreach ( $user_id_array as $id ) {
-		$id = absint( $id );
-		
-		if ( empty( $id ) ) {
-			continue;
-		}
-		
-		// Insert the receipt record
-		$user_id = mjschool_insert_exam_reciept( $id, $exam_hall, $exam_id );
-		
-		if ( empty( $user_id ) ) {
-			continue;
-		}
-		$userdata = get_userdata( $user_id );
-		
-		if ( empty( $userdata ) || ! isset( $userdata->display_name ) ) {
-			continue;
-		}
-		
-		$display_name = esc_html( $userdata->display_name );
-		$roll_id      = esc_html( get_user_meta( $user_id, 'roll_id', true ) );
-		
-		// Build HTML row for assigned list
-		$array_var .= '<tr id="' . esc_attr( $user_id ) . '" class="mjschool_border_1px_white">';
-		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">';
-		$array_var .= '<a class="delete_receipt_record" href="#" dataid="' . esc_attr( $user_id ) . '" id="' . esc_attr( $user_id ) . '">';
-		$array_var .= '<img src="' . $dlt_image_icon . '" class="mjschool-massage-image" alt="' . esc_attr__( 'Delete', 'mjschool' ) . '">';
-		$array_var .= '</a></td>';
-		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $display_name . '</td>';
-		$array_var .= '<td class="mjschool-exam-hall-receipt-table-value mjschool_text_align_center">' . $roll_id . '</td>';
-		$array_var .= '</tr>';
-	}
-	
-	wp_send_json_success( array( $array_var ) );
-	wp_die();
+	$data[] = $array_var;
+	echo json_encode( $data );
+	die();
 }
 /**
  * Retrieves the exam hall receipt records for a given student.
@@ -20826,4 +20686,50 @@ function mjschool_get_certificate_by_id( $certificate_id ) {
     $result = $wpdb->get_row( $query );
     return $result ?: null;
 }
+/**
+ * Get table row background color class based on index.
+ *
+ * @param int $index Current loop index.
+ * @return string CSS class name.
+ */
+function mjschool_table_list_background_color( $index ) {
+    $index = $index % 10;
+
+    return 'mjschool-class-color' . $index;
+}
+/**
+ * Render date filter dropdown.
+ *
+ * @param string $selected Selected date type value.
+ * @param string $field_id Field ID attribute.
+ * @param string $field_name Field name attribute.
+ */
+function mjschool_date_filter_dropdown( $selected = '' ) {
+
+    $options = array(
+        'today'        => __( 'Today', 'mjschool' ),
+        'this_week'    => __( 'This Week', 'mjschool' ),
+        'last_week'    => __( 'Last Week', 'mjschool' ),
+        'this_month'   => __( 'This Month', 'mjschool' ),
+        'last_month'   => __( 'Last Month', 'mjschool' ),
+        'last_3_month' => __( 'Last 3 Months', 'mjschool' ),
+        'last_6_month' => __( 'Last 6 Months', 'mjschool' ),
+        'last_12_month'=> __( 'Last 12 Months', 'mjschool' ),
+        'this_year'    => __( 'This Year', 'mjschool' ),
+        'last_year'    => __( 'Last Year', 'mjschool' ),
+        'period'       => __( 'Period', 'mjschool' ),
+    );
+    ?>
+    <select class="mjschool-line-height-30px form-control date_type validate[required]" id="date_type" name="date_type" autocomplete="off">
+
+        <?php foreach ( $options as $value => $label ) : ?>
+            <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $selected, $value ); ?>>
+                <?php echo esc_html( $label ); ?>
+            </option>
+        <?php endforeach; ?>
+
+    </select>
+    <?php
+}
+
 ?>

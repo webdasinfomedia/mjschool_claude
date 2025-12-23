@@ -299,9 +299,12 @@ if ( isset( $_POST['save_feetype_payment'] ) ) {
 	}
 }
 if ( isset( $_REQUEST['delete_selected_recurring_feelist'] ) ) {
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bulk_delete_books' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = $mjschool_obj_feespayment->mjschool_delete_recurring_fees( sanitize_text_field(wp_unslash($id)) );
+			$result = $mjschool_obj_feespayment->mjschool_delete_recurring_fees( intval( sanitize_text_field( wp_unslash( $id ) ) ) );
 		}
 	}
 	if ( $result ) {
@@ -350,7 +353,7 @@ if ( isset( $_REQUEST['delete_selected_feetype'] ) ) {
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = $mjschool_obj_feespayment->mjschool_delete_feetype_data( sanitize_text_field(wp_unslash($id)) );
+			$result = $mjschool_obj_feespayment->mjschool_delete_feetype_data( intval( sanitize_text_field( wp_unslash( $id ) ) ) );
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feeslist&_wpnonce='.esc_attr( $nonce ).'&message=3') );
 			die();
 		}
@@ -371,7 +374,7 @@ if ( isset( $_REQUEST['delete_selected_feelist'] ) ) {
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = $mjschool_obj_feespayment->mjschool_delete_fee_payment_data( $id );
+			$result = $mjschool_obj_feespayment->mjschool_delete_fee_payment_data( intval( sanitize_text_field( wp_unslash( $id ) ) ) );
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&_wpnonce='.esc_attr( $nonce ).'&message=3') );
 			die();
 		}
@@ -619,30 +622,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 										<?php
 										$i = 0;
 										foreach ( $retrieve_class_data as $retrieved_data ) {
-											if ( $i === 10 ) {
-												$i = 0;
-											}
-											if ( $i === 0 ) {
-												$color_class_css = 'mjschool-class-color0';
-											} elseif ( $i === 1 ) {
-												$color_class_css = 'mjschool-class-color1';
-											} elseif ( $i === 2 ) {
-												$color_class_css = 'mjschool-class-color2';
-											} elseif ( $i === 3 ) {
-												$color_class_css = 'mjschool-class-color3';
-											} elseif ( $i === 4 ) {
-												$color_class_css = 'mjschool-class-color4';
-											} elseif ( $i === 5 ) {
-												$color_class_css = 'mjschool-class-color5';
-											} elseif ( $i === 6 ) {
-												$color_class_css = 'mjschool-class-color6';
-											} elseif ( $i === 7 ) {
-												$color_class_css = 'mjschool-class-color7';
-											} elseif ( $i === 8 ) {
-												$color_class_css = 'mjschool-class-color8';
-											} elseif ( $i === 9 ) {
-												$color_class_css = 'mjschool-class-color9';
-											}
+											$color_class_css = mjschool_table_list_background_color( $i );
 											?>
 											<tr>
 												<?php
@@ -662,7 +642,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 													</p>
 												</td>
 												<td>
-													<?php echo esc_attr( get_the_title( $retrieved_data->fees_title_id ) ); ?>
+													<?php echo esc_html( get_the_title( $retrieved_data->fees_title_id ) ); ?>
 													<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Fees Title', 'mjschool' ); ?>"></i>
 												</td>
 												<td>
@@ -901,7 +881,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 											foreach ( $activity_category as $retrive_data ) {
 												?>
 												<option value="<?php echo esc_attr( $retrive_data->ID ); ?>" <?php selected( $retrive_data->ID, $fees_val ); ?>>
-													<?php echo esc_attr( $retrive_data->post_title ); ?>
+													<?php echo esc_html( $retrive_data->post_title ); ?>
 												</option>
 												<?php
 											}
@@ -1115,30 +1095,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 										<?php
 										$i = 0;
 										foreach ( $data as $retrieved_data ) {
-											if ( $i === 10 ) {
-												$i = 0;
-											}
-											if ( $i === 0 ) {
-												$color_class_css = 'mjschool-class-color0';
-											} elseif ( $i === 1 ) {
-												$color_class_css = 'mjschool-class-color1';
-											} elseif ( $i === 2 ) {
-												$color_class_css = 'mjschool-class-color2';
-											} elseif ( $i === 3 ) {
-												$color_class_css = 'mjschool-class-color3';
-											} elseif ( $i === 4 ) {
-												$color_class_css = 'mjschool-class-color4';
-											} elseif ( $i === 5 ) {
-												$color_class_css = 'mjschool-class-color5';
-											} elseif ( $i === 6 ) {
-												$color_class_css = 'mjschool-class-color6';
-											} elseif ( $i === 7 ) {
-												$color_class_css = 'mjschool-class-color7';
-											} elseif ( $i === 8 ) {
-												$color_class_css = 'mjschool-class-color8';
-											} elseif ( $i === 9 ) {
-												$color_class_css = 'mjschool-class-color9';
-											}
+											$color_class_css = mjschool_table_list_background_color( $i );
 											?>
 											<tr>
 												<?php
@@ -1446,16 +1403,16 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 																}
 																?>
 																<label class="radio-inline">
-																	<input type="radio" value="one_time" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'one_time', esc_html( $recurrence_type ) ); ?> /><?php esc_html_e( 'One Time', 'mjschool' ); ?>
+																	<input type="radio" value="one_time" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'one_time', $recurrence_type ); ?> /><?php esc_html_e( 'One Time', 'mjschool' ); ?>
 																</label>
 																<label class="radio-inline">
-																	<input type="radio" value="monthly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'monthly', esc_html( $recurrence_type ) ); ?> /><?php esc_html_e( 'Monthly', 'mjschool' ); ?>
+																	<input type="radio" value="monthly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'monthly', $recurrence_type ); ?> /><?php esc_html_e( 'Monthly', 'mjschool' ); ?>
 																</label>
 																<label class="radio-inline">
-																	<input type="radio" value="quarterly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'Quarterly', esc_html( $recurrence_type ) ); ?> /><?php esc_html_e( 'Quarterly', 'mjschool' ); ?>
+																	<input type="radio" value="quarterly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'Quarterly', $recurrence_type ); ?> /><?php esc_html_e( 'Quarterly', 'mjschool' ); ?>
 																</label>
 																<label class="radio-inline">
-																	<input type="radio" value="half_yearly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'half_yearly', esc_html( $recurrence_type ) ); ?> /><?php esc_html_e( 'Half- Yearly', 'mjschool' ); ?>
+																	<input type="radio" value="half_yearly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'half_yearly', $recurrence_type ); ?> /><?php esc_html_e( 'Half- Yearly', 'mjschool' ); ?>
 																</label>
 															</div>
 														</div>
@@ -1484,7 +1441,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 											if ( $addparent ) {
 												$classdata = mjschool_get_class_by_id( $student->class_name );
 												?>
-												<option value="<?php echo esc_attr( $student->class_name ); ?>"> <?php echo esc_attr( $classdata->class_name ); ?></option>
+												<option value="<?php echo esc_attr( $student->class_name ); ?>"> <?php echo esc_html( $classdata->class_name ); ?></option>
 												<?php
 											}
 											?>
@@ -1677,8 +1634,8 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 								</div>
 								<div class="col-sm-12 col-md-3 col-lg-3 col-xl-3 mjschool-res-margin-bottom-20px mjschool-rtl-margin-top-15px">
 									<select class="form-control mjschool-max-width-100px mjschool-color-picker-div-height" name="discount_type" id="discount_type" >
-										<option value="%" <?php if ( $edit ) { if ( isset( $result->discount_type ) ) { selected( esc_attr( $result->discount_type ), '%' ); } } ?> >%</option>
-										<option value="amount" <?php if ( $edit ) { if ( isset( $result->discount_type ) ) { selected( esc_html( $result->discount_type ), 'amount' );} } ?> >
+										<option value="%" <?php if ( $edit ) { if ( isset( $result->discount_type ) ) { selected( $result->discount_type, '%' ); } } ?> >%</option>
+										<option value="amount" <?php if ( $edit ) { if ( isset( $result->discount_type ) ) { selected( $result->discount_type, 'amount' );} } ?> >
 											<?php echo esc_html__( 'Amount', 'mjschool' ) . '( ' . esc_html( mjschool_get_currency_symbol( get_option( 'mjschool_currency_code' ) ) ) . ' )'; ?>
 										</option>
 									</select>
@@ -2740,30 +2697,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 										<?php
 										$i = 0;
 										foreach ( $retrieve_class_data as $retrieved_data ) {
-											if ( $i === 10 ) {
-												$i = 0;
-											}
-											if ( $i === 0 ) {
-												$color_class_css = 'mjschool-class-color0';
-											} elseif ( $i === 1 ) {
-												$color_class_css = 'mjschool-class-color1';
-											} elseif ( $i === 2 ) {
-												$color_class_css = 'mjschool-class-color2';
-											} elseif ( $i === 3 ) {
-												$color_class_css = 'mjschool-class-color3';
-											} elseif ( $i === 4 ) {
-												$color_class_css = 'mjschool-class-color4';
-											} elseif ( $i === 5 ) {
-												$color_class_css = 'mjschool-class-color5';
-											} elseif ( $i === 6 ) {
-												$color_class_css = 'mjschool-class-color6';
-											} elseif ( $i === 7 ) {
-												$color_class_css = 'mjschool-class-color7';
-											} elseif ( $i === 8 ) {
-												$color_class_css = 'mjschool-class-color8';
-											} elseif ( $i === 9 ) {
-												$color_class_css = 'mjschool-class-color9';
-											}
+											$color_class_css = mjschool_table_list_background_color( $i );
 											?>
 											<tr>
 												<td>
@@ -2934,15 +2868,15 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 															}
 															?>
 															<label class="radio-inline">
-																<input type="radio" value="monthly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'monthly', esc_html( $recurrence_type ) ); ?> />
+																<input type="radio" value="monthly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'monthly', $recurrence_type ); ?> />
 																<?php esc_html_e( 'Monthly', 'mjschool' ); ?>
 															</label>
 															<label class="radio-inline">
-																<input type="radio" value="quarterly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'quarterly', esc_html( $recurrence_type ) ); ?> />
+																<input type="radio" value="quarterly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'quarterly', $recurrence_type ); ?> />
 																<?php esc_html_e( 'Quarterly', 'mjschool' ); ?>
 															</label>
 															<label class="radio-inline">
-																<input type="radio" value="half_yearly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'half_yearly', esc_html( $recurrence_type ) ); ?> />
+																<input type="radio" value="half_yearly" class="recurrence_type validate[required]" name="recurrence_type" <?php checked( 'half_yearly', $recurrence_type ); ?> />
 																<?php esc_html_e( 'Half- Yearly', 'mjschool' ); ?>
 															</label>
 														</div>
@@ -2965,7 +2899,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 										<select name="class_id" id="fees_class_list_id" class="form-control validate[required] load_fees_drop mjschool-max-width-100px mjschool_heights_47px">
 											<option value="all class" <?php selected( $classval, '' ); ?>> <?php esc_html_e( 'All Class', 'mjschool' ); ?> </option>
 											<?php if ( ! empty( $classval ) ) : ?>
-												<option value="<?php echo esc_attr( $classval ); ?>" selected> <?php echo esc_attr( mjschool_get_class_name_by_id( $classval ) ); ?> </option>
+												<option value="<?php echo esc_attr( $classval ); ?>" selected> <?php echo esc_html( mjschool_get_class_name_by_id( $classval ) ); ?> </option>
 											<?php endif; ?>
 										</select>
 									</div>
@@ -3120,7 +3054,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 									<div class="form-group input">
 										<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 											<div class="form-field">
-												<textarea name="description" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150"> <?php if ( $edit ) { echo esc_attr( $result->description ); } elseif ( isset( $_POST['description'] ) ) { echo esc_attr( sanitize_text_field(wp_unslash($_POST['description'])) ); } ?> </textarea>
+												<textarea name="description" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150"> <?php if ( $edit ) { echo esc_textarea( $result->description ); } elseif ( isset( $_POST['description'] ) ) { echo esc_textarea( sanitize_text_field(wp_unslash($_POST['description'])) ); } ?> </textarea>
 												<span class="mjschool-txt-title-label"></span>
 												<label class="text-area address active"> <?php esc_html_e( 'Description', 'mjschool' ); ?> </label>
 											</div>
@@ -3222,7 +3156,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 										<th><?php esc_html_e( 'Image', 'mjschool' ); ?></th>
 										<th><?php esc_html_e( 'Amount', 'mjschool' ); ?></th>
 										<th><?php esc_html_e( 'Payment Method', 'mjschool' ); ?></th>
-										<th><?php esc_html_e( 'Payment Date', 'mjschool' ); ?></th>
+										<th><?php esc_attr_e( 'Payment Date', 'mjschool' ); ?></th>
 										<th><?php esc_html_e( 'Transaction id', 'mjschool' ); ?></th>
 										<th><?php esc_html_e( 'Note', 'mjschool' ); ?></th>
 										<?php
@@ -3243,30 +3177,7 @@ $user_custom_field1        = $mjschool_custom_field_obj->mjschool_get_custom_fie
 									<?php
 									$i = 0;
 									foreach ( $retrieve_class_data as $retrieved_data ) {
-										if ( $i === 10 ) {
-											$i = 0;
-										}
-										if ( $i === 0 ) {
-											$color_class_css = 'mjschool-class-color0';
-										} elseif ( $i === 1 ) {
-											$color_class_css = 'mjschool-class-color1';
-										} elseif ( $i === 2 ) {
-											$color_class_css = 'mjschool-class-color2';
-										} elseif ( $i === 3 ) {
-											$color_class_css = 'mjschool-class-color3';
-										} elseif ( $i === 4 ) {
-											$color_class_css = 'mjschool-class-color4';
-										} elseif ( $i === 5 ) {
-											$color_class_css = 'mjschool-class-color5';
-										} elseif ( $i === 6 ) {
-											$color_class_css = 'mjschool-class-color6';
-										} elseif ( $i === 7 ) {
-											$color_class_css = 'mjschool-class-color7';
-										} elseif ( $i === 8 ) {
-											$color_class_css = 'mjschool-class-color8';
-										} elseif ( $i === 9 ) {
-											$color_class_css = 'mjschool-class-color9';
-										}
+										$color_class_css = mjschool_table_list_background_color( $i );
 										?>
 										<tr>
 											<td class="mjschool-checkbox-width-10px">

@@ -435,30 +435,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 														$i = 0;
 														foreach ( $retrieve_class_data as $retrieved_data ) {
 															$capacity = $obj_hostel->mjschool_remaining_bed_capacity( $retrieved_data->id );
-															if ( $i === 10 ) {
-																$i = 0;
-															}
-															if ( $i === 0 ) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ( $i === 1 ) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ( $i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ( $i === 3 ) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ( $i === 4 ) {
-																$color_class_css = 'mjschool-class-color4';
-															} elseif ( $i === 5 ) {
-																$color_class_css = 'mjschool-class-color5';
-															} elseif ( $i === 6 ) {
-																$color_class_css = 'mjschool-class-color6';
-															} elseif ( $i === 7 ) {
-																$color_class_css = 'mjschool-class-color7';
-															} elseif ( $i === 8 ) {
-																$color_class_css = 'mjschool-class-color8';
-															} elseif ( $i === 9 ) {
-																$color_class_css = 'mjschool-class-color9';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<tr>
 																<td class="mjschool-checkbox-width-10px">
@@ -878,27 +855,7 @@ $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQU
 														foreach ( $retrieve_class_data as $retrieved_data ) {
 															$student_id = $obj_hostel->mjschool_get_assign_bed_student_by_id( $retrieved_data->id );
 															$hostel_id  = $obj_hostel->mjschool_get_hostel_id_by_room_id( $retrieved_data->room_id );
-															if ( $a === 0 ) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ( $a === 1 ) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ( $a === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ( $a === 3 ) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ( $a === 4 ) {
-																$color_class_css = 'mjschool-class-color4';
-															} elseif ( $a === 5 ) {
-																$color_class_css = 'mjschool-class-color5';
-															} elseif ( $a === 6 ) {
-																$color_class_css = 'mjschool-class-color6';
-															} elseif ( $a === 7 ) {
-																$color_class_css = 'mjschool-class-color7';
-															} elseif ( $a === 8 ) {
-																$color_class_css = 'mjschool-class-color8';
-															} elseif ( $a === 9 ) {
-																$color_class_css = 'mjschool-class-color9';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															$hostel_id_param = isset( $_REQUEST['hostel_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) ) : '';
 															?>
 															<tr>

@@ -44,19 +44,19 @@ $active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'student_information_report
 					<?php $nonce = wp_create_nonce( 'mjschool_advance_student_infomation_tab' ); ?>
 					<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 						<li class="<?php if ( $active_tab === 'student_report' ) { ?>active<?php } ?>">
-							<a href="?page=mjschool_advance_report&tab=student_information_report&tab1=student_report&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'student_report' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_advance_report&tab=student_information_report&tab1=student_report&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'student_report' ? 'active' : ''; ?>">
 							<?php esc_html_e( 'Student Report', 'mjschool' ); ?></a>
 						</li>
 						<li class="<?php if ( $active_tab === 'admission_report' ) {?>active<?php } ?>">
-							<a href="?page=mjschool_advance_report&tab=student_information_report&tab1=admission_report&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'admission_report' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_advance_report&tab=student_information_report&tab1=admission_report&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'admission_report' ? 'active' : ''; ?>">
 							<?php esc_html_e( 'Admission Report', 'mjschool' ); ?></a>
 						</li>
 						<li class="<?php if ( $active_tab === 'exam_result_report' ) {?>active<?php } ?>">
-							<a href="?page=mjschool_advance_report&tab=student_information_report&tab1=exam_result_report&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'exam_result_report' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_advance_report&tab=student_information_report&tab1=exam_result_report&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'exam_result_report' ? 'active' : ''; ?>">
 							<?php esc_html_e( 'Exam Result Report', 'mjschool' ); ?></a>
 						</li>
 						<li class="<?php if ( $active_tab === 'teacher_perfomance_report' ) {?>active<?php } ?>">
-							<a href="?page=mjschool_advance_report&tab=student_information_report&tab1=teacher_perfomance_report&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'teacher_perfomance_report' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_advance_report&tab=student_information_report&tab1=teacher_perfomance_report&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'teacher_perfomance_report' ? 'active' : ''; ?>">
 							<?php esc_html_e( 'Teacher Perfomance Report', 'mjschool' ); ?></a>
 						</li>
 					</ul>
@@ -84,7 +84,7 @@ $active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'student_information_report
 					<?php $nonce = wp_create_nonce( 'mjschool_advance_finance_report_tab' ); ?>
 					<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 						<li class="<?php if ( $active_tab === 'fees_payment_datatable' ) {?>active<?php } ?>">
-							<a href="?page=mjschool_advance_report&tab=finance_report&tab1=fees_payment_datatable&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'fees_payment_datatable' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_advance_report&tab=finance_report&tab1=fees_payment_datatable&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'fees_payment_datatable' ? 'active' : ''; ?>">
 							<?php esc_html_e( 'Fees Payment Report', 'mjschool' ); ?></a>
 						</li>
 					</ul>
@@ -103,10 +103,10 @@ $active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'student_information_report
 					<?php $nonce = wp_create_nonce( 'mjschool_advance_attendance_report_tab' ); ?>
 					<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 						<li class="<?php if ( $active_tab === 'attendance_report' ) {?>active<?php } ?>">
-							<a href="?page=mjschool_advance_report&tab=student_attendance_report&tab1=attendance_report&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'attendance_report' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_advance_report&tab=student_attendance_report&tab1=attendance_report&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'attendance_report' ? 'active' : ''; ?>">
 							<?php esc_html_e( 'Attendance Report', 'mjschool' ); ?></a>
 						</li>
-						<li class="<?php if ( $active_tab === 'leave_report' ) {?>active<?php } ?>"><a href="?page=mjschool_advance_report&tab=student_attendance_report&tab1=leave_report&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'leave_report' ? 'active' : ''; ?>">
+						<li class="<?php if ( $active_tab === 'leave_report' ) {?>active<?php } ?>"><a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_advance_report&tab=student_attendance_report&tab1=leave_report&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'leave_report' ? 'active' : ''; ?>">
 							<?php esc_html_e( 'Leave Report', 'mjschool' ); ?></a>
 						</li>
 					</ul>

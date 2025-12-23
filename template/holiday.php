@@ -46,11 +46,11 @@ if ( isset( $_REQUEST['page'] ) ) {
 $custom_field_obj  = new Mjschool_Custome_Field();
 $module            = 'holiday';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
-$tablename         = 'mjschool_holiday';
+$table_mjschool_holiday         = 'mjschool_holiday';
 // --------------------- Delete holiday. --------------//
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
-		$result = mjschool_delete_holiday( $tablename, intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['holiday_id'] ) ) ) ) );
+		$result = mjschool_delete_holiday( $table_mjschool_holiday, intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['holiday_id'] ) ) ) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=holiday&tab=holidaylist&message=3' ) );
 			exit;
@@ -60,9 +60,12 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 	}
 }
 if ( isset( $_REQUEST['delete_selected'] ) ) {
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'save_holiday_admin_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = mjschool_delete_holiday( $tablename, intval( $id ) );
+			$result = mjschool_delete_holiday( $table_mjschool_holiday, intval( $id ) );
 		}
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=holiday&tab=holidaylist&message=3' ) );
 		exit;
@@ -93,12 +96,12 @@ if ( isset( $_POST['save_holiday'] ) ) {
 				'status'        => 1,
 			);
 			// Table name without prefix.
-			$tablename = 'mjschool_holiday';
+			$table_mjschool_holiday = 'mjschool_holiday';
 			if ( isset($_REQUEST['action']) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 				if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
 					$holiday_ids = array( 'holiday_id' => intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['holiday_id'] ) ) ) ) );
 					$holiday_id  = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['holiday_id'])) ) );
-					$result              = mjschool_update_record( $tablename, $haliday_data, $holiday_ids );
+					$result              = mjschool_update_record( $table_mjschool_holiday, $haliday_data, $holiday_ids );
 					$custom_field_obj    = new Mjschool_Custome_Field();
 					$module              = 'holiday';
 					$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $holiday_id );
@@ -124,7 +127,7 @@ if ( isset( $_POST['save_holiday'] ) ) {
 					$device_token[] = get_user_meta( $usr->ID, 'token_id', true );
 					$to[] = $usr->user_email;
 				}
-				$result                 = mjschool_insert_record( $tablename, $haliday_data );
+				$result                 = mjschool_insert_record( $table_mjschool_holiday, $haliday_data );
 				$custom_field_obj       = new Mjschool_Custome_Field();
 				$module             = 'holiday';
 				$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
@@ -257,30 +260,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 								<?php
 								$i = 0;
 								foreach ( $retrieve_class_data as $retrieved_data ) {
-									if ( $i === 10 ) {
-										$i = 0;
-									}
-									if ( $i === 0 ) {
-										$color_class_css = 'mjschool-class-color0';
-									} elseif ( $i === 1 ) {
-										$color_class_css = 'mjschool-class-color1';
-									} elseif ( $i === 2 ) {
-										$color_class_css = 'mjschool-class-color2';
-									} elseif ( $i === 3 ) {
-										$color_class_css = 'mjschool-class-color3';
-									} elseif ( $i === 4 ) {
-										$color_class_css = 'mjschool-class-color4';
-									} elseif ( $i === 5 ) {
-										$color_class_css = 'mjschool-class-color5';
-									} elseif ( $i === 6 ) {
-										$color_class_css = 'mjschool-class-color6';
-									} elseif ( $i === 7 ) {
-										$color_class_css = 'mjschool-class-color7';
-									} elseif ( $i === 8 ) {
-										$color_class_css = 'mjschool-class-color8';
-									} elseif ( $i === 9 ) {
-										$color_class_css = 'mjschool-class-color9';
-									}
+									$color_class_css = mjschool_table_list_background_color( $i );
 									if ( $retrieved_data->status === '0' || $retrieved_data->created_by === get_current_user_id() ) {
 										?>
 										<tr>

@@ -559,30 +559,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 								foreach ( $attendance_list as $retrieved_data ) {
 									$class_section_sub_name = mjschool_get_class_section_subject( $retrieved_data->class_id, $retrieved_data->section_id, $retrieved_data->sub_id );
 									$created_by             = get_userdata( $retrieved_data->attend_by );
-									if ( $i === 10 ) {
-										$i = 0;
-									}
-									if ( $i === 0 ) {
-										$color_class_css = 'mjschool-class-color0';
-									} elseif ( $i === 1 ) {
-										$color_class_css = 'mjschool-class-color1';
-									} elseif ( $i === 2 ) {
-										$color_class_css = 'mjschool-class-color2';
-									} elseif ( $i === 3 ) {
-										$color_class_css = 'mjschool-class-color3';
-									} elseif ( $i === 4 ) {
-										$color_class_css = 'mjschool-class-color4';
-									} elseif ( $i === 5 ) {
-										$color_class_css = 'mjschool-class-color5';
-									} elseif ( $i === 6 ) {
-										$color_class_css = 'mjschool-class-color6';
-									} elseif ( $i === 7 ) {
-										$color_class_css = 'mjschool-class-color7';
-									} elseif ( $i === 8 ) {
-										$color_class_css = 'mjschool-class-color8';
-									} elseif ( $i === 9 ) {
-										$color_class_css = 'mjschool-class-color9';
-									}
+									$color_class_css = mjschool_table_list_background_color( $i );
 									?>
 									<tr>
 										<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -722,30 +699,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 							$srno = 1;
 							if ( ! empty( $attendance_list ) ) {
 								foreach ( $attendance_list as $retrieved_data ) {
-									if ( $i === 10 ) {
-										$i = 0;
-									}
-									if ( $i === 0 ) {
-										$color_class_css = 'mjschool-class-color0';
-									} elseif ( $i === 1 ) {
-										$color_class_css = 'mjschool-class-color1';
-									} elseif ( $i === 2 ) {
-										$color_class_css = 'mjschool-class-color2';
-									} elseif ( $i === 3 ) {
-										$color_class_css = 'mjschool-class-color3';
-									} elseif ( $i === 4 ) {
-										$color_class_css = 'mjschool-class-color4';
-									} elseif ( $i === 5 ) {
-										$color_class_css = 'mjschool-class-color5';
-									} elseif ( $i === 6 ) {
-										$color_class_css = 'mjschool-class-color6';
-									} elseif ( $i === 7 ) {
-										$color_class_css = 'mjschool-class-color7';
-									} elseif ( $i === 8 ) {
-										$color_class_css = 'mjschool-class-color8';
-									} elseif ( $i === 9 ) {
-										$color_class_css = 'mjschool-class-color9';
-									}
+									$color_class_css = mjschool_table_list_background_color( $i );
 									?>
 									<tr>
 										<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -830,6 +784,11 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 				wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 			}
 		}
+		if ( isset( $_POST['date_type'] ) ) {
+	        $date_type_value = sanitize_text_field(wp_unslash($_POST['date_type']));
+		} else {
+			$date_type_value = 'this_month';
+		}
 		?>
 		<form method="post" id="attendance_list" class="attendance_list">
 			<input type="hidden" name="security" id="mjschool_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_attendance_list_nonce' ) ); ?>">
@@ -838,19 +797,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 					<div class="col-md-3 mb-3 input">
 						<label class="ml-1 mjschool-custom-top-label top" for="date_type"><?php esc_html_e( 'Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						<?php $date_type = isset( $_POST['date_type'] ) ? sanitize_text_field( wp_unslash( $_POST['date_type'] ) ) : ''; ?>
-						<select class="mjschool-line-height-30px form-control date_type validate[required]" id="date_type" name="date_type" autocomplete="off">
-							<option value="today" <?php selected( $date_type, 'today' ); ?>><?php esc_html_e( 'Today', 'mjschool' ); ?></option>
-							<option value="this_week" <?php selected( $date_type, 'this_week' ); ?>><?php esc_html_e( 'This Week', 'mjschool' ); ?></option>
-							<option value="last_week" <?php selected( $date_type, 'last_week' ); ?>><?php esc_html_e( 'Last Week', 'mjschool' ); ?></option>
-							<option value="this_month" <?php selected( $date_type, 'this_month' ); ?>><?php esc_html_e( 'This Month', 'mjschool' ); ?></option>
-							<option value="last_month" <?php selected( $date_type, 'last_month' ); ?>><?php esc_html_e( 'Last Month', 'mjschool' ); ?></option>
-							<option value="last_3_month" <?php selected( $date_type, 'last_3_month' ); ?>><?php esc_html_e( 'Last 3 Months', 'mjschool' ); ?></option>
-							<option value="last_6_month" <?php selected( $date_type, 'last_6_month' ); ?>><?php esc_html_e( 'Last 6 Months', 'mjschool' ); ?></option>
-							<option value="last_12_month" <?php selected( $date_type, 'last_12_month' ); ?>><?php esc_html_e( 'Last 12 Months', 'mjschool' ); ?></option>
-							<option value="this_year" <?php selected( $date_type, 'this_year' ); ?>><?php esc_html_e( 'This Year', 'mjschool' ); ?></option>
-							<option value="last_year" <?php selected( $date_type, 'last_year' ); ?>><?php esc_html_e( 'Last Year', 'mjschool' ); ?></option>
-							<option value="period" <?php selected( $date_type, 'period' ); ?>><?php esc_html_e( 'Period', 'mjschool' ); ?></option>
-						</select>
+						<?php mjschool_date_filter_dropdown( $date_type_value ); ?>
 					</div>
 					<div class="col-sm-12 col-md-3 col-lg-3 col-xl-3 input">
 						<label class="ml-1 mjschool-custom-top-label top" for="mjschool-attendance-class-list-id"><?php esc_html_e( 'Select Class', 'mjschool' ); ?></label>
@@ -1048,7 +995,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 													esc_html_e( 'N/A', 'mjschool' );
 												}
 												?>
-												<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php echo esc_html( $retrieved_data->comment ); ?>"></i>
+												<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php echo esc_attr( $retrieved_data->comment ); ?>"></i>
 											</td>
 										</tr>
 										<?php
@@ -1825,30 +1772,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 							$srno = 1;
 							if ( ! empty( $attendance_list ) ) {
 								foreach ( $attendance_list as $retrieved_data ) {
-									if ( $i === 10 ) {
-										$i = 0;
-									}
-									if ( $i === 0 ) {
-										$color_class_css = 'mjschool-class-color0';
-									} elseif ( $i === 1 ) {
-										$color_class_css = 'mjschool-class-color1';
-									} elseif ( $i === 2 ) {
-										$color_class_css = 'mjschool-class-color2';
-									} elseif ( $i === 3 ) {
-										$color_class_css = 'mjschool-class-color3';
-									} elseif ( $i === 4 ) {
-										$color_class_css = 'mjschool-class-color4';
-									} elseif ( $i === 5 ) {
-										$color_class_css = 'mjschool-class-color5';
-									} elseif ( $i === 6 ) {
-										$color_class_css = 'mjschool-class-color6';
-									} elseif ( $i === 7 ) {
-										$color_class_css = 'mjschool-class-color7';
-									} elseif ( $i === 8 ) {
-										$color_class_css = 'mjschool-class-color8';
-									} elseif ( $i === 9 ) {
-										$color_class_css = 'mjschool-class-color9';
-									}
+									$color_class_css = mjschool_table_list_background_color( $i );
 									?>
 									<tr>
 										<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -1948,6 +1872,11 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 				wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 			}
 		}
+		if ( isset( $_POST['date_type'] ) ) {
+			$date_type_value = sanitize_text_field(wp_unslash($_POST['date_type']));
+		} else {
+			$date_type_value = 'this_month';
+		}
 		?>
 		<form method="post" id="attendance_list" class="attendance_list">
 			<input type="hidden" name="security" id="mjschool_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_teacher_attendance_list_nonce' ) ); ?>">
@@ -1956,19 +1885,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 					<div class="col-md-3 mb-3 input">
 						<label class="ml-1 mjschool-custom-top-label top" for="date_type"><?php esc_html_e( 'Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						<?php $date_type = isset( $_POST['date_type'] ) ? $_POST['date_type'] : ''; ?>
-						<select class="mjschool-line-height-30px form-control date_type validate[required]" id="date_type" name="date_type" autocomplete="off">
-							<option value="today" <?php selected( $date_type, 'today' ); ?>><?php esc_html_e( 'Today', 'mjschool' ); ?></option>
-							<option value="this_week" <?php selected( $date_type, 'this_week' ); ?>><?php esc_html_e( 'This Week', 'mjschool' ); ?></option>
-							<option value="last_week" <?php selected( $date_type, 'last_week' ); ?>><?php esc_html_e( 'Last Week', 'mjschool' ); ?></option>
-							<option value="this_month" <?php selected( $date_type, 'this_month' ); ?>><?php esc_html_e( 'This Month', 'mjschool' ); ?></option>
-							<option value="last_month" <?php selected( $date_type, 'last_month' ); ?>><?php esc_html_e( 'Last Month', 'mjschool' ); ?></option>
-							<option value="last_3_month" <?php selected( $date_type, 'last_3_month' ); ?>><?php esc_html_e( 'Last 3 Months', 'mjschool' ); ?></option>
-							<option value="last_6_month" <?php selected( $date_type, 'last_6_month' ); ?>><?php esc_html_e( 'Last 6 Months', 'mjschool' ); ?></option>
-							<option value="last_12_month" <?php selected( $date_type, 'last_12_month' ); ?>><?php esc_html_e( 'Last 12 Months', 'mjschool' ); ?></option>
-							<option value="this_year" <?php selected( $date_type, 'this_year' ); ?>><?php esc_html_e( 'This Year', 'mjschool' ); ?></option>
-							<option value="last_year" <?php selected( $date_type, 'last_year' ); ?>><?php esc_html_e( 'Last Year', 'mjschool' ); ?></option>
-							<option value="period" <?php selected( $date_type, 'period' ); ?>><?php esc_html_e( 'Period', 'mjschool' ); ?></option>
-						</select>
+						<?php mjschool_date_filter_dropdown( $date_type_value ); ?>
 					</div>
 					<div class="col-sm-12 col-md-3 col-lg-3 col-xl-3 input">
 						<?php
@@ -2228,30 +2145,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 							$srno = 1;
 							if ( ! empty( $attendance_list ) ) {
 								foreach ( $attendance_list as $retrieved_data ) {
-									if ( $i === 10 ) {
-										$i = 0;
-									}
-									if ( $i === 0 ) {
-										$color_class_css = 'mjschool-class-color0';
-									} elseif ( $i === 1 ) {
-										$color_class_css = 'mjschool-class-color1';
-									} elseif ( $i === 2 ) {
-										$color_class_css = 'mjschool-class-color2';
-									} elseif ( $i === 3 ) {
-										$color_class_css = 'mjschool-class-color3';
-									} elseif ( $i === 4 ) {
-										$color_class_css = 'mjschool-class-color4';
-									} elseif ( $i === 5 ) {
-										$color_class_css = 'mjschool-class-color5';
-									} elseif ( $i === 6 ) {
-										$color_class_css = 'mjschool-class-color6';
-									} elseif ( $i === 7 ) {
-										$color_class_css = 'mjschool-class-color7';
-									} elseif ( $i === 8 ) {
-										$color_class_css = 'mjschool-class-color8';
-									} elseif ( $i === 9 ) {
-										$color_class_css = 'mjschool-class-color9';
-									}
+									$color_class_css = mjschool_table_list_background_color( $i );
 									?>
 									<tr>
 										<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">

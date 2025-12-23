@@ -40,19 +40,7 @@ if ( isset( $_GET['tab'] ) ) {
 		<div class="row">
 			<div class="col-md-3 mb-3 input">
 				<label class="ml-1 mjschool-custom-top-label top" for="date_type"><?php esc_html_e( 'Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
-				<select class="mjschool-line-height-30px form-control date_type validate[required]" id="date_type" name="date_type" autocomplete="off">
-					<option <?php selected( $date_type_value, 'today' ); ?> value="today"><?php esc_html_e( 'Today', 'mjschool' ); ?></option>
-					<option value="this_week" <?php selected( $date_type_value, 'this_week' ); ?>><?php esc_html_e( 'This Week', 'mjschool' ); ?></option>
-					<option <?php selected( $date_type_value, 'last_week' ); ?> value="last_week"><?php esc_html_e( 'Last Week', 'mjschool' ); ?></option>
-					<option value="this_month" <?php selected( $date_type_value, 'this_month' ); ?>><?php esc_html_e( 'This Month', 'mjschool' ); ?></option>
-					<option value="last_month" <?php selected( $date_type_value, 'last_month' ); ?>><?php esc_html_e( 'Last Month', 'mjschool' ); ?></option>
-					<option value="last_3_month" <?php selected( $date_type_value, 'last_3_month' ); ?>><?php esc_html_e( 'Last 3 Months', 'mjschool' ); ?></option>
-					<option value="last_6_month" <?php selected( $date_type_value, 'last_6_month' ); ?>><?php esc_html_e( 'Last 6 Months', 'mjschool' ); ?></option>
-					<option value="last_12_month" <?php selected( $date_type_value, 'last_12_month' ); ?>><?php esc_html_e( 'Last 12 Months', 'mjschool' ); ?></option>
-					<option value="this_year" <?php selected( $date_type_value, 'this_year' ); ?>><?php esc_html_e( 'This Year', 'mjschool' ); ?></option>
-					<option value="last_year" <?php selected( $date_type_value, 'last_year' ); ?>><?php esc_html_e( 'Last Year', 'mjschool' ); ?></option>
-					<option value="period" <?php selected( $date_type_value, 'period' ); ?>><?php esc_html_e( 'Period', 'mjschool' ); ?></option>
-				</select>
+				<?php mjschool_date_filter_dropdown( $date_type_value ); ?>
 			</div>
 			<div class="col-sm-12 col-md-3 col-lg-3 col-xl-3 input">
 				<label class="ml-1 mjschool-custom-top-label top" for="mjschool-attendance-class-list-id"><?php esc_html_e( 'Select Class', 'mjschool' ); ?></label>
@@ -178,7 +166,7 @@ if ( ! empty( $attendence_data ) ) {
 								<tr>
 									<td class="mjschool-checkbox-width-10px"><input type="checkbox" class="mjschool-sub-chk select-checkbox" name="id[]" value="<?php echo esc_attr( $retrieved_data->attendance_id ); ?>"></td>
 									<td class="mjschool-user-image mjschool-width-50px-td">
-										<a href="<?php echo esc_url( '?page=mjschool_student&tab=view_student&action=view_student&student_id=' . mjschool_encrypt_id( $member_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ); ?>">
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&tab=view_student&action=view_student&student_id=' . rawurlencode( mjschool_encrypt_id( $member_data->ID ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>">
 											<?php
 											$umetadata = mjschool_get_user_image( $member_data->ID );
                                              
@@ -192,7 +180,7 @@ if ( ! empty( $attendence_data ) ) {
 										</a>
 									</td>
 									<td class="name">
-										<a href="<?php echo esc_url( '?page=mjschool_student&tab=view_student&action=view_student&student_id=' . mjschool_encrypt_id( $member_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ); ?>">
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&tab=view_student&action=view_student&student_id=' . rawurlencode( mjschool_encrypt_id( $member_data->ID ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>">
 											<?php
 											if ( ! empty( $member_data->ID ) ) {
 												echo esc_html( mjschool_student_display_name_with_roll( $member_data->ID ) );

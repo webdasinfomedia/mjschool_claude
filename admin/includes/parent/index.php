@@ -625,7 +625,7 @@ if ( isset( $_REQUEST['upload_parent_csv_file'] ) ) {
 																<input type="checkbox" class="mjschool-sub-chk mjschool-selected-parent select-checkbox" name="id[]" value="<?php echo esc_attr( $retrieved_data->ID ); ?>">
 															</td>
 															<td class="mjschool-user-image mjschool-width-50px-td">
-																<a class="mjschool-color-black" href="?page=mjschool_parent&tab=view_parent&action=view_parent&parent_id=<?php echo esc_attr( $parent_id ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>">
+																<a class="mjschool-color-black" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent&tab=view_parent&action=view_parent&parent_id='.rawurlencode( $parent_id ) .'&_wpnonce='.rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>">
 																	<?php
 																	$umetadata = mjschool_get_user_image( $uid );
 																	if ( empty( $umetadata ) ) {
@@ -637,7 +637,7 @@ if ( isset( $_REQUEST['upload_parent_csv_file'] ) ) {
 																</a>
 															</td>
 															<td class="name">
-																<a class="mjschool-color-black" href="?page=mjschool_parent&tab=view_parent&action=view_parent&parent_id=<?php echo esc_attr( $parent_id ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>">
+																<a class="mjschool-color-black" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent&tab=view_parent&action=view_parent&parent_id='.rawurlencode( $parent_id ) .'&_wpnonce='.rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>">
 																	<?php echo esc_html( mjschool_get_parent_name_by_id( $retrieved_data->ID ) ); ?>
 																</a>
 																<br>
@@ -714,20 +714,20 @@ if ( isset( $_REQUEST['upload_parent_csv_file'] ) ) {
 																			</a>
 																			<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																				<li class="mjschool-float-left-width-100px">
-																					<a href="?page=mjschool_parent&tab=view_parent&action=view_parent&parent_id=<?php echo esc_attr( $parent_id ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-eye"></i><?php esc_html_e( 'View', 'mjschool' ); ?></a>
+																					<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent&tab=view_parent&action=view_parent&parent_id='.rawurlencode( $parent_id ) .'&_wpnonce='.rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-eye"></i><?php esc_html_e( 'View', 'mjschool' ); ?></a>
 																				</li>
 																				<?php
 																				if ( $user_access_edit === '1' ) {
 																					?>
 																					<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
-																						<a href="?page=mjschool_parent&tab=addparent&action=edit&parent_id=<?php echo esc_attr( $parent_id ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent&tab=addparent&action=edit&parent_id='.rawurlencode( $parent_id ) .'&_wpnonce='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																					</li>
 																					<?php
 																				}
 																				if ( $user_access_delete === '1' ) {
 																					?>
 																					<li class="mjschool-float-left-width-100px">
-																						<a href="?page=mjschool_parent&tab=parentlist&action=delete&parent_id=<?php echo esc_attr( $parent_id ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_attr_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fa fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
+																						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent&tab=parentlist&action=delete&parent_id='.rawurlencode( $parent_id ) .'&_wpnonce='.rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_attr_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fa fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
 																					</li>
 																					<?php
 																				}

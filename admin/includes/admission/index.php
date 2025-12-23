@@ -21,9 +21,7 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_edit   = '1';
 	$user_access_delete = '1';
 	$user_access_view   = '1';
-}
-else
-{
+} else {
 	$user_access        = mjschool_get_user_role_wise_filter_access_right_array( 'admission' );
 	$user_access_add    = $user_access['add'];
 	$user_access_edit   = $user_access['edit'];
@@ -161,7 +159,7 @@ if ( isset( $_POST['active_user_admission'] ) ) {
 						mjschool_send_mail( $email_parent, $MsgSubject, $message );
 					}
 				}
-				if ( ( ! empty( $user_info->mother_email ) ) and ( ! empty( $user_info->mother_first_name ) ) ) {
+			if ( ( ! empty( $user_info->mother_email ) ) && ( ! empty( $user_info->mother_first_name ) ) ) {
 					$string_parent                     = array();
 					$string_parent['{{parent_name}}']  = $user_info->mother_first_name . ' ' . $user_info->mother_middle_name . ' ' . $user_info->mother_last_name;
 					$string_parent['{{student_name}}'] = $user_info->display_name;
@@ -581,7 +579,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 															<tr>
 																<td class="mjschool-checkbox-width-10px"><input type="checkbox" name="id[]" class="mjschool-sub-chk selected_admission select-checkbox" value="<?php echo esc_attr( $retrieved_data->ID ); ?>"> </td>
 																<td class="mjschool-user-image mjschool-width-50px-td">
-																	<a href="<?php echo esc_url( '?page=mjschool_admission&tab=view_admission&action=view_admission&id=' . esc_attr( $admission_id ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'view_action' ) ) ); ?>">
+																	<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission&tab=view_admission&action=view_admission&id=' . rawurlencode( $admission_id ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>">
 																		<?php
 																		$uid       = $retrieved_data->ID;
 																		$umetadata = mjschool_get_user_image( $uid );
@@ -598,7 +596,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																	</a>
 																</td>
 																<td class="name">
-																	<a class="mjschool-color-black" href="<?php echo esc_url( '?page=mjschool_admission&tab=view_admission&action=view_admission&id=' . esc_attr( $admission_id ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'view_action' ) ) ); ?>">
+																	<a class="mjschool-color-black" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission&tab=view_admission&action=view_admission&id=' .rawurlencode( $admission_id ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>">
 																		<?php echo esc_attr( $retrieved_data->display_name ); ?>
 																	</a>
 																	<br>
@@ -704,7 +702,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																				</a>
 																				<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																					<li class="mjschool-float-left-width-100px">
-																						<a href="<?php echo esc_url( '?page=mjschool_admission&tab=view_admission&action=view_admission&id=' . esc_attr( $admission_id ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'view_action' ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-eye"> </i>
+																						<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission&tab=view_admission&action=view_admission&id=' . rawurlencode( $admission_id ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-eye"> </i>
 																							<?php esc_html_e( 'View', 'mjschool' ); ?>
 																						</a>
 																					</li>
@@ -713,7 +711,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																						?>
 																						<li class="mjschool-float-left-width-100px">
 																							
-																							<a href="<?php echo esc_url( '?page=mjschool_admission&tab=admission_list&action=approve&id=' . esc_attr( $retrieved_data->ID ) ); ?>" class="mjschool-float-left-width-100px show-admission-popup " student_id="<?php echo esc_attr( $retrieved_data->ID ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-admission-approve.png"); ?>" class="mjschool_height_15px">&nbsp;&nbsp;&nbsp;<?php esc_html_e( 'Approve', 'mjschool' ); ?></a>
+																							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission&tab=admission_list&action=approve&id=' . rawurlencode( $retrieved_data->ID ) ) ); ?>" class="mjschool-float-left-width-100px show-admission-popup " student_id="<?php echo esc_attr( $retrieved_data->ID ); ?>"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-admission-approve.png"); ?>" class="mjschool_height_15px">&nbsp;&nbsp;&nbsp;<?php esc_html_e( 'Approve', 'mjschool' ); ?></a>
 																							
 																						</li>
 																						<?php
@@ -721,7 +719,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																					if ( $user_access_edit === '1' ) {
 																						?>
 																						<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																							<a href="<?php echo esc_url( '?page=mjschool_admission&tab=mjschool-admission-form&action=edit&id=' . esc_attr( $admission_id ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"> </i>
+																							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission&tab=mjschool-admission-form&action=edit&id=' . rawurlencode( $admission_id ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"> </i>
 																								<?php esc_html_e( 'Edit', 'mjschool' ); ?>
 																							</a>
 																						</li>
@@ -730,7 +728,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																					if ( $user_access_delete === '1' ) {
 																						?>
 																						<li class="mjschool-float-left-width-100px">
-																							<a href="<?php echo esc_url( '?page=mjschool_admission&tab=studentlist&action=delete&admission_id=' . esc_attr( $admission_id ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'delete_action' ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
+																							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission&tab=studentlist&action=delete&admission_id=' . rawurlencode( $admission_id ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
 																								<i class="fas fa-trash"></i>
 																								<?php esc_html_e( 'Delete', 'mjschool' ); ?>
 																							</a>

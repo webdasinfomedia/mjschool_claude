@@ -22,7 +22,6 @@
 
 defined( 'ABSPATH' ) || exit;
 // -------- Check browser javascript. ----------//
-// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 mjschool_browser_javascript_check();
 $mjschool_role         = mjschool_get_user_role( get_current_user_id() );
 $obj_document = new Mjschool_Document();
@@ -81,7 +80,7 @@ if ( isset( $_POST['create_exprience_latter'] ) || isset( $_POST['save_and_print
 
 		$certificate_id = isset( $_POST['certificate_id'] ) ? intval( $_POST['certificate_id'] ) : 0;
 
-		$latter_id = $wpdb->insert_id;
+		$latter_id = $result;
 
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=certificate&tab=assign_list&message=cret_crt' ) );

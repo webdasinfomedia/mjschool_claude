@@ -3554,6 +3554,9 @@ span.mjschool-multiselect-label label
 .mjschool_width_100px{
 	width: 100%;
 }
+.mjschool-width-13per{
+	width: 13%;
+}
 .mjschool_border_2px_width_96{
 	border: 2px solid; 
 	margin-bottom:8px; 
@@ -4365,4 +4368,111 @@ span.mjschool-multiselect-label label
 }
 .mjschool_print_boder_2px_margin_float_left{
 	border: 2px solid; width:100%; float: left; padding: 15px 10px; overflow: hidden;margin-top: 10px;
+}
+/* Hall Ticket Print pdf css. */
+.mjschool-width-print-hall {
+    width: 100% !important;
+}
+.mjschool-hall-stud-details,
+.mjschool-header-hall,
+span.sign {
+	font-family: Poppins;
+	font-size: 12px;
+	color: #444;
+}
+.borderpx {
+	border: 2px solid #97C4E7;
+}
+.count td,
+.count th {
+	padding-left: 10px;
+	height: 40px;
+}
+.resultdate {
+	float: left;
+	width: 200px;
+	padding-top: 100px;
+	text-align: center;
+}
+.mjschool-th-margin-hall {
+	padding-left: 0px !important;
+}
+.signature {
+	float: right;
+	width: 200px;
+	padding-top: 55px;
+	text-align: center;
+}
+.exam_receipt_print {
+	width: 100%;
+	margin: 0 auto;
+}
+.mjschool-width-print {
+	width: 94% !important;
+}
+.header_logo {
+	float: left;
+	width: 100%;
+	text-align: center;
+}
+.font_22 {
+	font-size: 22px;
+}
+.mjschool-Examination-header {
+	float: left;
+	width: 100%;
+	font-size: 18px;
+	text-align: center;
+	padding-bottom: 20px;
+}
+.mjschool-Examination-header-color {
+	color: #970606;
+}
+.mjschool-float-width-hall {
+	float: left;
+	width: 100%;
+}
+.mjschool-padding-top-20 {
+	padding-top: 20px;
+}
+.mjschool-img-td {
+	text-align: center;
+	border-right: 2px solid #97C4E7;
+}
+.mjschool-border-bottom {
+	border-bottom: 2px solid #97C4E7;
+}
+.mjschool-border-bottom-0 {
+	border-bottom: 0px;
+}
+.mjschool-border-bottom-rigth {
+	border-bottom: 2px solid #97C4E7;
+	border-right: 2px solid #97C4E7;
+}
+.mjschool-border-rigth {
+	border-right: 2px solid #97C4E7;
+}
+.mjschool-main-td {
+	text-align: center;
+	border-bottom: 2px solid #97C4E7;
+}
+.hr_color {
+	color: #97C4E7;
+}
+.header_color {
+	color: #204759;
+}
+.max_height_100 {
+	max-height: 100px;
+}
+.mjschool-width-100px-margin-right-15px{
+	width:100px;
+	margin-right:15px;
+}
+.mjschool-bottom-none{
+	border-bottom: none;
+}
+.mjschool-border-2px-solid{
+	border-top: 2px solid #97C4E7 !important; 
+	border:none;
 }

@@ -58,30 +58,7 @@ if ($active_tab === 'assign_list' ) {
                             <?php
                             $i = 0;
                             foreach ($retrieve_class_data as $retrieved_data) {
-                                if ($i === 10) {
-                                    $i = 0;
-                                }
-                                if ($i === 0) {
-                                    $color_class_css = 'mjschool-class-color0';
-                                } elseif ($i === 1) {
-                                    $color_class_css = 'mjschool-class-color1';
-                                } elseif ($i === 2 ) {
-                                    $color_class_css = 'mjschool-class-color2';
-                                } elseif ($i === 3) {
-                                    $color_class_css = 'mjschool-class-color3';
-                                } elseif ($i === 4) {
-                                    $color_class_css = 'mjschool-class-color4';
-                                } elseif ($i === 5) {
-                                    $color_class_css = 'mjschool-class-color5';
-                                } elseif ($i === 6) {
-                                    $color_class_css = 'mjschool-class-color6';
-                                } elseif ($i === 7) {
-                                    $color_class_css = 'mjschool-class-color7';
-                                } elseif ($i === 8) {
-                                    $color_class_css = 'mjschool-class-color8';
-                                } elseif ($i === 9) {
-                                    $color_class_css = 'mjschool-class-color9';
-                                }
+                                $color_class_css = mjschool_table_list_background_color( $i );
 								?>
 								<tr>
 									<td class="mjschool-checkbox-width-10px">
@@ -120,7 +97,7 @@ if ($active_tab === 'assign_list' ) {
 														if ($user_access_edit === '1' ) {
 															?>
 															<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																<a href="<?php echo esc_url( '?page=mjschool_certificate&tab=assign_certificate&action=edit&acc=' . mjschool_encrypt_id($retrieved_data->id ) . '&certificate_type=' . $retrieved_data->certificate_type . '&student_id=' . mjschool_encrypt_id($retrieved_data->student_id ) . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px">
+																<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_certificate&tab=assign_certificate&action=edit&acc=' . rawurlencode( mjschool_encrypt_id($retrieved_data->id ) ) . '&certificate_type=' . $retrieved_data->certificate_type . '&student_id=' . rawurlencode( mjschool_encrypt_id($retrieved_data->student_id ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px">
 																	<i class="fas fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?>
 																</a>
 															</li>

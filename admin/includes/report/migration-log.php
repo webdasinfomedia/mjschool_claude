@@ -26,9 +26,9 @@ if ( isset( $_GET['tab'] ) ) {
 }
 
 if ( isset( $_POST['date_type'] ) ) {
-	$selected_value = $_POST['date_type'];
+	$date_type_value = sanitize_text_field(wp_unslash($_POST['date_type']));
 } else {
-	$selected_value = 'this_month';
+	$date_type_value = 'this_month';
 }
 function mjschool_is_selected( $value, $selected_value ) {
 	return $value === $selected_value ? 'selected' : '';
@@ -41,20 +41,7 @@ function mjschool_is_selected( $value, $selected_value ) {
 				<div class="row">
 					<div class="col-md-6 mb-6 input">
 						<label class="ml-1 mjschool-custom-top-label top" for="date_type"><?php esc_html_e( 'Date Type', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
-						<select class="mjschool-line-height-30px form-control date_type validate[required]" id="date_type" name="date_type" autocomplete="off">
-							<option value=""><?php esc_html_e( 'Select', 'mjschool' ); ?></option>
-							<option value="today" <?php echo esc_attr( mjschool_is_selected( 'today', $selected_value ) ); ?>><?php esc_html_e( 'Today', 'mjschool' ); ?></option>
-							<option value="this_week" <?php echo esc_attr( mjschool_is_selected( 'this_week', $selected_value ) ); ?>><?php esc_html_e( 'This Week', 'mjschool' ); ?></option>
-							<option value="last_week" <?php echo esc_attr( mjschool_is_selected( 'last_week', $selected_value ) ); ?>><?php esc_html_e( 'Last Week', 'mjschool' ); ?></option>
-							<option value="this_month" <?php echo esc_attr( mjschool_is_selected( 'this_month', $selected_value ) ); ?>><?php esc_html_e( 'This Month', 'mjschool' ); ?></option>
-							<option value="last_month" <?php echo esc_attr( mjschool_is_selected( 'last_month', $selected_value ) ); ?>><?php esc_html_e( 'Last Month', 'mjschool' ); ?></option>
-							<option value="last_3_month" <?php echo esc_attr( mjschool_is_selected( 'last_3_month', $selected_value ) ); ?>><?php esc_html_e( 'Last 3 Months', 'mjschool' ); ?></option>
-							<option value="last_6_month" <?php echo esc_attr( mjschool_is_selected( 'last_6_month', $selected_value ) ); ?>><?php esc_html_e( 'Last 6 Months', 'mjschool' ); ?></option>
-							<option value="last_12_month" <?php echo esc_attr( mjschool_is_selected( 'last_12_month', $selected_value ) ); ?>><?php esc_html_e( 'Last 12 Months', 'mjschool' ); ?></option>
-							<option value="this_year" <?php echo esc_attr( mjschool_is_selected( 'this_year', $selected_value ) ); ?>><?php esc_html_e( 'This Year', 'mjschool' ); ?></option>
-							<option value="last_year" <?php echo esc_attr( mjschool_is_selected( 'last_year', $selected_value ) ); ?>><?php esc_html_e( 'Last Year', 'mjschool' ); ?></option>
-							<option value="period" <?php echo esc_attr( mjschool_is_selected( 'period', $selected_value ) ); ?>><?php esc_html_e( 'Period', 'mjschool' ); ?></option>
-						</select>
+						<?php mjschool_date_filter_dropdown( $date_type_value ); ?>
 					</div>
 					<div id="date_type_div" class="col-md-6 <?php echo ( $selected_value === 'period' ) ? '' : 'date_type_div_none'; ?>">
 						<?php
@@ -267,7 +254,7 @@ function mjschool_is_selected( $value, $selected_value ) {
 											esc_html_e( 'N/A', 'mjschool' ); 
 										}
 										?>
-										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_html( $result->ip_address ); ?>"></i>
+										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_attr( $result->ip_address ); ?>"></i>
 									</td>
 									<td class="income_amount">
 										<?php
@@ -277,7 +264,7 @@ function mjschool_is_selected( $value, $selected_value ) {
 											esc_html_e( 'N/A', 'mjschool' ); 
 										}
 										?>
-										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_html( mjschool_get_class_name( $result->current_class ) ); ?>"></i>
+										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_attr( mjschool_get_class_name( $result->current_class ) ); ?>"></i>
 									</td>
 									<td class="income_amount">
 										<?php
@@ -287,7 +274,7 @@ function mjschool_is_selected( $value, $selected_value ) {
 											esc_html_e( 'N/A', 'mjschool' ); 
 										}
 										?>
-										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_html( mjschool_get_class_name( $result->next_class ) ); ?>"></i>
+										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_attr( mjschool_get_class_name( $result->next_class ) ); ?>"></i>
 									</td>
 									<td class="income_amount">
 										<?php
@@ -297,7 +284,7 @@ function mjschool_is_selected( $value, $selected_value ) {
 											esc_html_e( 'N/A', 'mjschool' ); 
 										}
 										?>
-										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_html( mjschool_get_exam_name_id( $result->exam_name ) ); ?>"></i>
+										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_attr( mjschool_get_exam_name_id( $result->exam_name ) ); ?>"></i>
 									</td>
 									<td class="income_amount">
 										<?php

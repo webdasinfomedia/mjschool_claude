@@ -222,7 +222,7 @@ jQuery(document).ready(function () {
             }
         });
     });
-    jQuery(document).on("mjschool_admission_date_loaded", function () {
+    jQuery(document).on("mjschool_admission_date_loaded", function () {  
         jQuery( "#report_sdate").datepicker({
             dateFormat: mjschool_ajax_function_data.date_format,
             changeYear: true,

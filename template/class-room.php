@@ -120,6 +120,11 @@ if ( isset( $_POST['save_classroom'] ) ) {
 $tablename = "mjschool_class_room";
 /* Delete selected Subject. */
 if ( isset(  $_REQUEST['delete_selected'] ) ) {
+	// Verify nonce for delete action
+	if ( ! isset( $_REQUEST['_wpnonce'] ) || 
+	     ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'save_class_room_admin_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed', 'mjschool' ) );
+	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 			foreach ($_REQUEST['id'] as $id) {
 				$result = mjschool_delete_class_room($tablename, sanitize_text_field( wp_unslash( $id ) ) );
@@ -131,6 +136,11 @@ if ( isset(  $_REQUEST['delete_selected'] ) ) {
 	}
 }
 if ( isset( $_REQUEST['action']) && sanitize_text_field(wp_unslash($_REQUEST['action']) ) === 'delete' ) {
+	// Verify nonce for delete action
+	if ( ! isset( $_REQUEST['_wpnonce'] ) || 
+	     ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'save_class_room_admin_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed', 'mjschool' ) );
+	}
 	$result = mjschool_delete_class_room($tablename, sanitize_text_field( wp_unslash( $_REQUEST['class_room_id'] ) ) );
 	if ($result) {
 		wp_safe_redirect(home_url( '?dashboard=mjschool_user&page=class_room&tab=class_room_list&message=3' ) );
@@ -216,6 +226,7 @@ $active_tab = isset( $_REQUEST['tab'] ) ? sanitize_text_field( wp_unslash( $_REQ
 						<div class="mjschool-panel-body">
 							<div class="table-responsive">
 								<form id="frm-example" name="frm-example" method="post">
+									<?php wp_nonce_field( 'save_class_room_admin_nonce' ); ?>
 									<table id="mjschool-classroom-list-front" class="display" cellspacing="0" width="100%">
 										<thead class="<?php echo esc_attr( mjschool_datatable_header( ) ) ?>">
 											<tr>
@@ -349,7 +360,7 @@ $active_tab = isset( $_REQUEST['tab'] ) ? sanitize_text_field( wp_unslash( $_REQ
 																			</li>
 																		<?php } if ($user_access['delete'] === '1' ) { ?>
 																			<li class="mjschool-float-left-width-100px">
-																<a href="<?php echo esc_url( add_query_arg( array( 'dashboard' => 'mjschool_user', 'page' => 'class_room', 'tab' => 'class_room_list', 'action' => 'delete', 'class_room_id' => $retrieved_data->room_id ), admin_url() ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_attr_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"> <i class="fa fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?> </a>
+																<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'dashboard' => 'mjschool_user', 'page' => 'class_room', 'tab' => 'class_room_list', 'action' => 'delete', 'class_room_id' => $retrieved_data->room_id ), admin_url() ), 'save_class_room_admin_nonce' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_attr_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"> <i class="fa fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?> </a>
 																			</li>
 																		<?php } ?>
 																	</ul>

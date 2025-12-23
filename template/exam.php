@@ -93,10 +93,10 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 }
 // ----------------- Delete multiple exams. ----------------//
 if ( isset( $_REQUEST['delete_selected'] ) ) {
-	if ( isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bulk-exams' ) ) {
+	if ( isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'save_exam_admin_nonce' ) ) {
 		if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
 			foreach ( $_REQUEST['id'] as $id ) {
-				$sanitized_id = intval( $id );
+				$sanitized_id = intval( sanitize_text_field( wp_unslash( $id ) ) );
 				$result = mjschool_delete_exam( $tablename, $sanitized_id );
 			}
 			if ( $result ) {
@@ -507,6 +507,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 				<div class="table-responsive"><!--------------- Table responsive. ------------>
 					<!--------------- Exam list form. --------------->
 					<form name="wcwm_report" action="" method="post">
+						<?php wp_nonce_field( 'save_exam_admin_nonce' ); ?>
 						<table id="front_exam_list" class="display dataTable mjschool-exam-datatable" cellspacing="0" width="100%">
 							<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 								<tr>
@@ -542,30 +543,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 								<?php
 								$i = 0;
 								foreach ( $retrieve_class_data as $retrieved_data ) {
-									if ( $i === 10 ) {
-										$i = 0;
-									}
-									if ( $i === 0 ) {
-										$color_class_css = 'mjschool-class-color0';
-									} elseif ( $i === 1 ) {
-										$color_class_css = 'mjschool-class-color1';
-									} elseif ( $i === 2 ) {
-										$color_class_css = 'mjschool-class-color2';
-									} elseif ( $i === 3 ) {
-										$color_class_css = 'mjschool-class-color3';
-									} elseif ( $i === 4 ) {
-										$color_class_css = 'mjschool-class-color4';
-									} elseif ( $i === 5 ) {
-										$color_class_css = 'mjschool-class-color5';
-									} elseif ( $i === 6 ) {
-										$color_class_css = 'mjschool-class-color6';
-									} elseif ( $i === 7 ) {
-										$color_class_css = 'mjschool-class-color7';
-									} elseif ( $i === 8 ) {
-										$color_class_css = 'mjschool-class-color8';
-									} elseif ( $i === 9 ) {
-										$color_class_css = 'mjschool-class-color9';
-									}
+									$color_class_css = mjschool_table_list_background_color( $i );
 									?>
 									<tr>
 										<?php
@@ -1108,7 +1086,7 @@ if ( isset( $_POST['save_exam_table'] ) ) {
 										<div class="col-md-6">
 											<div class="form-group input">
 												<div class="col-md-12 form-control">
-													<input id="contributions_label" class="form-control" maxlength="50" type="text" value="<?php echo esc_html( $value->label ); ?>" name="contributions_label[]">
+													<input id="contributions_label" class="form-control" maxlength="50" type="text" value="<?php echo esc_attr( $value->label ); ?>" name="contributions_label[]">
 													<label for="contributions_label"> <?php esc_html_e( 'Contributions Label', 'mjschool' ); ?> </label>
 												</div>
 											</div>

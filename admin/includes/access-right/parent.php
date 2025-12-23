@@ -11,7 +11,7 @@
  * @since      1.0.0
  * 
  */
-if (!defined( 'ABSPATH' ) ) {
+if ( ! defined( 'ABSPATH' ) ) {
 	die();
 }
 
@@ -302,10 +302,10 @@ if ( isset( $_POST['save_access_right'] ) ) {
 		);
 		$result = update_option( 'mjschool_access_right_parent', $role_access_right );
 		$nonce = wp_create_nonce( 'mjschool_access_rights_tab' );
-		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_access_right&tab=Parent&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
-		die();
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_access_right&tab=Parent&_wpnonce=' . rawurlencode( $nonce ) . '&message=1' ) );
+		exit; // Replaced die() with exit for clarity (both are equivalent in WordPress context).
 	}
-	else{
+	else {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
 }
@@ -327,7 +327,7 @@ switch ( $message ) {
 if ( $message ) {
 	?>
 	<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
-		<p> <?php echo esc_html( $message_string ); ?> </p>
+		<p><?php echo esc_html( $message_string ); ?></p>
 		<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close">
 			<span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span>
 		</button>
@@ -337,7 +337,7 @@ if ( $message ) {
 ?>
 <div><!--- PANEL WHITE DIV START. -->
 	<div class="header">
-		<h3 class="mjschool-first-header"><?php echo esc_html( esc_attr__( 'Parent Access Right', 'mjschool' ) ); ?></h3>
+		<h3 class="mjschool-first-header"><?php echo esc_html__( 'Parent Access Right', 'mjschool' ); ?></h3>
 	</div>
 	<div class="mjschool-panel-body" id="mjschool-rs-access-pl-15px"> <!--- PANEL BODY DIV START. -->
 		<form name="mjschool-student-form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-access-right-form">

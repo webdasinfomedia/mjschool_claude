@@ -89,35 +89,12 @@ if ( $active_tab === 'expenselist' ) {
 								foreach ( $all_entry as $entry ) {
 									$total_amount += $entry->amount;
 								}
-								if ( $i === 10 ) {
-									$i = 0;
-								}
-								if ( $i === 0 ) {
-									$color_class_css = 'mjschool-class-color0';
-								} elseif ( $i === 1 ) {
-									$color_class_css = 'mjschool-class-color1';
-								} elseif ( $i === 2 ) {
-									$color_class_css = 'mjschool-class-color2';
-								} elseif ( $i === 3 ) {
-									$color_class_css = 'mjschool-class-color3';
-								} elseif ( $i === 4 ) {
-									$color_class_css = 'mjschool-class-color4';
-								} elseif ( $i === 5 ) {
-									$color_class_css = 'mjschool-class-color5';
-								} elseif ( $i === 6 ) {
-									$color_class_css = 'mjschool-class-color6';
-								} elseif ( $i === 7 ) {
-									$color_class_css = 'mjschool-class-color7';
-								} elseif ( $i === 8 ) {
-									$color_class_css = 'mjschool-class-color8';
-								} elseif ( $i === 9 ) {
-									$color_class_css = 'mjschool-class-color9';
-								}
+								$color_class_css = mjschool_table_list_background_color( $i );
 								?>
 								<tr>
 									<td class="mjschool-checkbox-width-10px"><input type="checkbox" class="mjschool-sub-chk select-checkbox" name="id[]" value="<?php echo esc_attr( $retrieved_data->income_id ); ?>"></td>
 									<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription mjschool-padding-left-0">
-										<a href="?page=mjschool_payment&tab=view_invoice&idtest=<?php echo esc_attr( $retrieved_data->income_id ); ?>&invoice_type=expense">
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_payment&tab=view_invoice&idtest='.rawurlencode( $retrieved_data->income_id ).'&invoice_type=expense'));?>">
 											<p class="mjschool-prescription-tag mjschool-padding-15px mjschool-margin-bottom-0px <?php echo esc_attr( $color_class_css ); ?>">
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-payment.png"); ?>" class="mjschool-massage-image mjschool-margin-top-3px">
 											</p>
@@ -201,20 +178,20 @@ if ( $active_tab === 'expenselist' ) {
 													</a>
 													<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 														<li class="mjschool-float-left-width-100px">
-															<a href="?page=mjschool_payment&tab=view_invoice&idtest=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->income_id ) ); ?>&invoice_type=expense" class="mjschool-float-left-width-100px"><i class="fas fa-eye"></i> <?php esc_html_e( 'View Invoice', 'mjschool' ); ?></a>
+															<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_payment&tab=view_invoice&idtest='.rawurlencode( mjschool_encrypt_id( $retrieved_data->income_id ) ).'&invoice_type=expense'));?>" class="mjschool-float-left-width-100px"><i class="fas fa-eye"></i> <?php esc_html_e( 'View Invoice', 'mjschool' ); ?></a>
 														</li>
 														<?php
 														if ( $user_access_edit === '1' ) {
 															?>
 															<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																<a href="?page=mjschool_payment&tab=addexpense&action=edit&expense_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->income_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_payment&tab=addexpense&action=edit&expense_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->income_id ) ).'&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 															</li>
 															<?php
 														}
 														if ( $user_access_delete === '1' ) {
 															?>
 															<li class="mjschool-float-left-width-100px">
-																<a href="?page=mjschool_payment&tab=expenselist&action=delete&expense_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->income_id ) ); ?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
+																<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_payment&tab=expenselist&action=delete&expense_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->income_id ) ).'&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
 																	<i class="fas fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?>
 																</a>
 															</li>

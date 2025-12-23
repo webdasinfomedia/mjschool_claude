@@ -21,6 +21,11 @@ if ( isset( $_GET['tab'] ) ) {
 		wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 	}
 }
+if ( isset( $_POST['date_type'] ) ) {
+	$date_type_value = sanitize_text_field(wp_unslash($_POST['date_type']));
+} else {
+	$date_type_value = 'this_month';
+}
 ?>
 <div class="mjschool-panel-body clearfix mjschool-margin-top-20px mjschool-rtl-margin-0px mjschool-padding-top-15px-res"> <!------  Panel body.  -------->
 	<div class="mjschool-panel-body clearfix">
@@ -30,20 +35,7 @@ if ( isset( $_GET['tab'] ) ) {
 					<?php $selected_date_type = isset( $_POST['date_type'] ) ? $_POST['date_type'] : ''; ?>
 					<div class="col-md-6 mb-6 input">
 						<label class="ml-1 mjschool-custom-top-label top" for="date_type"><?php esc_html_e( 'Date Type', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
-						<select class="mjschool-line-height-30px form-control date_type validate[required]" id="date_type" name="date_type" autocomplete="off">
-							<option value=""><?php esc_html_e( 'Select', 'mjschool' ); ?></option>
-							<option value="today" <?php selected( $selected_date_type, 'today' ); ?>><?php esc_html_e( 'Today', 'mjschool' ); ?></option>
-							<option value="this_week" <?php selected( $selected_date_type, 'this_week' ); ?>><?php esc_html_e( 'This Week', 'mjschool' ); ?></option>
-							<option value="last_week" <?php selected( $selected_date_type, 'last_week' ); ?>><?php esc_html_e( 'Last Week', 'mjschool' ); ?></option>
-							<option value="this_month" <?php selected( $selected_date_type, 'this_month' ); ?>><?php esc_html_e( 'This Month', 'mjschool' ); ?></option>
-							<option value="last_month" <?php selected( $selected_date_type, 'last_month' ); ?>><?php esc_html_e( 'Last Month', 'mjschool' ); ?></option>
-							<option value="last_3_month" <?php selected( $selected_date_type, 'last_3_month' ); ?>><?php esc_html_e( 'Last 3 Months', 'mjschool' ); ?></option>
-							<option value="last_6_month" <?php selected( $selected_date_type, 'last_6_month' ); ?>><?php esc_html_e( 'Last 6 Months', 'mjschool' ); ?></option>
-							<option value="last_12_month" <?php selected( $selected_date_type, 'last_12_month' ); ?>><?php esc_html_e( 'Last 12 Months', 'mjschool' ); ?></option>
-							<option value="this_year" <?php selected( $selected_date_type, 'this_year' ); ?>><?php esc_html_e( 'This Year', 'mjschool' ); ?></option>
-							<option value="last_year" <?php selected( $selected_date_type, 'last_year' ); ?>><?php esc_html_e( 'Last Year', 'mjschool' ); ?></option>
-							<option value="period" <?php selected( $selected_date_type, 'period' ); ?>><?php esc_html_e( 'Period', 'mjschool' ); ?></option>
-						</select>
+						<?php mjschool_date_filter_dropdown( $date_type_value ); ?>
 					</div>
 					<div class="col-md-6 mb-6 input">
 						<label class="ml-1 mjschool-custom-top-label top" for="mjschool-role-type"><?php esc_html_e( 'Action', 'mjschool' ); ?></label>

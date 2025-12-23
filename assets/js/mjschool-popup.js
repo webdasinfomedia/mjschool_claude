@@ -1390,7 +1390,7 @@ jQuery( document ).ready( function (jQuery) {
 		};
 		var valid     = true;
 		if (valid == true) {
-			jQuery.post( mjschool.ajax, curr_data, function (response) {
+			jQuery.post(mjschool.ajax, curr_data, function (response) {
 				var json_obj = jQuery.parseJSON( response );
 				jQuery( '.exam_hall_receipt_main_div' ).html( '' );
 				jQuery( '.mjschool-exam-hall-receipt-div' ).append( json_obj[0] );
@@ -1887,6 +1887,7 @@ jQuery( document ).ready( function (jQuery) {
 		});
 	});
 	jQuery( "body" ).on( "change", ".date_type", function () {
+		
 		const date_type = jQuery( this ).val();
 		if (date_type === "period") {
 			jQuery( "#date_type_div" ).removeClass( "date_type_div_none" ).show();
@@ -1898,10 +1899,10 @@ jQuery( document ).ready( function (jQuery) {
 			};
 			jQuery.post( mjschool.ajax, curr_data, function (response) {
 				jQuery( '#date_type_div' ).html( response );
+				jQuery(document).trigger("mjschool_admission_date_loaded");
 			});
 		} else {
 			jQuery("#date_type_div").addClass("date_type_div_none").html('').hide();
-			jQuery(document).trigger("mjschool_admission_date_loaded");
 		}
 	});
 	/*------------ Approve Leave Botton ----------------*/

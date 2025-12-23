@@ -40,14 +40,19 @@ $school_type = get_option( "mjschool_custom_class");
 $role = mjschool_get_user_role( get_current_user_id() );
 require_once ABSPATH . 'wp-admin/includes/plugin.php';
 if ( isset( $_POST['save_message'] ) ) {
+	// Verify nonce for security
+	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
+	if ( ! wp_verify_nonce( $nonce, 'mjschool_compose_message_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	$created_date                     = date( 'Y-m-d H:i:s' );
 	$subject                          = sanitize_text_field( wp_unslash( $_POST['subject'] ) );
 	$message_body                     = sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) );
 	$created_date                     = date( 'Y-m-d H:i:s' );
-	$tablename                        = 'mjschool_message';
+	$mjschool_message_table           = 'mjschool_message';
 	$mjschool_service_enable = isset( $_REQUEST['mjschool_service_enable'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['mjschool_service_enable'] ) ) : 0;
 	$role                             = sanitize_text_field( wp_unslash( $_POST['receiver'] ) );
-	if ( isset( $_POST['mjschool_message_mail_service_enable'] ) === '1' ) {
+	if ( isset( $_POST['mjschool_message_mail_service_enable'] ) && $_POST['mjschool_message_mail_service_enable'] === '1' ) {
 		$MailBody                  = get_option( 'mjschool_message_received_mailcontent' );
 		$SchoolName                = get_option( 'mjschool_name' );
 		$SubArr['{{school_name}}'] = $SchoolName;
@@ -146,7 +151,7 @@ if ( isset( $_POST['save_message'] ) ) {
 				'post_id'      => $post_id,
 				'status'       => 0,
 			);
-			mjschool_insert_record( $tablename, $message_data );
+		mjschool_insert_record( $mjschool_message_table, $message_data );
 			$user_info = get_userdata( $user_id );
 			if ( isset( $_POST['mjschool_message_mail_service_enable'] ) === '1' ) {
 				$to                            = $user_info->user_email;
@@ -344,9 +349,9 @@ if ( isset( $_POST['save_message'] ) ) {
 						'post_id'      => $post_id,
 						'status'       => 0,
 					);
-					mjschool_insert_record( $tablename, $message_data );
-					$user_info = get_userdata( $user_id );
-					if ( isset( $_POST['mjschool_message_mail_service_enable'] ) === '1' ) {
+				mjschool_insert_record( $mjschool_message_table, $message_data );
+				$user_info = get_userdata( $user_id );
+				if ( isset( $_POST['mjschool_message_mail_service_enable'] ) && $_POST['mjschool_message_mail_service_enable'] === '1' ) {
 						$to                            = $user_info->user_email;
 						$MesArr['{{receiver_name}}']   = mjschool_get_display_name( $user_id );
 						$MesArr['{{message_content}}'] = $message_body;
@@ -372,8 +377,8 @@ if ( isset( $_POST['save_message'] ) ) {
 				}
 			}
 			/* Start Send Push Notification. */
-			$title             = esc_html__( 'You have received new message', 'mjschool' ) . ' ' . sanitize_text_field( stripslashes( $_POST['subject'] ) );
-			$text              = sanitize_textarea_field( stripslashes( $_POST['message_body'] ) );
+		$title             = esc_html__( 'You have received new message', 'mjschool' ) . ' ' . sanitize_text_field( wp_unslash( $_POST['subject'] ) );
+		$text              = sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) );
 			$notification_data = array(
 				'registration_ids' => $device_token,
 				'notification'     => array(
@@ -424,6 +429,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 		?>
 	</h2>
 	<form name="class_form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-message-form" enctype="multipart/form-data">
+		<?php wp_nonce_field( 'mjschool_compose_message_nonce' ); ?>
 		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? $_REQUEST['action'] : 'insert'; ?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 		<div class="form-body mjschool-user-form"><!--User form. -->

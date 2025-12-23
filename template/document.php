@@ -156,9 +156,13 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 	}
 }
 if ( isset( $_REQUEST['delete_selected'] ) ) {
+	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
+	if ( ! wp_verify_nonce( $nonce, 'save_document_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( ! empty( $_REQUEST['selected_id'] ) ) {
 		foreach ( $_REQUEST['selected_id'] as $id ) {
-			$delete = $mjschool_obj_document->mjschool_delete_document( sanitize_text_field( wp_unslash( $id ) ) );
+			$delete = $mjschool_obj_document->mjschool_delete_document( intval( sanitize_text_field( wp_unslash( $id ) ) ) );
 		}
 
 		if ( isset( $delete ) && $delete ) {
@@ -212,7 +216,7 @@ $mjschool_obj_document     = new Mjschool_Document();
 			<div class="mjschool-panel-body">
 				<div class="table-responsive">
 					<form id="mjschool-common-form" name="mjschool-common-form" method="post">
-						<table id="frontend_document_list" class="display mjschool-admin-transport-datatable" cellspacing="0" width="100%">
+						<?php wp_nonce_field( 'save_document_nonce' ); ?>
 							<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 								<tr>
 									<?php
@@ -248,30 +252,7 @@ $mjschool_obj_document     = new Mjschool_Document();
 								<?php
 								$i = 0;
 								foreach ( $documentdata as $retrieved_data ) {
-									if ( $i === 10 ) {
-										$i = 0;
-									}
-									if ( $i === 0 ) {
-										$color_class_css = 'mjschool-class-color0';
-									} elseif ( $i === 1 ) {
-										$color_class_css = 'mjschool-class-color1';
-									} elseif ( $i === 2 ) {
-										$color_class_css = 'mjschool-class-color2';
-									} elseif ( $i === 3 ) {
-										$color_class_css = 'mjschool-class-color3';
-									} elseif ( $i === 4 ) {
-										$color_class_css = 'mjschool-class-color4';
-									} elseif ( $i === 5 ) {
-										$color_class_css = 'mjschool-class-color5';
-									} elseif ( $i === 6 ) {
-										$color_class_css = 'mjschool-class-color6';
-									} elseif ( $i === 7 ) {
-										$color_class_css = 'mjschool-class-color7';
-									} elseif ( $i === 8 ) {
-										$color_class_css = 'mjschool-class-color8';
-									} elseif ( $i === 9 ) {
-										$color_class_css = 'mjschool-class-color9';
-									}
+									$color_class_css = mjschool_table_list_background_color( $i );
 									?>
 									<tr>
 										<?php

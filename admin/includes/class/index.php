@@ -283,7 +283,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 													</td>
 													<td class="mjschool-user-image mjschool-width-50px-td"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/thumb-icon/mjschool-class.png' ); ?>" class="img-circle" /></td>
 													<td>
-														<a href="<?php echo esc_url( '?page=mjschool_class&tab=class_details&class_id=' . $class_id_encrypt . '&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ); ?>">
+														<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class&tab=class_details&class_id=' . $class_id_encrypt . '&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ) ); ?>">
 															<?php
 															if ( $retrieved_data->class_name ) {
 																echo esc_html( $retrieved_data->class_name );
@@ -443,25 +443,25 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 																	</a>
 																	<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																		<li class="mjschool-float-left-width-100px">
-																			<a class="mjschool-float-left-width-100px" href="<?php echo esc_url( '?page=mjschool_class&tab=class_details&class_id='. $class_id_encrypt .'&_wpnonce='. mjschool_get_nonce( 'view_action' ) ); ?>"><i class="fa fa-eye"></i><?php esc_html_e( 'View', 'mjschool' ); ?></a>
+																			<a class="mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class&tab=class_details&class_id='. $class_id_encrypt .'&_wpnonce='. mjschool_get_nonce( 'view_action' ) ) ); ?>"><i class="fa fa-eye"></i><?php esc_html_e( 'View', 'mjschool' ); ?></a>
 																		</li>
 																		<?php if ( $school_type === 'school' ) {?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a class="mjschool-float-left-width-100px" href="<?php echo esc_url( '?page=mjschool_class&tab=class_details&tab1=section_list&class_id='. $class_id_encrypt .'&_wpnonce='. mjschool_get_nonce( 'view_action' ) ); ?>"><i class="fa fa-plus"></i><?php esc_html_e( 'Add Section', 'mjschool' ); ?></a>
+																				<a class="mjschool-float-left-width-100px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class&tab=class_details&tab1=section_list&class_id='. $class_id_encrypt .'&_wpnonce='. mjschool_get_nonce( 'view_action' ) ) ); ?>"><i class="fa fa-plus"></i><?php esc_html_e( 'Add Section', 'mjschool' ); ?></a>
 																			</li>
 																		<?php } ?>
 																		<?php
 																		if ($user_access_edit === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																				<a href="<?php echo esc_url( '?page=mjschool_class&tab=addclass&action=edit&class_id=' . $class_id_encrypt . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class&tab=addclass&action=edit&class_id=' . $class_id_encrypt . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																			</li>
 																			<?php
 																		}
 																		if ($user_access_delete === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a href="<?php echo esc_url( '?page=mjschool_class&tab=classlist&action=delete&class_id=' . $class_id_encrypt . '&_wpnonce=' . mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i><?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class&tab=classlist&action=delete&class_id=' . $class_id_encrypt . '&_wpnonce=' . mjschool_get_nonce( 'delete_action' ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );"><i class="fas fa-trash"></i><?php esc_html_e( 'Delete', 'mjschool' ); ?></a>
 																			</li>
 																			<?php
 																		}

@@ -1889,30 +1889,7 @@ if ( $message ) {
 													$i = 0;
 													if ( ! empty( $fees_payment ) ) {
 														foreach ( $fees_payment as $retrieved_data ) {
-															if ( $i === 10 ) {
-																$i = 0;
-															}
-															if ( $i === 0 ) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ( $i === 1 ) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ( $i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ( $i === 3 ) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ( $i === 4 ) {
-																$color_class_css = 'mjschool-class-color4';
-															} elseif ( $i === 5 ) {
-																$color_class_css = 'mjschool-class-color5';
-															} elseif ( $i === 6 ) {
-																$color_class_css = 'mjschool-class-color6';
-															} elseif ( $i === 7 ) {
-																$color_class_css = 'mjschool-class-color7';
-															} elseif ( $i === 8 ) {
-																$color_class_css = 'mjschool-class-color8';
-															} elseif ( $i === 9 ) {
-																$color_class_css = 'mjschool-class-color9';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<tr>
 																<td class="mjschool-cursor-pointer mjschool-user-image show-view-payment-popup mjschool-width-50px-td mjschool-profile-image-prescription" idtest="<?php echo esc_attr( $retrieved_data->fees_pay_id ); ?>" view_type="view_payment">
@@ -2028,30 +2005,7 @@ if ( $message ) {
 														foreach ( $attendance_list as $retrieved_data ) {
 															$class_section_sub_name = mjschool_get_class_section_subject( $retrieved_data->class_id, $retrieved_data->section_id, $retrieved_data->sub_id );
 															$created_by             = get_userdata( $retrieved_data->attend_by );
-															if ( $i === 10 ) {
-																$i = 0;
-															}
-															if ( $i === 0 ) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ( $i === 1 ) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ( $i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ( $i === 3 ) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ( $i === 4 ) {
-																$color_class_css = 'mjschool-class-color4';
-															} elseif ( $i === 5 ) {
-																$color_class_css = 'mjschool-class-color5';
-															} elseif ( $i === 6 ) {
-																$color_class_css = 'mjschool-class-color6';
-															} elseif ( $i === 7 ) {
-																$color_class_css = 'mjschool-class-color7';
-															} elseif ( $i === 8 ) {
-																$color_class_css = 'mjschool-class-color8';
-															} elseif ( $i === 9 ) {
-																$color_class_css = 'mjschool-class-color9';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<tr>
 																<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -2187,30 +2141,7 @@ if ( $message ) {
 													<?php
 													$i = 0;
 													foreach ( $leave_data as $retrieved_data ) {
-														if ( $i === 10 ) {
-															$i = 0;
-														}
-														if ( $i === 0 ) {
-															$color_class_css = 'mjschool-class-color0';
-														} elseif ( $i === 1 ) {
-															$color_class_css = 'mjschool-class-color1';
-														} elseif ( $i === 2 ) {
-															$color_class_css = 'mjschool-class-color2';
-														} elseif ( $i === 3 ) {
-															$color_class_css = 'mjschool-class-color3';
-														} elseif ( $i === 4 ) {
-															$color_class_css = 'mjschool-class-color4';
-														} elseif ( $i === 5 ) {
-															$color_class_css = 'mjschool-class-color5';
-														} elseif ( $i === 6 ) {
-															$color_class_css = 'mjschool-class-color6';
-														} elseif ( $i === 7 ) {
-															$color_class_css = 'mjschool-class-color7';
-														} elseif ( $i === 8 ) {
-															$color_class_css = 'mjschool-class-color8';
-														} elseif ( $i === 9 ) {
-															$color_class_css = 'mjschool-class-color9';
-														}
+														$color_class_css = mjschool_table_list_background_color( $i );
 														?>
 														<tr>
 															<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -2352,30 +2283,7 @@ if ( $message ) {
 															$exam_data  = mjschool_get_exam_by_id( $retrieved_data->exam_id );
 															$start_date = $exam_data->exam_start_date;
 															$end_date   = $exam_data->exam_end_date;
-															if ( $i === 10 ) {
-																$i = 0;
-															}
-															if ( $i === 0 ) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ( $i === 1 ) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ( $i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ( $i === 3 ) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ( $i === 4 ) {
-																$color_class_css = 'mjschool-class-color4';
-															} elseif ( $i === 5 ) {
-																$color_class_css = 'mjschool-class-color5';
-															} elseif ( $i === 6 ) {
-																$color_class_css = 'mjschool-class-color6';
-															} elseif ( $i === 7 ) {
-																$color_class_css = 'mjschool-class-color7';
-															} elseif ( $i === 8 ) {
-																$color_class_css = 'mjschool-class-color8';
-															} elseif ( $i === 9 ) {
-																$color_class_css = 'mjschool-class-color9';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<tr>
 																<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -2501,30 +2409,7 @@ if ( $message ) {
 													$i = 0;
 													if ( ! empty( $student_homework ) ) {
 														foreach ( $student_homework as $retrieved_data ) {
-															if ( $i === 10 ) {
-																$i = 0;
-															}
-															if ( $i === 0 ) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ( $i === 1 ) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ( $i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ( $i === 3 ) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ( $i === 4 ) {
-																$color_class_css = 'mjschool-class-color4';
-															} elseif ( $i === 5 ) {
-																$color_class_css = 'mjschool-class-color5';
-															} elseif ( $i === 6 ) {
-																$color_class_css = 'mjschool-class-color6';
-															} elseif ( $i === 7 ) {
-																$color_class_css = 'mjschool-class-color7';
-															} elseif ( $i === 8 ) {
-																$color_class_css = 'mjschool-class-color8';
-															} elseif ( $i === 9 ) {
-																$color_class_css = 'mjschool-class-color9';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<tr>
 																<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -2719,30 +2604,7 @@ if ( $message ) {
 													$i = 0;
 													if ( ! empty( $student_issuebook ) ) {
 														foreach ( $student_issuebook as $retrieved_data ) {
-															if ( $i === 10 ) {
-																$i = 0;
-															}
-															if ( $i === 0 ) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ( $i === 1 ) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ( $i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ( $i === 3 ) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ( $i === 4 ) {
-																$color_class_css = 'mjschool-class-color4';
-															} elseif ( $i === 5 ) {
-																$color_class_css = 'mjschool-class-color5';
-															} elseif ( $i === 6 ) {
-																$color_class_css = 'mjschool-class-color6';
-															} elseif ( $i === 7 ) {
-																$color_class_css = 'mjschool-class-color7';
-															} elseif ( $i === 8 ) {
-																$color_class_css = 'mjschool-class-color8';
-															} elseif ( $i === 9 ) {
-																$color_class_css = 'mjschool-class-color9';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<tr>
 																<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -2818,7 +2680,7 @@ if ( $message ) {
 										</select>
 										</div>
 											<div class="col-md-2">        	
-											<input type="submit" value="<?php esc_attr_e( 'GO', 'mjschool' ); ?>" name="save_latter" class="btn btn-success mjschool-save-btn" />
+											<input type="submit" value="<?php esc_html_e( 'GO', 'mjschool' ); ?>" name="save_latter" class="btn btn-success mjschool-save-btn" />
 										</div> 
 									</div>
 								</form>
@@ -2903,30 +2765,7 @@ if ( $message ) {
 																$class_id        = $retrieved_data->class_id;
 																$section_id      = $retrieved_data->section_id;
 															}
-															if ( $i === 10 ) {
-																$i = 0;
-															}
-															if ( $i === 0 ) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ( $i === 1 ) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ( $i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ( $i === 3 ) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ( $i === 4 ) {
-																$color_class_css = 'mjschool-class-color4';
-															} elseif ( $i === 5 ) {
-																$color_class_css = 'mjschool-class-color5';
-															} elseif ( $i === 6 ) {
-																$color_class_css = 'mjschool-class-color6';
-															} elseif ( $i === 7 ) {
-																$color_class_css = 'mjschool-class-color7';
-															} elseif ( $i === 8 ) {
-																$color_class_css = 'mjschool-class-color8';
-															} elseif ( $i === 9 ) {
-																$color_class_css = 'mjschool-class-color9';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<tr>
 																<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -3104,30 +2943,7 @@ if ( $message ) {
 														foreach ( $student_message as $retrieved_data ) {
 															$sender_id = $retrieved_data->sender;
 															$sender    = mjschool_get_display_name( $sender_id );
-															if ( $i === 10 ) {
-																$i = 0;
-															}
-															if ( $i === 0 ) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ( $i === 1 ) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ( $i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ( $i === 3 ) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ( $i === 4 ) {
-																$color_class_css = 'mjschool-class-color4';
-															} elseif ( $i === 5 ) {
-																$color_class_css = 'mjschool-class-color5';
-															} elseif ( $i === 6 ) {
-																$color_class_css = 'mjschool-class-color6';
-															} elseif ( $i === 7 ) {
-																$color_class_css = 'mjschool-class-color7';
-															} elseif ( $i === 8 ) {
-																$color_class_css = 'mjschool-class-color8';
-															} elseif ( $i === 9 ) {
-																$color_class_css = 'mjschool-class-color9';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<tr>
 																<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
@@ -3641,7 +3457,7 @@ if ( $message ) {
 												echo esc_url( sanitize_text_field(wp_unslash($_POST['mjschool_user_avatar'])) );}
 											?>
 											" readonly />
-											<input id="upload_user_avatar_button" type="file" class="form-control file mjchool_border_0px" onchange="mjschool_file_check(this);" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
+											<input id="upload_user_avatar_button" type="file" class="form-control file mjchool_border_0px" onchange="mjschool_file_check(this);" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
 										</div>
 									</div>
 									<div class="clearfix"></div>
@@ -3744,7 +3560,7 @@ if ( $message ) {
 												<div class="col-md-12 form-control mjschool-upload-profile-image-patient mjschool-res-rtl-height-50px mjschool-file-height-padding">
 													<span for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2"><?php esc_html_e( 'Document File', 'mjschool' ); ?></span>
 													<div class="col-sm-12 mjschool-display-flex">
-														<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control mjschool-file-validation file" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
+														<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control mjschool-file-validation file" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
 													</div>
 												</div>
 											</div>
@@ -3773,7 +3589,7 @@ if ( $message ) {
 											<div class="col-md-12 form-control mjschool-upload-profile-image-patient mjschool-res-rtl-height-50px mjschool-file-height-padding">
 												<span for="photo" class="mjschool-custom-control-label mjschool-custom-top-label ml-2"><?php esc_html_e( 'Document File', 'mjschool' ); ?></span>
 												<div class="col-sm-12 mjschool-display-flex">
-													<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control file mjschool-file-validation" value="<?php esc_attr_e( 'Upload image', 'mjschool' ); ?>" />
+													<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control file mjschool-file-validation" value="<?php esc_html_e( 'Upload image', 'mjschool' ); ?>" />
 												</div>
 											</div>
 										</div>

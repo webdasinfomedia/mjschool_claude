@@ -9,7 +9,7 @@
  * @subpackage MJSchool/admin/includes/access-rights
  * @since      1.0.0
  */
-if (!defined( 'ABSPATH' ) ) {
+if ( ! defined( 'ABSPATH' ) ) {
 	die();
 }
 $role_temp = 'student_temp';

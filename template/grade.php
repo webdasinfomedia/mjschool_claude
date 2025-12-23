@@ -21,7 +21,7 @@ $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_fie
 // -------- Check browser javascript. ----------//
 mjschool_browser_javascript_check();
 $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'])) : 'gradelist';
-$tablename  = 'mjschool_grade';
+$table_mjschool_grade  = 'mjschool_grade';
 // --------------- Access-wise role. -----------//
 $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
@@ -95,7 +95,7 @@ if ( isset( $_POST['save_grade'] ) ) {
 				if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
 					$gid      = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['grade_id'])) ) );
 					$grade_id = array( 'grade_id' => mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['grade_id'])) ) );
-					$result   = mjschool_update_record( $tablename, $gradedata, $grade_id );
+					$result   = mjschool_update_record( $table_mjschool_grade, $gradedata, $grade_id );
 					// Update custom field data.
 					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
 					$module                    = 'grade';
@@ -110,7 +110,7 @@ if ( isset( $_POST['save_grade'] ) ) {
 			} else {
 				$grade_name = $obj_mark->mjschool_get_grade_by_name( sanitize_text_field(wp_unslash($_POST['grade_name'])) );
 				if ( empty( $grade_name ) ) {
-					$result = mjschool_insert_record( $tablename, $gradedata );
+					$result = mjschool_insert_record( $table_mjschool_grade, $gradedata );
 					global $wpdb;
 					$last_insert_id            = $wpdb->insert_id;
 					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
@@ -145,9 +145,12 @@ if ( isset( $_POST['save_grade'] ) ) {
 }
 // -------------- Multiple grade delete. ---------------//
 if ( isset( $_REQUEST['delete_selected'] ) ) {
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'save_grade_admin_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = mjschool_delete_grade( $tablename, intval( $id ) );
+			$result = mjschool_delete_grade( $table_mjschool_grade, intval( sanitize_text_field( wp_unslash( $id ) ) ) );
 		}
 	}
 	if ( $result ) {
@@ -158,7 +161,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 // --------------- Grade delete action. ---------------//
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
-		$result = mjschool_delete_grade( $tablename, mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['grade_id'])) ) );
+		$result = mjschool_delete_grade( $table_mjschool_grade, mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['grade_id'])) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=grade&tab=gradelist&message=3') );
 			die();
@@ -172,12 +175,12 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 	<?php
 	// ---------------- Grade list tab. ----------------//
 	if ( $active_tab === 'gradelist' ) {
-		$tablename = 'mjschool_grade';
+		$table_mjschool_grade = 'mjschool_grade';
 		$own_data  = $user_access['own_data'];
 		if ( $own_data === '1' ) {
-			$grade_data = mjschool_get_all_grade_data_by_user_id( $tablename );
+			$grade_data = mjschool_get_all_grade_data_by_user_id( $table_mjschool_grade );
 		} else {
-			$grade_data = mjschool_get_all_data( $tablename );
+			$grade_data = mjschool_get_all_data( $table_mjschool_grade );
 		}
 		if ( ! empty( $grade_data ) ) {
 			?>
@@ -185,6 +188,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 				<div class="table-responsive"><!--------------- Table responsive. --------------->
 					<!---------------- Grade list page form. ------------->
 					<form id="mjschool-common-form" name="mjschool-common-form" method="post">
+						<?php wp_nonce_field( 'save_grade_admin_nonce' ); ?>
 						<table id="frontend_grade_list" class="display dataTable mjschool-student-datatable" cellspacing="0" width="100%">
 							<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 								<tr>
@@ -224,30 +228,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 								<?php
 								$i = 0;
 								foreach ( $grade_data as $retrieved_data ) {
-									if ( $i === 10 ) {
-										$i = 0;
-									}
-									if ( $i === 0 ) {
-										$color_class_css = 'mjschool-class-color0';
-									} elseif ( $i === 1 ) {
-										$color_class_css = 'mjschool-class-color1';
-									} elseif ( $i === 2 ) {
-										$color_class_css = 'mjschool-class-color2';
-									} elseif ( $i === 3 ) {
-										$color_class_css = 'mjschool-class-color3';
-									} elseif ( $i === 4 ) {
-										$color_class_css = 'mjschool-class-color4';
-									} elseif ( $i === 5 ) {
-										$color_class_css = 'mjschool-class-color5';
-									} elseif ( $i === 6 ) {
-										$color_class_css = 'mjschool-class-color6';
-									} elseif ( $i === 7 ) {
-										$color_class_css = 'mjschool-class-color7';
-									} elseif ( $i === 8 ) {
-										$color_class_css = 'mjschool-class-color8';
-									} elseif ( $i === 9 ) {
-										$color_class_css = 'mjschool-class-color9';
-									}
+									$color_class_css = mjschool_table_list_background_color( $i );
 									?>
 									<tr>
 										<?php

@@ -47,7 +47,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 											if ($user_access_edit === '1' ) {
 												?>
 												<div class="mjschool-view-user-edit-btn">
-													<a class="mjschool-color-white mjschool-margin-left-2px" href="<?php echo esc_url( '?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . esc_attr( mjschool_encrypt_id( $staff_data->ID ) ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) ); ?>">
+													<a class="mjschool-color-white mjschool-margin-left-2px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_supportstaff&tab=addsupportstaff&action=edit&supportstaff_id=' . rawurlencode( mjschool_encrypt_id( $staff_data->ID ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>">
 														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-edit.png" )?>">
 													</a>
 												</div>

@@ -303,11 +303,11 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 																		<?php 
 																		if ($user_access_edit === '1' ) { ?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																				<a href="<?php echo esc_url( '?page=mjschool_class_room&tab=add_class_room&action=edit&class_room_id=' . $retrieved_data->room_id . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class_room&tab=add_class_room&action=edit&class_room_id=' . $retrieved_data->room_id . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																			</li>
 																		<?php } if ($user_access_delete === '1' ) { ?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a href="<?php echo esc_url( '?page=mjschool_class_room&tab=class_room_list&action=delete&class_room_id=' . $retrieved_data->room_id . '&_wpnonce=' . mjschool_get_nonce( 'delete_action' ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_attr_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_class_room&tab=class_room_list&action=delete&class_room_id=' . $retrieved_data->room_id . '&_wpnonce=' . mjschool_get_nonce( 'delete_action' ) ) ); ?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_attr_e( 'Are you sure you want to delete this record?', 'mjschool' ); ?>' );">
 																					<i class="fa fa-trash"></i> <?php esc_html_e( 'Delete', 'mjschool' ); ?> 
                                                                                 </a>
 																			</li>

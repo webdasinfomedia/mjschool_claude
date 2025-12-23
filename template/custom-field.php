@@ -51,6 +51,11 @@ if ( isset( $_REQUEST['page'] ) ) {
 $obj_custome_field = new Mjschool_Custome_Field();
 // Save custom field data.
 if ( isset( $_POST['add_custom_field'] ) ) {
+	// Verify nonce for security
+	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
+	if ( ! wp_verify_nonce( $nonce, 'mjschool_custom_field_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'insert' ) {
 		// Add custom field data.
 		$result = $obj_custome_field->mjschool_add_custom_field( sanitize_text_field( wp_unslash($_POST ) ) );
@@ -59,7 +64,7 @@ if ( isset( $_POST['add_custom_field'] ) ) {
 			die();
 		}
 	} elseif ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'edit_action' ) ) {
-			$result = $obj_custome_field->mjschool_add_custom_field( sanitize_text_field( wp_unslash( $_POST ) ) );
+		$result = $obj_custome_field->mjschool_add_custom_field( sanitize_text_field( wp_unslash( $_POST ) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=custome-field&tab=custome_field_list&message=2' ) );
 			die();
@@ -80,9 +85,14 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 	}
 }
 if ( isset( $_POST['custome_delete_selected'] ) ) {
+	// Verify nonce for bulk delete operation
+	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
+	if ( ! wp_verify_nonce( $nonce, 'mjschool_custom_field_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( isset( $_POST['selected_id'] ) ) {
 		foreach ( $_POST['selected_id'] as $custome_id ) {
-			$record_id = $custome_id;
+			$record_id = intval( $custome_id );
 			$result    = $obj_custome_field->mjschool_delete_selected_custome_field( $record_id );
 			if ( $result ) {
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=custome-field&tab=custome_field_list&message=3' ) );
@@ -140,6 +150,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 				?>
 				<div class="table-responsive">
 					<form id="mjschool-common-form" name="mjschool-common-form" method="post">
+						<?php wp_nonce_field( 'mjschool_custom_field_nonce' ); ?>
 						<table id="frontend_custome_field_list" class="display dataTable mjschool-student-datatable" cellspacing="0" width="100%">
 							<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 								<tr>
@@ -157,30 +168,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 								<?php
 								$i = 0;
 								foreach ( $custom_field_data as $retrieved_data ) {
-									if ( $i === 10 ) {
-										$i = 0;
-									}
-									if ( $i === 0 ) {
-										$color_class_css = 'mjschool-class-color0';
-									} elseif ( $i === 1 ) {
-										$color_class_css = 'mjschool-class-color1';
-									} elseif ( $i === 2 ) {
-										$color_class_css = 'mjschool-class-color2';
-									} elseif ( $i === 3 ) {
-										$color_class_css = 'mjschool-class-color3';
-									} elseif ( $i === 4 ) {
-										$color_class_css = 'mjschool-class-color4';
-									} elseif ( $i === 5 ) {
-										$color_class_css = 'mjschool-class-color5';
-									} elseif ( $i === 6 ) {
-										$color_class_css = 'mjschool-class-color6';
-									} elseif ( $i === 7 ) {
-										$color_class_css = 'mjschool-class-color7';
-									} elseif ( $i === 8 ) {
-										$color_class_css = 'mjschool-class-color8';
-									} elseif ( $i === 9 ) {
-										$color_class_css = 'mjschool-class-color9';
-									}
+									$color_class_css = mjschool_table_list_background_color( $i );
 									?>
 									<tr>
 										<td class="mjschool-checkbox-width-10px">
@@ -287,6 +275,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 		?>
 		<div class="mjschool-panel-body mjschool-margin-top-40">
 			<form class="form mjschool-form-horizontal" name="custom_field_form" enctype="multipart/form-data" method="post" id="custom_field_form">
+				<?php wp_nonce_field( 'mjschool_custom_field_nonce' ); ?>
 				<?php $mjschool_action = isset( $_REQUEST['action'] ) ? $_REQUEST['action'] : 'insert'; ?>
 				<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 				<input type="hidden" name="custom_field_id" value="<?php if ( $edit ) { echo esc_attr( $custom_field_id ); } ?>"/>

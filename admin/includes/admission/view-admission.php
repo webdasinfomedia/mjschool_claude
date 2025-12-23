@@ -44,7 +44,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 												$admission_id = mjschool_encrypt_id( $student_data->ID );
 												?>
 												<div class="mjschool-view-user-edit-btn">
-													<a class="mjschool-color-white mjschool-margin-left-2px"  href="<?php echo esc_url( '?page=mjschool_admission' . '&tab=mjschool-admission-form' . '&action=edit' . '&id=' . $admission_id . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) ); ?>">					
+													<a class="mjschool-color-white mjschool-margin-left-2px"  href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission' . '&tab=mjschool-admission-form' . '&action=edit' . '&id=' . $admission_id . '&_wpnonce=' . mjschool_get_nonce( 'edit_action' ) ) ); ?>">					
 														<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-edit.png"); ?>">
 													</a>
 												</div>
@@ -52,7 +52,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 											}
 											?>
 											<div class="mjschool-view-user-edit-btn">
-												<a class="mjschool-color-white mjschool-margin-left-2px show-admission-popup" href="<?php echo esc_url( '?page=mjschool_admission&tab=admission_list&action=approve&id=' . $student_data->ID ); ?>" student_id="<?php echo esc_attr( $student_data->ID ); ?>"> <img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-approve.png"); ?>"></a>
+												<a class="mjschool-color-white mjschool-margin-left-2px show-admission-popup" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission&tab=admission_list&action=approve&id=' . rawurlencode( $student_data->ID ) ) ); ?>" student_id="<?php echo esc_attr( $student_data->ID ); ?>"> <img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-approve.png"); ?>"></a>
 											</div>
 										</div>
 										<div class=" col-xl-12 col-md-12 col-sm-12 mjschool-float-left-width-100px">
@@ -176,7 +176,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 													echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $mjschool_edit_url ) . '">Add</a>';
 												} else {
 													?>
-													<label class="mjschool-view-page-content-labels"><?php if ( $student_data->gender === 'male' ) { echo esc_html__( 'Male', 'mjschool' ); } elseif ( $student_data->gender === 'female' ) { echo esc_html__( 'Female', 'mjschool' ); } elseif ( $student_data->gender === 'other' ) { echo esc_html__( 'Other', 'mjschool' ); } else { esc_html_e( 'Not Provided', 'mjschool' ); } ?> </label>
+													<label class="mjschool-view-page-content-labels"><?php if ( $student_data->gender === 'male' ) { esc_html_e( 'Male', 'mjschool' ); } elseif ( $student_data->gender === 'female' ) { esc_html_e( 'Female', 'mjschool' ); } elseif ( $student_data->gender === 'other' ) { esc_html_e( 'Other', 'mjschool' ); } else { esc_html_e( 'Not Provided', 'mjschool' ); } ?> </label>
 												<?php } ?>
 											</div>
 											<div class="col-xl-3 col-md-3 col-sm-12 mjschool-margin-top-15px">
@@ -287,7 +287,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 													</div>
 													<div class="col-xl-3 col-md-3 col-sm-12 mjschool-margin-top-15px">
 														<label class="mjschool-guardian-labels mjschool-view-page-header-labels"><?php esc_html_e( 'Gender', 'mjschool' ); ?> </label><br>
-														<label class="mjschool-word-break mjschool-view-page-content-labels font_transfer_capitalize"> <?php if ( ! empty( $student_data->fathe_gender ) ) { if ( $student_data->fathe_gender === 'male' ) { echo esc_html__( 'Male', 'mjschool' ); } elseif ( $student_data->fathe_gender === 'female' ) { echo esc_html__( 'Female', 'mjschool' ); } } else { esc_html_e( 'Not Provided', 'mjschool' ); } ?> </label>
+														<label class="mjschool-word-break mjschool-view-page-content-labels font_transfer_capitalize"> <?php if ( ! empty( $student_data->fathe_gender ) ) { if ( $student_data->fathe_gender === 'male' ) { esc_html_e( 'Male', 'mjschool' ); } elseif ( $student_data->fathe_gender === 'female' ) { esc_html_e( 'Female', 'mjschool' ); } } else { esc_html_e( 'Not Provided', 'mjschool' ); } ?> </label>
 													</div>
 													<div class="col-xl-3 col-md-3 col-sm-12 mjschool-margin-top-15px">
 														<label class="mjschool-guardian-labels mjschool-view-page-header-labels"><?php esc_html_e( 'Date of Birth', 'mjschool' ); ?> </label><br>
@@ -376,7 +376,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 													</div>
 													<div class="col-xl-3 col-md-3 col-sm-12 mjschool-margin-top-15px">
 														<label class="mjschool-guardian-labels mjschool-view-page-header-labels"><?php esc_html_e( 'Gender', 'mjschool' ); ?> </label><br>
-														<label class="mjschool-word-break mjschool-view-page-content-labels font_transfer_capitalize"> <?php if ( ! empty( $student_data->mother_gender ) ) { if ( $student_data->mother_gender === 'male' ) { echo esc_html__( 'Male', 'mjschool' ); } elseif ( $student_data->mother_gender === 'female' ) { echo esc_html__( 'Female', 'mjschool' ); } } else { esc_html_e( 'Not Provided', 'mjschool' ); } ?>
+														<label class="mjschool-word-break mjschool-view-page-content-labels font_transfer_capitalize"> <?php if ( ! empty( $student_data->mother_gender ) ) { if ( $student_data->mother_gender === 'male' ) { esc_html_e( 'Male', 'mjschool' ); } elseif ( $student_data->mother_gender === 'female' ) { esc_html_e( 'Female', 'mjschool' ); } } else { esc_html_e( 'Not Provided', 'mjschool' ); } ?>
 														</label>
 													</div>
 													<div class="col-xl-3 col-md-3 col-sm-12 mjschool-margin-top-15px">

@@ -1029,6 +1029,9 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])
                     if ($active_tab === 'view_student' ) {
                         include_once MJSCHOOL_ADMIN_DIR . '/student/view-student.php';
                     }
+                    if ( $active_tab === 'view_hall_ticket' ) {
+                        require_once MJSCHOOL_ADMIN_DIR . '/student/view-hall-ticket.php';
+                    }
                     ?>
                 </div>
             </div>

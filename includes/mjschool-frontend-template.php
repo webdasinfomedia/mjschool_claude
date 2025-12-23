@@ -3345,17 +3345,7 @@ if ( is_super_admin() ) {
 																	'meta_value' => $class_id
 																 ) ) );
 																
-																if ( $i === 0 ) {
-																	$color_class_css = 'mjschool-class-color0';
-																} elseif ( $i === 1 ) {
-																	$color_class_css = 'mjschool-class-color1';
-																} elseif ( $i === 2 ) {
-																	$color_class_css = 'mjschool-class-color2';
-																} elseif ( $i === 3 ) {
-																	$color_class_css = 'mjschool-class-color3';
-																} elseif ( $i === 4 ) {
-																	$color_class_css = 'mjschool-class-color4';
-																}
+																$color_class_css = mjschool_table_list_background_color( $i );
 																 ?>
 																<div class="row mjschool-group-list-record mjschool-profile-image-class mjschool-class-record-height">
 																	<div class="mjschool-cursor-pointer col-sm-2 col-md-2 col-lg-2 col-xl-2 <?php echo esc_attr($color_class_css); ?> mjschool-remainder-title mjschool-class-tag Bold save1 mjschool-show-task-event mjschool-show-task-event-list mjschool-profile-image-appointment mjschool-class-color0" id="<?php echo esc_attr($retrieved_data->class_id); ?>" model="Class Details">
@@ -3430,17 +3420,7 @@ if ( is_super_admin() ) {
 													$i = 0;
 													if ( ! empty( $homework_data ) ) {
 														foreach ($homework_data as $retrieved_data) {
-															if ($i === 0) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ($i === 1) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ($i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ($i === 3) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ($i === 4) {
-																$color_class_css = 'mjschool-class-color4';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<div class="calendar-event mjschool-profile-image-class">
 																<p class="mjschool-cursor-pointer mjschool-class-tag Bold save1 mjschool-show-task-event mjschool-show-task-event-list mjschool-profile-image-appointment <?php echo esc_attr($color_class_css); ?>" id="<?php echo esc_attr($retrieved_data->homework_id); ?>" model="homework Details">
@@ -3503,17 +3483,7 @@ if ( is_super_admin() ) {
 													if ( ! empty( $examdata ) ) {
 														foreach ($examdata as $retrieved_data) {
 															$cid = $retrieved_data->class_id;
-															if ($i === 0) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ($i === 1) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ($i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ($i === 3) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ($i === 4) {
-																$color_class_css = 'mjschool-class-color4';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<div class="mjschool-calendar-event-p calendar-event view-complaint">
 																<p class="mjschool-cursor-pointer mjschool-exam-list-img mjschool-show-task-event <?php echo esc_attr($color_class_css); ?>" id="<?php echo esc_attr($retrieved_data->exam_id); ?>" model="Exam Details">
@@ -3651,17 +3621,7 @@ if ( is_super_admin() ) {
 													$i = 0;
 													if ( ! empty( $event_data ) ) {
 														foreach ($event_data as $retrieved_data) {
-															if ($i === 0) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ($i === 1) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ($i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ($i === 3) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ($i === 4) {
-																$color_class_css = 'mjschool-class-color4';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<div class="calendar-event mjschool-profile-image-class">
 																<p class="mjschool-cursor-pointer mjschool-class-tag Bold save1 mjschool-show-task-event mjschool-show-task-event-list mjschool-profile-image-appointment <?php echo esc_attr($color_class_css); ?>" id="<?php echo esc_attr($retrieved_data->event_id); ?>" model="Event Details">
@@ -3739,17 +3699,7 @@ if ( is_super_admin() ) {
 													$i = 0;
 													if ( ! empty( $notification_data ) ) {
 														foreach ( $notification_data as $retrieved_data ) {
-															if ( $i === 0 ) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ( $i === 1 ) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ( $i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ( $i === 3 ) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ( $i === 4 ) {
-																$color_class_css = 'mjschool-class-color4';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<div class="calendar-event mjschool-profile-image-class">
 																<p class="mjschool-cursor-pointer mjschool-remainder-title-pr Bold mjschool-view-priscription mjschool-show-task-event mjschool-class-tag <?php echo esc_attr( $color_class_css ); ?>" id="<?php echo esc_attr( $retrieved_data->notification_id ); ?>" model="Notification Details">
@@ -3809,17 +3759,7 @@ if ( is_super_admin() ) {
 													$i = 0;
 													if ( ! empty( $holidaydata ) ) {
 														foreach ($holidaydata as $retrieved_data) {
-															if ($i === 0) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ($i === 1) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ($i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ($i === 3) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ($i === 4) {
-																$color_class_css = 'mjschool-class-color4';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															if ($retrieved_data->status === 0) {
 																?>
 																<div class="calendar-event mjschool-profile-image-class">
@@ -3888,17 +3828,7 @@ if ( is_super_admin() ) {
 													$i = 0;
 													if ( ! empty( $message_data ) ) {
 														foreach ($message_data as $retrieved_data) {
-															if ($i === 0) {
-																$color_class_css = 'mjschool-class-color0';
-															} elseif ($i === 1) {
-																$color_class_css = 'mjschool-class-color1';
-															} elseif ($i === 2 ) {
-																$color_class_css = 'mjschool-class-color2';
-															} elseif ($i === 3) {
-																$color_class_css = 'mjschool-class-color3';
-															} elseif ($i === 4) {
-																$color_class_css = 'mjschool-class-color4';
-															}
+															$color_class_css = mjschool_table_list_background_color( $i );
 															?>
 															<div class="calendar-event mjschool-profile-image-class">
 																<p class="mjschool-cursor-pointer mjschool-class-tag Bold save1 mjschool-show-task-event mjschool-show-task-event-list mjschool-profile-image-appointment <?php echo esc_attr($color_class_css); ?>" id="<?php echo esc_attr($retrieved_data->message_id); ?>" model="Message Details">

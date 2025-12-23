@@ -229,7 +229,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 											<div class="">
 												<div class="mjschool-width-20px" align="center">
 													<h5 class="mjschool-align-left"> 
-														<label class="mjschool-popup-label-heading text-transfer-upercase"><?php echo esc_html__( 'Invoice Number :', 'mjschool' ); ?></label>&nbsp; <label class="mjschool-invoice-model-value"><?php echo esc_html( $invoice_number ); ?></label>
+														<label class="mjschool-popup-label-heading text-transfer-upercase"><?php esc_html_e( 'Invoice Number :', 'mjschool' ); ?></label>&nbsp; <label class="mjschool-invoice-model-value"><?php echo esc_html( $invoice_number ); ?></label>
 													</h5>
 													<?php
 													$issue_date     = 'DD-MM-YYYY';
@@ -237,11 +237,11 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 													$payment_status = mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
 													?>
 													<h5 class="mjschool-align-left">
-														<label class="mjschool-popup-label-heading text-transfer-upercase"><?php echo esc_html__( 'Date :', 'mjschool' ); ?></label>&nbsp; <label class="mjschool-invoice-model-value"><?php echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?></label>
+														<label class="mjschool-popup-label-heading text-transfer-upercase"><?php esc_html_e( 'Date :', 'mjschool' ); ?></label>&nbsp; <label class="mjschool-invoice-model-value"><?php echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?></label>
 													</h5>
 													<h5 class="mjschool-align-left">
 														<label class="mjschool-popup-label-heading text-transfer-upercase">
-															<?php echo esc_html__( 'Status :', 'mjschool' ); ?>
+															<?php esc_html_e( 'Status :', 'mjschool' ); ?>
 														</label> &nbsp;
 														<label class="mjschool-invoice-model-value">
 															<?php
@@ -289,7 +289,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 													<?php esc_html_e( 'Fees Type', 'mjschool' ); ?>
 												</th>
 												<th class="mjschool-entry-table-heading mjschool-align-left mjschool_tables_width_15px">
-													<?php echo esc_html__( 'Total', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
+													<?php esc_html_e( 'Total', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
 												</th>
 											</tr>
 										</thead>
@@ -411,7 +411,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 									<tbody>
 										<tr>
 											<th style="width: 85%;text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>;font-weight: 600;background-color: #b8daff;padding: 10px;border: 2px solid black;" scope="row">
-												<?php echo esc_html__( 'Sub Total', 'mjschool' ) . ' :'; ?>
+												<?php esc_html_e( 'Sub Total', 'mjschool' ) . ' :'; ?>
 											</th>
 											<td style="width: 15%;text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>;padding: 10px;font-weight: 600;border: 2px solid black;">
 												<?php echo esc_html( number_format( $sub_total, 2, '.', '' ) ); ?>
@@ -420,7 +420,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 										<?php if ( isset( $fees_detail_result->discount_amount ) && ( $fees_detail_result->discount_amount ) != 0 ) { ?>
 											<tr>
 												<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>;font-weight: 600;background-color: #b8daff;padding: 10px;border: 2px solid black;" scope="row">
-													<?php echo esc_html__( 'Discount Amount', 'mjschool' ) . ' ( ' . esc_html( $discount_name ) . ' ) :'; ?>
+													<?php esc_html_e( 'Discount Amount', 'mjschool' ) . ' ( ' . esc_html( $discount_name ) . ' ) :'; ?>
 												</th>
 												<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>;padding: 10px;font-weight: 600;border: 2px solid black;">
 													<?php echo '-' . esc_html( number_format( $fees_detail_result->discount_amount, 2, '.', '' ) ); ?>
@@ -430,7 +430,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 										<?php if ( isset( $fees_detail_result->tax_amount ) && ( $fees_detail_result->tax_amount ) != 0 ) { ?>
 											<tr>
 												<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>;font-weight: 600;background-color: #b8daff;padding: 10px;border: 2px solid black;" scope="row">
-													<?php echo esc_html__( 'Tax Amount', 'mjschool' ) . ' ( ' . esc_html( $tax_name ) . ' ) :'; ?>
+													<?php esc_html_e( 'Tax Amount', 'mjschool' ) . ' ( ' . esc_html( $tax_name ) . ' ) :'; ?>
 												</th>
 												<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>;padding: 10px;font-weight: 600;border: 2px solid black;">
 													<?php echo '+' . esc_html( number_format( $fees_detail_result->tax_amount, 2, '.', '' ) ); ?>
@@ -439,7 +439,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 										<?php } ?>
 										<tr>
 											<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>;font-weight: 600;background-color: #b8daff;padding: 10px;border: 2px solid black;" scope="row">
-												<?php echo esc_html__( 'Payment Made :', 'mjschool' ); ?>
+												<?php esc_html_e( 'Payment Made :', 'mjschool' ); ?>
 											</th>
 											<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>;padding: 10px;font-weight: 600;border: 2px solid black;">
 												<?php echo esc_html( number_format( $fees_detail_result->fees_paid_amount, 2, '.', '' ) ); ?>
@@ -447,7 +447,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 										</tr>
 										<tr>
 											<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>;font-weight: 600;background-color: #b8daff;padding: 10px;border: 2px solid black;" scope="row">
-												<?php echo esc_html__( 'Due Amount :', 'mjschool' ); ?>
+												<?php esc_html_e( 'Due Amount :', 'mjschool' ); ?>
 											</th>
 											<?php $Due_amount = $fees_detail_result->total_amount - $fees_detail_result->fees_paid_amount; ?>
 											<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>;padding: 10px;font-weight: 600;border: 2px solid black;">
@@ -474,7 +474,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 										<?php if ( isset( $fees_detail_result->discount_amount ) && ( $fees_detail_result->discount_amount ) != 0 ) { ?>
 											<tr>
 												<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" align="right">
-													<?php echo esc_html__( 'Discount Amount', 'mjschool' ) . '( ' . esc_html( $discount_name ) . ' )' . '  :'; ?>
+													<?php esc_html_e( 'Discount Amount', 'mjschool' ) . '( ' . esc_html( $discount_name ) . ' )' . '  :'; ?>
 												</td>
 												<td align="right" class="mjschool-rtl-width-15px mjschool-padding-bottom-15px mjschool-rtl-text-align-left mjschool-total-value">
 													<?php echo '-' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $fees_detail_result->discount_amount, 2, '.', '' ) ) ); ?>
@@ -486,7 +486,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 											?>
 											<tr>
 												<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" align="right">
-													<?php echo esc_html__( 'Tax Amount', 'mjschool' ) . '( ' . esc_html( $tax_name ) . ' )' . '  :'; ?>
+													<?php esc_html_e( 'Tax Amount', 'mjschool' ) . '( ' . esc_html( $tax_name ) . ' )' . '  :'; ?>
 												</td>
 												<td align="right" class="mjschool-rtl-width-15px mjschool-padding-bottom-15px mjschool-rtl-text-align-left mjschool-total-value">
 													<?php echo '+' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $fees_detail_result->tax_amount, 2, '.', '' ) ) ); ?>
@@ -555,7 +555,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 										<tr>
 											<th class="mjschool-entry-table-heading mjschool-align-left mjschool_black_solid_border_2px" ><?php esc_html_e( 'Date', 'mjschool' ); ?></th>
 											<th class="mjschool-entry-table-heading mjschool-align-left mjschool_black_solid_border_2px" ><?php esc_html_e( 'Method', 'mjschool' ); ?></th>
-											<th class="mjschool-entry-table-heading mjschool-align-left mjschool_black_solid_border_2px" ><?php echo esc_html__( 'Amount', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?></th>
+											<th class="mjschool-entry-table-heading mjschool-align-left mjschool_black_solid_border_2px" ><?php esc_html_e( 'Amount', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?></th>
 										</tr>
 									</thead>
 									<tbody>
@@ -838,7 +838,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 												<?php esc_html_e( 'Description', 'mjschool' ); ?>
 											</th>
 											<th class="mjschool-entry-table-heading mjschool-align-left mjschool_fees_center_width_30_border_black" >
-												<?php echo esc_html__( 'Amount', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
+												<?php esc_html_e( 'Amount', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
 											</th>
 										</tr>
 									</thead>
@@ -862,7 +862,7 @@ if ( sanitize_text_field( wp_unslash($_REQUEST['view_type'])) === 'view_payment'
 										?>
 										<tr>
 											<th class="mjschool_fees_border_2px_width_70">
-												<?php echo esc_html__( 'Total', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
+												<?php esc_html_e( 'Total', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
 											</th>
 											<th class="mjschool_fees_border_2px_width_30">
 												<?php echo esc_html( number_format( $retrive_date->amount, 2, '.', '' ) ); ?>

@@ -773,7 +773,7 @@ $subject_id = isset( $_REQUEST['subject_id'] ) ? intval( wp_unslash( $_REQUEST['
 								} else {
 									?>
 									<div>
-										<h4><?php echo esc_html__( 'No Student Available In This Class.', 'mjschool' ); ?></h3>
+										<h4><?php esc_html_e( 'No Student Available In This Class.', 'mjschool' ); ?></h3>
 									</div>
 									<?php
 								}

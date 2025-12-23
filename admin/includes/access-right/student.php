@@ -11,7 +11,7 @@
  * @since      1.0.0
  * 
  */
-if (!defined( 'ABSPATH' ) ) {
+if ( !defined( 'ABSPATH' ) ) {
 	die();
 }
 
@@ -158,7 +158,7 @@ if ( isset( $_POST['save_access_right'] ) ) {
 				"view"	     =>isset( $_REQUEST['class_room_view'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_view'] ) ) : 0,
 				"delete"	 =>isset( $_REQUEST['class_room_delete'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_room_delete'] ) ) : 0
 			),
-			'grade'             =>array(
+			'grade'             => array(
 				'menu_icone' => esc_url(plugins_url( 'mjschool/assets/images/icons/mjschool-grade.png' ) ),
 				'app_icone'  => esc_url(plugins_url( 'mjschool/assets/images/icons/app-icon/mjschool-grade.png' ) ),
 				'menu_title' => 'Grade',
@@ -345,10 +345,10 @@ if ( isset( $_POST['save_access_right'] ) ) {
 		);
 		$result = update_option( 'mjschool_access_right_student', $role_access_right );
 		$nonce = wp_create_nonce( 'mjschool_access_rights_tab' );
-		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_access_right&tab=Student&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
-		die();
+		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_access_right&tab=Student&_wpnonce=' . rawurlencode( $nonce ) . '&message=1' ) );
+		exit;
 	}
-	else{
+	else {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
 }

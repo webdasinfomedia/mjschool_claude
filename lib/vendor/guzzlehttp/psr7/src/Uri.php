@@ -68,7 +68,7 @@ class Uri implements UriInterface {
 	 */
 	public function __construct( $uri = '' ) {
 		// weak type check to also accept null until we can add scalar type hints
-		if ( $uri != '' ) {
+		if ( $uri !== '' ) {
 			$parts = parse_url( $uri );
 			if ( $parts === false ) {
 				throw new \InvalidArgumentException( "Unable to parse URI: $uri" );
@@ -117,21 +117,21 @@ class Uri implements UriInterface {
 		$uri = '';
 
 		// weak type checks to also accept null until we can add scalar type hints
-		if ( $scheme != '' ) {
+		if ( $scheme !== '' ) {
 			$uri .= $scheme . ':';
 		}
 
-		if ( $authority != '' || $scheme === 'file' ) {
+		if ( $authority !== '' || $scheme === 'file' ) {
 			$uri .= '//' . $authority;
 		}
 
 		$uri .= $path;
 
-		if ( $query != '' ) {
+		if ( $query !== '' ) {
 			$uri .= '?' . $query;
 		}
 
-		if ( $fragment != '' ) {
+		if ( $fragment !== '' ) {
 			$uri .= '#' . $fragment;
 		}
 

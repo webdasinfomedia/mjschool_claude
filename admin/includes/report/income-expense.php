@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Finance Report: Income & Expense Graph and DataTable View.
  *
@@ -35,7 +34,7 @@ if ( $active_tab === 'income_expense_graph' ) {
 		}
 	}
 
-	$current_year = date( 'Y' );
+	$current_year = wp_date( 'Y' );
 	$month        = array(
 		'1'  => esc_html__( 'January', 'mjschool' ),
 		'2'  => esc_html__( 'February', 'mjschool' ),
@@ -134,7 +133,7 @@ if ( $active_tab === 'income_expense_datatable' ) {
 									<div class="col-md-6 mb-2">
 										<div class="form-group input">
 											<div class="col-md-12 form-control">
-												<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+												<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 												<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -142,7 +141,7 @@ if ( $active_tab === 'income_expense_datatable' ) {
 									<div class="col-md-6 mb-2">
 										<div class="form-group input">
 											<div class="col-md-12 form-control">
-												<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+												<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 												<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -165,8 +164,8 @@ if ( $active_tab === 'income_expense_datatable' ) {
 			if ( $date_type === 'period' ) {
 				$start_date = sanitize_text_field( $_REQUEST['start_date'] );
 				$end_date   = sanitize_text_field( $_REQUEST['end_date'] );
-				$start_date = date('Y-m-d 00:00:00', strtotime($start_date));
-				$end_date   = date('Y-m-d 23:59:59', strtotime($end_date));
+				$start_date = wp_date('Y-m-d 00:00:00', strtotime($start_date));
+				$end_date   = wp_date('Y-m-d 23:59:59', strtotime($end_date));
 			} else {
 				$result     = mjschool_all_date_type_value( $date_type );
 				$response   = json_decode( $result );
@@ -208,8 +207,8 @@ if ( $active_tab === 'income_expense_datatable' ) {
 			}
 			// ----------- Income Record Sum. -------------//
 		} else {
-			$start_date   = date( 'Y-m-d' );
-			$end_date     = date( 'Y-m-d' );
+			$start_date   = wp_date( 'Y-m-d' );
+			$end_date     = wp_date( 'Y-m-d' );
 			$income_data  = mjschool_get_total_income( $start_date, $end_date );
 			$expense_data = mjschool_get_total_expense( $start_date, $end_date );
 			// ----------- Expense Record Sum. ------------//

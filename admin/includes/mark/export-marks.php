@@ -29,9 +29,9 @@ if ( isset( $_GET['tab'] ) ) {
 }
 
 ?>
-<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-25px-res"> <!--------- Panel body. ------->
+<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-25px-res"> <!-- Panel body. -->
 	<form method="post" id="export_mark_table">
-		<div class="form-body mjschool-user-form"><!--------- Form body. ------->
+		<div class="form-body mjschool-user-form"><!-- Form body. -->
 			<div class="row">
 				<?php
 				if ( 'university' === $school_type ) {
@@ -47,7 +47,8 @@ if ( isset( $_GET['tab'] ) ) {
 					<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control validate[required] class_id_exam text-input">
 						<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
 						<?php
-						foreach ( mjschool_get_all_class() as $classdata ) {
+						$mjschool_class = new Mjschool_Class();
+						foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 							?>
 							<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php
@@ -71,7 +72,8 @@ if ( isset( $_GET['tab'] ) ) {
 								$class_section = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) );
 								// Sanitize class_id for use in function argument.
 								$class_id_sanitized = intval( sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) );
-								foreach ( mjschool_get_class_sections( $class_id_sanitized ) as $sectiondata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_class_sections( $class_id_sanitized ) as $sectiondata ) {
 									?>
 									<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 									<?php
@@ -109,4 +111,4 @@ if ( isset( $_GET['tab'] ) ) {
 			</div>
 		</div>
 	</form>
-</div> <!--------- Panel body. ------->
+</div> <!-- Panel body. -->

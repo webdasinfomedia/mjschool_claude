@@ -8,13 +8,12 @@
  * hostel email templates, holidays email templates, event email templates and all.
  *
  * @since      1.0.0
- *
  * @package    MjSchool
  * @subpackage MjSchool/admin/includes/email_template
  */
 defined( 'ABSPATH' ) || exit;
 $mjschool_role = mjschool_get_user_role( get_current_user_id() );
-if ( $mjschool_role == 'administrator' ) {
+if ( $mjschool_role === 'administrator' ) {
 	$mjschool_user_access_add    = 1;
 	$mjschool_user_access_edit   = 1;
 	$mjschool_user_access_delete = 1;
@@ -28,20 +27,20 @@ if ( $mjschool_role == 'administrator' ) {
 }
 ?>
 <?php
-$mjschool_active_tab = isset( $_REQUEST['tab'] ) ? $_REQUEST['tab'] : 'registration_mail';
+$mjschool_active_tab = isset( $_REQUEST['tab'] ) ? sanitize_key( wp_unslash( $_REQUEST['tab'] ) ) : 'registration_mail';
 $mjschool_changed    = 0;
-if ( isset( $_REQUEST['send_demo_mail'] ) ) {
-	$to      = $_REQUEST['demo_email'];
+if ( isset( $_POST['send_demo_mail'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'send_demo_mail_nonce' ) ) {
+	$to      = sanitize_email( wp_unslash( $_POST['demo_email'] ?? '' ) );
 	$subject = 'Demo Mail';
-	$message = $_REQUEST['demo_content'];
+	$message = wp_kses_post( wp_unslash( $_POST['demo_content'] ?? '' ) );
 	$result  = mjschool_send_mail( $to, $subject, $message );
 	mjschool_setup_wizard_steps_updates( 'step7_email_temp' );
 	wp_safe_redirect( admin_url( 'admin.php?page=mjschool_email_template&message=2' ) );
 	die();
 }
-if ( isset( $_REQUEST['save_registration_template'] ) ) {
-	update_option( 'mjschool_registration_mailtemplate', mjschool_strip_tags_and_stripslashes( $_REQUEST['registratoin_mailtemplate_content'] ) );
-	update_option( 'mjschool_registration_title', mjschool_strip_tags_and_stripslashes( $_REQUEST['mjschool_registration_title'] ) );
+if ( isset( $_POST['save_registration_template'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'save_email_template_nonce' ) ) {
+	update_option( 'mjschool_registration_mailtemplate', mjschool_strip_tags_and_stripslashes( sanitize_text_field( wp_unslash( $_POST['registratoin_mailtemplate_content'] ?? '' ) ) ) );
+	update_option( 'mjschool_registration_title', mjschool_strip_tags_and_stripslashes( sanitize_text_field( wp_unslash( $_POST['mjschool_registration_title'] ?? '' ) ) ) );
 	$search           = array( '{{student_name}}', '{{school_name}}' );
 	$replace          = array( 'ashvin', 'A1 School' );
 	$message_content  = str_replace( $search, $replace, get_option( 'mjschool_registration_mailtemplate' ) );
@@ -55,7 +54,6 @@ if ( isset( $_REQUEST['save_activation_mailtemplate'] ) ) {
 	$message_content  = str_replace( $search, $replace, get_option( 'mjschool_student_activation_mailcontent' ) );
 	$mjschool_changed = 1;
 }
-// ---- -------//
 if ( isset( $_REQUEST['save_feepayment_mailtemplate'] ) ) {
 	update_option( 'mjschool_fee_payment_mailcontent', mjschool_strip_tags_and_stripslashes( $_REQUEST['mjschool_fee_payment_mailcontent'] ) );
 	update_option( 'mjschool_fee_payment_title', mjschool_strip_tags_and_stripslashes( $_REQUEST['mjschool_fee_payment_title'] ) );
@@ -294,7 +292,7 @@ if ( $mjschool_changed ) {
 						<div class="mjschool-main-email-template"><!--mjschool-main-email-template. -->
 							<?php ++$i; ?>
 							<div id="mjschool-accordion" class="mjschool-accordion panel-group accordion accordion-flush mjschool-padding-top-15px-res" id="mjschool-accordion-flush" aria-multiselectable="false" role="tablist">
-								<!--START accordion. -->
+								<!--Start accordion.-->
 								<div class="mt-1 accordion-item">
 									<h4 class="accordion-header" id="flush-heading<?php echo esc_attr( $i ); ?>">
 										<button class="accordion-button collapsed bg-gray" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse_collapse_<?php echo esc_attr( $i ); ?>" aria-controls="flush-heading<?php echo esc_attr( $i ); ?>">
@@ -334,7 +332,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_admission_template" class="btn btn-success mjschool-save-btn" />
@@ -391,7 +389,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_approve_admission_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -449,7 +447,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_admission_template_for_parent" class="btn btn-success mjschool-save-btn" />
@@ -504,7 +502,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_registration_template" class="btn btn-success mjschool-save-btn" />
@@ -560,7 +558,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_adduser_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -617,7 +615,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="virtual_class_invite_teacher_form_template" class="btn btn-success mjschool-save-btn" />
@@ -673,7 +671,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="virtual_class_teacher_reminder_template" class="btn btn-success mjschool-save-btn" />
@@ -730,7 +728,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="virtual_class_student_reminder_template" class="btn btn-success mjschool-save-btn" />
@@ -779,7 +777,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_assign_subject_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -832,7 +830,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_activation_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -886,7 +884,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_student_assign_teacher_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -938,7 +936,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_student_assign_to_teacher_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -992,7 +990,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_exam_mail_template" class="btn btn-success mjschool-save-btn" />
@@ -1043,7 +1041,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_exam_receipt_generate" class="btn btn-success mjschool-save-btn" />
@@ -1093,7 +1091,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_homework_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -1146,7 +1144,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_homework_mailtemplate_parent" class="btn btn-success mjschool-save-btn" />
@@ -1193,7 +1191,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_student_absent_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -1246,7 +1244,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="add_leave_template_for_admin" class="btn btn-success mjschool-save-btn" />
@@ -1303,7 +1301,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="add_leave_template_for_student" class="btn btn-success mjschool-save-btn" />
@@ -1362,7 +1360,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="add_leave_template_for_parent" class="btn btn-success mjschool-save-btn" />
@@ -1418,7 +1416,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="leave_approve_template" class="btn btn-success mjschool-save-btn" />
@@ -1474,7 +1472,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="leave_reject_template" class="btn btn-success mjschool-save-btn" />
@@ -1527,7 +1525,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_feepayment_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -1579,7 +1577,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_feepayment_mailtemplate_for_parent" class="btn btn-success mjschool-save-btn" />
@@ -1633,7 +1631,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_payment_recived_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -1685,7 +1683,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_feepayment_reminder_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -1695,7 +1693,6 @@ if ( $mjschool_changed ) {
 										</div>
 									</div>
 								</div>
-								<!-- </div> -->
 								<?php
 								++$i;
 								?>
@@ -1739,7 +1736,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_feepayment_reminder_mailtemplate_for_student" class="btn btn-success mjschool-save-btn" />
@@ -1749,7 +1746,6 @@ if ( $mjschool_changed ) {
 										</div>
 									</div>
 								</div>
-								<!-- </div> -->
 								<?php
 								++$i;
 								?>
@@ -1791,7 +1787,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_issue_book_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -1844,7 +1840,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_bed_template" class="btn btn-success mjschool-save-btn" />
@@ -1894,7 +1890,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_notice_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -1945,7 +1941,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_event_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -1995,7 +1991,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_messege_recived_mailtemplate" class="btn btn-success mjschool-save-btn" />
@@ -2046,7 +2042,7 @@ if ( $mjschool_changed ) {
 													</div>
 												</div>
 												<?php
-												if ( $mjschool_user_access_add == 1 or $mjschool_user_access_edit == 1 ) {
+												if ( $mjschool_user_access_add == 1 || $mjschool_user_access_edit == 1 ) {
 													?>
 													<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 														<input type="submit" value="<?php esc_attr_e( 'Save', 'mjschool' ); ?>" name="save_holiday_mailtemplate" class="btn btn-success mjschool-save-btn" />

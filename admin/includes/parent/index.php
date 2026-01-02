@@ -20,27 +20,27 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_edit   = isset( $user_access['edit'] ) ? $user_access['edit'] : '0';
 	$user_access_delete = isset( $user_access['delete'] ) ? $user_access['delete'] : '0';
 	$user_access_view   = isset( $user_access['view'] ) ? $user_access['view'] : '0';
-	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+	if ( isset( $_GET['page'] ) ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
-		$request_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+		$request_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 		if ( ! empty( $request_action ) ) {
 			if ( isset( $user_access['page_link'] ) && $user_access['page_link'] === 'parent' && $request_action === 'edit' ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( isset( $user_access['page_link'] ) && $user_access['page_link'] === 'parent' && $request_action === 'delete' ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( isset( $user_access['page_link'] ) && $user_access['page_link'] === 'parent' && $request_action === 'insert' ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -48,7 +48,8 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$mjschool_obj_user   = new Mjschool_User();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'parent';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 $mjschool_role     = 'parent';
@@ -117,13 +118,14 @@ if ( isset( $_POST['save_parent'] ) ) {
 			'created_by'           => get_current_user_id(),
 		);
 		// UPDATE PARENT
-		$current_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+		$current_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 		if ( $current_action === 'edit' ) {
 			if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'edit_action' ) ) {
-				$parent_id_encrypted = isset( $_REQUEST['parent_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['parent_id'] ) ) : '';
+				$parent_id_encrypted = isset( $_GET['parent_id'] ) ? sanitize_text_field( wp_unslash( $_GET['parent_id'] ) ) : '';
 				$userdata['ID']      = intval( mjschool_decrypt_id( $parent_id_encrypted ) );
-				$result              = mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
-				$custom_field_obj    = new Mjschool_Custome_Field();
+				$mjschool_obj_user   = new Mjschool_User();
+				$result              = $mjschool_obj_user->mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
+				$custom_field_obj    = new Mjschool_Custom_Field();
 				$module              = 'parent';
 				$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
@@ -135,8 +137,8 @@ if ( isset( $_POST['save_parent'] ) ) {
 			}
 		} elseif ( ! email_exists( sanitize_email( wp_unslash( $_POST['email'] ) ) ) ) {
 			// INSERT PARENT
-			$result             = mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
-			$custom_field_obj   = new Mjschool_Custome_Field();
+			$result             = $mjschool_obj_user->mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
+			$custom_field_obj   = new Mjschool_Custom_Field();
 			$module             = 'parent';
 			$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
@@ -151,17 +153,17 @@ if ( isset( $_POST['save_parent'] ) ) {
 }
 
 $addparent = 0;
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'addparent' ) {
-	if ( isset( $_REQUEST['student_id'] ) ) {
-		$student   = get_userdata( intval( sanitize_text_field( wp_unslash( $_REQUEST['student_id'] ) ) ) );
+if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'addparent' ) {
+	if ( isset( $_GET['student_id'] ) ) {
+		$student   = get_userdata( intval( sanitize_text_field( wp_unslash( $_GET['student_id'] ) ) ) );
 		$addparent = 1;
 	}
 }
 $active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'parentlist';
 
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'delete' ) {
+if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'delete_action' ) ) {
-		$parent_id_encrypted = isset( $_REQUEST['parent_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['parent_id'] ) ) : '';
+		$parent_id_encrypted = isset( $_GET['parent_id'] ) ? sanitize_text_field( wp_unslash( $_GET['parent_id'] ) ) : '';
 		$parent_id           = intval( mjschool_decrypt_id( $parent_id_encrypted ) );
 		$childs              = get_user_meta( $parent_id, 'child', true );
 		if ( ! empty( $childs ) ) {
@@ -176,7 +178,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 				}
 			}
 		}
-		$result = mjschool_delete_usedata( $parent_id );
+		$result = $mjschool_obj_user->mjschool_delete_usedata( $parent_id );
 		if ( $result ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_parent&tab=parentlist&message=4' ) );
 			exit;
@@ -186,9 +188,9 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 	}
 }
 
-if ( isset( $_REQUEST['delete_selected'] ) ) {
-	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
-		$ids_array = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+if ( isset( $_POST['delete_selected'] ) ) {
+	if ( ! empty( $_POST['id'] ) && is_array( $_POST['id'] ) ) {
+		$ids_array = array_map( 'intval', wp_unslash( $_POST['id'] ) );
 		foreach ( $ids_array as $id ) {
 			$childs = get_user_meta( $id, 'child', true );
 			if ( ! empty( $childs ) ) {
@@ -203,7 +205,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 					}
 				}
 			}
-			$result = mjschool_delete_usedata( $id );
+			$result = $mjschool_obj_user->mjschool_delete_usedata( $id );
 		}
 	}
 	if ( isset( $result ) && $result ) {
@@ -284,7 +286,7 @@ if ( isset( $_POST['parent_export_csv_selected'] ) ) {
 			header( 'Pragma: public' );
 			header( 'Expires: 0' );
 			header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-			header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+			header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 			header( 'Cache-Control: private', false );
 			header( 'Content-Type: ' . $mime );
 			header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
@@ -299,7 +301,7 @@ if ( isset( $_POST['parent_export_csv_selected'] ) ) {
 }
 
 // ------------------ Import parent member. --------------------------//
-if ( isset( $_REQUEST['upload_parent_csv_file'] ) ) {
+if ( isset( $_POST['upload_parent_csv_file'] ) ) {
 	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	if ( wp_verify_nonce( $nonce, 'upload_csv_nonce' ) ) {
 		if ( isset( $_FILES['csv_file'] ) ) {
@@ -487,7 +489,7 @@ if ( isset( $_REQUEST['upload_parent_csv_file'] ) ) {
 					}
 					$success = 1;
 					if ( $user_created ) {
-						$import_mail = isset( $_REQUEST['mjschool_import_parent_mail'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['mjschool_import_parent_mail'] ) ) : '';
+						$import_mail = isset( $_POST['mjschool_import_parent_mail'] ) ? sanitize_text_field( wp_unslash( $_POST['mjschool_import_parent_mail'] ) ) : '';
 						if ( $import_mail === '1' ) {
 							if ( $user_id ) {
 								$userdata                  = get_userdata( $user_id );
@@ -540,7 +542,7 @@ if ( isset( $_REQUEST['upload_parent_csv_file'] ) ) {
 <div class="mjschool-page-inner"><!-- Mjschool-page-inner. -->
 	<div class="mjschool-main-list-margin-15px"><!-- Mjschool-main-list-margin-15px. -->
 		<?php
-		$message = isset( $_REQUEST['message'] ) ? sanitize_key( wp_unslash( $_REQUEST['message'] ) ) : '0';
+		$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : '0';
 		switch ( $message ) {
 			case '1':
 				$message_string = esc_html__( 'Parent Updated Successfully.', 'mjschool' );
@@ -581,7 +583,8 @@ if ( isset( $_REQUEST['upload_parent_csv_file'] ) ) {
 				<div class="mjschool-main-list-page"><!-- Mjschool-main-list-page. -->
 					<?php
 					if ( $active_tab === 'parentlist' ) {
-						$parentdata = mjschool_get_users_data( 'parent' );
+						$mjschool_user = new Mjschool_User();
+						$parentdata = $mjschool_user->mjschool_get_users_data( 'parent' );
 						if ( ! empty( $parentdata ) ) {
 							?>
 							<div>
@@ -627,7 +630,8 @@ if ( isset( $_REQUEST['upload_parent_csv_file'] ) ) {
 															<td class="mjschool-user-image mjschool-width-50px-td">
 																<a class="mjschool-color-black" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_parent&tab=view_parent&action=view_parent&parent_id='.rawurlencode( $parent_id ) .'&_wpnonce='.rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>">
 																	<?php
-																	$umetadata = mjschool_get_user_image( $uid );
+																	$mjschool_user = new Mjschool_User();
+																	$umetadata = $mjschool_user->mjschool_get_user_image( $uid );
 																	if ( empty( $umetadata ) ) {
 																		echo '<img src="' . esc_url( get_option( 'mjschool_parent_thumb_new' ) ) . '" height="50px" width="50px" class="img-circle" />';
 																	} else {

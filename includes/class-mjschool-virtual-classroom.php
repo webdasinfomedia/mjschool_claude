@@ -57,7 +57,8 @@ class Mjschool_Virtual_Classroom
         $end   = strtotime($end_time_raw);
         // Calculate difference in minutes.
         $diff_minutes = ( $end - $start ) / 60;
-        $clasname     = mjschool_get_class_name($data['class_id']);
+        $mjschool_class = new Mjschool_Class();
+        $clasname     = $mjschool_class->mjschool_get_class_name($data['class_id']);
         $client       = new GuzzleHttp\Client(array( 'base_uri' => 'https://api.zoom.us' ));
         $accessToken  = mjschool_get_zoom_access_token();
         $topic        = $data['agenda'];
@@ -75,7 +76,7 @@ class Mjschool_Virtual_Classroom
                 'Authorization' => "Bearer {$accessToken}",
                 'Content-Type'  => 'application/json',
                 );
-                $body      = json_encode(
+                $body      = wp_json_encode(
                     array(
                     'topic'      => $clasname,
                     'start_time' => $start_date,
@@ -108,7 +109,7 @@ class Mjschool_Virtual_Classroom
                 'Authorization' => "Bearer {$accessToken}",
                 'Content-Type'  => 'application/json',
                 );
-                $body = json_encode(
+                $body = wp_json_encode(
                     array(
                     'topic'      => $clasname,
                     'agenda'     => $topic,
@@ -157,7 +158,7 @@ class Mjschool_Virtual_Classroom
                 $meeting_data['meeting_join_link']  = $data['meeting_join_link'];
                 $meeting_data['meeting_start_link'] = $data['meeting_start_link'];
                 $meetingid['meeting_id']            = sanitize_text_field($data['meeting_id']);
-                $meeting_data['updated_date']       = date('Y-m-d h:i:sa');
+                $meeting_data['updated_date']       = current_time( 'mysql' );
                 $meeting_data['updated_by']         = get_current_user_id(); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
                 $result                             = $wpdb->update($table_zoom_meeting, $meeting_data, $meetingid);
                 mjschool_append_audit_log('' . esc_html__('Virtual Classroom Updated', 'mjschool') . '', get_current_user_id(), get_current_user_id(), 'edit', sanitize_textarea_field(wp_unslash($_REQUEST['page'])));
@@ -167,7 +168,7 @@ class Mjschool_Virtual_Classroom
                 $meeting_data['meeting_join_link']  = $meeting_response->join_url;
                 $meeting_data['meeting_start_link'] = $meeting_response->start_url;
                 $meeting_data['created_by']         = get_current_user_id();
-                $meeting_data['created_date']       = date('Y-m-d h:i:sa'); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+                $meeting_data['created_date']       = current_time( 'mysql' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
                 $result                             = $wpdb->insert($table_zoom_meeting, $meeting_data);
                 mjschool_append_audit_log('' . esc_html__('Virtual Classroom Added', 'mjschool') . '', get_current_user_id(), get_current_user_id(), 'insert', sanitize_textarea_field(wp_unslash($_REQUEST['page'])));
             }

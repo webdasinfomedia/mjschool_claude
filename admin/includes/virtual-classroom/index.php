@@ -141,6 +141,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 										<tbody>
 											<?php
 											$i = 0;
+											$mjschool_subject = new Mjschool_Subject();
 											foreach ( $meeting_list_data as $retrieved_data ) {
 												if ( $retrieved_data->weekday_id === 1 ) {
 													$day = esc_attr__( 'Monday', 'mjschool' );
@@ -180,14 +181,15 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 													<td>
 														<?php
 														$subid = $retrieved_data->subject_id;
-														echo esc_html( mjschool_get_single_subject_name( $subid ) );
+														echo esc_html( $mjschool_subject->mjschool_get_single_subject_name( $subid ) );
 														?>
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Subject Name', 'mjschool' ); ?>"></i>
 													</td>
 													<td>
 														<?php
+														$teacher_obj = new Mjschool_Teacher();
 														if ( ! empty( $retrieved_data->teacher_id ) ) {
-															echo esc_html( mjschool_get_teacher( $retrieved_data->teacher_id ) );
+															echo esc_html( $teacher_obj->mjschool_get_teacher( $retrieved_data->teacher_id ) );
 														} else {
 															esc_html_e( 'N/A', 'mjschool' ); 
 														}

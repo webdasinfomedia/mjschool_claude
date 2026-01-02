@@ -23,6 +23,7 @@ class ViewProfile {
 			die();
 		}
 		if ( $_REQUEST['mjschool-json-api'] == 'profile_image_update' ) {
+			
 			$response = $this->mjschool_update_user_profile( $_REQUEST['user_id'] );
 			if ( is_array( $response ) ) {
 				echo json_encode( $response );
@@ -39,8 +40,9 @@ class ViewProfile {
 				$user_data = get_userdata( $user_id );
 			}
 			$school_obj = new MJSchool_Management( $user_id );
+			$mjschool_user = new Mjschool_User();
 			if ( ! empty( $user_data ) ) {
-				$umetadata = mjschool_get_user_image( $user_id );
+				$umetadata = $mjschool_user->mjschool_get_user_image( $user_id );
 				if ( empty( $umetadata ) ) {
 					$imageurl = get_option( 'mjschool_student_thumb_new' );
 				} else {
@@ -60,11 +62,13 @@ class ViewProfile {
 				$result['phone']       = $user_data->mobile_number;
 				$obj_subject = new Mjschool_Subject();
 				if ( $school_obj->role == 'student' ) {
-					if ( $user_data->class_name != '' ) {
-						$classname = mjschool_get_class_name( $user_data->class_name );
+					if ( $user_data->class_name !== '' ) {
+						$mjschool_class = new Mjschool_Class();
+						$classname = $mjschool_class->mjschool_get_class_name( $user_data->class_name );
 					}
 					if ( isset( $user_data->class_section ) && $user_data->class_section != 0 ) {
-						$section = mjschool_get_section_name( $user_data->class_section );
+						$mjschool_class = new Mjschool_Class();
+						$section = $mjschool_class->mjschool_get_section_name( $user_data->class_section );
 					} else {
 						$section = esc_html__( 'No Section', 'mjschool' );
 					}
@@ -120,7 +124,7 @@ class ViewProfile {
 		if ( ! empty( $_REQUEST['user_id'] ) && ! empty( $_REQUEST['access_token'] ) ) {
 			$access_token = get_user_meta( $_REQUEST['user_id'], 'access_token', true );
 			if ( $_REQUEST['access_token'] == $access_token ) {
-				if ( isset( $user_id ) && $user_id != '' ) {
+				if ( isset( $user_id ) && $user_id !== '' ) {
 					if ( $_FILES['image']['size'] > 0 ) {
 						$smgt_avatar_image = mjschool_user_avatar_image_upload( 'image' );
 						$smgt_avatar       = content_url() . '/uploads/school_assets/' . $smgt_avatar_image;

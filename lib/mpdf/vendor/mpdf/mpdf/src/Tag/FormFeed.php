@@ -116,7 +116,7 @@ class FormFeed extends Tag
 		elseif ($mgr !== '' || $mgl !== '' || $mgt !== '' || $mgb !== '' || $mgh !== '' || $mgf !== '' ||
 			$ohname !== '' || $ehname !== '' || $ofname !== '' || $efname !== '' ||
 			$ohvalue || $ehvalue || $ofvalue || $efvalue ||
-			$orient != $this->mpdf->CurOrientation || $newformat || $pagesel) {
+			$orient !== $this->mpdf->CurOrientation || $newformat || $pagesel) {
 			$pagebreaktype = 'cloneall';
 		}
 

@@ -138,7 +138,8 @@ class MJSchool_Management {
 		$user       = get_userdata( $user_id );
 		$user_meta  = get_user_meta( $user_id );
 		$class_id   = isset( $user_meta['class_name'][0] ) ? intval( $user_meta['class_name'][0] ) : 0;
-		$class_info = mjschool_get_class_by_id( $class_id );
+		$mjschool_class = new Mjschool_Class();
+		$class_info = $mjschool_class->mjschool_get_class_by_id( $class_id );
 		return $class_info;
 	}
 	/**
@@ -154,7 +155,8 @@ class MJSchool_Management {
 		$user_meta    = get_user_meta( $user_id );
 		$section_id   = isset( $user_meta['class_section'][0] ) ? intval( $user_meta['class_section'][0] ) : 0;
 		$class_id     = isset( $user_meta['class_name'][0] ) ? intval( $user_meta['class_name'][0] ) : 0;
-		$section_info = mjschool_get_class_sections( $class_id );
+		$mjschool_class = new Mjschool_Class();
+		$section_info = $mjschool_class->mjschool_get_class_sections( $class_id );
 		return $section_info;
 	}
 	/**
@@ -166,7 +168,8 @@ class MJSchool_Management {
 	 */
 	public function mjschool_subject_list( $id ) {
 		$class_id = intval( $id );
-		$result   = mjschool_get_subject_by_class_id( $class_id );
+		$obj_subject = new Mjschool_Subject();
+		$result   = $obj_subject->mjschool_get_subject_by_class_id( $class_id );
 		return $result;
 	}
 	/**

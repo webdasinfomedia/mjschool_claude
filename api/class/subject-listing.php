@@ -35,12 +35,13 @@ class SubjectListing {
 				$user_role = mjschool_get_role( $data['current_user'] );
 				$role      = $user_role[0];
 				$menu_access_data = mjschool_get_user_role_wise_access_right_array_in_api( $data['current_user'], 'subject' );
+				$obj_subject = new Mjschool_Subject();
 				if ( $role == 'teacher' ) {
 					if ( $menu_access_data['view'] == '1' && $menu_access_data['own_data'] == '1' ) {
 						$subjectdata   = array();
 						$subjects_data = $obj_subject->mjschool_get_teacher_own_subject( $data['current_user'] );
 						foreach ( $subjects_data as $s_id ) {
-							$subjectdata[] = mjschool_get_subject( $s_id->subject_id );
+							$subjectdata[] = $obj_subject->mjschool_get_subject( $s_id->subject_id );
 						}
 					} elseif ( $menu_access_data['view'] == '1' && $menu_access_data['own_data'] == '0' ) {
 						$subjectdata = mjschool_get_all_data( 'mjschool_subject' );
@@ -62,11 +63,13 @@ class SubjectListing {
 				}
 				if ( ! empty( $subjectdata ) ) {
 					$i = 0;
+					$obj_subject = new Mjschool_Subject();
+					$teacher_obj = new Mjschool_Teacher();
 					foreach ( $subjectdata as $retrieved_data ) {
 						$teacher_group = array();
-						$teacher_ids   = mjschool_teacher_by_subject( $retrieved_data );
+						$teacher_ids   = $obj_subject->mjschool_teacher_by_subject( $retrieved_data );
 						foreach ( $teacher_ids as $teacher_id ) {
-							$teacher_group[] = mjschool_get_teacher( $teacher_id );
+							$teacher_group[] = $teacher_obj->mjschool_get_teacher( $teacher_id );
 						}
 						$teachers                     = implode( ',', $teacher_group );
 						$result[ $i ]['id']           = $retrieved_data->subid;
@@ -76,10 +79,11 @@ class SubjectListing {
 						}
 						$cid                      = $retrieved_data->class_id;
 						$result[ $i ]['class_id'] = $cid;
-						$result[ $i ]['class']    = mjschool_get_class_name( $cid );
+						$mjschool_class = new Mjschool_Class();
+						$result[ $i ]['class']    = $mjschool_class->mjschool_get_class_name( $cid );
 						if ( $retrieved_data->section_id != 0 ) {
 							$result[ $i ]['section_id'] = $retrieved_data->section_id;
-							$section_name               = mjschool_get_section_name( $retrieved_data->section_id );
+							$section_name               = $mjschool_class->mjschool_get_section_name( $retrieved_data->section_id );
 						} else {
 							$section_name = esc_html__( 'No Section', 'mjschool' );
 						}
@@ -87,7 +91,7 @@ class SubjectListing {
 						$result[ $i ]['author_name'] = $retrieved_data->author_name;
 						$result[ $i ]['edition']     = $retrieved_data->edition;
 						$syllabus                    = '';
-						if ( $retrieved_data->syllabus != '' ) {
+						if ( $retrieved_data->syllabus !== '' ) {
 							$syllabus = content_url() . '/uploads/school_assets/' . $retrieved_data->syllabus;
 						}
 						$result[ $i ]['syllabus_url'] = $syllabus;

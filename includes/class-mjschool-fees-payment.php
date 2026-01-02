@@ -59,10 +59,10 @@ class Mjschool_Feespayment {
 		$feedata['fees_id']      = implode( ',', $fees_ids );
 		$feedata['fees_amount']  = isset( $_POST['fees_amount'] ) ? floatval( wp_unslash( $_POST['fees_amount'] ) ) : 0;
 		$feedata['description']  = isset( $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '';
-		$feedata['start_year']   = isset( $_POST['start_year'] ) ? date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['start_year'] ) ) ) ) : date( 'Y-m-d' );
-		$feedata['end_year']     = isset( $_POST['end_year'] ) ? date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) ) ) : date( 'Y-m-d' );
-		$feedata['paid_by_date'] = date( 'Y-m-d' );
-		$feedata['created_date'] = date( 'Y-m-d H:i:s' );
+		$feedata['start_year']   = isset( $_POST['start_year'] ) ? wp_date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['start_year'] ) ) ) ) : wp_date( 'Y-m-d' );
+		$feedata['end_year']     = isset( $_POST['end_year'] ) ? wp_date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) ) ) : wp_date( 'Y-m-d' );
+		$feedata['paid_by_date'] = wp_date( 'Y-m-d' );
+		$feedata['created_date'] = current_time( 'mysql' );
 		$feedata['created_by']   = get_current_user_id();
 		if ( isset( $data['discount'] ) ) {
 			$feedata['discount']        = floatval( $data['discount'] );
@@ -90,7 +90,7 @@ class Mjschool_Feespayment {
 			$fees_id['fees_pay_id'] = intval( $data['fees_pay_id'] );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result  = $wpdb->update( $table_mjschool_fees_payment, $feedata, $fees_id );
-			$student = mjschool_get_user_name_by_id( $feedata['student_id'] );
+			$student = mjschool_get_display_name( $feedata['student_id'] );
 			$page_name = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
 			mjschool_append_audit_log( '' . esc_html__( 'Fees Payment Updated', 'mjschool' ) . '( ' . esc_html( $student ) . ' )' . '', get_current_user_id(), get_current_user_id(), 'edit', $page_name );
 			return $result;
@@ -115,26 +115,26 @@ class Mjschool_Feespayment {
 				}
 				$recurring_feedata['total_amount']   = $recurring_feedata['fees_amount'] + $recurring_feedata['tax_amount'];
 				$recurring_feedata['description']    = isset( $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '';
-				$start_year_raw                      = isset( $_POST['start_year'] ) ? sanitize_text_field( wp_unslash( $_POST['start_year'] ) ) : date( 'Y-m-d' );
-				$recurring_feedata['start_year']     = date( 'Y-m-d', strtotime( $start_year_raw ) );
+				$start_year_raw                      = isset( $_POST['start_year'] ) ? sanitize_text_field( wp_unslash( $_POST['start_year'] ) ) : wp_date( 'Y-m-d' );
+				$recurring_feedata['start_year']     = wp_date( 'Y-m-d', strtotime( $start_year_raw ) );
 				$recurring_feedata['recurring_type'] = $recurrence_type;
 				if ( $recurrence_type === 'monthly' ) {
-					$recurring_enddate = date( 'Y-m-d', strtotime( '+1 months', strtotime( $start_year_raw ) ) );
+					$recurring_enddate = wp_date( 'Y-m-d', strtotime( '+1 months', strtotime( $start_year_raw ) ) );
 				} elseif ( $recurrence_type === 'weekly' ) {
-					$recurring_enddate = date( 'Y-m-d', strtotime( '+1 week', strtotime( $start_year_raw ) ) );
+					$recurring_enddate = wp_date( 'Y-m-d', strtotime( '+1 week', strtotime( $start_year_raw ) ) );
 				} elseif ( $recurrence_type === 'quarterly' ) {
-					$recurring_enddate = date( 'Y-m-d', strtotime( '+3 months', strtotime( $start_year_raw ) ) );
+					$recurring_enddate = wp_date( 'Y-m-d', strtotime( '+3 months', strtotime( $start_year_raw ) ) );
 				} elseif ( $recurrence_type === 'half_yearly' ) {
-					$recurring_enddate = date( 'Y-m-d', strtotime( '+6 months', strtotime( $start_year_raw ) ) );
+					$recurring_enddate = wp_date( 'Y-m-d', strtotime( '+6 months', strtotime( $start_year_raw ) ) );
 				} else {
-					$end_year_raw      = isset( $_POST['end_year'] ) ? sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) : date( 'Y-m-d' );
-					$recurring_enddate = date( 'Y-m-d', strtotime( $end_year_raw ) );
+					$end_year_raw      = isset( $_POST['end_year'] ) ? sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) : wp_date( 'Y-m-d' );
+					$recurring_enddate = wp_date( 'Y-m-d', strtotime( $end_year_raw ) );
 				}
-				$end_year_raw                           = isset( $_POST['end_year'] ) ? sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) : date( 'Y-m-d' );
-				$recurring_feedata['end_year']          = date( 'Y-m-d', strtotime( $end_year_raw ) );
+				$end_year_raw                           = isset( $_POST['end_year'] ) ? sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) : wp_date( 'Y-m-d' );
+				$recurring_feedata['end_year']          = wp_date( 'Y-m-d', strtotime( $end_year_raw ) );
 				$recurring_feedata['recurring_enddate'] = $recurring_enddate;
 				$recurring_feedata['status']            = 'yes';
-				$recurring_feedata['created_date']      = date( 'Y-m-d H:i:s' );
+				$recurring_feedata['created_date']      = current_time( 'mysql' );
 				$recurring_feedata['created_by']        = get_current_user_id();
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 				$result_recurring    = $wpdb->insert( $table_mjschool_fees_payment_recurring, $recurring_feedata );
@@ -145,8 +145,9 @@ class Mjschool_Feespayment {
 			$table_income = $wpdb->prefix . 'mjschool_income_expense';
 			$fees_type    = array();
 			$fees_ids     = isset( $_POST['fees_id'] ) && is_array( $_POST['fees_id'] ) ? array_map( 'intval', wp_unslash( $_POST['fees_id'] ) ) : array();
+			$obj_fees = new Mjschool_Fees();
 			foreach ( $fees_ids as $id ) {
-				$fees_type[] = mjschool_get_fees_term_name( $id );
+				$fees_type[] = $obj_fees->mjschool_get_fees_term_name( $id );
 			}
 			$fee_title     = implode( ' , ', $fees_type );
 			$entry_array[] = array(
@@ -175,7 +176,7 @@ class Mjschool_Feespayment {
 				$fees_id = $wpdb->insert_id;
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 				$fees_pay_id  = $wpdb->insert_id;
-				$student_name = mjschool_get_user_name_by_id( $student_id );
+				$student_name = mjschool_get_display_name( $student_id );
 				$page_name    = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
 				mjschool_append_audit_log( '' . esc_html__( 'Fees Payment Added', 'mjschool' ) . '( ' . esc_html( $student_name ) . ' )' . '', get_current_user_id(), get_current_user_id(), 'insert', $page_name );
 				/* END Add Fees Payment Data. */
@@ -190,7 +191,7 @@ class Mjschool_Feespayment {
 						$fees_amount_value             = isset( $_POST['fees_amount'] ) ? floatval( wp_unslash( $_POST['fees_amount'] ) ) : 0;
 						$SearchArr['{{student_name}}'] = $student_info->display_name;
 						$SearchArr['{{school_name}}']  = get_option( 'mjschool_name' );
-						$SearchArr['{{date}}']         = mjschool_get_date_in_input_box( date( 'Y-m-d' ) );
+						$SearchArr['{{date}}']         = mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) );
 						$SearchArr['{{amount}}']       = mjschool_currency_symbol_position_language_wise( number_format( $fees_amount_value, 2, '.', '' ) );
 						$MessageContent                = mjschool_string_replacement( $SearchArr, get_option( 'mjschool_fee_payment_mailcontent' ) );
 						if ( get_option( 'mjschool_mail_notification' ) === '1' ) {
@@ -205,7 +206,7 @@ class Mjschool_Feespayment {
 								$email                        = $parent_info->user_email;
 								$SearchArr['{{parent_name}}'] = $parent_info->display_name;
 								$SearchArr['{{school_name}}'] = get_option( 'mjschool_name' );
-								$SearchArr['{{date}}']        = mjschool_get_date_in_input_box( date( 'Y-m-d' ) );
+								$SearchArr['{{date}}']        = mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) );
 								$SearchArr['{{amount}}']      = mjschool_currency_symbol_position_language_wise( number_format( $fees_amount_value, 2, '.', '' ) );
 								$SearchArr['{{child_name}}']  = $student_info->display_name;
 								$MessageContent               = mjschool_string_replacement( $SearchArr, get_option( 'mjschool_fee_payment_mailcontent_for_parent' ) );
@@ -256,7 +257,7 @@ class Mjschool_Feespayment {
 	 * @return int|bool The number of rows updated on success, or false on error.
 	 * @since  1.0.0
 	 */
-	public function mjschool_add_recurring_feespayment( $data ) {
+	public function mjschool_add_recurring_fees_payment( $data ) {
 		global $wpdb;
 		$table_mjschool_fees_payment_recurring = $wpdb->prefix . 'mjschool_fees_payment_recurring';
 		if ( isset( $data['action'] ) && sanitize_text_field( $data['action'] ) === 'edit' ) {
@@ -268,13 +269,13 @@ class Mjschool_Feespayment {
 			$recurring_feedata['student_id']     = implode( ',', $selected_users );
 			$recurring_feedata['total_amount']   = isset( $_POST['fees_amount'] ) ? floatval( wp_unslash( $_POST['fees_amount'] ) ) : 0;
 			$recurring_feedata['description']    = isset( $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '';
-			$start_year_raw                      = isset( $_POST['start_year'] ) ? sanitize_text_field( wp_unslash( $_POST['start_year'] ) ) : date( 'Y-m-d' );
-			$recurring_feedata['start_year']     = date( 'Y-m-d', strtotime( $start_year_raw ) );
-			$end_year_raw                        = isset( $_POST['end_year'] ) ? sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) : date( 'Y-m-d' );
-			$recurring_feedata['end_year']       = date( 'Y-m-d', strtotime( $end_year_raw ) );
+			$start_year_raw                      = isset( $_POST['start_year'] ) ? sanitize_text_field( wp_unslash( $_POST['start_year'] ) ) : wp_date( 'Y-m-d' );
+			$recurring_feedata['start_year']     = wp_date( 'Y-m-d', strtotime( $start_year_raw ) );
+			$end_year_raw                        = isset( $_POST['end_year'] ) ? sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) : wp_date( 'Y-m-d' );
+			$recurring_feedata['end_year']       = wp_date( 'Y-m-d', strtotime( $end_year_raw ) );
 			$recurring_feedata['recurring_type'] = isset( $_POST['recurrence_type'] ) ? sanitize_text_field( wp_unslash( $_POST['recurrence_type'] ) ) : '';
 			$recurring_feedata['status']         = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '';
-			$recurring_feedata['created_date']   = date( 'Y-m-d H:i:s' );
+			$recurring_feedata['created_date']   = current_time( 'mysql' );
 			$recurring_feedata['created_by']     = get_current_user_id();
 			// Update Recurring END DATE.
 			$last_recurrence_date                   = isset( $_POST['last_recurrence_date'] ) ? sanitize_text_field( wp_unslash( $_POST['last_recurrence_date'] ) ) : '';
@@ -359,12 +360,12 @@ class Mjschool_Feespayment {
 			$feedata['trasaction_id'] = sanitize_text_field( $data['trasaction_id'] );
 		}
 		if ( ! empty( $data['paid_by_date'] ) ) {
-			$feedata['paid_by_date'] = date( 'Y-m-d', strtotime( sanitize_text_field( $data['paid_by_date'] ) ) );
+			$feedata['paid_by_date'] = wp_date( 'Y-m-d', strtotime( sanitize_text_field( $data['paid_by_date'] ) ) );
 		} else {
-			$feedata['paid_by_date'] = date( 'Y-m-d' );
+			$feedata['paid_by_date'] = wp_date( 'Y-m-d' );
 		}
 		$feedata['created_by']           = get_current_user_id();
-		$paid_amount                     = $this->mjschool_get_paid_amount_by_feepayid( $feedata['fees_pay_id'] );
+		$paid_amount                     = $this->mjschool_get_paid_amount_by_fee_pay_id( $feedata['fees_pay_id'] );
 		$uddate_data['fees_paid_amount'] = floatval( $paid_amount ) + floatval( $feedata['amount'] );
 		$uddate_data['payment_status']   = $this->mjschool_get_payment_status_name( intval( $data['fees_pay_id'] ) );
 		$uddate_data['fees_pay_id']      = $fees_pay_id;
@@ -416,7 +417,7 @@ class Mjschool_Feespayment {
 	 * @return int|bool The result of the database insert.
 	 * @since  1.0.0
 	 */
-	public function mjschool_add_feespayment_history_For_payfast( $data ) {
+	public function mjschool_add_fees_payment_history_for_payfast( $data ) {
 		global $wpdb;
 		$table_mjschool_fee_payment_history = $wpdb->prefix . 'mjschool_fee_payment_history';
 		$tbl_payment                        = $wpdb->prefix . 'mjschool_fees_payment';
@@ -425,9 +426,9 @@ class Mjschool_Feespayment {
 		$feedata['amount']                  = isset( $data['amount'] ) ? floatval( $data['amount'] ) : 0;
 		$feedata['payment_method']          = isset( $data['payment_method'] ) ? sanitize_text_field( $data['payment_method'] ) : '';
 		$feedata['trasaction_id']           = isset( $data['trasaction_id'] ) ? sanitize_text_field( $data['trasaction_id'] ) : '';
-		$feedata['paid_by_date']            = date( 'Y-m-d' );
+		$feedata['paid_by_date']            = wp_date( 'Y-m-d' );
 		$feedata['created_by']              = isset( $data['created_by'] ) ? intval( $data['created_by'] ) : 0;
-		$paid_amount                        = $this->mjschool_get_paid_amount_by_feepayid( $feedata['fees_pay_id'] );
+		$paid_amount                        = $this->mjschool_get_paid_amount_by_fee_pay_id( $feedata['fees_pay_id'] );
 		$uddate_data['fees_paid_amount']    = floatval( $paid_amount ) + floatval( $feedata['amount'] );
 		$uddate_data['payment_status']      = $this->mjschool_get_payment_status_name( intval( $data['fees_pay_id'] ) );
 		$uddate_data['fees_pay_id']         = $fees_pay_id;
@@ -491,7 +492,7 @@ class Mjschool_Feespayment {
 	 * @return string The total paid amount as a string (from the database column).
 	 * @since  1.0.0
 	 */
-	public function mjschool_get_paid_amount_by_feepayid( $fees_pay_id ) {
+	public function mjschool_get_paid_amount_by_fee_pay_id( $fees_pay_id ) {
 		global $wpdb;
 		$table_mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -675,7 +676,7 @@ class Mjschool_Feespayment {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$payment = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees_payment where fees_pay_id=%d", intval( $fees_pay_id ) ) );
 		if ( $payment ) {
-			$student   = mjschool_get_user_name_by_id( $payment->student_id );
+			$student   = mjschool_get_display_name( $payment->student_id );
 			$page_name = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
 			mjschool_append_audit_log( '' . esc_html__( 'Fees Payment Deleted', 'mjschool' ) . '( ' . esc_html( $student ) . ' )' . '', get_current_user_id(), get_current_user_id(), 'delete', $page_name );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -775,7 +776,7 @@ class Mjschool_Feespayment {
 	 */
 	public function mjschool_get_all_recurring_fees_active( $date ) {
 		$date              = sanitize_text_field( $date );
-		$recurring_enddate = date( 'Y-m-d', strtotime( '-1 day', strtotime( $date ) ) );
+		$recurring_enddate = wp_date( 'Y-m-d', strtotime( '-1 day', strtotime( $date ) ) );
 		global $wpdb;
 		$table_mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment_recurring';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -843,6 +844,71 @@ class Mjschool_Feespayment {
 		$id                                 = intval( $id );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_fee_payment_history WHERE payment_history_id=%d", $id ) );
+		return $result;
+	}
+
+	/**
+	 * Determine payment status (Not Paid / Partially Paid / Fully Paid).
+	 *
+	 * @since 1.0.0
+	 * @param int $id Payment record ID.
+	 * @return string Payment status.
+	 */
+	public function mjschool_get_payment_status( $id ) {
+		global $wpdb;
+		$table_mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
+		$fees_pay_id                 = absint( $id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees_payment WHERE fees_pay_id=%d", $fees_pay_id ) );
+		
+		if ( ! empty( $result ) ) {
+			if ( isset( $result->total_amount ) && $result->total_amount > 0 ) {
+				if ( ! isset( $result->fees_paid_amount ) || $result->fees_paid_amount === 0 ) {
+					return 'Not Paid';
+				} elseif ( $result->fees_paid_amount < $result->total_amount ) {
+					return 'Partially Paid';
+				} else {
+					return 'Fully Paid';
+				}
+			} else {
+				return 'Fully Paid';
+			}
+		} else {
+			return '';
+		}
+	}
+
+	/**
+	 * Get all payment history entries for a fees_pay_id.
+	 *
+	 * @since 1.0.0
+	 * @param int $fees_pay_id Payment ID.
+	 * @return array Payment history list.
+	 */
+	public function mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id ) {
+		global $wpdb;
+		$table_mjschool_fee_payment_history = $wpdb->prefix . 'mjschool_fee_payment_history';
+		$fees_pay_id                        = absint( $fees_pay_id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_fee_payment_history WHERE fees_pay_id=%d", $fees_pay_id ) );
+		
+		return $result;
+	}
+	/**
+	 * Get single fee payment record by ID.
+	 *
+	 * @since 1.0.0
+	 * @param int $id Payment ID.
+	 * @return object Payment row.
+	 */
+	public function mjschool_get_single_fees_payment_record( $id ) {
+		global $wpdb;
+		$table_mjschool_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
+		$fees_pay_id                 = intval( $id );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees_payment WHERE fees_pay_id=%d", $fees_pay_id ) );
 		return $result;
 	}
 }

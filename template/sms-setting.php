@@ -19,25 +19,30 @@ $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
 }
 $current_mjschool_service_active = get_option( 'mjschool_service' );
 if ( isset( $_REQUEST['save_mjschool_setting'] ) ) {
+	// Verify nonce for security
+	$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])) : '';
+	if ( ! wp_verify_nonce( $nonce, 'save_mjschool_sms_setting_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 	if ( isset( $_REQUEST['select_serveice'] ) && sanitize_text_field(wp_unslash($_REQUEST['select_serveice'])) === 'clickatell' ) {
 		$custm_mjschool_service              = array();
 		$result                              = get_option( 'mjschool_clickatell_mjschool_service' );
@@ -65,7 +70,7 @@ if ( isset( $_REQUEST['save_mjschool_setting'] ) ) {
 	}
 	update_option( 'mjschool_service', sanitize_text_field(wp_unslash($_REQUEST['select_serveice'])) );
 	wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=mjschool-setting&tab=mjschool_setting&message=1') );
-	die();
+	exit;
 }
 ?>
 <!-- Nav tabs. -->
@@ -94,6 +99,7 @@ if ( isset( $_REQUEST['save_mjschool_setting'] ) ) {
 		?>
 		<div class="mjschool-panel-body mjschool-margin-top-40">
 			<form action="" method="post" class="mjschool-form-horizontal" id="mjschool_setting_form">
+				<?php wp_nonce_field( 'save_mjschool_sms_setting_nonce' ); ?>
 				<div class="header">
 					<h3 class="mjschool-first-header"><?php esc_html_e( 'SMS Setting Information', 'mjschool' ); ?></h3>
 				</div>

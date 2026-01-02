@@ -31,7 +31,7 @@ class Mjschool_Tax_Manage
         $table_name              = $wpdb->prefix . 'mjschool_taxes';
         $taxdata['tax_title']    = sanitize_text_field($data['tax_title']);
         $taxdata['tax_value']    = sanitize_text_field($data['tax_value']);
-        $taxdata['created_date'] = date('Y-m-d');
+        $taxdata['created_date'] = wp_date('Y-m-d');
         if (isset($data['action']) && $data['action'] == 'edit' ) {
             $whereid['tax_id'] = intval($data['tax_id']);
          // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context

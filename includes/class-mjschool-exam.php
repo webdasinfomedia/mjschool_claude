@@ -56,22 +56,7 @@ class Mjschool_Exam {
 		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE class_id=%d and section_id=%d", $class_id, $section_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		return $results;
 	}
-	/**
-	 * Retrieves all subjects associated with a specific class ID.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @global wpdb $wpdb WordPress database abstraction object.
-	 *
-	 * @param  int $class_id The ID of the class.
-	 * @return array|object|null An array of subject records, or null if no results are found.
-	 */
-	public function mjschool_get_subject_by_class_id( $class_id ) {
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'mjschool_subject';
-     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
-		return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE  class_id=%s", $class_id ) );
-	}
+	
 	/**
 	 * Inserts or updates an exam time table entry for a specific subject.
 	 *
@@ -464,7 +449,7 @@ class Mjschool_Exam {
 				);
 			}
 		}
-		$json_config     = ! empty( $exam_config ) ? json_encode( $exam_config, JSON_UNESCAPED_UNICODE ) : json_encode( array( 'exams' => array() ) );
+		$json_config     = ! empty( $exam_config ) ? wp_json_encode( $exam_config, JSON_UNESCAPED_UNICODE ) : wp_json_encode( array( 'exams' => array() ) );
 		$merge_exam_data = array(
 			'class_id'     => intval( $data['class_id'] ),
 			'section_id'   => isset( $data['section_id'] ) ? $data['section_id'] : 0,
@@ -568,5 +553,183 @@ class Mjschool_Exam {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$exam_merge_settings} WHERE id = %d", $id ) );
 		return $result;
+	}
+	/**
+	 * Delete an exam and all related records (receipt & timetable).
+	 *
+	 * @since 1.0.0
+	 * @param string $mjschool_table_name Table name.
+	 * @param int $id Exam ID.
+	 * @return int Rows affected.
+	 */
+	function mjschool_delete_exam( $mjschool_table_name, $id ) {
+		global $wpdb;
+		// Sanitize table name
+		$mjschool_table_name = sanitize_key( $mjschool_table_name );
+		$inserrt_table_name          = $wpdb->prefix . $mjschool_table_name;
+		$record_id           = absint( $id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$event = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $inserrt_table_name WHERE exam_id=%d", $record_id ) );
+		
+		if ( ! empty( $event ) && isset( $event->exam_name ) ) {
+			$exam = $event->exam_name;
+			$current_page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+			mjschool_append_audit_log( esc_html__( 'Exam Deleted', 'mjschool' ) . '( ' . $exam . ' )', get_current_user_id(), get_current_user_id(), 'delete', $current_page );
+		}
+		
+		$mjschool_exam_hall_receipt = $wpdb->prefix . 'mjschool_exam_hall_receipt';
+		$mjschool_exam_time_table   = $wpdb->prefix . 'mjschool_exam_time_table';
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->query( $wpdb->prepare( "DELETE FROM $inserrt_table_name WHERE exam_id = %d", $record_id ) );
+		
+		if ( $result ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+			$result_receipt_delete = $wpdb->query( $wpdb->prepare( "DELETE FROM $mjschool_exam_hall_receipt WHERE exam_id = %d", $record_id ) );
+			
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+			$result_timetable_delete = $wpdb->query( $wpdb->prepare( "DELETE FROM $mjschool_exam_time_table WHERE exam_id = %d", $record_id ) );
+		}	
+		return $result;
+	}
+
+	/**
+	 * Retrieves exam details by exam ID.
+	 *
+	 * @param int $id Exam ID.
+	 * @return object|null Exam record.
+	 * @since 1.0.0
+	 */
+	function mjschool_get_exam_by_id( $id ) {
+		global $wpdb;
+		$table_mjschool_exam = $wpdb->prefix . 'mjschool_exam';
+		$eid        = absint( $id );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_exam WHERE exam_id = %d", $eid ) );
+		return $retrieve_subject;
+	}
+
+	/**
+	 * Retrieves all exams for given class IDs (section = 0).
+	 *
+	 * @param array $class_id Class IDs.
+	 * @return array Exam list.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_all_exam_by_class_id_array( $class_id ) {
+		global $wpdb;
+		$table_mjschool_exam = $wpdb->prefix . 'mjschool_exam';
+		// Sanitize array of class IDs.
+		if ( ! is_array( $class_id ) ) {
+			return array();
+		}
+		$class_id = array_map( 'absint', $class_id );
+		if ( empty( $class_id ) ) {
+			return array();
+		}
+		$placeholders = implode( ', ', array_fill( 0, count( $class_id ), '%d' ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_data = $wpdb->get_results(
+			$wpdb->prepare( "SELECT * FROM $table_mjschool_exam WHERE class_id IN ($placeholders) AND section_id = %d", array_merge( $class_id, array( 0 ) ) )
+		);
+		return $retrieve_data;
+	}
+
+	/**
+	 * Retrieves exams for class + section combination.
+	 *
+	 * @param int $class_id Class ID.
+	 * @param int $section_id Section ID.
+	 * @return array Exam list.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_all_exam_by_class_id_and_section_id_array( $class_id, $section_id ) {
+		global $wpdb;
+		$table_mjschool_exam = $wpdb->prefix . 'mjschool_exam';
+		$class_id   = absint( $class_id );
+		$section_id = absint( $section_id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_results(
+			$wpdb->prepare( "SELECT * FROM $table_mjschool_exam WHERE class_id = %d AND (section_id = %d OR section_id = 0)", $class_id, $section_id )
+		);
+		return $result;
+	}
+
+	/**
+	 * Retrieves exams based on class & section arrays (parent).
+	 *
+	 * @param array $class_id Class IDs.
+	 * @param array $section_id Section IDs.
+	 * @return array Exam list.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_all_exam_by_class_id_and_section_id_array_parent( $class_id, $section_id ) {
+		global $wpdb;
+		$table_mjschool_exam = $wpdb->prefix . 'mjschool_exam';
+		// Sanitize arrays.
+		if ( ! is_array( $class_id ) || ! is_array( $section_id ) ) {
+			return array();
+		}
+		$class_id   = array_map( 'absint', $class_id );
+		$section_id = array_map( 'absint', $section_id );
+		if ( empty( $class_id ) || empty( $section_id ) ) {
+			return array();
+		}
+		$class_placeholders   = implode( ', ', array_fill( 0, count( $class_id ), '%d' ) );
+		$section_placeholders = implode( ', ', array_fill( 0, count( $section_id ), '%d' ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_data = $wpdb->get_results(
+			$wpdb->prepare( "SELECT * FROM $table_mjschool_exam WHERE class_id IN ($class_placeholders) AND section_id IN ($section_placeholders)", array_merge( $class_id, $section_id ) )
+		);
+		return $retrieve_data;
+	}
+
+	/**
+	 * Retrieves exam name using exam ID.
+	 *
+	 * @param int $id Exam ID.
+	 * @return string|null Exam name.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_exam_name_id( $id ) {
+		global $wpdb;
+		$table_mjschool_exam = $wpdb->prefix . 'mjschool_exam';
+		$eid        = absint( $id );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subject = $wpdb->get_var( $wpdb->prepare( "SELECT exam_name FROM $table_mjschool_exam WHERE exam_id = %d", $eid ) );
+		return $retrieve_subject;
+	}
+
+	/**
+	 * Inserts a new exam hall receipt entry for a student.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $user_id   Student ID.
+	 * @param int $exam_hall Exam hall ID.
+	 * @param int $exam_id   Exam ID.
+	 *
+	 * @return int User ID on successful insert.
+	 */
+	public function mjschool_insert_exam_reciept( $user_id, $exam_hall, $exam_id ) {
+		$current_user = get_current_user_id();
+		$created_date = date( 'Y-m-d' );
+		$status       = 1;
+		$mjschool_table_name    = 'mjschool_exam_hall_receipt';
+		$hall_data    = array(
+			'exam_id'                  => sanitize_text_field( $exam_id ),
+			'user_id'                  => sanitize_text_field( $user_id ),
+			'hall_id'                  => sanitize_text_field( $exam_hall ),
+			'exam_hall_receipt_status' => $status,
+			'created_date'             => $created_date,
+			'created_by'               => $current_user,
+		);
+		global $wpdb;
+		$insert_table_name = $wpdb->prefix . $mjschool_table_name;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->insert( $insert_table_name, $hall_data );
+		return $user_id;
 	}
 }

@@ -38,25 +38,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( 'teacher' === $user_access['page_link'] && ( $action === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'teacher' === $user_access['page_link'] && ( $action === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'teacher' === $user_access['page_link'] && ( $action === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -64,17 +64,17 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
+$obj_subject = new Mjschool_Subject();
 $module            = 'teacher';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
-?>
-<?php
+$mjschool_obj_user   = new Mjschool_User();
 $teacher_obj = new Mjschool_Teacher();
 $mjschool_role        = 'teacher';
 if ( isset( $_POST['save_teacher'] ) ) {
 	if ( isset( $_FILES['signature'] ) && ! empty( $_FILES['signature']['name'] ) ) {
 		if ( $_FILES['signature']['size'] > 0 ) {
-			$signature = mjschool_upload_teacher_signature( $_FILES['signature'] );
+			$signature = $teacher_obj->mjschool_upload_teacher_signature( $_FILES['signature'] );
 		}
 	} else {
 		// Always fallback to existing signature if no new file is uploaded.
@@ -90,10 +90,10 @@ if ( isset( $_POST['save_teacher'] ) ) {
 		'user_url'      => null,
 		'display_name'  => $firstname . ' ' . $middlename . ' ' . $lastname,
 	);
-	if ( $_POST['password'] != '' ) {
+	if ( $_POST['password'] !== '' ) {
 		$userdata['user_pass'] = mjschool_password_validation( wp_unslash($_POST['password']) );
 	}
-	if ( isset( $_POST['mjschool_user_avatar'] ) && $_POST['mjschool_user_avatar'] != '' ) {
+	if ( isset( $_POST['mjschool_user_avatar'] ) && $_POST['mjschool_user_avatar'] !== '' ) {
 		$photo = sanitize_text_field(wp_unslash($_POST['mjschool_user_avatar']));
 	} else {
 		$photo = '';
@@ -133,7 +133,7 @@ if ( isset( $_POST['save_teacher'] ) ) {
 		}
 	}
 	if ( ! empty( $document_content ) ) {
-		$final_document = json_encode( $document_content );
+		$final_document = wp_json_encode( $document_content );
 	} else {
 		$final_document = '';
 	}
@@ -162,9 +162,9 @@ if ( isset( $_POST['save_teacher'] ) ) {
 	);
 	if ( $action === 'edit' ) {
 		$userdata['ID'] = mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) );
-		$result         = mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
+		$result         = $mjschool_obj_user->mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
 		// Update custom field data.
-		$custom_field_obj    = new Mjschool_Custome_Field();
+		$custom_field_obj    = new Mjschool_Custom_Field();
 		$module              = 'teacher';
 		$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $result );
 		$result1             = $teacher_obj->mjschool_update_multi_class( sanitize_text_field(wp_unslash($_POST['class_name'])), mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) ) );
@@ -174,9 +174,10 @@ if ( isset( $_POST['save_teacher'] ) ) {
 		/* Setup wizard. */
 		$wizard = mjschool_setup_wizard_steps_updates( 'step3_teacher' );
 		if ( ! email_exists( $_POST['email'] ) ) {
-			$result = mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
+
+			$result = $mjschool_obj_user->mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
 			// Add custom field data.
-			$custom_field_obj   = new Mjschool_Custome_Field();
+			$custom_field_obj   = new Mjschool_Custom_Field();
 			$module             = 'teacher';
 			$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			$result1            = $teacher_obj->mjschool_add_multi_class( sanitize_text_field(wp_unslash($_POST['class_name'])), mjschool_strip_tags_and_stripslashes( wp_unslash($_POST['email']) ) );
@@ -194,7 +195,7 @@ if ( isset( $_POST['save_teacher'] ) ) {
 }
 if ( $action === 'delete' ) {
 	$teacher_id = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['teacher_id'])) ) );
-	$result     = mjschool_delete_usedata( $teacher_id );
+	$result     = $mjschool_obj_user->mjschool_delete_usedata( $teacher_id );
 	if ( $result ) {
 		$result = mjschool_delete_teacher_class_assignments($teacher_id);
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_teacher&tab=teacherlist&message=5' ) );
@@ -204,7 +205,7 @@ if ( $action === 'delete' ) {
 if ( isset( $_REQUEST['delete_selected'] ) ) {
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = mjschool_delete_usedata( $id );
+			$result = $mjschool_obj_user->mjschool_delete_usedata( $id );
 			if ( $result ) {
 				$result = mjschool_delete_teacher_class_assignments($id);
 				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_teacher&tab=teacherlist&message=5' ) );
@@ -240,16 +241,17 @@ if ( isset( $_POST['teacher_csv_selected'] ) ) {
 			$header[] = 'Alternate Mobile Number';
 			$header[] = 'Class Name';
 			$filename = 'export/mjschool-export-teacher.csv';
-			$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) or wp_die( "can't open file" );
+			$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) || wp_die( "can't open file" );
 			fputcsv( $fh, $header );
 			foreach ( $teacher_list as $retrive_data ) {
 				$row             = array();
 				$class_name_data = array();
 				$user_info       = get_userdata( $retrive_data->ID );
 				$teacher_obj     = new Mjschool_Teacher();
+				$mjschool_class = new Mjschool_Class();
 				$teacher_class   = $teacher_obj->mjschool_get_teacher_class( $retrive_data->ID );
 				foreach ( $teacher_class as $class_id ) {
-					$class_name_data[] = mjschool_get_class_name_by_id( $class_id );
+					$class_name_data[] = $mjschool_class->mjschool_get_class_name_by_id( $class_id );
 				}
 				$class_name = implode( ',', $class_name_data );
 				$row[]      = $user_info->user_login;
@@ -277,7 +279,7 @@ if ( isset( $_POST['teacher_csv_selected'] ) ) {
 			header( 'Pragma: public' );       // Required.
 			header( 'Expires: 0' );           // No cache.
 			header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-			header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+			header( 'Last-Modified: ' . wp_date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 			header( 'Cache-Control: private', false );
 			header( 'Content-Type: ' . $mime );
 			header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
@@ -338,7 +340,7 @@ if ( isset( $_REQUEST['upload_teacher_csv_file'] ) ) {
 						$user_object = get_user_by( 'login', $username );
 						$user_id     = $user_object->ID;
 						$mjschool_role_name   = mjschool_get_user_role( $user_id );
-						if ( $mjschool_role_name != 'administrator' ) {
+						if ( $mjschool_role_name !== 'administrator' ) {
 							if ( ! empty( $password ) ) {
 								wp_set_password( $password, $user_id );
 							}
@@ -348,7 +350,7 @@ if ( isset( $_REQUEST['upload_teacher_csv_file'] ) ) {
 						$user_id         = $user_object->ID;
 						$problematic_row = true;
 						$mjschool_role_name       = mjschool_get_user_role( $user_id );
-						if ( $mjschool_role_name != 'administrator' ) {
+						if ( $mjschool_role_name !== 'administrator' ) {
 							if ( ! empty( $password ) ) {
 								wp_set_password( $password, $user_id );
 							}
@@ -367,7 +369,7 @@ if ( isset( $_REQUEST['upload_teacher_csv_file'] ) ) {
 						
 						continue;
 					}
-					if ( $mjschool_role_name != 'administrator' ) {
+					if ( $mjschool_role_name !== 'administrator' ) {
 						wp_update_user(
 							array(
 								'ID'   => $user_id,
@@ -536,7 +538,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 				<div class="mjschool-main-list-page"><!-- Mjschool-main-list-page. -->
 					<?php
 					if ( $active_tab === 'teacherlist' ) {
-						$teacherdata = mjschool_get_users_data( 'teacher' );
+						$mjschool_user = new Mjschool_User();
+						$teacherdata = $mjschool_user->mjschool_get_users_data( 'teacher' );
 						if ( ! empty( $teacherdata ) ) {
 							?>
 							<div class="mjschool-panel-body"><!-- Mjschool-panel-body. -->
@@ -568,15 +571,16 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 											<tbody>
 												<?php
 												if ( ! empty( $teacherdata ) ) {
-													foreach ( mjschool_get_users_data( 'teacher' ) as $retrieved_data ) {
+													$teacher_obj = new Mjschool_Teacher();
+													$mjschool_user = new Mjschool_User();
+													foreach ( $mjschool_user->mjschool_get_users_data( 'teacher' ) as $retrieved_data ) {
 														$teacher_id    = mjschool_encrypt_id( $retrieved_data->ID );
 														$teacher_group = array();
-														$teacher_ids   = mjschool_teacher_by_subject( $retrieved_data );
+														$teacher_ids   = $obj_subject->mjschool_teacher_by_subject( $retrieved_data );
 														foreach ( $teacher_ids as $teacher_id ) {
-															$teacher_group[] = mjschool_get_teacher( $teacher_id );
+															$teacher_group[] = $teacher_obj->mjschool_get_teacher( $teacher_id );
 														}
 														$teachers = implode( ',', $teacher_group );
-														$obj_subject = new Mjschool_Subject();
 														?>
 														<tr>
 															<td class="mjschool-checkbox-width-10px">
@@ -585,7 +589,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 															<td class="mjschool-user-image mjschool-width-50px-td">
 																<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_teacher&tab=view_teacher&action=view_teacher&teacher_id=' . rawurlencode( $teacher_id ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>">
 																	<?php $uid = $retrieved_data->ID;
-																	$umetadata = mjschool_get_user_image($uid);
+																	$mjschool_user = new Mjschool_User();
+																	$umetadata = $mjschool_user->mjschool_get_user_image($uid);
 																	if (empty($umetadata ) ) {
 																		echo '<img src=' . esc_url( get_option( 'mjschool_teacher_thumb_new' ) ) . ' height="50px" width="50px" class="img-circle" />';
 																	} else {
@@ -606,8 +611,9 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																$classes   = '';
 																$classes   = $teacher_obj->mjschool_get_class_by_teacher( $retrieved_data->ID );
 																$classname = '';
+																$mjschool_class = new Mjschool_Class();
 																foreach ( $classes as $class ) {
-																	$classname .= mjschool_get_class_name( $class['class_id'] ) . ',';
+																	$classname .= $mjschool_class->mjschool_get_class_name( $class['class_id'] ) . ',';
 																}
 																$classname_rtrim = rtrim( $classname, ', ' );
 																$classname_ltrim = ltrim( $classname_rtrim, ', ' );

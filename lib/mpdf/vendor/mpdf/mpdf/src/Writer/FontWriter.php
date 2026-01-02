@@ -494,7 +494,7 @@ class FontWriter
 				continue;
 			} // mPDF 6
 
-			if (!isset($font['dw']) || (isset($font['dw']) && $width != $font['dw'])) {
+			if (!isset($font['dw']) || (isset($font['dw']) && $width !== $font['dw'])) {
 				if ($cid === ($character['prevcid'] + 1)) {
 					// consecutive CID
 					if ($width === $character['prevwidth']) {
@@ -595,7 +595,7 @@ class FontWriter
 		// for each character
 		foreach ($font['cw'] as $cid => $width) {
 			$cid -= $cidoffset;
-			if (!isset($font['dw']) || (isset($font['dw']) && $width != $font['dw'])) {
+			if (!isset($font['dw']) || (isset($font['dw']) && $width !== $font['dw'])) {
 				if ($cid === ($prevcid + 1)) {
 					// consecutive CID
 					if ($width === $prevwidth) {

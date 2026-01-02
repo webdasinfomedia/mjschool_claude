@@ -306,7 +306,7 @@ jQuery(document).ready(function () {
                 { bSortable: true },
                 ...customCols,
                 { bSortable: false }
-            ],
+            ].filter(Boolean),
             language: mjschool_payment_data.datatable_language
         });
     }

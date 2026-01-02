@@ -50,12 +50,12 @@ class Hr extends Tag
 		}
 		if (isset($properties['WIDTH'])) {
 			$objattr['width'] = $this->sizeConverter->convert($properties['WIDTH'], $this->mpdf->blk[$this->mpdf->blklvl]['inner_width']);
-		} elseif (isset($attr['WIDTH']) && $attr['WIDTH'] != '') {
+		} elseif (isset($attr['WIDTH']) && $attr['WIDTH'] !== '') {
 			$objattr['width'] = $this->sizeConverter->convert($attr['WIDTH'], $this->mpdf->blk[$this->mpdf->blklvl]['inner_width']);
 		}
 		if (isset($properties['TEXT-ALIGN'])) {
 			$objattr['align'] = $this->getAlign($properties['TEXT-ALIGN']);
-		} elseif (isset($attr['ALIGN']) && $attr['ALIGN'] != '') {
+		} elseif (isset($attr['ALIGN']) && $attr['ALIGN'] !== '') {
 			$objattr['align'] = $this->getAlign($attr['ALIGN']);
 		}
 
@@ -71,7 +71,7 @@ class Hr extends Tag
 		}
 		if (isset($properties['COLOR'])) {
 			$objattr['color'] = $this->colorConverter->convert($properties['COLOR'], $this->mpdf->PDFAXwarnings);
-		} elseif (isset($attr['COLOR']) && $attr['COLOR'] != '') {
+		} elseif (isset($attr['COLOR']) && $attr['COLOR'] !== '') {
 			$objattr['color'] = $this->colorConverter->convert($attr['COLOR'], $this->mpdf->PDFAXwarnings);
 		}
 		if (isset($properties['HEIGHT'])) {

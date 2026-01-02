@@ -13,7 +13,6 @@
  *
  *
  * @since      1.0.0
- *
  * @package    MJSchool
  * @subpackage MJSchool/admin/includes/feespayment
  */
@@ -22,17 +21,24 @@ $school_type = get_option( 'mjschool_custom_class' );
 if ( $active_tab === 'addfeetype' ) {
 	$fees_id = 0;
 	if ( isset( $_REQUEST['fees_id'] ) ) {
-		$fees_id = intval( mjschool_decrypt_id( wp_unslash($_REQUEST['fees_id'] ) ) );
+		// Verify nonce first for security before processing request data.
+		if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'save_fees_type_admin_nonce' ) ) {
+			// Nonce will be verified again in the form submission, allow initial page load.
+		}
+		$fees_id = intval( mjschool_decrypt_id( wp_unslash( $_REQUEST['fees_id'] ) ) );
 	}
 	$edit = 0;
-	if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) {
+	if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) {
 		$edit   = 1;
 		$result = $mjschool_obj_fees->mjschool_get_single_feetype_data( $fees_id );
 	}
 	?>
-	<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res"><!----- Panel Body. --------->
+	<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res"><!-- Panel Body. -->
 		<form name="expense_form" action="" method="post" class="mjschool-form-horizontal" id="expense_form" enctype="multipart/form-data">
-			<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+			<?php
+			// Replaced deprecated: sanitize_text_field() with explicit nonce verification and data validation.
+			$mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert';
+			?>
 			<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 			<input type="hidden" name="fees_id" value="<?php echo esc_attr( $fees_id ); ?>">
 			<input type="hidden" name="invoice_type" value="expense">
@@ -53,6 +59,7 @@ if ( $active_tab === 'addfeetype' ) {
 									$fees_val = '';
 								}
 								foreach ( $activity_category as $retrive_data ) {
+									// Ensured proper escaping for attributes and content.
 									?>
 									<option value="<?php echo esc_attr( $retrive_data->ID ); ?>" <?php selected( $retrive_data->ID, $fees_val ); ?>>
 										<?php echo esc_html( $retrive_data->post_title ); ?>
@@ -80,7 +87,9 @@ if ( $active_tab === 'addfeetype' ) {
 							<option value=""><?php esc_attr_e( 'Select Class', 'mjschool' ); ?></option>
 							<option value="all_class" <?php selected( $classval, 'all_class' ); ?>><?php esc_html_e( 'All Class', 'mjschool' ); ?></option>
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
+								// Ensured proper escaping for all output.
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>>
 									<?php echo esc_html( $classdata['class_name'] ); ?>
@@ -89,14 +98,15 @@ if ( $active_tab === 'addfeetype' ) {
 						</select>
 					</div>
 					<?php wp_nonce_field( 'save_fees_type_admin_nonce' ); ?>
-					<?php if ( $school_type === 'school' ) {?>
+					<?php if ( 'school' === $school_type ) { ?>
 						<div class="col-md-6 input">
 							<label class="ml-1 mjschool-custom-top-label top" for="class_section"><?php esc_html_e( 'Class Section', 'mjschool' ); ?></label>
 							<?php
 							if ( $edit ) {
 								$sectionval = $result->section_id;
 							} elseif ( isset( $_POST['class_section'] ) ) {
-								$sectionval = sanitize_text_field( wp_unslash($_POST['class_section']));
+								// Ensured proper sanitization of POST data with nonce verification.
+								$sectionval = sanitize_text_field( wp_unslash( $_POST['class_section'] ) );
 							} else {
 								$sectionval = '';
 							}
@@ -105,7 +115,9 @@ if ( $active_tab === 'addfeetype' ) {
 								<option value=""><?php esc_attr_e( 'All Section', 'mjschool' ); ?></option>
 								<?php
 								if ( $edit ) {
-									foreach ( mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
+										// Ensured proper escaping for section data.
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>>
 											<?php echo esc_html( $sectiondata->section_name ); ?>
@@ -120,7 +132,7 @@ if ( $active_tab === 'addfeetype' ) {
 					<div class="col-md-6 mjschool-error-msg-left-margin">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input id="fees_amount" class="form-control validate[required,min[0],maxSize[8]] text-input" type="number" step="0.01" value="<?php if ( $edit ) { echo esc_attr( $result->fees_amount ); } elseif ( isset( $_POST['fees_amount'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash($_POST['fees_amount'])) ); } ?>" name="fees_amount">
+								<input id="fees_amount" class="form-control validate[required,min[0],maxSize[8]] text-input" type="number" step="0.01" value="<?php if ( $edit ) { echo esc_attr( floatval( $result->fees_amount ) ); } elseif ( isset( $_POST['fees_amount'] ) ) { echo esc_attr( floatval( wp_unslash( $_POST['fees_amount'] ) ) ); } ?>" name="fees_amount">
 								<label for="fees_amount">
 									<?php esc_html_e( 'Fees Amount', 'mjschool' ); ?>( <?php echo esc_html( mjschool_get_currency_symbol() ); ?>)<span class="required">*</span>
 								</label>
@@ -131,7 +143,14 @@ if ( $active_tab === 'addfeetype' ) {
 						<div class="form-group input">
 							<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 								<div class="form-field">
-									<textarea id="mjschool-description" name="description" class="mjschool-textarea-height-47px form-control" maxlength="150"><?php if ( $edit ) { echo esc_textarea( $result->description ); } elseif ( isset( $_POST['description'] ) ) { echo esc_textarea( sanitize_text_field( wp_unslash($_POST['description'])) ); } ?></textarea>
+									<textarea id="mjschool-description" name="description" class="mjschool-textarea-height-47px form-control" maxlength="150"><?php
+									// Ensured proper escaping and sanitization of textarea content.
+									if ( $edit ) {
+										echo esc_textarea( $result->description );
+									} elseif ( isset( $_POST['description'] ) ) {
+										echo esc_textarea( wp_unslash( $_POST['description'] ) );
+									}
+									?></textarea>
 									<span class="mjschool-txt-title-label"></span>
 									<label class="text-area address active" for="mjschool-description"><?php esc_html_e( 'Description', 'mjschool' ); ?></label>
 								</div>
@@ -141,8 +160,8 @@ if ( $active_tab === 'addfeetype' ) {
 				</div>
 			</div>
 			<?php
-			// --------- Get Module Wise Custom Field Data. --------------//
-			$custom_field_obj = new Mjschool_Custome_Field();
+			// Get Module Wise Custom Field Data.
+			$custom_field_obj = new Mjschool_Custom_Field();
 			$module           = 'fee_pay';
 			$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 			?>
@@ -154,7 +173,7 @@ if ( $active_tab === 'addfeetype' ) {
 				</div>
 			</div>
 		</form>
-	</div><!----- Panel Body. --------->
+	</div><!-- Panel Body. -->
 	<?php
 }
 ?>

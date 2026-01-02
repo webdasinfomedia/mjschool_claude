@@ -36,7 +36,7 @@ if ( $active_tab === 'addincome' ) {
 		$result = $mjschool_obj_invoice->mjschool_get_income_data( $income_id );
 	} elseif ( $action === 'edit_payment' ) {
 		$edit   = 1;
-		$result = mjschool_get_payment_by_id( $income_id );
+		$result = $mjschool_obj_invoice->mjschool_get_payment_by_id( $income_id );
 	}
 	?>
 	<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res"><!--------- Panel Body. --------->
@@ -59,7 +59,8 @@ if ( $active_tab === 'addincome' ) {
 						<select name="class_id" id="mjschool-class-list" class="form-control validate[required] mjschool-max-width-100px">
 							<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php } ?>
@@ -81,7 +82,8 @@ if ( $active_tab === 'addincome' ) {
 								<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 								<?php
 								if ( $edit ) {
-									foreach ( mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 										<?php
@@ -132,7 +134,7 @@ if ( $active_tab === 'addincome' ) {
 					<div class="col-md-6">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input id="invoice_date" class="form-control " type="text" value="<?php if ( $edit ) { if ( isset( $result->income_create_date ) ) { echo esc_attr( mjschool_get_date_in_input_box( $result->income_create_date ) ); } elseif ( isset( $result->date ) ) { echo esc_attr( mjschool_get_date_in_input_box( $result->date ) ); } } elseif ( isset( $_POST['invoice_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['invoice_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); }?>" name="invoice_date" readonly>
+								<input id="invoice_date" class="form-control " type="text" value="<?php if ( $edit ) { if ( isset( $result->income_create_date ) ) { echo esc_attr( mjschool_get_date_in_input_box( $result->income_create_date ) ); } elseif ( isset( $result->date ) ) { echo esc_attr( mjschool_get_date_in_input_box( $result->date ) ); } } elseif ( isset( $_POST['invoice_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['invoice_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); }?>" name="invoice_date" readonly>
 								<label for="invoice_date"><?php esc_html_e( 'Date', 'mjschool' ); ?><span class="required">*</span></label>
 							</div>
 						</div>
@@ -269,7 +271,7 @@ if ( $active_tab === 'addincome' ) {
 			</div>
 			<?php
 			// --------- Get Module-Wise Custom Field Data. --------------//
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'income';
 			$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 			?>

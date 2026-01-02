@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Monthly Attendance Report Template.
  *
@@ -45,7 +44,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 							if ( isset( $_REQUEST['class_id'] ) ) {
 								$class_id = $_REQUEST['class_id'];
 							}
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 								<?php
@@ -67,7 +67,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 								<?php
 								if ( isset( $_REQUEST['class_section'] ) ) {
 									$class_section = $_REQUEST['class_section'];
-									foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 										<?php
@@ -120,7 +121,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 						<select id="mjschool-year" name="year" class="mjschool-line-height-30px form-control validate[required]">
 							<option value=""><?php esc_html_e( 'Select year', 'mjschool' ); ?></option>
 							<?php
-							$current_year = date( 'Y' );
+							$current_year = wp_date( 'Y' );
 							$min_year     = $current_year - 10;
 							for ( $i = $min_year; $i <= $current_year; $i++ ) {
 								$year_array[ $i ] = $i;
@@ -135,10 +136,10 @@ $school_type = get_option( 'mjschool_custom_class' );
 						<select id="month" name="month" class="mjschool-line-height-30px validate[required] form-control class_id_exam">
 							<option value=""><?php esc_html_e( 'Select Month', 'mjschool' ); ?></option>
 							<?php
-							$selected_month = date( 'm' ); // Current month.
+							$selected_month = wp_date( 'm' ); // Current month.
 							for ( $i_month = 1; $i_month <= 12; $i_month++ ) {
 								$selected = ( $selected_month === $i_month ? ' selected' : '' );
-								$data     = date( 'F', mktime( 0, 0, 0, $i_month ) );
+								$data     = wp_date( 'F', mktime( 0, 0, 0, $i_month ) );
 								echo '<option value="' . esc_attr( $i_month ) . '"' . esc_attr( $selected ) . '>' . esc_html( $data, 'mjschool' ) . '</option>' . "\n";
 							}
 							?>
@@ -170,10 +171,10 @@ $school_type = get_option( 'mjschool_custom_class' );
 		}
 		for ( $d = 1; $d <= $max_d; $d++ ) {
 			$time = mktime( 12, 0, 0, $month, $d, $year );
-			if ( date( 'm', $time ) === $month ) {
-				$date_list[] = date( 'Y-m-d', $time );
+			if ( wp_date( 'm', $time ) === $month ) {
+				$date_list[] = wp_date( 'Y-m-d', $time );
 			}
-			$day_date[]       = date( 'd D', $time );
+			$day_date[]       = wp_date( 'd D', $time );
 			$month_first_date = min( $date_list );
 			$month_last_date  = max( $date_list );
 		}
@@ -212,7 +213,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 			$header[] = $data;
 		}
 		$filename = 'export/mjschool-monthly-attendance.csv';
-		$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) or wp_die( "can't open file" );
+		$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) || wp_die( "can't open file" );
 		fputcsv( $fh, $header );
 		foreach ( $student as $mjschool_user ) {
 			$row                     = array();
@@ -253,7 +254,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 		header( 'Pragma: public' );       // Required.
 		header( 'Expires: 0' );           // No cache.
 		header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-		header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+		header( 'Last-Modified: ' . wp_date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 		header( 'Cache-Control: private', false );
 		header( 'Content-Type: ' . $mime );
 		header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
@@ -280,8 +281,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 		$class_id   = '';
 		$student_id = '';
 		$status     = 'active';
-		$year       = date( 'Y' );
-		$month      = date( 'm' );
+		$year       = wp_date( 'Y' );
+		$month      = wp_date( 'm' );
 	}
 	// Fetch day and date by year,Month.
 	$list = array();
@@ -294,10 +295,10 @@ $school_type = get_option( 'mjschool_custom_class' );
 	}
 	for ( $d = 1; $d <= $max_d; $d++ ) {
 		$time = mktime( 12, 0, 0, $month, $d, $year );
-		if ( date( 'm', $time ) === $month ) {
-			$date_list[] = date( 'Y-m-d', $time );
+		if ( wp_date( 'm', $time ) === $month ) {
+			$date_list[] = wp_date( 'Y-m-d', $time );
 		}
-		$day_date[]       = date( 'd D', $time );
+		$day_date[]       = wp_date( 'd D', $time );
 		$month_first_date = min( $date_list );
 		$month_last_date  = max( $date_list );
 	}

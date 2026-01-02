@@ -22,9 +22,13 @@
  */
 defined( 'ABSPATH' ) || exit;
 $edit = 0;
+$obj_subject = new Mjschool_Subject();
+$mjschool_class = new Mjschool_Class();
+$mjschool_user = new Mjschool_User();
+$custom_field_obj = new Mjschool_Custom_Field();
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 	$edit    = 1;
-	$subject = mjschool_get_subject( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['subject_id'])) ) ) );
+	$subject = $obj_subject->mjschool_get_subject( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['subject_id'])) ) ) );
 }
 $school_type=get_option( 'mjschool_custom_class' );
 ?>
@@ -82,7 +86,9 @@ $school_type=get_option( 'mjschool_custom_class' );
 						?>
 						<select name="<?php echo esc_attr($name_attr); ?>" class="mjschool-line-height-30px form-control validate[required] class_by_teacher_subject" id="class_list_subject">
 							<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
-							<?php foreach ( mjschool_get_all_class() as $classdata ) { ?>
+							<?php 
+							
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) { ?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php } ?>
 						</select>
@@ -95,7 +101,8 @@ $school_type=get_option( 'mjschool_custom_class' );
 							}
 							else
 							{
-								$teacherdata_array = mjschool_get_users_data( 'student' );
+								
+								$teacherdata_array = $mjschool_user->mjschool_get_users_data( 'student' );
 							}
 							$selected_students = array();
 							if ( isset( $subject->selected_students ) && !empty( $subject->selected_students ) ) {
@@ -186,7 +193,8 @@ $school_type=get_option( 'mjschool_custom_class' );
 							?>
 							<select name="<?php echo esc_attr($name_attr); ?>" class="mjschool-line-height-30px form-control validate[required] class_by_teacher_subject" id="class_list_subject">
 								<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
-								<?php foreach ( mjschool_get_all_class() as $classdata ) { ?>
+								<?php 
+								foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) { ?>
 									<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 								<?php } ?>
 							</select>
@@ -206,7 +214,7 @@ $school_type=get_option( 'mjschool_custom_class' );
 								<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 								<?php
 								if ( $edit ) {
-									foreach ( mjschool_get_class_sections( $subject->class_id ) as $sectiondata ) {
+									foreach ( $mjschool_class->mjschool_get_class_sections( $subject->class_id ) as $sectiondata ) {
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 										<?php
@@ -223,10 +231,10 @@ $school_type=get_option( 'mjschool_custom_class' );
 							<?php
 							$teachval = array();
 							if ( $edit ) {
-								$teachval          = mjschool_teacher_by_subject( $subject );
-								$teacherdata_array = mjschool_get_teacher_by_class_id( $subject->class_id );
+								$teachval          = $subject_obj->mjschool_teacher_by_subject( $subject );
+								$teacherdata_array = $teacher_obj->mjschool_get_teacher_by_class_id( $subject->class_id );
 							} else {
-								$teacherdata_array = mjschool_get_users_data( 'teacher' );
+								$teacherdata_array = $mjschool_user->mjschool_get_users_data( 'teacher' );
 							}
 							?>
 							<select name="subject_teacher[]" multiple="multiple" id="subject_teacher_subject" class="form-control validate[required] teacher_list">
@@ -261,14 +269,15 @@ $school_type=get_option( 'mjschool_custom_class' );
 								<label class="ml-1 mjschool-custom-top-label top" for="class_list_subject"><?php esc_html_e( 'Class', 'mjschool' ); ?><span class="required">*</span></label>
 								<select name="subject_class[]" class="form-control validate[required] mjschool-width-100px class_by_teacher_subject" id="class_list_subject">
 									<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
-									<?php foreach ( mjschool_get_all_class() as $classdata ) { ?>
+									<?php 
+									foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) { ?>
 										<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
 									<?php } ?>
 								</select>
 							</div>
 							<?php
 						}
-						if ( $school_type != 'university' )
+						if ( $school_type !== 'university' )
 						{ ?>
 							<div class="col-md-6 input">
 								<label class="ml-1 mjschool-custom-top-label top" for="mjschool-class-section-subject"><?php esc_html_e( 'Class Section', 'mjschool' ); ?></label>
@@ -277,13 +286,14 @@ $school_type=get_option( 'mjschool_custom_class' );
 								</select>
 							</div>
 						<?php }?>
-						<?php if ( $school_type != 'university' ) {?>
+						<?php if ( $school_type !== 'university' ) {?>
 							<div class="col-md-5 col-10 mjschool-rtl-margin-top-15px mjschool-teacher-list-multiselect mjschool-margin-bottom-15px">
 						<?php }else{ ?>
 							<div class="col-md-6 col-12 mjschool-rtl-margin-top-15px mjschool-teacher-list-multiselect mjschool-margin-bottom-15px">
 						<?php } ?>
 							<div class="col-sm-12 mjschool-multiselect-validation-teacher mjschool-multiple-select mjschool-rtl-padding-left-right-0px mjschool-res-rtl-width-100px">
-								<?php $teacherdata_array = mjschool_get_users_data( 'teacher' ); ?>
+								<?php 
+								$teacherdata_array = $mjschool_user->mjschool_get_users_data( 'teacher' ); ?>
 								<select name="subject_teacher[0][]" multiple="multiple" id="subject_teacher_subject" class="form-control validate[required]">
 									<?php foreach ( $teacherdata_array as $teacherdata ) { ?>
 										<option value="<?php echo esc_attr( $teacherdata->ID ); ?>"><?php echo esc_html( $teacherdata->display_name ); ?></option>
@@ -330,7 +340,7 @@ $school_type=get_option( 'mjschool_custom_class' );
 		</div>
 		<?php
 		// --------- Get module-wise custom field data. --------------//
-		$custom_field_obj = new Mjschool_Custome_Field();
+		
 		$module           = 'subject';
 		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>

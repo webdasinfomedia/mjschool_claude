@@ -49,7 +49,7 @@ if ( $active_tab === 'addfeetype' ) {
 						$feeype_data = $obj_fees->mjschool_get_all_feetype();
 						if ( ! empty( $feeype_data ) ) {
 							foreach ( $feeype_data as $retrieved_data ) {
-								echo '<option value="' . esc_attr($retrieved_data->ID) . '" ' . selected($fee_type, $retrieved_data->ID) . '>' . esc_attr( $retrieved_data->post_title) . '</option>'; //phpcs:ignore
+								echo '<option value="' . esc_attr($retrieved_data->ID) . '" ' . selected($fee_type, $retrieved_data->ID, false) . '>' . esc_attr( $retrieved_data->post_title) . '</option>'; //phpcs:ignore
 							}
 						}
 						?>
@@ -71,7 +71,8 @@ if ( $active_tab === 'addfeetype' ) {
 					<select name="class_id" class="form-control validate[required]" id="class_name">
 						<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 						<?php
-						foreach ( mjschool_get_all_class() as $classdata ) {
+						$mjschool_class = new Mjschool_Class();
+						foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 							?>
 							<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php

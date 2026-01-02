@@ -87,7 +87,7 @@ function mjschool_render_category_options( $categories, $selected_value = '' ) {
         printf(
             '<option value="%s" %s>%s</option>',
             esc_attr( $category->ID ),
-            selected( $category->ID, $selected_value, false ),
+            intval( $category->ID ) === intval( $selected_value ) ? 'selected' : '',
             esc_html( $category->post_title )
         );
     }
@@ -102,7 +102,7 @@ $cat_id       = $edit && isset( $result->cat_id ) ? $result->cat_id : '';
 $book_price   = $edit && isset( $result->price ) ? $result->price : '';
 $rack_id      = $edit && isset( $result->rack_location ) ? $result->rack_location : '';
 $quantity     = $edit && isset( $result->quentity ) ? $result->quentity : '';
-$post_date    = $edit && isset( $result->added_date ) ? mjschool_get_date_in_input_box( $result->added_date ) : mjschool_get_date_in_input_box( date( 'Y-m-d' ) );
+$post_date    = $edit && isset( $result->added_date ) ? mjschool_get_date_in_input_box( $result->added_date ) : mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) );
 $description  = $edit && isset( $result->description ) ? $result->description : '';
 
 // Currency symbol for price field.
@@ -242,7 +242,7 @@ $currency_symbol = mjschool_get_currency_symbol( get_option( 'mjschool_currency_
         </div>  
         <?php
         // Get Module-Wise Custom Field Data.
-        $mjschool_custom_field_obj = new Mjschool_Custome_Field();
+        $mjschool_custom_field_obj = new Mjschool_Custom_Field();
         $module                    = 'library';
         $custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
         ?>  

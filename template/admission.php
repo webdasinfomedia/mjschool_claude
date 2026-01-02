@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Student Admission Management Page.
  *
@@ -42,6 +41,7 @@ mjschool_browser_javascript_check();
 $mjschool_role_name              = mjschool_get_user_role( get_current_user_id() );
 $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'admission_list';
 $mjschool_obj_admission = new Mjschool_admission();
+$mjschool_obj_user   = new Mjschool_User();
 // --------------- Access-wise role. -----------//
 $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
@@ -150,7 +150,7 @@ if ( isset( $_POST['student_admission'] ) ) {
                 $result = $mjschool_obj_admission->mjschool_add_admission( wp_unslash( $_POST ), $father_document_data, $mother_document_data, $mjschool_role );
 
                 // Custom fields
-                $mjschool_custom_field_obj = new Mjschool_Custome_Field();
+                $mjschool_custom_field_obj = new Mjschool_Custom_Field();
                 $module = 'admission';
                 $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $result );
 
@@ -192,7 +192,7 @@ if ( isset( $_POST['student_admission'] ) ) {
             ---------------------------------------*/
             $result = $mjschool_obj_admission->mjschool_add_admission( wp_unslash( $_POST ), $father_document_data, $mother_document_data, $mjschool_role );
 
-            $mjschool_custom_field_obj = new Mjschool_Custome_Field();
+            $mjschool_custom_field_obj = new Mjschool_Custom_Field();
             $module = 'admission';
             $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 
@@ -207,7 +207,7 @@ if ( isset( $_POST['student_admission'] ) ) {
 if ( isset( $_REQUEST['delete_selected'] ) ) {
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = mjschool_delete_usedata( intval( sanitize_text_field( wp_unslash( $id ) ) ) );
+			$result = $mjschool_obj_user->mjschool_delete_usedata( intval( sanitize_text_field( wp_unslash( $id ) ) ) );
 		}
 	}
 	if ( $result ) {
@@ -218,7 +218,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 // -----------Delete code. --------
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'delete_action' ) ) {
-		$result = mjschool_delete_usedata( intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['student_id'] ) ) ) ) );
+		$result = $mjschool_obj_user->mjschool_delete_usedata( intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['student_id'] ) ) ) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=admission&tab=admission_list&message=8' ) );
 			die();
@@ -463,7 +463,7 @@ if ( isset( $_POST['active_user_admission'] ) ) {
 
 				$sibling_id = intval( $sibling_entry['siblingsstudent'] );
 
-				if ( $sibling_id > 0 && $sibling_id != $active_user_id ) {
+				if ( $sibling_id > 0 && $sibling_id !== $active_user_id ) {
 
 					$existing_sibling_info = get_user_meta( $sibling_id, 'sibling_information', true );
 					$existing_sibling_array = $existing_sibling_info ? json_decode( $existing_sibling_info, true ) : array();
@@ -483,7 +483,7 @@ if ( isset( $_POST['active_user_admission'] ) ) {
 							'siblingsstudent' => $active_user_id,
 						);
 
-						update_user_meta( $sibling_id, 'sibling_information', json_encode( $existing_sibling_array ) );
+						update_user_meta( $sibling_id, 'sibling_information', wp_json_encode( $existing_sibling_array ) );
 					}
 				}
 			}
@@ -548,7 +548,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 <div class="mjschool-panel-body mjschool-panel-white mjschool-frontend-list-margin-30px-res">
 	<!-- Tab panes. -->
 	<?php
-	$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+	$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 	$module                    = 'admission';
 	$user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 	// ---------------- Admission list tab.  -----------------//
@@ -632,7 +632,8 @@ if ( isset( $_REQUEST['message'] ) ) {
 												<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=admission&tab=view_admission&action=view_admission&id=' . esc_attr( $admission_id ) ); ?>">
 													<?php
 													$uid = $retrieved_data->ID;
-													$umetadata = mjschool_get_user_image($uid);
+													$mjschool_user = new Mjschool_User();
+													$umetadata = $mjschool_user->mjschool_get_user_image($uid);
 													if (empty($umetadata ) ) {
 														echo '<img src=' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . ' class="img-circle" />';
 													} else {
@@ -811,7 +812,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 		$active_tab1 = isset( $_GET['tab1'] ) ? sanitize_text_field(wp_unslash($_GET['tab1'])) : 'general';
 		$student_data = get_userdata($admission_id);
 		$user_meta = get_user_meta($admission_id, 'parent_id', true);
-		$mjschool_custom_field_obj = new mjschool_custome_field;
+		$mjschool_custom_field_obj = new mjschool_custom_field;
 		$sibling_information_value = str_replace( '"[', '[', $student_data->sibling_information);
 		$sibling_information_value1 = str_replace( ']"', ']', $sibling_information_value);
 		$sibling_information = json_decode($sibling_information_value1);
@@ -825,7 +826,8 @@ if ( isset( $_REQUEST['message'] ) ) {
 							<div class="col-xl-10 col-md-9 col-sm-10">
 								<div class="mjschool-user-profile-header-left mjschool-float-left-width-100px">
 									<?php
-									$umetadata = mjschool_get_user_image($student_data->ID);
+									$mjschool_user = new Mjschool_User();
+									$umetadata = 	$mjschool_user->mjschool_get_user_image($student_data->ID);
 									if (empty($umetadata ) ) {
 										echo '<img src=' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . ' class="mjschool-user-view-profile-image" />';
 									} else {
@@ -1037,9 +1039,9 @@ if ( isset( $_REQUEST['message'] ) ) {
 										</div>
 									</div>
 									<?php
-									$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+									$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 									$module                    = 'admission';
-									$mjschool_custom_field_obj->mjschool_show_inserted_customfield_data_in_datail_page( $module );
+									$mjschool_custom_field_obj->mjschool_show_inserted_custom_field_data_in_datail_page( $module );
 									?>
 									<!-- Sibling information. -->
 									<?php
@@ -1592,6 +1594,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 			$sibling_data = $student_data->sibling_information;
 			$sibling      = json_decode( $sibling_data );
 		}
+		$mjschool_obj_admission    = new Mjschool_admission();
 		?>
 		<!--Group POP-UP code. -->
 		<div class="mjschool-popup-bg">
@@ -1622,7 +1625,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 						<div class="col-md-6">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="admission_no" class="form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( $student_data->admission_no ); } elseif ( isset( $_POST['admission_no'] ) ) { echo esc_attr( mjschool_generate_admission_number() ); } else { echo esc_attr( mjschool_generate_admission_number() ); } ?>" name="admission_no">
+									<input id="admission_no" class="form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( $student_data->admission_no ); } elseif ( isset( $_POST['admission_no'] ) ) { echo esc_attr( $mjschool_obj_admission->mjschool_generate_admission_number() ); } else { echo esc_attr( $mjschool_obj_admission->mjschool_generate_admission_number() ); } ?>" name="admission_no">
 									<label for="admission_no"><?php esc_html_e( 'Admission Number', 'mjschool' ); ?><span class="required">*</span></label>
 								</div>
 							</div>
@@ -1630,7 +1633,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 						<div class="col-md-6 mjschool-error-msg-left-margin">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="admission_date" class="form-control validate[required]" type="text" name="admission_date" readonly value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( $student_data->admission_date ) ); } elseif ( isset( $_POST['admission_date'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_POST['admission_date'] ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>">
+									<input id="admission_date" class="form-control validate[required]" type="text" name="admission_date" readonly value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( $student_data->admission_date ) ); } elseif ( isset( $_POST['admission_date'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_POST['admission_date'] ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>">
 									<label for="admission_date"><?php esc_html_e( 'Admission Date', 'mjschool' ); ?><span class="required">*</span></label>
 								</div>
 							</div>
@@ -1868,7 +1871,8 @@ if ( isset( $_REQUEST['message'] ) ) {
 												<select name="siblingsclass[]" class="mjschool-line-height-30px form-control validate[required] mjschool-class-in-student mjschool-max-width-100px" id="sibling_class_change_<?php echo esc_attr( $i ); ?>">
 													<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 													<?php
-													foreach ( mjschool_get_all_class() as $classdata ) {
+													$mjschool_class = new Mjschool_Class();
+													foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 														?>
 														<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $value->siblingsclass, $classdata['class_id'] ); ?>> <?php echo esc_html( $classdata['class_name'] ); ?></option>
 														<?php
@@ -1882,7 +1886,8 @@ if ( isset( $_REQUEST['message'] ) ) {
 													<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 													<?php
 													if ( $edit ) {
-														foreach ( mjschool_get_class_sections( $value->siblingsclass ) as $sectiondata ) {
+														$mjschool_class = new Mjschool_Class();
+														foreach ( $mjschool_class->mjschool_get_class_sections( $value->siblingsclass ) as $sectiondata ) {
 															?>
 															<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $value->siblingssection, $sectiondata->id ); ?>> <?php echo esc_html( $sectiondata->section_name ); ?></option>
 															<?php
@@ -1897,7 +1902,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 													<option value=""><?php esc_html_e( 'Select Student', 'mjschool' ); ?></option>
 													<?php
 													if ( $edit ) {
-														if ( mjschool_student_display_name_with_roll( $value->siblingsstudent ) != 'Not Provided' ) {
+														if ( mjschool_student_display_name_with_roll( $value->siblingsstudent ) !== 'Not Provided' ) {
 															echo '<option value="' . esc_attr( $value->siblingsstudent ) . '" ' . selected( $value->siblingsstudent, $value->siblingsstudent ) . '>' . esc_html( mjschool_student_display_name_with_roll( $value->siblingsstudent ) ) . '</option>';
 														}
 													}
@@ -1934,7 +1939,8 @@ if ( isset( $_REQUEST['message'] ) ) {
 											<select name="siblingsclass[]" class="form-control validate[required] mjschool-class-in-student mjschool-max-width-100px" id="mjschool-sibling-class-change">
 												<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 												<?php
-												foreach (mjschool_get_all_class() as $classdata) {
+												$mjschool_class = new Mjschool_Class();
+												foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 													?>
 													<option value="<?php echo esc_attr($classdata['class_id']); ?>"> <?php echo esc_html( $classdata['class_name']); ?></option>
 													<?php
@@ -1976,7 +1982,8 @@ if ( isset( $_REQUEST['message'] ) ) {
 									<select name="siblingsclass[]" class="mjschool-line-height-30px form-control validate[required] mjschool-class-in-student mjschool-max-width-100px" id="mjschool-sibling-class-change">
 										<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 										<?php
-										foreach (mjschool_get_all_class() as $classdata) {
+										$mjschool_class = new Mjschool_Class();
+										foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 											?>
 											<option value="<?php echo esc_attr($classdata['class_id']); ?>"> <?php echo esc_html( $classdata['class_name']); ?></option>
 											<?php
@@ -2423,7 +2430,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 				</div>
 				<?php
 				// --------- Get module-wise custom field data. --------------//
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'admission';
 				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>

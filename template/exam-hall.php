@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Exam Hall Management Page.
  *
@@ -21,7 +20,7 @@
  * 4. **List Display**: Rendering a tabular list of existing exam halls/arrangements.
  * 5. **Search/Filter**: Providing search functionality to find specific exam halls
  * based on the exam name (using `search_exam` action).
- * 6. **Custom Fields**: Integrating the `Mjschool_Custome_Field` object to fetch
+ * 6. **Custom Fields**: Integrating the `Mjschool_Custom_Field` object to fetch
  * and display any custom fields associated with the 'examhall' module.
  * 7. **CRUD Operations**: Processing form submissions and URL actions for managing
  * the exam hall data in the database table (`mjschool_hall`).
@@ -36,7 +35,7 @@ defined( 'ABSPATH' ) || exit;
 mjschool_browser_javascript_check();
 $mjschool_role_name = mjschool_get_user_role( get_current_user_id() );
 // Table name without prefix.
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'examhall';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 $tablename         = 'mjschool_hall';
@@ -45,25 +44,25 @@ $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
 			if ( $user_access['delete'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
@@ -75,13 +74,14 @@ if ( isset( $_POST['send_mail_exam_receipt'] ) ) {
 	$nonce = wp_create_nonce( 'mjschool_exam_hall_tab' );
 	// ------- Send mail for exam receipt generated. ---------------//
 	if ( ! empty( $student_data_asigned ) ) {
+		$obj_exam = new Mjschool_Exam();
 		foreach ( $student_data_asigned as $student_id ) {
 			$headers                    = '';
 			$headers                   .= 'From: ' . get_option( 'mjschool_name' ) . ' <noreplay@gmail.com>' . "\r\n";
 			$headers                   .= "MIME-Version: 1.0\r\n";
 			$headers                   .= "Content-Type: text/html; charset=iso-8859-1\r\n";
 			$userdata                   = get_userdata( $student_id->user_id );
-			$exam_data                  = mjschool_get_exam_by_id( $exam_id );
+			$exam_data                  = $obj_exam->mjschool_get_exam_by_id( $exam_id );
 			$student_email              = $userdata->user_email;
 			$string                     = array();
 			$string['{{student_name}}'] = $userdata->display_name;
@@ -93,7 +93,7 @@ if ( isset( $_POST['send_mail_exam_receipt'] ) ) {
 			mjschool_send_mail_receipt_pdf( $student_email, $msgsubject, $message, $student_id_new, $exam_id );
 		}
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=exam_hall&tab=exam_hall_receipt&_wpnonce='.esc_attr( $nonce ).'&message=4' ) );
-		die();
+		exit;
 	}
 }
 // This is class at admin side.
@@ -102,10 +102,11 @@ $tablename = 'mjschool_hall';
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
 		$nonce = wp_create_nonce( 'mjschool_exam_hall_tab' );
-		$result = mjschool_delete_hall( $tablename, mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hall_id'])) ) );
+		$obj_hall = new Mjschool_Hall();
+		$result = $obj_hall->mjschool_delete_hall( $tablename, mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hall_id'])) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=exam_hall&tab=hall_list&_wpnonce='.esc_attr( $nonce ).'&message=3' ) );
-			die();
+			exit;
 		}
 	} else {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -119,20 +120,21 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		$nonce = wp_create_nonce( 'mjschool_exam_hall_tab' );
+		$obj_hall = new Mjschool_Hall();
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = mjschool_delete_hall( $tablename, intval( sanitize_text_field( wp_unslash( $id ) ) ) );
+			$result = $obj_hall->mjschool_delete_hall( $tablename, intval( sanitize_text_field( wp_unslash( $id ) ) ) );
 		}
 	}
 	if ( $result ) {
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=exam_hall&tab=hall_list&_wpnonce='.esc_attr( $nonce ).'&message=3' ) );
-		die();
+		exit;
 	}
 }
 // ------------- Insert and update. ----------------//
 if ( isset( $_POST['save_hall'] ) ) {
 	$nonce = sanitize_text_field(wp_unslash($_POST['_wpnonce']));
 	if ( wp_verify_nonce( $nonce, 'save_hall_admin_nonce' ) ) {
-		$created_date = date( 'Y-m-d H:i:s' );
+		$created_date = wp_date( 'Y-m-d H:i:s' );
 		$hall_data    = array(
 			'hall_name'      => sanitize_text_field( wp_unslash($_POST['hall_name']) ),
 			'number_of_hall' => sanitize_text_field( wp_unslash($_POST['number_of_hall']) ),
@@ -150,12 +152,12 @@ if ( isset( $_POST['save_hall'] ) ) {
 				$transport_id = array( 'hall_id' => mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hall_id'])) ) );
 				$result       = mjschool_update_record( $tablename, $hall_data, $transport_id );
 				// Update custom field data.
-				$custom_field_obj    = new Mjschool_Custome_Field();
+				$custom_field_obj    = new Mjschool_Custom_Field();
 				$module              = 'examhall';
 				$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $hall_id );
 				if ( $result ) {
 					wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=exam_hall&tab=hall_list&_wpnonce='.esc_attr( $nonce ).'&message=2' ) );
-					die();
+					exit;
 				}
 			} else {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -164,12 +166,12 @@ if ( isset( $_POST['save_hall'] ) ) {
 			$result = mjschool_insert_record( $tablename, $hall_data );
 			global $wpdb;
 			$last_insert_id     = $wpdb->insert_id;
-			$custom_field_obj   = new Mjschool_Custome_Field();
+			$custom_field_obj   = new Mjschool_Custom_Field();
 			$module             = 'examhall';
 			$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $last_insert_id );
 			if ( $result ) {
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=exam_hall&tab=hall_list&_wpnonce='.esc_attr( $nonce ).'&message=1' ) );
-				die();
+				exit;
 			}
 		}
 	}
@@ -483,7 +485,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 		$edit = 0;
 		if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 			$edit      = 1;
-			$hall_data = mjschool_get_hall_by_id( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hall_id'])) ) );
+			$mjschool_obj_hall      = new Mjschool_Hall();
+			$hall_data = $mjschool_obj_hall->mjschool_get_hall_by_id( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hall_id'])) ) );
 		}
 		?>
 		<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res">
@@ -532,7 +535,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 				</div><!-------- Form body. -------->
 				<?php
 				// --------- Get module-wise custom field data. --------------//
-				$custom_field_obj = new Mjschool_Custome_Field();
+				$custom_field_obj = new Mjschool_Custom_Field();
 				$module           = 'examhall';
 				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>
@@ -588,9 +591,10 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 								<?php
 								foreach ( $retrieve_class_data as $retrieved_data ) {
 									$cid      = $retrieved_data->class_id;
-									$clasname = mjschool_get_class_name( $cid );
+									$mjschool_class = new Mjschool_Class();
+									$clasname = $mjschool_class->mjschool_get_class_name( $cid );
 									if ( $retrieved_data->section_id != 0 ) {
-										$section_name = mjschool_get_section_name( $retrieved_data->section_id );
+										$section_name = $mjschool_class->mjschool_get_section_name( $retrieved_data->section_id );
 									} else {
 										$section_name = esc_html__( 'No Section', 'mjschool' );
 									}

@@ -11,7 +11,7 @@
  * - Uses WordPress nonces for form security.
  * - Implements validation and sanitization for safe user input.
  * - Supports optional email and SMS notifications on new holidays.
- * - Integrates custom field management through the Mjschool_Custome_Field class.
+ * - Integrates custom field management through the Mjschool_Custom_Field class.
  * - Provides approval status options for holidays.
  *
  * @package    MJSchool
@@ -23,7 +23,8 @@ $edit = 0;
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) {
 	$edit         = 1;
 	$holiday_id   = intval( mjschool_decrypt_id( wp_unslash($_REQUEST['holiday_id']) ) );
-	$holiday_data = mjschool_get_holiday_by_id( $holiday_id );
+
+	$holiday_data = $mjschool_obj_holiday->mjschool_get_holiday_by_id( $holiday_id );
 }
 ?>
 <div class="mjschool-panel-body"><!-- mjschool-panel-body. -->
@@ -55,7 +56,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 				<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
-							<input id="date" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $holiday_data->date ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="date" readonly>
+							<input id="date" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $holiday_data->date ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>" name="date" readonly>
 							<label class="date_label" for="date"><?php esc_html_e( 'Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						</div>
 					</div>
@@ -64,7 +65,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 				<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool-error-msg-left-margin">
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
-							<input id="end_date_new" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $holiday_data->end_date ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="end_date" readonly>
+							<input id="end_date_new" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $holiday_data->end_date ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>" name="end_date" readonly>
 							<label class="date_label" for="end_date_new"><?php esc_html_e( 'End Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						</div>
 					</div>
@@ -119,8 +120,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 			</div>
 		</div>
 		<?php
-		// --------- Get Module-Wise Custom Field Data. --------------//
-		$custom_field_obj = new Mjschool_Custome_Field();
+		// Get module-wise custom field data.
+		$custom_field_obj = new Mjschool_Custom_Field();
 		$module           = 'holiday';
 		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>

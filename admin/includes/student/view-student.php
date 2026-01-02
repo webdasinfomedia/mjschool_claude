@@ -32,13 +32,15 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 	$sibling_information_value  = str_replace( '"[', '[', $student_data->sibling_information );
 	$sibling_information_value1 = str_replace( ']"', ']', $sibling_information_value );
 	$sibling_information        = json_decode( $sibling_information_value1 );
-	$parent_list                = mjschool_get_student_parent_id( $student_id );
-	$mjschool_custom_field_obj  = new Mjschool_Custome_Field();
+	$mjschool_obj_parent = new Mjschool_Parent();
+	$parent_list                = $mjschool_obj_parent->mjschool_get_student_parent_id( $student_id );
+	$mjschool_custom_field_obj  = new Mjschool_Custom_Field();
 	$mjschool_page_name         = sanitize_text_field( wp_unslash($_REQUEST['page']) );
 	$school_obj                 = new MJSchool_Management( get_current_user_id() );
 	$mjschool_role                       = $school_obj->role;
 	$class_id                   = get_user_meta( $student_id, 'class_name', true );
 	$section_name               = get_user_meta( $student_id, 'class_section', true );
+	$mjschool_obj_feespayment = new Mjschool_Feespayment();
 	?>
 <div class="mjschool-popup-bg">
 	<div class="mjschool-overlay-content">
@@ -56,7 +58,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 					<div class="col-xl-10 col-md-9 col-sm-10">
 						<div class="mjschool-user-profile-header-left mjschool-float-left-width-100px">
 							<?php
-							$userimage = mjschool_get_user_image( $student_data->ID );
+							$mjschool_user = new Mjschool_User();
+							$userimage = $mjschool_user->mjschool_get_user_image( $student_data->ID );
 							?>
 							<img class="mjschool-user-view-profile-image" src="<?php if ( ! empty( $userimage ) ) { echo esc_url( $userimage ); } else { echo esc_url( get_option( 'mjschool_student_thumb_new' ) ); } ?>">
 							<div class="row mjschool-profile-user-name">
@@ -254,7 +257,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 								?>
 								<label class="mjschool-view-page-content-labels">
 									<?php
-									$class_name = mjschool_get_class_name( $student_data->class_name );
+									
+									$class_name = $mjschool_class->mjschool_get_class_name( $student_data->class_name );
 									if ( $class_name === ' ' ) {
 										esc_html_e( 'Not Provided', 'mjschool' );
 									} else {
@@ -276,7 +280,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 									<label class="mjschool-view-page-content-labels">
 										<?php
 										if ( ! empty( $student_data->class_section ) ) {
-											echo esc_html( mjschool_get_section_name( $student_data->class_section ) );
+											$mjschool_class = new Mjschool_Class();
+											echo esc_html( $mjschool_class->mjschool_get_section_name( $student_data->class_section ) );
 										} else {
 											esc_html_e( 'No Section', 'mjschool' );
 										}
@@ -644,7 +649,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 								<?php
 							}
 							$module = 'student';
-							$mjschool_custom_field_obj->mjschool_show_inserted_customfield_data_in_datail_page( $module );
+							$mjschool_custom_field_obj->mjschool_show_inserted_custom_field_data_in_datail_page( $module );
 							?>
 						</div>
 						<!-- Other information div start. -->
@@ -903,8 +908,9 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 															<?php
 															$fees_id   = explode( ',', $retrieved_data->fees_id );
 															$fees_type = array();
+															$obj_fees = new Mjschool_Fees();
 															foreach ( $fees_id as $id ) {
-																$fees_type[] = mjschool_get_fees_term_name( $id );
+																$fees_type[] = $obj_fees->mjschool_get_fees_term_name( $id );
 															}
 															echo esc_html( implode( ' , ', $fees_type ) );
 															?>
@@ -931,7 +937,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 													<td><?php echo esc_html( mjschool_currency_symbol_position_language_wise( $due_amount ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Due Amount', 'mjschool' ); ?>"></i></td>
 													<td>
 														<?php
-														$mjschool_get_payment_status = mjschool_get_payment_status( $retrieved_data->fees_pay_id );
+														$mjschool_get_payment_status = $mjschool_obj_feespayment->mjschool_get_payment_status( $retrieved_data->fees_pay_id );
 														if ( $mjschool_get_payment_status === 'Not Paid' ) {
 															echo "<span class='mjschool-red-color'>";
 														} elseif ( $mjschool_get_payment_status === 'Partially Paid' ) {
@@ -1140,7 +1146,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 												<td>
 													<?php
 													$sname = mjschool_student_display_name_with_roll( $retrieved_data->student_id );
-													if ( $sname != '' ) {
+													if ( $sname !== '' ) {
 														echo esc_html( $sname );
 													} else {
 														esc_html_e( 'Not Provided', 'mjschool' );
@@ -1164,7 +1170,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 												<td><?php echo esc_html( get_the_title( $retrieved_data->leave_type ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Leave Type', 'mjschool' ); ?>"></i></td>
 												<td>
 													<?php
-													$duration = mjschool_leave_duration_label( $retrieved_data->leave_duration );
+														$mjschool_obj_leave = new Mjschool_Leave();
+													$duration = $mjschool_obj_leave->mjschool_leave_duration_label( $retrieved_data->leave_duration );
 													echo esc_html( $duration );
 													?>
 													<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Leave Duration', 'mjschool' ); ?>"></i>
@@ -1208,7 +1215,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 																</a>
 																<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																	<?php
-																	if (($retrieved_data->status != 'Approved' ) ) {
+																	if (($retrieved_data->status !== 'Approved' ) ) {
 																		?>
 																		<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
 																			<a href="#" leave_id="<?php echo esc_attr($retrieved_data->id) ?>" class="mjschool-float-left-width-100px leave-approve">
@@ -1217,7 +1224,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 																		</li>
 																		<?php
 																	}
-																	if (($retrieved_data->status != 'Rejected' ) ) {
+																	if (($retrieved_data->status !== 'Rejected' ) ) {
 																		?>
 																		<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
 																			<a href="#" leave_id="<?php echo esc_attr($retrieved_data->id) ?>" class="leave-reject mjschool-float-left-width-100px">
@@ -1287,6 +1294,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 				elseif ( $active_tab1 === 'hallticket' ) {
 					$hall_ticket = mjschool_hall_ticket_list( $student_id );
 					if ( ! empty( $hall_ticket ) ) {
+						$mjschool_obj_hall      = new Mjschool_Hall();
 						?>
 
 						<div class="table-div"><!-- Panel body div start. -->
@@ -1307,8 +1315,9 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 										<?php
 										$i = 0;
 										if ( ! empty( $hall_ticket ) ) {
+											$obj_exam = new Mjschool_Exam();
 											foreach ( $hall_ticket as $retrieved_data ) {
-												$exam_data  = mjschool_get_exam_by_id( $retrieved_data->exam_id );
+												$exam_data  = $obj_exam->mjschool_get_exam_by_id( $retrieved_data->exam_id );
 												$start_date = $exam_data->exam_start_date;
 												$end_date   = $exam_data->exam_end_date;
 												$color_class_css = mjschool_table_list_background_color( $i );
@@ -1319,9 +1328,9 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 															<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-exam-hall.png"); ?>" class="mjschool-massage-image mjschool-image-icon-height-25px">
 														</p>
 													</td>
-													<td><?php echo esc_html( mjschool_get_hall_name($retrieved_data->hall_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Hall Name', 'mjschool' ); ?>"></i></td>
+													<td><?php echo esc_html( $mjschool_obj_hall->mjschool_get_hall_name($retrieved_data->hall_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Hall Name', 'mjschool' ); ?>"></i></td>
 													<td class="department"><?php echo esc_html( mjschool_student_display_name_with_roll($retrieved_data->user_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i></td>
-													<td class="name"><?php echo esc_html( mjschool_get_exam_name_id($retrieved_data->exam_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Exam Name', 'mjschool' ); ?>"></i></td>
+													<td class="name"><?php echo esc_html( $obj_exam->mjschool_get_exam_name_id($retrieved_data->exam_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Exam Name', 'mjschool' ); ?>"></i></td>
 													<td class="department"><?php echo esc_html( get_the_title($exam_data->exam_term ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Exam Term', 'mjschool' ); ?>"></i></td>
 													<td class="department"><?php echo esc_html( mjschool_get_date_in_input_box($start_date ) ); ?><?php esc_html_e( " To ", "mjschool" ); ?><?php echo esc_html( mjschool_get_date_in_input_box($end_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Exam Start To End Date', 'mjschool' ); ?>"></i></td>
 													<td class="action">
@@ -1335,38 +1344,6 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 																		<li class="mjschool-float-left-width-100px">
 																			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&action=view_student_hallticket&tab=view_hall_ticket&student_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->user_id ) ).'&exam_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->exam_id ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-print"> </i><?php esc_html_e( 'View Hall Ticket', 'mjschool' ); ?></a>
 																		</li>
-																		<li class="mjschool-float-left-width-100px">
-																			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&student_exam_receipt=student_exam_receipt&student_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->user_id ) ).'&exam_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->exam_id ) ) ) ); ?>" target="_blank" class="mjschool-float-left-width-100px"><i class="fas fa-print"> </i><?php esc_html_e( 'Hall Ticket Print', 'mjschool' ); ?></a>
-																		</li>
-																		<?php
-																		if ( isset( $_REQUEST['web_type'] ) && sanitize_text_field(wp_unslash($_REQUEST['web_type'])) === 'wpschool_app' ) {
-																			$pdf_name = $retrieved_data->user_id . '_' . $retrieved_data->exam_id;
-																			if ( isset( $_POST['download_app_pdf'] ) ) {
-																				$file_path = content_url() . '/uploads/exam_receipt/' . $pdf_name . '.pdf';
-																				if ( file_exists( ABSPATH . str_replace( content_url(), 'wp-content', $file_path ) ) ) {
-																					unlink( $file_path ); // Delete the file.
-																				}
-																				$generate_pdf = mjschool_generate_exam_receipt_mobile_app( $retrieved_data->user_id, $retrieved_data->exam_id, $pdf_name );
-																				wp_safe_redirect( $file_path );
-																				die();
-																			}
-																			?>
-																			<li class="mjschool-float-left-width-100px">
-																				<form name="app2_pdf" action="" method="post"  class="mjschool-float-left-width-100px">
-																					<button type="submit" name="download_app_pdf" class="mjschool-float-left-width-100px mjschool-hall-ticket-pdf-button">
-																						<span class="mjschool-hall-ticket-pdf-button-span"><i class="fas fa-print mjschool-hall-ticket-pdf-icon"></i> <?php esc_html_e( 'Hall Ticket PDF', 'mjschool' ); ?></span>
-																					</button>
-																				</form>
-																			</li>
-																			<?php
-																		} else {
-																			?>
-																			<li class="mjschool-float-left-width-100px">
-																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&student_exam_receipt_pdf=student_exam_receipt_pdf&student_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->user_id ) ).'&exam_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->exam_id ) ) ) ); ?>" target="_blank" class="mjschool-float-left-width-100px"><i class="fas fa-print"> </i><?php esc_html_e( 'Hall Ticket PDF', 'mjschool' ); ?></a>
-																			</li>
-																			<?php
-																		}
-																		?>
 																	</ul>
 																</li>
 															</ul>
@@ -1444,6 +1421,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 										<?php
 										$i = 0;
 										if ( ! empty( $student_homework ) ) {
+											$mjschool_subject = new Mjschool_Subject();
 											foreach ( $student_homework as $retrieved_data ) {
 												$color_class_css = mjschool_table_list_background_color( $i );
 												?>
@@ -1459,8 +1437,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 														</a>
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Homework Title', 'mjschool' ); ?>"></i>
 													</td>
-													<td><?php echo esc_html( mjschool_get_class_name( $retrieved_data->class_name ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name', 'mjschool' ); ?>"></i></td>
-													<td><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Subject Name', 'mjschool' ); ?>"></i></td>
+													<td><?php echo esc_html( $mjschool_class->mjschool_get_class_name( $retrieved_data->class_name ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name', 'mjschool' ); ?>"></i></td>
+													<td><?php echo esc_html( $mjschool_subject->mjschool_get_single_subject_name( $retrieved_data->subject ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Subject Name', 'mjschool' ); ?>"></i></td>
 													<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->created_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Homework Date', 'mjschool' ); ?>"></i></td>
 													<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->submition_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Submission Date', 'mjschool' ); ?>"></i></td>
 													<?php
@@ -1798,49 +1776,26 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 																$subject_name = $sub->sub_name;
 																// Now call with single class_id, subject_id, exam_id.
 																$new_marks = $obj_mark->mjschool_get_marks( $exam_id, $class_id, $subject_id, $uid );
-																if ( $new_marks != '0' )
+																if ( $new_marks !== '0' )
 																{
 																	$main_marks[] = $new_marks;
 																}
 															}
 															if ( ! empty( $main_marks ) ) {
 																?>
-																<div class="col-md-12 row mjschool-padding-left-50px  mjschool-view-result">
-																	<?php
-																	if ( isset( $_REQUEST['web_type'] ) && sanitize_text_field(wp_unslash($_REQUEST['web_type'])) === 'wpschool_app' ) {
-																		$pdf_name  = $uid . '_' . $exam_id;
-																		$file_path = content_url() . '/uploads/result/' . $pdf_name . '.pdf';
-																		if ( isset( $_POST['download_app_pdf'] ) ) {
-																			$file_path = content_url() . '/uploads/result/' . $pdf_name . '.pdf';
-																			if ( file_exists( ABSPATH . str_replace( content_url(), 'wp-content', $file_path ) ) ) {
-																				unlink( $file_path ); // Delete the file.
-																			}
-																			$generate_pdf = mjschool_generate_result_for_mobile_app( $uid, $exam_id, $pdf_name, $class_id, $section_id );
-																			wp_safe_redirect( $file_path );
-																			die();
-																		}
-																		 ?>
-																		<div class="col-md-2 mjschool-width-50px mjschool-marks-block">
-																			<form name="app1_pdf" action="" method="post">
-																				<button data-toggle="tooltip" name="download_app_pdf"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-pdf.png"); ?>"></button>
-																			</form>
-																		</div>
-																		<?php
-																	}
-																	else
-																	{	
-																		?>
-																		<div class="col-md-2 mjschool-width-50px mjschool-marks-block  mjschool_margin_right_15px">
-																			<a href="#" student_id="<?php echo esc_js(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_js(mjschool_encrypt_id($class_id ) ); ?>" section_id="<?php echo esc_js(mjschool_encrypt_id($section_id ) ); ?>" exam_id="<?php echo esc_js(mjschool_encrypt_id($exam_id ) ); ?>" typeformat="pdf" class="mjschool-float-right show-popup-teacher-details" target="_blank"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-pdf.png"); ?>"></a>
-																		</div>
-																		<?php 
-																	} 
-																	?>
-																	<div class="col-md-2 mjschool-width-50px mjschool-rtl-margin-left-20px">
-																		<a href="#" student_id="<?php echo esc_js(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_js(mjschool_encrypt_id($class_id ) ); ?>" section_id="<?php echo esc_js(mjschool_encrypt_id($section_id ) ); ?>" exam_id="<?php echo esc_js(mjschool_encrypt_id($exam_id ) ); ?>" typeformat="print" class="mjschool-float-right show-popup-teacher-details">
-																			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-print.png"); ?>">
-																		</a>
-																	</div>
+																<div class="mjschool-user-dropdown">
+																	<ul class="mjschool_ul_style">
+																		<li>
+																			<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
+																				<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-more.png"); ?>">
+																			</a>
+																			<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
+																				<li class="mjschool-float-left-width-100px">
+																					<a class="mjschool-float-left-width-100px show-popup-teacher-details" student_id="<?php echo esc_attr( mjschool_encrypt_id( $uid ) ); ?>" exam_id="<?php echo esc_attr( mjschool_encrypt_id( $exam_id ) ); ?>" class_id="<?php echo esc_attr( mjschool_encrypt_id( $class_id ) ); ?>" section_id="<?php echo esc_attr( mjschool_encrypt_id( $section_id ) ); ?>"><i class="fas fa-print"> </i><?php esc_html_e( 'View Result', 'mjschool' ); ?></a>
+																				</li>
+																			</ul>
+																		</li>
+																	</ul>
 																</div>
 																<?php
 															} 
@@ -1852,6 +1807,21 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 														else
 														{
 															?>
+															<div class="mjschool-user-dropdown">
+																<ul  class="mjschool_ul_style">
+																	<li >
+																		<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
+																			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-more.png"); ?>">
+																		</a>
+																		<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
+																			<li class="mjschool-float-left-width-100px">
+																				<!-- <a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&action=view_student_result&tab=view_student_result&student_id='.rawurlencode( mjschool_encrypt_id($uid ) ).'&merge_id='.rawurlencode( mjschool_encrypt_id($retrieved_data->id ) ) .'&class_id='. rawurlencode(mjschool_encrypt_id($class_id ) ) .'&section_id='. rawurlencode(mjschool_encrypt_id($section_id ) ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-print"> </i><?php esc_html_e( 'View Result', 'mjschool' ); ?></a> -->
+																				<a student_id="<?php echo esc_js(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_js(mjschool_encrypt_id($class_id ) ); ?>" section_id="<?php echo esc_js(mjschool_encrypt_id($section_id ) ); ?>" merge_id="<?php echo esc_js(mjschool_encrypt_id($retrieved_data->id ) ); ?>" class="mjschool-float-left-width-100px show-popup-teacher-details-marge"><i class="fas fa-print"> </i><?php esc_html_e( 'View Result', 'mjschool' ); ?></a>
+																			</li>
+																		</ul>
+																	</li>
+																</ul>
+															</div>
 															<div class="col-md-12 row mjschool-padding-left-50px  mjschool-view-result">
 																<div class="col-md-2 mjschool-width-50px mjschool-marks-block mjschool_margin_right_15px">
 																	<a student_id="<?php echo esc_js(mjschool_encrypt_id($uid ) ); ?>" class_id="<?php echo esc_js(mjschool_encrypt_id($class_id ) ); ?>" section_id="<?php echo esc_js(mjschool_encrypt_id($section_id ) ); ?>" merge_id="<?php echo esc_js(mjschool_encrypt_id($retrieved_data->id ) ); ?>" typeformat="pdf" href="#" class="mjschool-float-right show-popup-teacher-details-marge" target="_blank"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-pdf.png"); ?>"></a>
@@ -1876,7 +1846,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'view_act
 							<div class="mjschool-panel-white mjschool_table_transform_translate" id="printPopupModal">
 								<div class="modal-header mjschool-model-header-padding mjschool-dashboard-model-header">
 									<a href="javascript:void(0);" class="close-btn badge badge-success pull-right mjschool-dashboard-popup-design"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></a>
-									<h4 id="myLargeModalLabel" class="modal-title"><?php echo esc_html( mjschool_get_user_name_by_id($uid ) ); ?>'s <?php esc_html_e( 'Result', 'mjschool' ) ?></h4>
+									<h4 id="myLargeModalLabel" class="modal-title"><?php echo esc_html( mjschool_get_display_name($uid ) ); ?>'s <?php esc_html_e( 'Result', 'mjschool' ) ?></h4>
 								</div>
 								<h4>Enter Teacher Comment</h4>
 								<textarea id="teacherComment" rows="4" class="mjschool_width_100px"></textarea>

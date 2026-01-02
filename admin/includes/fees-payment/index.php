@@ -22,7 +22,7 @@
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
-// -------- CHECK BROWSER JAVASCRIPT. ----------//
+// Check browser JavaScript.
 mjschool_browser_javascript_check();
 $mjschool_role = mjschool_get_user_role( get_current_user_id() );
 if ( $mjschool_role === 'administrator' ) {
@@ -36,27 +36,27 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_edit   = $user_access['edit'];
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
-	if ( isset( $_REQUEST['page'] ) && sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) ) {
-		if ( $user_access_view === '0' ) {
+	if ( isset( $_GET['page'] ) && sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
-		if ( isset( $_REQUEST['action'] ) && ! empty( sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) ) ) {
-			$sanitized_action = sanitize_text_field( wp_unslash( $_REQUEST['action'] ) );
+		if ( isset( $_GET['action'] ) && ! empty( sanitize_text_field( wp_unslash( $_GET['action'] ) ) ) ) {
+			$sanitized_action = sanitize_text_field( wp_unslash( $_GET['action'] ) );
 			if ( 'feepayment' === $user_access['page_link'] && ( $sanitized_action === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'feepayment' === $user_access['page_link'] && ( $sanitized_action === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'feepayment' === $user_access['page_link'] && ( $sanitized_action === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -64,33 +64,31 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'fee_pay';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
-?>
-<?php
 $mjschool_obj_fees        = new Mjschool_Fees();
 $mjschool_obj_feespayment = new Mjschool_Feespayment();
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'delete' ) {
+if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'delete_action' ) ) {
 
 		$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
-		if ( isset( $_REQUEST['fees_id'] ) ) {
-			$result = $mjschool_obj_fees->mjschool_delete_feetype_data( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['fees_id'] ) ) ) );
+		if ( isset( $_GET['fees_id'] ) ) {
+			$result = $mjschool_obj_fees->mjschool_delete_feetype_data( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['fees_id'] ) ) ) );
 			if ( $result ) {
 				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feeslist&_wpnonce=' . rawurlencode( $nonce ) . '&message=feetype_del' ) );
 				die();
 			}
 		}
-		if ( isset( $_REQUEST['fees_pay_id'] ) ) {
-			$result = $mjschool_obj_feespayment->mjschool_delete_fee_payment_data( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['fees_pay_id'] ) ) ) );
+		if ( isset( $_GET['fees_pay_id'] ) ) {
+			$result = $mjschool_obj_feespayment->mjschool_delete_fee_payment_data( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['fees_pay_id'] ) ) ) );
 			if ( $result ) {
 				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=fee_del' ) );
 				die();
 			}
 		}
-		if ( isset( $_REQUEST['recurring_fees_id'] ) ) {
-			$result = $mjschool_obj_feespayment->mjschool_delete_recurring_fees( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['recurring_fees_id'] ) ) ) );
+		if ( isset( $_GET['recurring_fees_id'] ) ) {
+			$result = $mjschool_obj_feespayment->mjschool_delete_recurring_fees( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['recurring_fees_id'] ) ) ) );
 			if ( $result ) {
 				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=fee_del' ) );
 				die();
@@ -100,9 +98,9 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
 }
-if ( isset( $_REQUEST['delete_selected_feetype'] ) ) {
-	if ( isset( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) && ! empty( $_REQUEST['id'] ) ) {
-		$sanitized_ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+if ( isset( $_POST['delete_selected_feetype'] ) ) {
+	if ( isset( $_POST['id'] ) && is_array( $_POST['id'] ) && ! empty( $_POST['id'] ) ) {
+		$sanitized_ids = array_map( 'intval', wp_unslash( $_POST['id'] ) );
 		foreach ( $sanitized_ids as $id ) {
 			$result = $mjschool_obj_feespayment->mjschool_delete_feetype_data( $id );
 		}
@@ -118,9 +116,9 @@ if ( isset( $_REQUEST['delete_selected_feetype'] ) ) {
 		<?php
 	}
 }
-if ( isset( $_REQUEST['delete_selected_feelist'] ) ) {
-	if ( isset( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) && ! empty( $_REQUEST['id'] ) ) {
-		$sanitized_ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+if ( isset( $_POST['delete_selected_feelist'] ) ) {
+	if ( isset( $_POST['id'] ) && is_array( $_POST['id'] ) && ! empty( $_POST['id'] ) ) {
+		$sanitized_ids = array_map( 'intval', wp_unslash( $_POST['id'] ) );
 		foreach ( $sanitized_ids as $id ) {
 			$result = $mjschool_obj_feespayment->mjschool_delete_fee_payment_data( $id );
 		}
@@ -136,9 +134,9 @@ if ( isset( $_REQUEST['delete_selected_feelist'] ) ) {
 		<?php
 	}
 }
-if ( isset( $_REQUEST['delete_selected_recurring_feelist'] ) ) {
-	if ( isset( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) && ! empty( $_REQUEST['id'] ) ) {
-		$sanitized_ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+if ( isset( $_POST['delete_selected_recurring_feelist'] ) ) {
+	if ( isset( $_POST['id'] ) && is_array( $_POST['id'] ) && ! empty( $_POST['id'] ) ) {
+		$sanitized_ids = array_map( 'intval', wp_unslash( $_POST['id'] ) );
 		foreach ( $sanitized_ids as $id ) {
 			$result = $mjschool_obj_feespayment->mjschool_delete_recurring_fees( $id );
 		}
@@ -158,12 +156,12 @@ if ( isset( $_POST['save_feetype'] ) ) {
 	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	if ( wp_verify_nonce( $nonce, 'save_fees_type_admin_nonce' ) ) {
 		$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
-		$sanitized_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+		$sanitized_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 		if ( $sanitized_action === 'edit' ) {
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'edit_action' ) ) {
-				$fees_id                   = isset( $_REQUEST['fees_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['fees_id'] ) ) : '';
+				$fees_id                   = isset( $_GET['fees_id'] ) ? sanitize_text_field( wp_unslash( $_GET['fees_id'] ) ) : '';
 				$result                    = $mjschool_obj_fees->mjschool_add_fees( wp_unslash( $_POST ) );
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'fee_pay';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $fees_id );
 				if ( $result ) {
@@ -176,7 +174,7 @@ if ( isset( $_POST['save_feetype'] ) ) {
 		} elseif ( ! $mjschool_obj_fees->mjschool_is_duplicat_fees( sanitize_text_field( wp_unslash( $_POST['fees_title_id'] ) ), sanitize_text_field( wp_unslash( $_POST['class_id'] ) ) ) ) {
 			$result                    = $mjschool_obj_fees->mjschool_add_fees( wp_unslash( $_POST ) );
 			$module                    = 'fee_pay';
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
 				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feeslist&_wpnonce=' . rawurlencode( $nonce ) . '&message=feetype_add' ) );
@@ -192,26 +190,26 @@ if ( isset( $_POST['add_feetype_payment'] ) ) {
 	$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
 	$result                    = $mjschool_obj_feespayment->mjschool_add_feespayment_history( wp_unslash( $_POST ) );
 	$module                    = 'fee_transaction';
-	$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+	$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 	$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 	if ( $result ) {
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=1' ) );
 		die();
 	}
 }
-//Update Recurring Invoice Data.
+// Update recurring invoice data.
 if ( isset( $_POST['save_recurring_feetype_payment'] ) ) {
 	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	if ( wp_verify_nonce( $nonce, 'save_payment_fees_admin_nonce' ) ) {
 
 		$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
-		$start_date = date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['start_year'] ) ) ) );
-		$end_date   = date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) ) );
+		$start_date = gmdate( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['start_year'] ) ) ) );
+		$end_date   = gmdate( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) ) );
 		if ( $start_date <= $end_date ) {
-			$sanitized_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+			$sanitized_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 			if ( $sanitized_action === 'edit' ) {
 				if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'edit_action' ) ) {
-					$result = $mjschool_obj_feespayment->mjschool_add_recurring_feespayment( wp_unslash( $_POST ) );
+					$result = $mjschool_obj_feespayment->mjschool_add_recurring_fees_payment( wp_unslash( $_POST ) );
 					if ( $result ) {
 						wp_safe_redirect( admin_url( 'admin.php?page=mjschool_fees_payment&tab=recurring_feespaymentlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=recurring_feetype_edit' ) );
 						die();
@@ -236,20 +234,20 @@ if ( isset( $_POST['save_feetype_payment'] ) ) {
 	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	if ( wp_verify_nonce( $nonce, 'save_payment_fees_admin_nonce' ) ) {
 		$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
-		if ( isset( $_REQUEST['mjschool_enable_feesalert_mail'] ) ) {
+		if ( isset( $_POST['mjschool_enable_feesalert_mail'] ) ) {
 			update_option( 'mjschool_enable_feesalert_mail', 1 );
 		} else {
 			update_option( 'mjschool_enable_feesalert_mail', 0 );
 		}
-		$start_date = date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['start_year'] ) ) ) );
-		$end_date   = date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) ) );
+		$start_date = gmdate( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['start_year'] ) ) ) );
+		$end_date   = gmdate( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) ) );
 		if ( $start_date <= $end_date ) {
-			$sanitized_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+			$sanitized_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 			if ( $sanitized_action === 'edit' ) {
 				if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'edit_action' ) ) {
-					$fees_pay_id               = isset( $_REQUEST['fees_pay_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['fees_pay_id'] ) ) : '';
+					$fees_pay_id               = isset( $_GET['fees_pay_id'] ) ? sanitize_text_field( wp_unslash( $_GET['fees_pay_id'] ) ) : '';
 					$result                    = $mjschool_obj_feespayment->mjschool_add_feespayment( wp_unslash( $_POST ) );
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'fee_list';
 					$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $fees_pay_id );
 					if ( $result ) {
@@ -262,7 +260,7 @@ if ( isset( $_POST['save_feetype_payment'] ) ) {
 			} else {
 				$result                    = $mjschool_obj_feespayment->mjschool_add_feespayment( wp_unslash( $_POST ) );
 				$module                    = 'fee_list';
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
 					wp_safe_redirect( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=fee_add' ) );
@@ -282,10 +280,10 @@ if ( isset( $_POST['save_feetype_payment'] ) ) {
 	}
 }
 // Fees Reminder for Student and Parent.
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'reminder' && isset( $_REQUEST['fees_pay_id'] ) ) {
+if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'reminder' && isset( $_GET['fees_pay_id'] ) ) {
 
 	$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
-	$fees_id      = sanitize_text_field( wp_unslash( $_REQUEST['fees_pay_id'] ) );
+	$fees_id      = sanitize_text_field( wp_unslash( $_GET['fees_pay_id'] ) );
 	$data         = $mjschool_obj_feespayment->mjschool_get_single_fee_payment( $fees_id );
 	$student_id   = $data->student_id;
 	$studentinfo  = get_userdata( $student_id );
@@ -326,7 +324,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 	$Seach['{{student_name}}'] = $student_name;
 	$Seach['{{total_amount}}'] = mjschool_currency_symbol_position_language_wise( $total_amount );
 	$Seach['{{due_amount}}']   = mjschool_currency_symbol_position_language_wise( $due_amount );
-	$Seach['{{class_name}}']   = mjschool_get_class_name( $data->class_id );
+	$mjschool_class = new Mjschool_Class();
+	$Seach['{{class_name}}']   = $mjschool_class->mjschool_get_class_name( $data->class_id );
 	$Seach['{{school_name}}']  = get_option( 'mjschool_name' );
 	$MsgContent                = mjschool_string_replacement( $Seach, get_option( 'mjschool_fee_payment_reminder_mailcontent_for_student' ) );
 	if ( get_option( 'mjschool_mail_notification' ) === 1 ) {
@@ -347,7 +346,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 			$Seach['{{parent_name}}']  = $parent_name;
 			$Seach['{{total_amount}}'] = mjschool_currency_symbol_position_language_wise( $total_amount );
 			$Seach['{{due_amount}}']   = mjschool_currency_symbol_position_language_wise( $due_amount );
-			$Seach['{{class_name}}']   = mjschool_get_class_name( $data->class_id );
+			$mjschool_class = new Mjschool_Class();
+			$Seach['{{class_name}}'] 	 = $mjschool_class->mjschool_get_class_name( $data->class_id );
 			$Seach['{{school_name}}']  = get_option( 'mjschool_name' );
 			$MsgContent                = mjschool_string_replacement( $Seach, get_option( 'mjschool_fee_payment_reminder_mailcontent' ) );
 			if ( get_option( 'mjschool_mail_notification' ) === 1 ) {
@@ -358,11 +358,11 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 	wp_safe_redirect( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=mail_success' ) );
 	die();
 }
-if ( isset( $_REQUEST['fees_reminder_feeslist'] ) ) {
+if ( isset( $_POST['fees_reminder_feeslist'] ) ) {
 
 	$nonce = wp_create_nonce( 'mjschool_feespayment_tab' );
-	if ( isset( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) && ! empty( $_REQUEST['id'] ) ) {
-		$sanitized_ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+	if ( isset( $_POST['id'] ) && is_array( $_POST['id'] ) && ! empty( $_POST['id'] ) ) {
+		$sanitized_ids = array_map( 'intval', wp_unslash( $_POST['id'] ) );
 		foreach ( $sanitized_ids as $id ) {
 			$fees_id     = $id;
 			$data        = $mjschool_obj_feespayment->mjschool_get_single_fee_mjschool_payment( $fees_id );
@@ -379,7 +379,8 @@ if ( isset( $_REQUEST['fees_reminder_feeslist'] ) ) {
 			$Seach['{{student_name}}'] = $student_name;
 			$Seach['{{total_amount}}'] = mjschool_currency_symbol_position_language_wise( $total_amount );
 			$Seach['{{due_amount}}']   = mjschool_currency_symbol_position_language_wise( $due_amount );
-			$Seach['{{class_name}}']   = mjschool_get_class_name( $data->class_id );
+			$mjschool_class = new Mjschool_Class();
+			$Seach['{{class_name}}']   = $mjschool_class->mjschool_get_class_name( $data->class_id );
 			$Seach['{{school_name}}']  = get_option( 'mjschool_name' );
 			$MsgContent                = mjschool_string_replacement( $Seach, get_option( 'mjschool_fee_payment_reminder_mailcontent_for_student' ) );
 			if ( get_option( 'mjschool_mail_notification' ) === 1 ) {
@@ -403,7 +404,8 @@ if ( isset( $_REQUEST['fees_reminder_feeslist'] ) ) {
 					$Seach['{{parent_name}}']  = $parent_name;
 					$Seach['{{total_amount}}'] = mjschool_currency_symbol_position_language_wise( $total_amount );
 					$Seach['{{due_amount}}']   = mjschool_currency_symbol_position_language_wise( $due_amount );
-					$Seach['{{class_name}}']   = mjschool_get_class_name( $data->class_id );
+					$mjschool_class = new Mjschool_Class();
+					$Seach['{{class_name}}'] 	 = $mjschool_class->mjschool_get_class_name( $data->class_id );
 					$Seach['{{school_name}}']  = get_option( 'mjschool_name' );
 					$MsgContent                = mjschool_string_replacement( $Seach, get_option( 'mjschool_fee_payment_reminder_mailcontent' ) );
 					$from                      = get_option( 'mjschool_name' );
@@ -434,7 +436,7 @@ if ( isset( $_REQUEST['fees_reminder_feeslist'] ) ) {
 					'type'  => 'notification',
 				),
 			);
-			$json    = json_encode( $notification_data );
+			$json    = wp_json_encode( $notification_data );
 			$message = mjschool_send_push_notification( $json );
 			// Send Push Notification.
 		}
@@ -457,8 +459,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 	<div class="payment_list mjschool-main-list-margin-5px mjschool-tab-margin-top-40px">
 		<?php
 		$message_string = '';
-		if ( isset( $_REQUEST['message'] ) ) {
-			$message = isset( $_REQUEST['message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message'] ) ) : '';
+		if ( isset( $_GET['message'] ) ) {
+			$message = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '';
 			switch ( $message ) {
 				case 'feetype_del':
 					$message_string = esc_html__( 'Fees Type Deleted Successfully.', 'mjschool' );
@@ -506,10 +508,10 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 		<div class="mjschool-panel-white">
 			<div class="mjschool-panel-body">
 				<?php
-				if ( $active_tab != 'view_fesspayment' ) {
+				if ( $active_tab !== 'view_fesspayment' ) {
 					$mjschool_action = '';
-					if ( ! empty( $_REQUEST['action'] ) ) {
-						$mjschool_action = sanitize_text_field( wp_unslash( $_REQUEST['action'] ) );
+					if ( ! empty( $_GET['action'] ) ) {
+						$mjschool_action = sanitize_text_field( wp_unslash( $_GET['action'] ) );
 					}
 					?>
 					<?php $nonce = wp_create_nonce( 'mjschool_feespayment_tab' ); ?>
@@ -656,7 +658,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 															if ( $retrieved_data->class_id === 'all_class' ) {
 																esc_html_e( 'All Class', 'mjschool' );
 															} else {
-																echo esc_html( mjschool_get_class_name( $retrieved_data->class_id ) );
+																$mjschool_class = new Mjschool_Class();
+																echo esc_html( $mjschool_class->mjschool_get_class_name( $retrieved_data->class_id ) );
 															}
 														} else {
 															esc_html_e( 'N/A', 'mjschool' );
@@ -667,7 +670,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 													<td>
 														<?php
 														if ( $retrieved_data->section_id != 0 ) {
-															echo esc_html( mjschool_get_section_name( $retrieved_data->section_id ) );
+															$mjschool_class = new Mjschool_Class();
+															echo esc_html( $mjschool_class->mjschool_get_section_name( $retrieved_data->section_id ) );
 														} else {
 															esc_html_e( 'No Section', 'mjschool' );
 														}
@@ -755,9 +759,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 															<ul  class="mjschool_ul_style">
 																<li >
 																	<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
-																		
 																		<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-more.png' ); ?>">
-																		
 																	</a>
 																	<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																		<?php
@@ -800,7 +802,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 										</button>
 										<?php
 										if ( $user_access_delete === '1' ) {
-											 ?>
+											?>
 											<button data-toggle="tooltip" id="delete_selected" title="<?php esc_attr_e( 'Delete Selected', 'mjschool' ); ?>" name="delete_selected_feetype" class="delete_selected">
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-delete.png' ); ?>">
 											</button>
@@ -816,9 +818,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 						?>
 						<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
 							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=addfeetype' ) ); ?>">
-								
 								<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
-								
 							</a>
 							<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
 								<label class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?></label>
@@ -828,9 +828,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					} else {
 						?>
 						<div class="mjschool-calendar-event-new">
-							
 							<img class="mjschool-no-data-img" src="<?php echo esc_url( MJSCHOOL_NODATA_IMG ); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
-							
 						</div>
 						<?php
 					}
@@ -848,7 +846,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 							wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 						}
 					}
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'fee_list';
 					$user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 					$retrieve_class_data            = $mjschool_obj_feespayment->mjschool_get_all_fees();
@@ -898,8 +896,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 														<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=view_fesspayment&idtest=' . mjschool_encrypt_id( $retrieved_data->fees_pay_id ) . '&view_type=view_payment' ) ); ?>">
 															<?php
 															$uid       = $retrieved_data->student_id;
-															$umetadata = mjschool_get_user_image( $uid );
-															
+															$mjschool_user = new Mjschool_User();
+															$umetadata = $mjschool_user->mjschool_get_user_image( $uid );
 															if ( empty( $umetadata ) ) {
 																echo '<img src=' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . ' class="img-circle" />';
 															} else {
@@ -917,8 +915,9 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 														<?php
 														$fees_id   = explode( ',', $retrieved_data->fees_id );
 														$fees_type = array();
+														$obj_fees = new Mjschool_Fees();
 														foreach ( $fees_id as $id ) {
-															$fees_type[] = mjschool_get_fees_term_name( $id );
+															$fees_type[] = $obj_fees->mjschool_get_fees_term_name( $id );
 														}
 														echo esc_html( implode( ' , ', $fees_type ) );
 														?>
@@ -936,7 +935,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 													</td>
 													<td>
 														<?php
-														$mjschool_get_payment_status = mjschool_get_payment_status( $retrieved_data->fees_pay_id );
+														$mjschool_get_payment_status = $mjschool_obj_feespayment->mjschool_get_payment_status( $retrieved_data->fees_pay_id );
 														if ( $mjschool_get_payment_status === 'Not Paid' ) {
 															echo "<span class='mjschool-red-color'>";
 														} elseif ( $mjschool_get_payment_status === 'Partially Paid' ) {
@@ -1028,9 +1027,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 															<ul  class="mjschool_ul_style">
 																<li >
 																	<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
-																		
 																		<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-more.png' ); ?>">
-																		
 																	</a>
 																	<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn"
 																		aria-labelledby="dropdownMenuLink">
@@ -1058,11 +1055,9 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 																				</a>
 																			</li>
 																			<li class="mjschool-float-left-width-100px">
-																				
 																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=feespaymentlist&action=reminder&fees_pay_id=' . $retrieved_data->fees_pay_id ) ); ?>" class="mjschool-float-left-width-100px " name="fees_reminder" id="fees_reminder_single">
 																					<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/thumb-icon/mjschool-payment-reminder-table.png' ); ?>" class="mjschool_height_15px">&nbsp;&nbsp;&nbsp;<?php esc_html_e( 'Reminder', 'mjschool' ); ?>
 																				</a>
-																				
 																			</li>
 																			<?php
 																		}
@@ -1071,8 +1066,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 																		if ( $user_access_edit === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=addpaymentfee&action=edit&fees_pay_id=' . mjschool_encrypt_id( $retrieved_data->fees_pay_id ) . '&_wpnonce_action=' . mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit">
-																					</i><?php esc_html_e( 'Edit', 'mjschool' ); ?>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=addpaymentfee&action=edit&fees_pay_id=' . mjschool_encrypt_id( $retrieved_data->fees_pay_id ) . '&_wpnonce_action=' . mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px">
+																					<i class="fa fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?>
 																				</a>
 																			</li>
 																			<?php
@@ -1127,9 +1122,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 						?>
 						<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
 							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=addpaymentfee' ) ); ?>">
-								
 								<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
-								
 							</a>
 							<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
 								<label class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?></label>

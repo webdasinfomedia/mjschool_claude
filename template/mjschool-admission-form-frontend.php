@@ -17,9 +17,9 @@ if ( ! defined( 'ABSPATH' ) ) {
         <input type="hidden" name="action" value="student_admission">
         <input type="hidden" name="role" value="<?php echo esc_attr( $role ); ?>">
         <?php wp_nonce_field( 'mjschool_nonce', 'security' ); ?>
-        <input id="username" type="hidden" name="username">
-        <input id="password" type="hidden" name="password">
-        <div class="accordion admission_label" id="myAccordion">
+        <input id="mjschool-username" type="hidden" name="username">
+        <input id="mjschool-password" type="hidden" name="password">
+        <div class="accordion admission_label" id="mjschool-accordion">
             <!-- Student Information Section -->
             <div class="accordion-item mjschool-class-border-div">
                 <h2 class="accordion-header mjschool-accordion-header-custom-css" id="headingOne">
@@ -82,7 +82,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     $obj_fees = new Mjschool_Fees();
                                     if ( '1' === get_option( 'mjschool_combine' ) && 'yes' === get_option( 'mjschool_registration_fees' ) ) {
                                         $fees_id = get_option( 'mjschool_registration_amount' );
-                                        $fee_label = __( 'Registration Fees', 'mjschool' );
+                                        $fee_label = esc_html__( 'Registration Fees', 'mjschool' );
                                         $fees = $obj_fees->mjschool_get_single_feetype_data_amount( $fees_id ) ?: 0;
                                         ?>
                                         <div class="col-md-12 mjschool-error-msg-left-margin mb-3">
@@ -97,7 +97,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                         <?php
                                     } elseif ( 'yes' === get_option( 'mjschool_admission_fees' ) ) {
                                         $fees_id = get_option( 'mjschool_admission_amount' );
-                                        $fee_label = __( 'Admission Fees', 'mjschool' );
+                                        $fee_label = esc_html__( 'Admission Fees', 'mjschool' );
                                         $fees = $obj_fees->mjschool_get_single_feetype_data_amount( $fees_id ) ?: 0;
                                         ?>
                                         <div class="col-md-12 mjschool-error-msg-left-margin mb-3">
@@ -355,8 +355,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
             <!-- Custom Fields Section -->
             <?php
-            if ( class_exists( 'Mjschool_Custome_Field' ) ) {
-                $custom_field_obj = new Mjschool_Custome_Field();
+            if ( class_exists( 'Mjschool_Custom_Field' ) ) {
+                $custom_field_obj = new Mjschool_Custom_Field();
                 $custom_fields = $custom_field_obj->mjschool_get_custom_field_by_module( 'admission' );
 
                 if ( ! empty( $custom_fields ) ) :

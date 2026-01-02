@@ -13,7 +13,7 @@
  * @subpackage Mjschool/admin/includes/admission
  */
 defined( 'ABSPATH' ) || exit;
-// -------- Check browser javascript.. ----------//
+// -------- Check browser javascript. ----------//
 mjschool_browser_javascript_check();
 $mjschool_role = mjschool_get_user_role( get_current_user_id() );
 if ( $mjschool_role === 'administrator' ) {
@@ -28,25 +28,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
-			if ( 'admission' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+			if ( 'admission' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'edit' ) ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
-			if ( 'admission' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+			if ( 'admission' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'delete' ) ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
-			if ( 'admission' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+			if ( 'admission' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'insert' ) ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -54,8 +54,9 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
+$mjschool_obj_user   = new Mjschool_User();
 $mjschool_obj_admission    = new Mjschool_admission();
-$mjschool_custom_field_obj = new mjschool_custome_field();
+$mjschool_custom_field_obj = new mjschool_custom_field();
 $module                    = 'admission';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 // ------------ ACTIVE ADMISSION. ------------//
@@ -110,7 +111,7 @@ if ( isset( $_POST['active_user_admission'] ) ) {
 		if ( ! empty( $user_info ) ) {
 			// --------- SEND STUDENT MAIL ACTIVE ACCOUNT. -----------//
 			if ( isset( $_POST['student_approve_mail'] ) && ( sanitize_text_field(wp_unslash($_POST['student_approve_mail'])) === 1 ) ) {
-				// STUDENT APPROVE MAIL FOR STUDENT
+				// STUDENT APPROVE MAIL FOR STUDENT.
 				$string                    = array();
 				$string['{{user_name}}']   = $user_info->display_name;
 				$string['{{school_name}}'] = get_option( 'mjschool_name' );
@@ -224,7 +225,7 @@ if ( isset( $_POST['active_user_admission'] ) ) {
 								'siblingssection' => sanitize_text_field(wp_unslash($_REQUEST['class_section'])),
 								'siblingsstudent' => $active_user_id,
 							);
-							update_user_meta( $sibling_id, 'sibling_information', json_encode( $existing_sibling_array ) );
+							update_user_meta( $sibling_id, 'sibling_information', wp_json_encode( $existing_sibling_array ) );
 						}
 					}
 				}
@@ -294,10 +295,10 @@ if ( isset( $_POST['student_admission'] ) ) {
 		}
 		if ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 			if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'edit_action' ) ) {
-				// ----------EDIT.-------------//
+				// ----------Edit.-------------//
 				$result = $mjschool_obj_admission->mjschool_add_admission( wp_unslash($_POST), $father_document_data, $mother_document_data, $role_update );
 				// Custom Field File Update. //
-				$mjschool_custom_field_obj = new mjschool_custome_field();
+				$mjschool_custom_field_obj = new mjschool_custom_field();
 				$module                    = 'admission';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
@@ -308,7 +309,7 @@ if ( isset( $_POST['student_admission'] ) ) {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 			}
 		} else {
-			// -------- Email Check --------//
+			// -------- Email Check. --------//
 			if ( email_exists( $_POST['email'] ) ) {
 				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_admission&tab=mjschool-admission-form&message=2' ) );
 				exit;
@@ -321,7 +322,7 @@ if ( isset( $_POST['student_admission'] ) ) {
 			} else {
 				// ----------ADD.-------------//
 				$result                    = $mjschool_obj_admission->mjschool_add_admission( wp_unslash($_POST), $father_document_data, $mother_document_data, $mjschool_role );
-				$mjschool_custom_field_obj = new mjschool_custome_field();
+				$mjschool_custom_field_obj = new mjschool_custom_field();
 				$module                    = 'admission';
 				$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
@@ -332,11 +333,11 @@ if ( isset( $_POST['student_admission'] ) ) {
 		}
 	}
 }
-// ------------- DELETE ADMISSION.  ------------------//
+// ------------- DELETE ADMISSION. ------------------//
 if ( isset( $_REQUEST['delete_selected'] ) ) {
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = mjschool_delete_usedata( intval( $id ) );
+			$result = $mjschool_obj_user->mjschool_delete_usedata( intval( $id ) );
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_admission&tab=admission_list&message=8' ) );
 			exit;
 		}
@@ -387,7 +388,7 @@ if ( isset( $_POST['admission_export_csv_selected'] ) ) {
 			$header[] = 'Mother Mobile';
 			$header[] = 'Mother Address';
 			$filename = 'export/mjschool-export-admission.csv';
-			$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) or wp_die( "can't open file" );
+			$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) || wp_die( "can't open file" );
 			fputcsv( $fh, $header );
 			foreach ( $admission_list as $retrive_data ) {
 				$row       = array();
@@ -432,7 +433,7 @@ if ( isset( $_POST['admission_export_csv_selected'] ) ) {
 			header( 'Pragma: public' );       // required.
 			header( 'Expires: 0' );           // no cache.
 			header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-			header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+			header( 'Last-Modified: ' . wp_date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 			header( 'Cache-Control: private', false );
 			header( 'Content-Type: ' . $mime );
 			header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
@@ -447,7 +448,7 @@ if ( isset( $_POST['admission_export_csv_selected'] ) ) {
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'delete_action' ) ) {
 		$admission_id = mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['admission_id'])) );
-		$result       = mjschool_delete_usedata( $admission_id );
+		$result       = $mjschool_obj_user->mjschool_delete_usedata( $admission_id );
 		if ( $result ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_admission&tab=admission_list&message=8' ) );
 			exit;
@@ -467,7 +468,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 			</div>
 		</div>
 	</div>
-	<div class="mjschool-page-inner"><!--------- page inner. -------->
+	<div class="mjschool-page-inner"><!--------- Page inner. -------->
 		<div class="mjschool-main-list-margin-15px"><!----- mjschool-main-list-margin-15px.--------->
 			<?php
 			$message = isset( $_REQUEST['message'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message'])) : '0';
@@ -582,7 +583,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																	<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_admission&tab=view_admission&action=view_admission&id=' . rawurlencode( $admission_id ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>">
 																		<?php
 																		$uid       = $retrieved_data->ID;
-																		$umetadata = mjschool_get_user_image( $uid );
+																		$mjschool_user = new Mjschool_User();
+																		$umetadata = $mjschool_user->mjschool_get_user_image( $uid );
 																		if ( empty( $umetadata ) ) {
 																			
 																			echo '<img src=' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . ' class="img-circle" />';
@@ -797,7 +799,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 				</div><!------- col-md-12 Div. --------->
 			</div><!------- Row Div. --------->
 		</div><!----- mjschool-main-list-margin-15px.--------->
-	</div><!--------- page inner. -------->
+	</div><!--------- Page inner. -------->
 <?php
 }
 ?>

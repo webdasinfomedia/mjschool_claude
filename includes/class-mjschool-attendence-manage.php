@@ -74,7 +74,7 @@ class Mjschool_Attendence_Manage
         
         global $wpdb;
         $table_name            = $wpdb->prefix . 'mjschool_attendence';
-        $curr_date             = date('Y-m-d', strtotime($curr_date));
+        $curr_date             = wp_date('Y-m-d', strtotime($curr_date));
         $check_insrt_or_update = $this->mjschool_check_has_attendace($user_id, $class_id, $curr_date);
         if (empty($check_insrt_or_update) ) {
             // Insert sanitized data.
@@ -158,7 +158,7 @@ class Mjschool_Attendence_Manage
         }
         global $wpdb;
         $table_name            = $wpdb->prefix . 'mjschool_sub_attendance';
-        $curr_date             = date('Y-m-d', strtotime($curr_date));
+        $curr_date             = wp_date('Y-m-d', strtotime($curr_date));
         $check_insrt_or_update = $this->mjschool_check_has_subject_attendace($user_id, $class_id, $curr_date, $sub_id, $section_id);
         if (empty($check_insrt_or_update) ) {
             // Sanitize category for insert
@@ -325,7 +325,7 @@ class Mjschool_Attendence_Manage
         global $wpdb;
         $table_name            = $wpdb->prefix . 'mjschool_attendence';
         $check_insrt_or_update = $this->mjschool_check_has_attendace($user_id, $class_id, $curr_date);
-        $curr_date             = date('Y-m-d', strtotime($curr_date));
+        $curr_date             = wp_date('Y-m-d', strtotime($curr_date));
         if (empty($check_insrt_or_update) ) {
          // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
             $savedata = $wpdb->insert(
@@ -407,7 +407,7 @@ class Mjschool_Attendence_Manage
         $record_status          = '';
         $check_today_attendence = $this->mjschool_show_today_attendence($class_id, $role);
         $record_status          = '';
-        $curr_date              = date('Y-m-d');
+        $curr_date              = wp_date('Y-m-d');
         foreach ( $check_today_attendence as $today_data ) {
             if ($today_data['class_id'] === $class_id && $today_data['attendence_date'] === $curr_date ) {
                 $record_status = 'update';
@@ -587,7 +587,8 @@ class Mjschool_Attendence_Manage
         if ($record_status === 'update' ) {
             return $savedata = $this->mjschool_update_teacher_attendence($curr_date, $attendence, $attend_by, $status, $table_name);
         } else {
-            foreach ( mjschool_get_users_data('teacher') as $stud ) {
+            $mjschool_user = new Mjschool_User();
+            foreach ( $mjschool_user->mjschool_get_users_data('teacher') as $stud ) {
                 if (in_array($stud->ID, $attendence) ) {
                     $class_id = get_user_meta($stud->ID, 'class_name', true);
                     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -662,7 +663,8 @@ class Mjschool_Attendence_Manage
         }
         
         $result = false;
-        foreach ( mjschool_get_users_data('teacher') as $stud ) {
+        $mjschool_user = new Mjschool_User();
+        foreach ( $mjschool_user->mjschool_get_users_data('teacher') as $stud ) {
             // Sanitize user ID
             $user_id = intval($stud->ID);
             
@@ -709,7 +711,7 @@ class Mjschool_Attendence_Manage
         
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
-        $curr_date  = date('Y-m-d');
+        $curr_date  = wp_date('Y-m-d');
         $curr_date  = sanitize_text_field($curr_date); // Sanitize input.
         // Use prepared statement to securely query the database.
         $query = $wpdb->prepare( "SELECT * FROM $table_name WHERE attendence_date = %s AND class_id = %d AND role_name = %s", $curr_date, $class_id, $role );
@@ -738,7 +740,7 @@ class Mjschool_Attendence_Manage
         
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
-        $curr_date  = date('Y-m-d');
+        $curr_date  = wp_date('Y-m-d');
         $curr_date  = sanitize_text_field($curr_date); // Sanitize input.
         // Use prepared statement to securely query the database.
         $query = $wpdb->prepare( "SELECT * FROM $table_name WHERE attendence_date = %s AND role_name = %s", $curr_date, $role );
@@ -868,7 +870,7 @@ class Mjschool_Attendence_Manage
         
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
-        $curr_date  = date('Y-m-d', strtotime($date));
+        $curr_date  = wp_date('Y-m-d', strtotime($date));
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE attendence_date=%s and class_id=%d and user_id=%d", sanitize_text_field($curr_date), $class_id, $userid));
         return $result;
@@ -900,7 +902,7 @@ class Mjschool_Attendence_Manage
         
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_sub_attendance';
-        $curr_date  = date('Y-m-d', strtotime($date));
+        $curr_date  = wp_date('Y-m-d', strtotime($date));
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE attendance_date = %s AND class_id = %d AND sub_id = %d AND user_id = %d", sanitize_text_field($curr_date), $class_id, $sub_id, $userid));
         return $result;
@@ -953,7 +955,7 @@ class Mjschool_Attendence_Manage
     {
         global $wpdb;
         $table_name = $wpdb->prefix . 'mjschool_attendence';
-        $curr_date  = date('Y-m-d');
+        $curr_date  = wp_date('Y-m-d');
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         return $result = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table_name WHERE attendence_date = %s AND status = %s", sanitize_text_field($curr_date), 'Present'));
     }
@@ -980,5 +982,128 @@ class Mjschool_Attendence_Manage
      	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $result = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name where user_id= %d ", $user_id));
         return $result;
+    }
+    /**
+     * Checks attendance holiday status by date.
+     *
+     * @param string $AttDate Date to check.
+     * @return array Holiday records.
+     * @since 1.0.0
+     */
+    public function mjschool_get_attendace_status( $AttDate ) {
+        global $wpdb;
+        $tbl_name = $wpdb->prefix . 'mjschool_holiday';
+        // Sanitize date input.
+        $AttDate = sanitize_text_field( $AttDate );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+        $result = $wpdb->get_results(
+            $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE %s BETWEEN date AND end_date", $AttDate )
+        );
+        return $result;
+    }
+
+    /**
+     * Retrieves attendance records for a student within a given date range.
+     *
+     * @since 1.0.0
+     *
+     * @param string $start_date Start date for filtering attendance (Y-m-d format).
+     * @param string $end_date   End date for filtering attendance (Y-m-d format).
+     * @param int    $id         Student user ID.
+     *
+     * @return array List of attendance records.
+     */
+    public function mjschool_view_student_attendance( $start_date, $end_date, $id ) {
+        global $wpdb;
+        
+        $tbl_name   = $wpdb->prefix . 'mjschool_attendence';
+        $user_id    = absint( $id );
+        $start_date = sanitize_text_field( $start_date );
+        $end_date   = sanitize_text_field( $end_date );
+        
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+        $result = $wpdb->get_results(
+            $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE user_id = %d AND role_name = %s AND attendence_date BETWEEN %s AND %s", $user_id, 'student', $start_date, $end_date )
+        );
+        
+        return $result;
+    }
+
+    /**
+     * Retrieves subject-wise attendance status for a student on a specific date.
+     *
+     * @since 1.0.0
+     *
+     * @param int    $id        Student user ID.
+     * @param string $curr_date Attendance date (Y-m-d format).
+     * @param int    $sid       Subject ID.
+     *
+     * @return string|null Attendance status or null if no record exists.
+     */
+    public function mjschool_get_sub_attendence( $id, $curr_date, $sid ) {
+        global $wpdb;
+        
+        $table_mjschool_sub_attendance = $wpdb->prefix . 'mjschool_sub_attendance';
+        $userid     = absint( $id );
+        $sub_id     = absint( $sid );
+        $curr_date  = sanitize_text_field( $curr_date );
+        
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+        $result = $wpdb->get_var(
+            $wpdb->prepare( "SELECT status FROM {$table_mjschool_sub_attendance} WHERE attendance_date = %s AND user_id = %d AND sub_id = %d", $curr_date, $userid, $sub_id )
+        );
+        
+        return $result;
+    }
+    /**
+     * Retrieves attendance comment for a student on a specific date.
+     *
+     * @since 1.0.0
+     *
+     * @param int    $id        Student user ID.
+     * @param string $curr_date Attendance date (Y-m-d format).
+     *
+     * @return string Comment text or empty string if not available.
+     */
+    public function mjschool_get_attendence_comment( $id, $curr_date ) {
+        global $wpdb;
+        $table_mjschool_attendence = $wpdb->prefix . 'mjschool_attendence';
+        $userid     = absint( $id );
+        $curr_date  = sanitize_text_field( $curr_date );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+        $result = $wpdb->get_row(
+            $wpdb->prepare( "SELECT comment FROM {$table_mjschool_attendence} WHERE attendence_date = %s AND user_id = %d", $curr_date, $userid )
+        );
+        if ( ! empty( $result ) && isset( $result->comment ) ) {
+            return $result->comment;
+        }
+        return '';
+    }
+
+    /**
+     * Retrieves subject-wise attendance comment for a student on a specific date.
+     *
+     * @since 1.0.0
+     *
+     * @param int    $id        Student user ID.
+     * @param string $curr_date Attendance date (Y-m-d format).
+     * @param int    $sid       Subject ID.
+     *
+     * @return string Comment text or empty string if not available.
+     */
+    public function mjschool_get_sub_attendence_comment( $id, $curr_date, $sid ) {
+        global $wpdb;
+        $table_mjschool_sub_attendance = $wpdb->prefix . 'mjschool_sub_attendance';
+        $userid     = absint( $id );
+        $sub_id     = absint( $sid );
+        $curr_date  = sanitize_text_field( $curr_date );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+        $result = $wpdb->get_row(
+            $wpdb->prepare( "SELECT comment FROM {$table_mjschool_sub_attendance} WHERE attendance_date = %s AND user_id = %d AND sub_id = %d", $curr_date, $userid, $sub_id )
+        );
+        if ( ! empty( $result ) && isset( $result->comment ) ) {
+            return $result->comment;
+        }
+        return '';
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Custom Field Management Page.
  *
@@ -48,7 +47,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 		}
 	}
 }
-$obj_custome_field = new Mjschool_Custome_Field();
+$obj_custom_field = new Mjschool_Custom_Field();
 // Save custom field data.
 if ( isset( $_POST['add_custom_field'] ) ) {
 	// Verify nonce for security
@@ -58,13 +57,13 @@ if ( isset( $_POST['add_custom_field'] ) ) {
 	}
 	if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'insert' ) {
 		// Add custom field data.
-		$result = $obj_custome_field->mjschool_add_custom_field( sanitize_text_field( wp_unslash($_POST ) ) );
+		$result = $obj_custom_field->mjschool_add_custom_field( sanitize_text_field( wp_unslash($_POST ) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=custome-field&tab=custome_field_list&message=1' ) );
 			die();
 		}
 	} elseif ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'edit_action' ) ) {
-		$result = $obj_custome_field->mjschool_add_custom_field( sanitize_text_field( wp_unslash( $_POST ) ) );
+		$result = $obj_custom_field->mjschool_add_custom_field( sanitize_text_field( wp_unslash( $_POST ) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=custome-field&tab=custome_field_list&message=2' ) );
 			die();
@@ -75,7 +74,7 @@ if ( isset( $_POST['add_custom_field'] ) ) {
 }
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'delete_action' ) ) {
-		$result = $obj_custome_field->mjschool_delete_custome_field( mjschool_decrypt_id( intval( wp_unslash( $_REQUEST['id'] ) ) ) );
+		$result = $obj_custom_field->mjschool_delete_custom_field( mjschool_decrypt_id( intval( wp_unslash( $_REQUEST['id'] ) ) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=custome-field&tab=custome_field_list&message=3' ) );
 			die();
@@ -93,7 +92,7 @@ if ( isset( $_POST['custome_delete_selected'] ) ) {
 	if ( isset( $_POST['selected_id'] ) ) {
 		foreach ( $_POST['selected_id'] as $custome_id ) {
 			$record_id = intval( $custome_id );
-			$result    = $obj_custome_field->mjschool_delete_selected_custome_field( $record_id );
+			$result    = $obj_custom_field->mjschool_delete_selected_custom_field( $record_id );
 			if ( $result ) {
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=custome-field&tab=custome_field_list&message=3' ) );
 				die();
@@ -136,12 +135,12 @@ if ( isset( $_REQUEST['message'] ) ) {
 		if ( $school_obj->role === 'supportstaff' || $school_obj->role === 'teacher' ) {
 			$own_data = $user_access['own_data'];
 			if ( $own_data === '1' ) {
-				$custom_field_data = $obj_custome_field->mjschool_get_all_custom_field_data_own();
+				$custom_field_data = $obj_custom_field->mjschool_get_all_custom_field_data_own();
 			} else {
-				$custom_field_data = $obj_custome_field->mjschool_get_all_custom_field_data();
+				$custom_field_data = $obj_custom_field->mjschool_get_all_custom_field_data();
 			}
 		} else {
-			$custom_field_data = $obj_custome_field->mjschool_get_all_custom_field_data();
+			$custom_field_data = $obj_custom_field->mjschool_get_all_custom_field_data();
 		}
 		?>
 		<div class="mjschool-panel-body mjschool-margin-top-40">
@@ -151,7 +150,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 				<div class="table-responsive">
 					<form id="mjschool-common-form" name="mjschool-common-form" method="post">
 						<?php wp_nonce_field( 'mjschool_custom_field_nonce' ); ?>
-						<table id="frontend_custome_field_list" class="display dataTable mjschool-student-datatable" cellspacing="0" width="100%">
+						<table id="frontend_custom_field_list" class="display dataTable mjschool-student-datatable" cellspacing="0" width="100%">
 							<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 								<tr>
 									<th class="mjschool-custom-padding-0"><input type="checkbox" class="select_all" name="select_all"></th>
@@ -196,7 +195,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 															if ( $user_access['edit'] === '1' ) {
 																?>
 																<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
-																	<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=custome-field&tab=add_custome_field&action=edit&id=' . esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
+																	<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=custome-field&tab=add_custom_field&action=edit&id=' . esc_attr( mjschool_encrypt_id( $retrieved_data->id ) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
 																</li>
 																<?php
 															}
@@ -240,7 +239,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 				if ($user_access['add'] === '1' ) {
 					?>
 					<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
-						<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=custome-field&tab=add_custome_field') ); ?>">
+						<a href="<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=custome-field&tab=add_custom_field') ); ?>">
 							<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 						</a>
 						<div class="col-md-12 dashboard_btn mjschool-margin-top-20px">
@@ -260,15 +259,15 @@ if ( isset( $_REQUEST['message'] ) ) {
 		</div>
 		<?php
 	}
-	if ( $active_tab === 'add_custome_field' ) {
-		$obj_custome_field = new Mjschool_Custome_Field();
+	if ( $active_tab === 'add_custom_field' ) {
+		$obj_custom_field = new Mjschool_Custom_Field();
 		$file_type_find    = '';
 		$file_type_value   = '';
 		$edit              = 0;
 		if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) {
 			$edit              = 1;
 			$custom_field_id   = mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) );
-			$custom_field_data = $obj_custome_field->mjschool_get_single_custom_field_data( $custom_field_id );
+			$custom_field_data = $obj_custom_field->mjschool_get_single_custom_field_data( $custom_field_id );
 		}
 		$document_option     = get_option( 'mjschool_upload_document_type' ); // Get saved allowed types.
 		$document_type_array = explode( ', ', $document_option ); // Convert to array.
@@ -396,27 +395,27 @@ if ( isset( $_REQUEST['message'] ) ) {
 													<span class="mjschool-span-left-custom mjschool_margin_bottom_negetive_5px" ><?php esc_html_e( 'Nullable', 'mjschool' ); ?></span>
 												</label>
 												<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12 checkbox-inline mr-2">
-													<input type="checkbox" name="validation[]"  value="required" class="required_rule mjschool-margin-top-0" <?php if ( $edit ) { if ( in_array( 'required', $validation ) ) { echo 'checked'; } } ?> >
+													<input type="checkbox" name="validation[]"  value="required" class="required_rule mjschool-margin-top-0" <?php if ( $edit ) { if ( in_array( 'required', $validation, true ) ) { echo 'checked'; } } ?> >
 													<span class="mjschool-span-left-custom"><?php esc_html_e( 'Required', 'mjschool' ); ?></span>
 												</label>
 												<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12 checkbox-inline mr-2 file_disable">
-													<input type="checkbox"  name="validation[]" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> value="numeric" id="only_number_id" class="only_number mjschool-margin-top-0" <?php if ( $edit ) { if ( in_array( 'numeric', $validation ) ) { echo 'checked'; } } ?> >
+													<input type="checkbox"  name="validation[]" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> value="numeric" id="only_number_id" class="only_number mjschool-margin-top-0" <?php if ( $edit ) { if ( in_array( 'numeric', $validation, true ) ) { echo 'checked'; } } ?> >
 													<span class="mjschool-span-left-custom"><?php esc_html_e( 'Only Number', 'mjschool' ); ?></span>
 												</label>
 												<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12 checkbox-inline mr-2 file_disable">
-													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> value="alpha" id="only_char_id" class="only_char mjschool-margin-top-0" <?php if ( $edit ) { if ( in_array( 'alpha', $validation ) ) { echo 'checked'; } } ?> >
+													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> value="alpha" id="only_char_id" class="only_char mjschool-margin-top-0" <?php if ( $edit ) { if ( in_array( 'alpha', $validation, true ) ) { echo 'checked'; } } ?> >
 													<span class="mjschool-span-left-custom"><?php esc_html_e( 'Only Character', 'mjschool' ); ?></span>
 												</label>
 												<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12 checkbox-inline mr-2 file_disable">
-													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> value="alpha_space" id="char_space_id" class="char_space mjschool-margin-top-0" <?php if ( $edit ) { if ( in_array( 'alpha_space', $validation ) ) { echo 'checked'; } } ?> >
+													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> value="alpha_space" id="char_space_id" class="char_space mjschool-margin-top-0" <?php if ( $edit ) { if ( in_array( 'alpha_space', $validation, true ) ) { echo 'checked'; } } ?> >
 													<span class="mjschool-span-left-custom"><?php esc_html_e( 'Character with Space', 'mjschool' ); ?></span>
 												</label>
 												<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12 checkbox-inline mr-2 file_disable">
-													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> value="alpha_num" id="char_num_id" class="char_num mjschool-margin-top-0" <?php if ( $edit ) { if ( in_array( 'alpha_num', $validation ) ) { echo 'checked'; } } ?> >
+													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> value="alpha_num" id="char_num_id" class="char_num mjschool-margin-top-0" <?php if ( $edit ) { if ( in_array( 'alpha_num', $validation, true ) ) { echo 'checked'; } } ?> >
 													<span class="mjschool-span-left-custom"><?php esc_html_e( 'Number & Character', 'mjschool' ); ?></span>
 												</label>
 												<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12 checkbox-inline mr-2 file_disable">
-													<input type="checkbox" id="email_id" class="email mjschool-margin-top-0" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> name="validation[]"  value="email" <?php if ( $edit ) { if ( in_array( 'email', $validation ) ) { echo 'checked'; } } ?> >
+													<input type="checkbox" id="email_id" class="email mjschool-margin-top-0" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> name="validation[]"  value="email" <?php if ( $edit ) { if ( in_array( 'email', $validation, true ) ) { echo 'checked'; } } ?> >
 													<span class="mjschool-span-left-custom"><?php esc_html_e( 'Email', 'mjschool' ); ?></span>
 												</label>
 												<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12 checkbox-inline mr-2 file_disable">
@@ -428,19 +427,19 @@ if ( isset( $_REQUEST['message'] ) ) {
 													<span class="mjschool-span-left-custom"><?php esc_html_e( 'Minimum', 'mjschool' ); ?></span>
 												</label>
 												<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12 checkbox-inline mr-2 file_disable">
-													<input type="checkbox" class="url mjschool-margin-top-0" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> value="url" <?php if ( $edit ) { if ( in_array( 'url', $validation ) ) { echo 'checked'; } } ?> >
+													<input type="checkbox" class="url mjschool-margin-top-0" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Tclass ); } ?> value="url" <?php if ( $edit ) { if ( in_array( 'url', $validation, true ) ) { echo 'checked'; } } ?> >
 													<span class="mjschool-span-left-custom"><?php esc_html_e( 'URL', 'mjschool' ); ?></span>
 												</label>
 												<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12 checkbox-inline mr-2 file_disable">
-													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Dclass ); } ?> id="date0" class="date mjschool-margin-top-0" value="before_or_equal:today" <?php if ( $edit ) { if ( in_array( 'before_or_equal:today', $validation ) ) { echo 'checked'; } } ?> >
+													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Dclass ); } ?> id="date0" class="date mjschool-margin-top-0" value="before_or_equal:today" <?php if ( $edit ) { if ( in_array( 'before_or_equal:today', $validation, true ) ) { echo 'checked'; } } ?> >
 													<span class="mjschool-span-left-custom"><?php esc_html_e( "Before Or Equal(Today's Date)", 'mjschool' ); ?></span>
 												</label>
 												<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12 checkbox-inline mr-2 file_disable">
-													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Dclass ); } ?> id="date1"  class="date mjschool-margin-top-0"  value="date_equals:today" <?php if ( $edit ) { if ( in_array( 'date_equals:today', $validation ) ) { echo 'checked'; } } ?> >
+													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Dclass ); } ?> id="date1"  class="date mjschool-margin-top-0"  value="date_equals:today" <?php if ( $edit ) { if ( in_array( 'date_equals:today', $validation, true ) ) { echo 'checked'; } } ?> >
 													<span class="mjschool-span-left-custom"><?php esc_html_e( "Today's Date", 'mjschool' ); ?></span>
 												</label>
 												<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12 checkbox-inline mr-2 file_disable">
-													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Dclass ); } ?> id="date2"  class="date mjschool-margin-top-0"   value="after_or_equal:today" <?php if ( $edit ) { if ( in_array( 'after_or_equal:today', $validation ) ) { echo 'checked'; } } ?> >
+													<input type="checkbox" name="validation[]" <?php if ( $edit ) { echo esc_attr( $Dclass ); } ?> id="date2"  class="date mjschool-margin-top-0"   value="after_or_equal:today" <?php if ( $edit ) { if ( in_array( 'after_or_equal:today', $validation, true ) ) { echo 'checked'; } } ?> >
 													<span class="mjschool-span-left-custom"><?php esc_html_e( "After Or Equal(Today's Date)", 'mjschool' ); ?></span>
 												</label>
 											</div>
@@ -451,7 +450,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 						</div>
 						<?php
 						if ( $edit ) {
-							$custom_meta = $obj_custome_field->mjschool_get_single_custom_field_dropdown_meta_data( $custom_field_id );
+							$custom_meta = $obj_custom_field->mjschool_get_single_custom_field_dropdown_meta_data( $custom_field_id );
 							if ( $custom_field_data->field_type === 'dropdown' ) {
 								?>
 								<div class="sub_cat">

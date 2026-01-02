@@ -64,7 +64,7 @@ class StudentRegistration {
 				'last_name'  => $data['last_name'],
 				'nickname'   => null,
 			);
-			if ( $data['password'] != '' ) {
+			if ( $data['password'] !== '' ) {
 				$userdata['user_pass'] = $data['password'];
 			}
 			$user_id = wp_insert_user( $userdata );

@@ -199,7 +199,7 @@ class TextCircle extends Tag
 		if (isset($properties['OPACITY']) && $properties['OPACITY'] > 0 && $properties['OPACITY'] <= 1) {
 			$objattr['opacity'] = $properties['OPACITY'];
 		}
-		if (isset($properties['BACKGROUND-COLOR']) && $properties['BACKGROUND-COLOR'] != '') {
+		if (isset($properties['BACKGROUND-COLOR']) && $properties['BACKGROUND-COLOR'] !== '') {
 			$objattr['bgcolor'] = $this->colorConverter->convert($properties['BACKGROUND-COLOR'], $this->mpdf->PDFAXwarnings);
 		} else {
 			$objattr['bgcolor'] = false;

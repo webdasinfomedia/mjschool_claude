@@ -39,15 +39,17 @@
 		$subjectdata = $wpdb->get_results( $sql );
 		if ( ! empty( $subjectdata ) ) {
 			$i = 0;
+			$teacher_obj = new Mjschool_Teacher();
 			foreach ( $subjectdata as $retrieved_data ) {
 				$result[ $i ]['id']           = $retrieved_data->subid;
 				$result[ $i ]['subject_name'] = $retrieved_data->sub_name;
 				$uid                          = $retrieved_data->teacher_id;
 				$result[ $i ]['teacher_id']   = $uid;
-				$result[ $i ]['teacher']      = mjschool_get_teacher( $uid );
+				$result[ $i ]['teacher']      = $teacher_obj->mjschool_get_teacher( $uid );
 				$cid                          = $retrieved_data->class_id;
 				$result[ $i ]['class_id']     = $cid;
-				$result[ $i ]['class']        = mjschool_get_class_name( $cid );
+				$mjschool_class = new Mjschool_Class();
+				$result[ $i ]['class']        = $mjschool_class->mjschool_get_class_name( $cid );
 				if ( $retrieved_data->section_id != 0 ) {
 					$result[ $i ]['section_id'] = $retrieved_data->section_id;
 					$section_name               = smgt_get_section_name( $retrieved_data->section_id );
@@ -58,7 +60,7 @@
 				$result[ $i ]['author_name'] = $retrieved_data->author_name;
 				$result[ $i ]['edition']     = $retrieved_data->edition;
 				$syllabus                    = '';
-				if ( $retrieved_data->syllabus != '' ) {
+				if ( $retrieved_data->syllabus !== '' ) {
 					$syllabus = content_url() . '/uploads/school_assets/' . $retrieved_data->syllabus;
 				}
 				$result[ $i ]['syllabus_url'] = $syllabus;

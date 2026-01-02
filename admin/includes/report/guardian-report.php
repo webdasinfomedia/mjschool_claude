@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Guardian Report – Student Information & Export View.
  *
@@ -52,7 +51,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 							?>
 							<option value=""><?php esc_html_e( 'Select class Name', 'mjschool' ); ?></option>
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 								<?php
@@ -73,7 +73,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 								<?php
 								if ( isset( $_REQUEST['class_section'] ) ) {
 									$class_section = $_REQUEST['class_section'];
-									foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 										<?php

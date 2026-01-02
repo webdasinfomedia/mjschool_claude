@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Homework Add/Edit Form Template.
  *
@@ -54,7 +53,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 					<select name="class_name" class="mjschool-line-height-30px form-control validate[required] mjschool-max-width-100px" id="mjschool-class-list">
 						<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 						<?php
-						foreach ( mjschool_get_all_class() as $classdata1 ) {
+						$mjschool_class = new Mjschool_Class();
+						foreach ( $mjschool_class->mjschool_get_all_class() as $classdata1 ) {
 							?>
 							<option value="<?php echo esc_attr( $classdata1['class_id'] ); ?>" <?php selected( $classval, $classdata1['class_id'] ); ?>><?php echo esc_html( $classdata1['class_name'] ); ?></option>
 						<?php } ?>
@@ -76,7 +76,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 							<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 							<?php
 							if ( $edit ) {
-								foreach ( mjschool_get_class_sections( $classdata->class_name ) as $sectiondata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_class_sections( $classdata->class_name ) as $sectiondata ) {
 									?>
 									<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 									<?php
@@ -89,7 +90,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 				<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 input mjschool-error-msg-left-margin">
 					<label class="ml-1 mjschool-custom-top-label top" for="mjschool-subject-list"><?php esc_html_e( 'Select Subject', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 					<?php
-					$subject = ( $edit ) ? mjschool_get_subject_by_class_id( $classval ) : array();
+					$obj_subject = new Mjschool_Subject();
+					$subject = ( $edit ) ? $obj_subject->mjschool_get_subject_by_class_id( $classval ) : array();
 					?>
 					<select name="subject_id" id="mjschool-subject-list" class="mjschool-line-height-30px form-control validate[required] text-input mjschool-max-width-100px">
 						<?php
@@ -258,7 +260,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 		}
 		wp_nonce_field( 'save_homework_front_nonce' ); 
 		// --------- Get module wise custom field data. --------------//
-		$custom_field_obj = new Mjschool_Custome_Field();
+		$custom_field_obj = new Mjschool_Custom_Field();
 		$module           = 'homework';
 		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>

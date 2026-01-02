@@ -61,4 +61,24 @@ class Mjschool_notification
         return is_array( $result ) ? $result : array();
     }
 
+    /**
+     * Deletes a notification record by its ID.
+     *
+     * @since 1.0.0
+     *
+     * @param int $sid Notification ID.
+     *
+     * @return int|false Number of rows deleted on success, false on failure.
+     */
+    public function mjschool_delete_notification( $sid ) {
+        global $wpdb;
+        $mjschool_notification = $wpdb->prefix . 'mjschool_notification';
+        $notification_id       = absint( $sid );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+        $result = $wpdb->query(
+            $wpdb->prepare( "DELETE FROM {$mjschool_notification} WHERE notification_id = %d", $notification_id )
+        );
+        return $result;
+    }
+
 }

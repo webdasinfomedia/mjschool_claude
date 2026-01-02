@@ -61,7 +61,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 					if ( $edit ) {
 						$classval = $result->class_id;
 					} elseif ( isset( $_POST['class_id'] ) ) {
-						$classval = intval( wp_unslash( $_REQUEST['class_id'] ) );
+					$classval = intval( wp_unslash( $_POST['class_id'] ) );
 					} else {
 						$classval = '';
 					}
@@ -69,7 +69,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 					<select id="mjschool-class" name="class_id" class="form-control validate[required] mjschool-max-width-100px mjschool-class-list-document">
 						<option value="all class" <?php selected( 'all class', $classval ); ?>><?php esc_html_e( 'All Class', 'mjschool' ); ?></option>
 						<?php
-						foreach ( mjschool_get_all_class() as $classdata ) {
+						$mjschool_class = new Mjschool_Class();
+						foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 							?>
 							<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php
@@ -84,7 +85,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 						if ( $edit ) {
 							$sectionval = $result->section_id;
 						} elseif ( isset( $_POST['class_section'] ) ) {
-							$sectionval = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) );
+						$sectionval = sanitize_text_field( wp_unslash( $_POST['class_section'] ) );
 						} else {
 							$sectionval = '';
 						}
@@ -93,7 +94,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 							<option value="all section" <?php selected( 'all section', $sectionval ); ?>><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 							<?php
 							if ( $edit ) {
-								foreach ( mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
 									?>
 									<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 									<?php
@@ -150,11 +152,13 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 				<?php
 				if ( $edit ) {
 					$doc_data = json_decode( $result->document_content );
-					?>
-					<div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">
-						<div class="form-group input">
-							<div class="col-md-12 form-control">
-								<input id="doc_title" maxlength="50" name="doc_title" class="form-control validate[required,custom[description_validation]] text-input" type="text" value="<?php if ( ! empty( $doc_data[0]->title ) ) { echo esc_attr( $doc_data[0]->title ); } elseif ( isset( $_POST['doc_title'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash($_POST['doc_title'] )) ); } ?>">
+				// Added null safety for json_decode result with property check.
+				$doc_data = ( is_object( $doc_data ) && isset( $doc_data->{0} ) ) ? $doc_data : null;
+				?>
+				<div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">
+					<div class="form-group input">
+						<div class="col-md-12 form-control">
+							<input id="doc_title" maxlength="50" name="doc_title" class="form-control validate[required,custom[description_validation]] text-input" type="text" value="<?php if ( ! empty( $doc_data ) && ! empty( $doc_data[0]->title ) ) { echo esc_attr( $doc_data[0]->title ); } elseif ( isset( $_POST['doc_title'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash($_POST['doc_title'] )) ); } ?>">
 								<label  for="doc_title"><?php esc_html_e( 'Document Title', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 							</div>
 						</div>
@@ -165,10 +169,10 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 								<span class="ustom-control-label mjschool-custom-top-label ml-2 mjschool-label-position-rtl" for="photo"><?php esc_html_e( 'Upload Document', 'mjschool' ); ?><span class="mjschool-require-field">*</span></span>
 								<div class="col-sm-12">
 									<input type="file" name="document_content" class="form-control file mjschool-file-validation" />
-									<input type="hidden" name="old_hidden_document" value="<?php if ( ! empty( $doc_data[0]->value ) ) { echo esc_attr( $doc_data[0]->value ); } elseif ( isset( $_POST['document_content'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash($_POST['document_content'])) ); } ?>">
-								</div>
-								<?php
-								if ( ! empty( $doc_data[0]->value ) ) {
+								<input type="hidden" name="old_hidden_document" value="<?php if ( ! empty( $doc_data ) && ! empty( $doc_data[0]->value ) ) { echo esc_attr( $doc_data[0]->value ); } elseif ( isset( $_POST['document_content'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash($_POST['document_content'])) ); } ?>">
+							</div>
+							<?php
+							if ( ! empty( $doc_data ) && ! empty( $doc_data[0]->value ) ) {
 									?>
 									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
 										<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>" record_id="<?php echo esc_attr( $result->document_id ); ?>">
@@ -220,7 +224,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 		</div>
 		<?php
 		// --------- Get Module Wise Custom Field Data. --------------//
-		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+		$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 		$module                    = 'document';
 		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>

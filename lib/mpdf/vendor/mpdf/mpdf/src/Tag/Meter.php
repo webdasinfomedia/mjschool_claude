@@ -329,7 +329,7 @@ class Meter extends InlineTag
 			$svg .= '<rect x="0" y="0" width="' . $w . '" height="' . $h . '" fill="#f4f4f4" stroke="none" />';
 
 			// LOW to HIGH region
-			//if ($low && $high && ($low != $min || $high != $max)) {
+			//if ($low && $high && ($low !== $min || $high !== $max)) {
 			if ($low && $high) {
 				$barx = (($low - $min) / ($max - $min) ) * $w;
 				$barw = (($high - $low) / ($max - $min) ) * $w;
@@ -346,9 +346,9 @@ class Meter extends InlineTag
 
 			// VALUE Marker
 			if ($value) {
-				if ($min != $low && $value < $low) {
+				if ($min !== $low && $value < $low) {
 					$col = 'orange';
-				} elseif ($max != $high && $value > $high) {
+				} elseif ($max !== $high && $value > $high) {
 					$col = 'orange';
 				} else {
 					$col = '#008800';
@@ -390,7 +390,7 @@ class Meter extends InlineTag
 			$svg .= '<rect x="0" y="0" width="' . $w . '" height="' . $h . '" fill="#f4f4f4" stroke="none" />';
 
 			// LOW to HIGH region
-			if ($low && $high && ($low != $min || $high != $max)) {
+			if ($low && $high && ($low !== $min || $high !== $max)) {
 				//if ($low && $high) {
 				$barx = (($low - $min) / ($max - $min) ) * $w;
 				$barw = (($high - $low) / ($max - $min) ) * $w;
@@ -407,9 +407,9 @@ class Meter extends InlineTag
 
 			// VALUE Marker
 			if ($value) {
-				if ($min != $low && $value < $low) {
+				if ($min !== $low && $value < $low) {
 					$col = 'orange';
-				} elseif ($max != $high && $value > $high) {
+				} elseif ($max !== $high && $value > $high) {
 					$col = 'orange';
 				} else {
 					$col = 'orange';

@@ -22,7 +22,7 @@
  */
 defined( 'ABSPATH' ) || exit;
 if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'view_action' ) ) {
-	$custom_field_obj = new Mjschool_Custome_Field();
+	$custom_field_obj = new Mjschool_Custom_Field();
 	$active_tab1 = isset( $_REQUEST['tab1'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['tab1'] ) ) : 'general';
 	$supportstaff_id_safe = isset( $_REQUEST['supportstaff_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['supportstaff_id'] ) ) : '';
 	$staff_data = ! empty( $supportstaff_id_safe ) ? get_userdata( intval( mjschool_decrypt_id( $supportstaff_id_safe ) ) ) : false;
@@ -36,7 +36,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 						<div class="col-xl-10 col-md-9 col-sm-10">
 							<div class="mjschool-user-profile-header-left mjschool-float-left-width-100px">
 								<?php
-								$umetadata = mjschool_get_user_image($staff_data->ID);
+								$mjschool_user = new Mjschool_User();
+								$umetadata = $mjschool_user->mjschool_get_user_image($staff_data->ID);
 								?>
 								<img class="mjschool-user-view-profile-image" src="<?php if ( ! empty( $umetadata ) ) { echo esc_url($umetadata); } else { echo esc_url( get_option( 'mjschool_supportstaff_thumb_new' ) ); } ?>">
 								<div class="row mjschool-profile-user-name">
@@ -136,7 +137,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 									?>
 									<label class="mjschool-view-page-content-labels"> 
 										<?php
-										if ( ! empty( $birth_date ) && $birth_date != '1970-01-01' && $birth_date != '0000-00-00' ) {
+										if ( ! empty( $birth_date ) && $birth_date !== '1970-01-01' && $birth_date !== '0000-00-00' ) {
 											echo esc_html( mjschool_get_date_in_input_box( $birth_date ) );
 										} else {
 											esc_html_e( 'Not Provided', 'mjschool' ); // Only shown to users without edit access.
@@ -308,7 +309,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 								</div>
 								<?php
 								$module = 'supportstaff';
-								$custom_field_obj->mjschool_show_inserted_customfield_data_in_datail_page( $module );
+								$custom_field_obj->mjschool_show_inserted_custom_field_data_in_datail_page( $module );
 								?>
 							</div>
 						</div>

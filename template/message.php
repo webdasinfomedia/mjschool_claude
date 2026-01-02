@@ -27,25 +27,25 @@ $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
 			if ( $user_access['delete'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
@@ -54,6 +54,7 @@ $active_tab = isset( $_REQUEST['tab'] ) ? sanitize_text_field(wp_unslash($_REQUE
 ?>
 <div class="row mailbox-header mjschool-frontend-list-margin-30px-res">
 	<?php
+	$obj_message = new Mjschool_Message();
 	$tab_name = '';
 	if ( ! empty( $_REQUEST['tab'] ) ) {
 		$tab_name = sanitize_text_field(wp_unslash($_REQUEST['tab']));
@@ -63,7 +64,7 @@ $active_tab = isset( $_REQUEST['tab'] ) ? sanitize_text_field(wp_unslash($_REQUE
         <?php $nonce = wp_create_nonce( 'mjschool_message_tab' ); ?>
 		<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per list-unstyled mjschool-mailbox-nav">
 			<li <?php if ( ! isset( $tab_name ) || ( $tab_name === 'inbox' ) ) { ?> class="active"<?php } ?>>
-				<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=message&tab=inbox&_wpnonce=' . esc_attr( $nonce ) ); ?>" class="mjschool-inbox-tab"><i class="fas fa-inbox"></i> <?php esc_html_e( 'Inbox', 'mjschool' ); ?><span class="mjschool-inbox-count-number badge badge-success  pull-right ms-1 mjschool_border_redius_15px" ><?php echo esc_html( mjschool_count_unread_message( get_current_user_id() ) ); ?></span></a>
+				<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=message&tab=inbox&_wpnonce=' . esc_attr( $nonce ) ); ?>" class="mjschool-inbox-tab"><i class="fas fa-inbox"></i> <?php esc_html_e( 'Inbox', 'mjschool' ); ?><span class="mjschool-inbox-count-number badge badge-success  pull-right ms-1 mjschool_border_redius_15px" ><?php echo esc_html( $obj_message->mjschool_count_unread_message( get_current_user_id() ) ); ?></span></a>
 			</li>
 			<li <?php if ( isset( $_REQUEST['page'] ) && $tab_name === 'sentbox' ) { ?> class="active" <?php } ?>>
 				<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=message&tab=sentbox&_wpnonce=' . esc_attr( $nonce ) ); ?>" class="mjschool-padding-left-0 tab"><?php esc_html_e( 'Sent', 'mjschool' ); ?></a>

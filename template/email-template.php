@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Email and SMS Template Management Page.
  *
@@ -39,19 +38,19 @@ $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( isset( $user_access['view'] ) && $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) === $user_access['page_link'] && ( sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) ) {
 			if ( isset( $user_access['edit'] ) && $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) === $user_access['page_link'] && ( sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'insert' ) ) {
 			if ( isset( $user_access['add'] ) && $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
@@ -253,7 +252,7 @@ if ( isset( $_REQUEST['leave_approve_template'] ) ) {
 }
 if ( $changed ) {
 	wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=email-template&message=1' ) );
-	die();
+	exit;
 }
 $i = 1;
 ?>

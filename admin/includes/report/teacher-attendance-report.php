@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Displays navigation tabs for Teacher Attendance Reports and loads
  * the appropriate report file (datatable or graph) depending on

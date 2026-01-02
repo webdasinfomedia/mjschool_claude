@@ -42,7 +42,7 @@ class Mjschool_Library {
 	/**
 	 * Adds a new book or updates an existing one in the library database.
 	 *
-	 * Uses $wpdb->insert or $wpdb->update for database interaction.
+	 * Uses $wpdb->insert || $wpdb->update for database interaction.
 	 * Sanitizes all incoming data before database storage.
 	 * Logs the action to the audit log.
 	 *
@@ -67,7 +67,7 @@ class Mjschool_Library {
 		$bookdata['total_quentity'] = isset( $data['quentity'] ) ? intval( $data['quentity'] ) : 0;
 		$bookdata['description']    = isset( $data['description'] ) ? sanitize_textarea_field( wp_unslash( $data['description'] ) ) : '';
 		$bookdata['added_by']       = get_current_user_id();
-		$bookdata['added_date']     = isset( $data['post_date'] ) ? sanitize_text_field( wp_unslash( $data['post_date'] ) ) : gmdate( 'Y-m-d' );
+		$bookdata['added_date']     = isset( $data['post_date'] ) ? sanitize_text_field( wp_unslash( $data['post_date'] ) ) : wp_date( 'Y-m-d' );
 		$action                     = isset( $data['action'] ) ? sanitize_text_field( wp_unslash( $data['action'] ) ) : '';
 		$page_name                  = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
 		if ( $action === 'edit' ) {
@@ -323,8 +323,8 @@ class Mjschool_Library {
 		$issuedata['student_id']      = isset( $data['student_id'] ) ? intval( $data['student_id'] ) : 0;
 		$issuedata['library_card_no'] = isset( $data['library_card'] ) ? sanitize_text_field( wp_unslash( $data['library_card'] ) ) : '';
 		$issuedata['cat_id']          = isset( $data['bookcat_id'] ) ? intval( $data['bookcat_id'] ) : 0;
-		$issuedata['issue_date']      = isset( $data['issue_date'] ) ? gmdate( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $data['issue_date'] ) ) ) ) : gmdate( 'Y-m-d' );
-		$issuedata['end_date']        = isset( $data['return_date'] ) ? gmdate( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $data['return_date'] ) ) ) ) : gmdate( 'Y-m-d' );
+		$issuedata['issue_date']      = isset( $data['issue_date'] ) ? wp_date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $data['issue_date'] ) ) ) ) : wp_date( 'Y-m-d' );
+		$issuedata['end_date']        = isset( $data['return_date'] ) ? wp_date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $data['return_date'] ) ) ) ) : wp_date( 'Y-m-d' );
 		$issuedata['period']          = isset( $data['period_id'] ) ? intval( $data['period_id'] ) : 0;
 		$issuedata['fine']            = 0;
 		if ( isset( $data['fine'] ) ) {
@@ -450,7 +450,8 @@ class Mjschool_Library {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_issuebook WHERE book_id = %d AND student_id = %d", $book_id, get_current_user_id() ) );
 		} elseif ( $role_name === 'parent' ) {
-			$child = mjschool_get_parents_child_id( get_current_user_id() );
+			$mjschool_obj_parent = new Mjschool_Parent();
+			$child = $mjschool_obj_parent->mjschool_get_parents_child_id( get_current_user_id() );
 			$book  = array();
 			foreach ( $child as $student_id ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -722,8 +723,8 @@ class Mjschool_Library {
 	public function mjschool_get_payment_report_front( $class_id, $fee_term, $payment_status, $sdate, $edate, $section_id ) {
 		global $wpdb;
 		// Sanitize inputs.
-		$start_date            = gmdate( 'Y-m-d', strtotime( sanitize_text_field( $sdate ) ) );
-		$end_date              = gmdate( 'Y-m-d', strtotime( sanitize_text_field( $edate ) ) );
+		$start_date            = wp_date( 'Y-m-d', strtotime( sanitize_text_field( $sdate ) ) );
+		$end_date              = wp_date( 'Y-m-d', strtotime( sanitize_text_field( $edate ) ) );
 		$class_id              = ( $class_id === 'all_class' ) ? 0 : intval( $class_id );
 		$fee_term              = intval( $fee_term );
 		$payment_status        = sanitize_text_field( $payment_status );
@@ -749,4 +750,24 @@ class Mjschool_Library {
 		$result = $wpdb->get_results( $prepared_sql );
 		return $result;
 	}
+	/**
+	 * Retrieves the list of issued library books for a given student.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $id Student ID.
+	 *
+	 * @return array List of issued book records.
+	 */
+	public function mjschool_get_student_library_book_list( $id ) {
+		global $wpdb;
+		$table_mjschool_library_book_issue = $wpdb->prefix . 'mjschool_library_book_issue';
+		$id         = absint( $id );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$results = $wpdb->get_results(
+			$wpdb->prepare( "SELECT * FROM {$table_mjschool_library_book_issue} WHERE student_id = %d", $id )
+		);
+		return $results;
+	}
+
 }

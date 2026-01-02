@@ -1,6 +1,6 @@
 <?php
 /**
- * Upload Student Attendance CSV
+ * Upload Student Attendance CSV.
  *
  * This file provides the interface and logic for uploading student attendance records
  * from a CSV file into the system.
@@ -28,7 +28,7 @@ defined( 'ABSPATH' ) || exit;
 					</div>
 				</div>
 				<div class="col-sm-3">
-					<input type="submit" value="<?php esc_attr__('Upload CSV File', 'mjschool'); ?>" name="upload_attendance_csv_file" class="col-sm-6 mjschool-save-btn" />
+					<input type="submit" value="<?php echo esc_attr__('Upload CSV File', 'mjschool'); ?>" name="upload_attendance_csv_file" class="col-sm-6 mjschool-save-btn" />
 				</div>
 			</div>
 		</div>

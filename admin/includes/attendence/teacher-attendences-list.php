@@ -1,35 +1,37 @@
 <?php
 /**
- * Admin Teacher Attendance Report List
+ * Admin Teacher Attendance Report List.
  *
- * This file displays and manages the teacher attendance records in the admin panel.  
+ * This file displays and manages the teacher attendance records in the admin panel.
  * It allows administrators to:
- * - Filter attendance records by predefined date ranges (Today, This Week, Month, Year, or Custom Period)
- * - View attendance records of all or individual teachers
- * - Export teacher attendance data to CSV
- * - Delete selected attendance entries
- * - Display teacher details including name, date, day, attendance status, and comments
+ * - Filter attendance records by predefined date ranges (Today, This Week, Month, Year, or Custom Period).
+ * - View attendance records of all or individual teachers.
+ * - Export teacher attendance data to CSV.
+ * - Delete selected attendance entries.
+ * - Display teacher details including name, date, day, attendance status, and comments.
  *
  * Integrated Features:
- * - AJAX-powered DataTables for sorting, filtering, and searching
- * - jQuery datepickers for custom date range selection
- * - Bulk actions (select all, delete selected)
+ * - AJAX-powered DataTables for sorting, filtering, and searching.
+ * - jQuery datepickers for custom date range selection.
+ * - Bulk actions (select all, delete selected).
  *
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/attendance
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
+
 if ( isset( $_POST['date_type'] ) ) {
-	$date_type_value = sanitize_text_field(wp_unslash($_POST['date_type']));
+    $date_type_value = sanitize_text_field(wp_unslash($_POST['date_type']));
 } else {
-	$date_type_value = 'this_month';
+    $date_type_value = 'this_month';
 }
+
 // Check nonce for teacher attendence list tab.
 if ( isset( $_GET['tab'] ) ) {
-	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'mjschool_teacher_attendance_tab' ) ) {
-		wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
-	}
+    if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'mjschool_teacher_attendance_tab' ) ) {
+        wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
+    }
 }
 ?>
 <form method="post" id="attendance_list" class="attendance_list">
@@ -51,7 +53,8 @@ if ( isset( $_GET['tab'] ) ) {
 				<select id="teacher_list" class="form-control display-members" name="teacher_name">
 					<option value="all_teacher"><?php esc_html_e( 'All Teacher', 'mjschool' ); ?></option>
 					<?php
-					$teacherdata = mjschool_get_users_data( 'teacher' );
+					$mjschool_user = new Mjschool_User();
+					$teacherdata = $mjschool_user->mjschool_get_users_data( 'teacher' );
 					if ( ! empty( $teacherdata ) ) {
 						foreach ( $teacherdata as $teacher ) {
 							?>
@@ -70,7 +73,7 @@ if ( isset( $_GET['tab'] ) ) {
 						<div class="col-md-6 mb-2">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['start_date'])) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+									<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['start_date'])) ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 									<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 								</div>
 							</div>
@@ -78,7 +81,7 @@ if ( isset( $_GET['tab'] ) ) {
 						<div class="col-md-6 mb-2">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['end_date'])) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+									<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['end_date'])) ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 									<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 								</div>
 							</div>
@@ -97,43 +100,45 @@ if ( isset( $_GET['tab'] ) ) {
 <div class="clearfix"></div>
 <?php
 if ( isset( $_REQUEST['view_attendance'] ) ) {
-	if (! isset($_POST['security']) || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['security'])), 'mjschool_teacher_attendance_list_nonce')) 
-	{
-		wp_die(esc_html__('Security check failed.', 'mjschool'));
-	}
-	$date_type = sanitize_text_field(wp_unslash($_POST['date_type']));
-	if ( $date_type === 'period' ) {
-		$start_date      = sanitize_text_field(wp_unslash($_REQUEST['start_date']));
-		$end_date        = sanitize_text_field(wp_unslash($_REQUEST['end_date']));
-		$type            = 'teacher';
-		$attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $type );
-	} else {
-		$result     = mjschool_all_date_type_value( $date_type );
-		$response   = json_decode( $result );
-		$start_date = $response[0];
-		$end_date   = $response[1];
-		if ( ! empty( $_REQUEST['teacher_name'] ) && sanitize_text_field(wp_unslash($_REQUEST['teacher_name'])) !== 'all_teacher' ) {
-			$member_id       = sanitize_text_field(wp_unslash($_REQUEST['teacher_name']));
-			$attendence_data = mjschool_get_member_attendence_beetween_satrt_date_to_enddate_for_admin( $start_date, $end_date, $member_id );
-		} else {
-			$member_id       = sanitize_text_field(wp_unslash($_REQUEST['teacher_name']));
-			$type            = 'teacher';
-			$attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $type );
-		}
-	}
+    if ( ! isset( $_POST['security'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'mjschool_teacher_attendance_list_nonce' ) ) {
+        wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
+    }
+    
+    $date_type = sanitize_text_field(wp_unslash($_POST['date_type']));
+    if ( $date_type === 'period' ) {
+        $start_date      = sanitize_text_field(wp_unslash($_POST['start_date']));
+        $end_date        = sanitize_text_field(wp_unslash($_POST['end_date']));
+        $type            = 'teacher';
+        $attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $type );
+    } else {
+        $result     = mjschool_all_date_type_value( $date_type );
+        $response   = json_decode( $result );
+        $start_date = $response[0];
+        $end_date   = $response[1];
+        if ( ! empty( $_POST['teacher_name'] ) && sanitize_text_field(wp_unslash($_POST['teacher_name'])) !== 'all_teacher' ) {
+            $member_id       = intval(wp_unslash($_POST['teacher_name']));
+            $attendence_data = mjschool_get_member_attendence_beetween_start_date_to_end_date_for_admin( $start_date, $end_date, $member_id );
+        } else {
+            $member_id       = sanitize_text_field(wp_unslash($_POST['teacher_name']));
+            $type            = 'teacher';
+            $attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $type );
+        }
+    }
 } else {
-	$start_date      = date( 'Y-m-d', strtotime( 'first day of this month' ) );
-	$end_date        = date( 'Y-m-d', strtotime( 'last day of this month' ) );
-	$date_type       = '';
-	$member_id       = '';
-	$type            = 'teacher';
-	$attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $type );
+    $start_date      = wp_date( 'Y-m-d', strtotime( 'first day of this month' ) );
+    $end_date        = wp_date( 'Y-m-d', strtotime( 'last day of this month' ) );
+    $date_type       = '';
+    $member_id       = '';
+    $type            = 'teacher';
+    $attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $type );
 }
+
 if ( $start_date > $end_date ) {
-	?>
-	<div class="mjschool-date-error-trigger" data-error="1"></div>
-	<?php
+    ?>
+    <div class="mjschool-date-error-trigger" data-error="1"></div>
+    <?php
 }
+
 if ( ! empty( $attendence_data ) ) {
 	?>
 	<?php
@@ -184,12 +189,13 @@ if ( ! empty( $attendence_data ) ) {
 								<td class="mjschool-user-image mjschool-width-50px-td mjschool-cursor-pointer">
 									<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_teacher&tab=view_teacher&action=view_teacher&teacher_id=' . rawurlencode( mjschool_encrypt_id( $uid ) ) . '&_wpnonce=' . rawurlencode( mjschool_get_nonce( 'view_action' ) ) ) ); ?>">
 										<?php
-										$umetadata = mjschool_get_user_image( $uid );
+										$mjschool_user = new Mjschool_User();
+										$umetadata = $mjschool_user->mjschool_get_user_image( $uid );
                                         
-                                        if (empty($umetadata ) ) {
+                                        if ( empty( $umetadata ) ) {
                                             echo '<img src=' . esc_url( get_option( 'mjschool_teacher_thumb_new' ) ) . ' height="50px" width="50px" class="img-circle" />';
                                         } else {
-                                            echo '<img src=' . esc_url($umetadata) . ' height="50px" width="50px" class="img-circle"/>';
+                                            echo '<img src=' . esc_url( $umetadata ) . ' height="50px" width="50px" class="img-circle"/>';
                                         }
                                         
 										?>
@@ -211,7 +217,7 @@ if ( ! empty( $attendence_data ) ) {
 								</td>
 								<td class="name">
 									<?php
-									$day = date( 'l', strtotime( $retrieved_data->attendence_date ) );
+									$day = wp_date( 'l', strtotime( $retrieved_data->attendence_date ) );
 									echo esc_html( $day, 'mjschool' );
 									?>
 									<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Day', 'mjschool' ); ?>"></i>
@@ -261,19 +267,20 @@ if ( ! empty( $attendence_data ) ) {
 	</div>
 	<?php
 } else {
-	?>
-	<div class="mjschool-no-data-list-div row">
-		<div class="offset-md-4 col-md-4">
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence&tab=teacher_attendance&tab1=teacher_attendences' ) ); ?>">
-                
-                <img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
-                
-			</a>
-			<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
-				<span class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?></span>
-			</div>
-		</div>
-	</div>
-	<?php
+    ?>
+    <div class="mjschool-no-data-list-div row">
+        <div class="offset-md-4 col-md-4">
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_attendence&tab=teacher_attendance&tab1=teacher_attendences' ) ); ?>">
+                <?php
+                $no_data_img = esc_url( get_option( 'mjschool_mjschool-no-data-img' ) );
+                ?>
+                <img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo $no_data_img; ?>" alt="<?php esc_attr_e( 'Add Record', 'mjschool' ); ?>">
+            </a>
+            <div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
+                <span class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?></span>
+            </div>
+        </div>
+    </div>
+    <?php
 }
 ?>

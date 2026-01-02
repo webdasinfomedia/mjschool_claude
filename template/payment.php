@@ -16,7 +16,7 @@ $user_id   = get_current_user_id();
 $school_type = get_option( "mjschool_custom_class");
 $mjschool_role_name = mjschool_get_user_role( get_current_user_id() );
 mjschool_browser_javascript_check();
-$tablename            = 'mjschool_payment';
+$mjschool_payment_table_name = 'mjschool_payment';
 $mjschool_obj_invoice = new Mjschool_Invoice();
 $active_tab           = isset( $_REQUEST['tab'] ) ? sanitize_text_field(wp_unslash($_REQUEST['tab'])) : 'incomelist';
 // --------------- Access-wise role. -----------//
@@ -24,25 +24,25 @@ $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
 			if ( $user_access['delete'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
@@ -55,7 +55,7 @@ if ( isset( $_POST['save_payment'] ) ) {
 		if ( isset( $_POST['class_section'] ) ) {
 			$section_id = sanitize_text_field(wp_unslash($_POST['class_section']));
 		}
-		$created_date = date( 'Y-m-d H:i:s' );
+		$created_date = wp_date( 'Y-m-d H:i:s' );
 		if ( isset( $_POST['tax'] ) ) {
 			$tax        = implode( ',', (array) sanitize_text_field(wp_unslash($_POST['tax'])) );
 			$tax_amount = mjschool_get_tax_amount( sanitize_text_field(wp_unslash($_POST['amount'])), sanitize_text_field(wp_unslash($_POST['tax'])) );
@@ -83,7 +83,7 @@ if ( isset( $_POST['save_payment'] ) ) {
 		if ( isset($_REQUEST['action']) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
 				$transport_id = array( 'payment_id' => mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['payment_id'])) ) );
-				$result       = mjschool_update_record( $tablename, $payment_data, $transport_id );
+				$result       = mjschool_update_record( $mjschool_payment_table_name, $payment_data, $transport_id );
 				if ( $result ) {
 					
 					wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=paymentlist&_wpnonce='.esc_attr( $nonce ).'&message=2') );
@@ -93,7 +93,7 @@ if ( isset( $_POST['save_payment'] ) ) {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 			}
 		} else {
-			$result = mjschool_insert_record( $tablename, $payment_data );
+			$result = mjschool_insert_record( $mjschool_payment_table_name, $payment_data );
 			if ( $result ) {
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=paymentlist&_wpnonce='.esc_attr( $nonce ).'&message=1') );
 				die();
@@ -109,8 +109,9 @@ if ( isset( $_POST['save_income'] ) ) {
 		if ( isset($_REQUEST['action']) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
 				$income_id                 = intval(wp_unslash($_REQUEST['income_id']));
-				$result                    = $mjschool_obj_invoice->mjschool_add_income( wp_unslash($_POST) );
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$sanitized_income_post     = array_map( 'sanitize_text_field', wp_unslash($_POST) );
+				$result                    = $mjschool_obj_invoice->mjschool_add_income( $sanitized_income_post );
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'income';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $income_id );
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=4') );
@@ -119,8 +120,9 @@ if ( isset( $_POST['save_income'] ) ) {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 			}
 		} else {
-			$result                    = $mjschool_obj_invoice->mjschool_add_income( wp_unslash($_POST) );
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$sanitized_income_post     = array_map( 'sanitize_text_field', wp_unslash($_POST) );
+			$result                    = $mjschool_obj_invoice->mjschool_add_income( $sanitized_income_post );
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'income';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
@@ -138,8 +140,9 @@ if ( isset( $_POST['save_expense'] ) ) {
 		if ( isset($_REQUEST['action']) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
 				$expense_id                = intval(wp_unslash($_REQUEST['expense_id']));
-				$result                    = $mjschool_obj_invoice->mjschool_add_expense( wp_unslash($_POST) );
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$sanitized_expense_post    = array_map( 'sanitize_text_field', wp_unslash($_POST) );
+				$result                    = $mjschool_obj_invoice->mjschool_add_expense( $sanitized_expense_post );
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'expense';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $expense_id );
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=6') );
@@ -148,8 +151,9 @@ if ( isset( $_POST['save_expense'] ) ) {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 			}
 		} else {
-			$result                    = $mjschool_obj_invoice->mjschool_add_expense( wp_unslash($_POST) );
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$sanitized_expense_post    = array_map( 'sanitize_text_field', wp_unslash($_POST) );
+			$result                    = $mjschool_obj_invoice->mjschool_add_expense( $sanitized_expense_post );
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'expense';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
@@ -164,21 +168,21 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
 		$nonce = wp_create_nonce( 'mjschool_payment_tab' );
 		if ( isset( $_REQUEST['payment_id'] ) ) {
-			$result = mjschool_delete_payment( $tablename, ( intval(wp_unslash($_REQUEST['payment_id'])) ) );
+			$result = $mjschool_obj_invoice->mjschool_delete_payment( $mjschool_payment_table_name, ( intval(wp_unslash($_REQUEST['payment_id'])) ) );
 			if ( $result ) {
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=paymentlist&_wpnonce='.esc_attr( $nonce ).'&message=8') );
 				die();
 			}
 		}
 		if ( isset( $_REQUEST['income_id'] ) ) {
-			$result = $mjschool_obj_invoice->mjschool_delete_income( mjschool_decrypt_id( intval(wp_unslash($_REQUEST['income_id'])) ) );
+			$result = $mjschool_obj_invoice->mjschool_delete_income( mjschool_decrypt_id( wp_unslash($_REQUEST['income_id'])) );
 			if ( $result ) {
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=incomelist&_wpnonce='.esc_attr( $nonce ).'&message=9') );
 				die();
 			}
 		}
 		if ( isset( $_REQUEST['expense_id'] ) ) {
-			$result = $mjschool_obj_invoice->mjschool_delete_expense( mjschool_decrypt_id( intval(wp_unslash($_REQUEST['expense_id'])) ) );
+			$result = $mjschool_obj_invoice->mjschool_delete_expense( mjschool_decrypt_id( wp_unslash($_REQUEST['expense_id'])) );
 			if ( $result ) {
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=expenselist&_wpnonce='.esc_attr( $nonce ).'&message=7') );
 				die();
@@ -197,7 +201,7 @@ if ( isset( $_POST['delete_selected_payment'] ) ) {
 	
 	if ( ! empty( $_POST['id'] ) ) {
 		foreach ( $_POST['id'] as $id ) {
-			$result = mjschool_delete_payment( $tablename, intval( $id ) );
+			$result = mjschool_delete_payment( $mjschool_payment_table_name, intval( $id ) );
 		}
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=paymentlist&message=8') );
 		exit;
@@ -217,7 +221,7 @@ if ( isset( $_POST['delete_selected_income'] ) ) {
 	}
 	if ( isset( $_POST['payment_id'] ) ) {
 		foreach ( $_POST['payment_id'] as $id ) {
-			$result = mjschool_delete_payment( $tablename, intval( $id ) );
+			$result = $mjschool_obj_invoice->mjschool_delete_payment( $mjschool_payment_table_name, intval( $id ) );
 		}
 	}
 	wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=payment&tab=incomelist&message=9') );
@@ -289,7 +293,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 		<?php?>
 		<?php
 	}
-	if ( $active_tab != 'view_invoice' ) {
+	if ( $active_tab !== 'view_invoice' ) {
 		$page_action = '';
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			$page_action = sanitize_text_field(wp_unslash($_REQUEST['action']));
@@ -303,7 +307,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 			<li class="<?php if ( $active_tab === 'incomelist' ) { ?> active<?php } ?>">
 				<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=payment&tab=incomelist&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'incomelist' ? 'active' : ''; ?>"> 
 					<?php
-					if ( ( $user_role != 'student' ) and ( $user_role != 'parent' ) ) {
+					if ( ( $user_role !== 'student' ) and ( $user_role !== 'parent' ) ) {
 						esc_html_e( 'Income List', 'mjschool' );
 					} else {
 						esc_html_e( 'Payment', 'mjschool' );
@@ -327,7 +331,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 					<?php
 				}
 			}
-			if ( ( $user_role != 'student' ) and ( $user_role != 'parent' ) ) {
+			if ( ( $user_role !== 'student' ) and ( $user_role !== 'parent' ) ) {
 				?>
 				<li class="<?php if ( $active_tab === 'expenselist' ) { ?> active<?php } ?>">
 					<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=payment&tab=expenselist&_wpnonce=' . $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'expenselist' ? 'active' : ''; ?>"> <?php esc_html_e( 'Expense List', 'mjschool' ); ?></a>
@@ -364,7 +368,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 					wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 				}
 			}
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'income';
 			$user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 			$user_id                   = get_current_user_id();
@@ -679,10 +683,12 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 				}
 			}
 		}
+		
 		if ( $active_tab === 'addincome' ) {
+			$mjschool_obj_invoice = new Mjschool_Invoice();
 			$income_id = 0;
 			if ( isset( $_REQUEST['income_id'] ) ) {
-				$income_id = intval( mjschool_decrypt_id( intval(wp_unslash($_REQUEST['income_id'])) ) );
+				$income_id = intval( mjschool_decrypt_id( wp_unslash($_REQUEST['income_id'])) );
 			}
 			// $income_id = $_REQUEST['income_id'];
 			$edit = 0;
@@ -692,7 +698,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 			}
 			if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit_payment' ) {
 				$edit   = 1;
-				$result = mjschool_get_payment_by_id( $income_id );
+				$result = $mjschool_obj_invoice->mjschool_get_payment_by_id( $income_id );
 			}
 			?>
 			<div class="mjschool-panel-body">
@@ -726,7 +732,8 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 									?>
 									<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 									<?php
-									foreach ( mjschool_get_all_class() as $classdata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 										?>
 										<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 									<?php } ?>
@@ -748,7 +755,8 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 										<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 										<?php
 										if ( $edit ) {
-											foreach ( mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
+											$mjschool_class = new Mjschool_Class();
+											foreach ( $mjschool_class->mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
 												?>
 												<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 												<?php
@@ -799,7 +807,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 							<div class="col-md-6">
 								<div class="form-group input">
 									<div class="col-md-12 form-control">
-										<input id="invoice_date" class="form-control " type="text" value="<?php if ( $edit ) { if ( isset( $result->income_create_date ) ) { echo esc_attr( mjschool_get_date_in_input_box( $result->income_create_date ) ); } elseif ( isset( $result->date ) ) { echo esc_attr( mjschool_get_date_in_input_box( $result->date ) ); } } elseif ( isset( $_POST['invoice_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['invoice_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?> " name="invoice_date" readonly>
+										<input id="invoice_date" class="form-control " type="text" value="<?php if ( $edit ) { if ( isset( $result->income_create_date ) ) { echo esc_attr( mjschool_get_date_in_input_box( $result->income_create_date ) ); } elseif ( isset( $result->date ) ) { echo esc_attr( mjschool_get_date_in_input_box( $result->date ) ); } } elseif ( isset( $_POST['invoice_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['invoice_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?> " name="invoice_date" readonly>
 										<label for="userinput1"><?php esc_html_e( 'Date', 'mjschool' ); ?><span class="required">*</span></label>
 									</div>
 								</div>
@@ -937,7 +945,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 					</div>
 					<?php
 					// --------- Get module-wise custom field data. --------------//
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'income';
 					$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 					?>
@@ -961,7 +969,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 					wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 				}
 			}
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'expense';
 			$user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 			$user_id                   = get_current_user_id();
@@ -1245,7 +1253,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 							<div class="col-md-6">
 								<div class="form-group input">
 									<div class="col-md-12 form-control">
-										<input id="invoice_date" class="form-control validate[required]" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( $result->income_create_date ) ); } elseif ( isset( $_POST['invoice_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['invoice_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="invoice_date" readonly>
+										<input id="invoice_date" class="form-control validate[required]" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( $result->income_create_date ) ); } elseif ( isset( $_POST['invoice_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['invoice_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>" name="invoice_date" readonly>
 										<label for="userinput1"><?php esc_html_e( 'Date', 'mjschool' ); ?><span class="required">*</span></label>
 									</div>
 								</div>
@@ -1339,7 +1347,7 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 					</div>
 					<?php
 					// --------- Get module-wise custom field data. --------------//
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'expense';
 					$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 					?>
@@ -1359,13 +1367,13 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 		if ( $active_tab === 'view_invoice' ) {
 			$mjschool_obj_invoice = new Mjschool_Invoice();
 			if ( sanitize_text_field(wp_unslash($_REQUEST['invoice_type'])) === 'invoice' ) {
-				$invoice_data = mjschool_get_payment_by_id( intval( mjschool_decrypt_id( intval(wp_unslash($_REQUEST['idtest'])) ) ) );
+				$invoice_data = $mjschool_obj_invoice->mjschool_get_payment_by_id( intval( mjschool_decrypt_id( wp_unslash($_REQUEST['idtest'])) ) );
 			}
 			if ( sanitize_text_field(wp_unslash($_REQUEST['invoice_type'])) === 'income' ) {
-				$income_data = $mjschool_obj_invoice->mjschool_get_income_data( intval( mjschool_decrypt_id( intval(wp_unslash($_REQUEST['idtest'])) ) ) );
+				$income_data = $mjschool_obj_invoice->mjschool_get_income_data( intval( mjschool_decrypt_id( wp_unslash($_REQUEST['idtest'])) ) );
 			}
 			if ( sanitize_text_field(wp_unslash($_REQUEST['invoice_type'])) === 'expense' ) {
-				$expense_data = $mjschool_obj_invoice->mjschool_get_income_data( intval( mjschool_decrypt_id( intval(wp_unslash($_REQUEST['idtest'])) ) ) );
+				$expense_data = $mjschool_obj_invoice->mjschool_get_income_data( intval( mjschool_decrypt_id( wp_unslash($_REQUEST['idtest'])) ) );
 			}
 			$format = get_option( 'mjschool_invoice_option' );
 			?>
@@ -1380,485 +1388,481 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 						<?php } ?>
 						<div id="mjschool-invoice-print" class="mjschool-main-div mjschool-float-left-width-100px mjschool-payment-invoice-popup-main-div">
 							<div class="mjschool-invoice-width-100px mjschool-float-left" border="0">
-								<div class="row mjschool-margin-top-20px">
-									<?php if ( $format === 1 ) { ?>
-										<div class="mjschool-width-print mjschool-rtl-heads mjschool_fees_style">
-											<div class="mjschool_float_left_width_100">
-												<div class="mjschool_float_left_width_25">
-													<div class="mjschool-custom-logo-class mjschool_left_border_redius_50">
-														<img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>" class="mjschool_main_logo_class" />
+								<div id="invoice-pdf" class="pdf-content-main mjschool-float-left-width-100px">
+									<div class="row mjschool-margin-top-20px">
+										<?php if ( $format === '1' ) { ?>
+											<div class="mjschool-rtl-heads mjschool_fees_style">
+												<div class="mjschool_float_left_width_100">
+													<div class="mjschool_float_left_width_25">
+														<div class="mjschool-custom-logo-class mjschool_left_border_redius_50">
+															<img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>" class="mjschool_main_logo_class" />
+														</div>
 													</div>
-												</div>
-												<div class="mjschool_float_left_padding_width_75">
-													<p class="mjschool_fees_widht_100_fonts_24px"><?php echo esc_html( get_option( 'mjschool_name' ) ); ?></p>
-													<p class="mjschool_fees_center_fonts_17px"><?php echo esc_html( get_option( 'mjschool_address' ) ); ?></p>
-													<div class="mjschool_fees_center_margin_0px">
-														<p class="mjschool_fees_width_fit_content_inline"><?php esc_html_e( 'E-mail', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_email' ) ); ?></p>
-														<p class="mjschool_fees_width_fit_content_inline">&nbsp;&nbsp;<?php esc_html_e( 'Phone', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_contact_number' ) ); ?></p>
-													</div>
-												</div>
-											</div>
-										</div>
-									<?php } else { ?>
-										<h3 class="mjschool-school-name-for-invoice-view"><?php echo esc_html( get_option( 'mjschool_name' ) ); ?></h3>
-										<div class="col-md-1 col-sm-2 col-xs-3">
-											<div class="width_1 mjschool-rtl-width-80px">
-												<img class="system_logo" src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>">
-											</div>
-										</div>
-										<div class="col-md-11 col-sm-10 col-xs-9 mjschool-invoice-address mjschool-invoice-address-css">
-											<div class="row">
-												<div class="col-md-12 col-sm-12 col-xs-12 mjschool-invoice-padding-bottom-15px mjschool-padding-right-0">
-													<label class="mjschool-popup-label-heading"><?php esc_html_e( 'Address', 'mjschool' ); ?> </label><br>
-													<label class="mjschool-label-value mjschool-word-break-all"> 
-														<?php
-														echo nl2br( esc_html( chunk_split( get_option( 'mjschool_address' ), 100 ) ) );
-														?>
-													</label>
-												</div>
-												<div class="row col-md-12 mjschool-invoice-padding-bottom-15px">
-													<div class="col-md-6 col-sm-6 col-xs-6 mjschool-address-css mjschool-padding-right-0 mjschool-email-width-auto">
-														<label class="mjschool-popup-label-heading"><?php esc_html_e( 'Email', 'mjschool' ); ?> </label><br>
-														<label class="mjschool-label-value mjschool-word-break-all"><?php echo esc_html( get_option( 'mjschool_email' ) ), '<BR>'; ?></label>
-													</div>
-													<div class="col-md-6 col-sm-6 col-xs-6 mjschool-address-css mjschool-padding-right-0 mjschool-padding-left-30px">
-														<label class="mjschool-popup-label-heading"><?php esc_html_e( 'Phone', 'mjschool' ); ?> </label><br>
-														<label class="mjschool-label-value"><?php echo esc_html( get_option( 'mjschool_contact_number' ) ) . '<br>'; ?></label>
-													</div>
-												</div>
-												<div align="right" class="mjschool-width-24px"></div>
-											</div>
-										</div>
-									<?php } ?>
-								</div>
-								<div class="col-md-12 col-sm-12 col-xl-12 mjschool-mozila-display-css mjschool-margin-top-20px">
-									<?php if ( $format === 1 ) { ?>
-										<div class="mjschool-width-print mjschool_payment_style">
-											<div class="mjschool_float_left_width_100">
-												<?php
-												if ( ! empty( $expense_data ) ) {
-													$party_name = $expense_data->supplier_name;
-													$ex_name = $party_name
-													? wp_kses_post( chunk_split( ucwords( $party_name ), 30, '<br>' ) )
-													: 'N/A';
-												} else {
-													$student_id = ! empty( $income_data ) ? $income_data->supplier_name : $invoice_data->student_id;
-													$patient    = get_userdata( $student_id );
-													$in_name    = $patient ? wp_kses_post( chunk_split( ucwords( $patient->display_name ), 30, '<br>' ) ) : 'N/A';
-												}
-												?>
-												<div  class="mjschool_padding_10px">
-													<div class="mjschool_float_left_width_65"><b><?php esc_html_e( 'Bill To', 'mjschool' ); ?>:</b> 
-														<?php echo esc_html( get_user_meta( $uid, 'first_name', true ) ) . ' ' . esc_html( get_user_meta( $uid, 'student_id', true ) ); ?>&nbsp;
-														<?php
-														if ( ! empty( $expense_data ) ) {
-															// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-															echo wp_kses_post( $ex_name );
-															// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
-														} else {
-															echo esc_html( mjschool_student_display_name_with_roll( $student_id ) );
-														}
-														?>
-													</div>
-													<div class="mjschool_float_right_width_35"><b><?php esc_html_e( 'Status', 'mjschool' ); ?>:</b>
-														<?php
-														$payment_status = '';
-														if ( ! empty( $income_data ) ) {
-															$payment_status = $income_data->payment_status;
-														}
-														if ( ! empty( $invoice_data ) ) {
-															$payment_status = $invoice_data->payment_status;
-														}
-														if ( ! empty( $expense_data ) ) {
-															$payment_status = $expense_data->payment_status;
-														}
-														switch ( $payment_status ) {
-															case 'Paid':
-																echo '<span class="mjschool-green-color">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
-																break;
-															case 'Part Paid':
-																echo '<span class="mjschool-purpal-color">' . esc_html__( 'Partially Paid', 'mjschool' ) . '</span>';
-																break;
-															case 'Unpaid':
-																echo '<span class="mjschool-red-color">' . esc_html__( 'Not Paid', 'mjschool' ) . '</span>';
-																break;
-															default:
-																esc_html_e( 'N/A', 'mjschool' );
-														}
-														?>
-													</div>
-												</div>
-											</div>
-											<div class="mjschool_float_left_width_65">
-												<?php
-												if ( empty( $expense_data ) ) {
-													$student_id = ! empty( $income_data ) ? $income_data->supplier_name : $invoice_data->student_id;
-													$address    = esc_html( get_user_meta( $student_id, 'address', true ) );
-													$city       = esc_html( get_user_meta( $student_id, 'city', true ) );
-													$zip        = esc_html( get_user_meta( $student_id, 'zip_code', true ) );
-													?>
-													<div class="mjschool_padding_10px">
-														<div><b><?php esc_html_e( 'Address', 'mjschool' ); ?>:</b>
-															<?php echo esc_html( $address ); ?></div>
-														<div><?php echo esc_html( $city ) . ', ' . esc_html( $zip ); ?></div>
-													</div>
-												<?php } ?>
-											</div>
-											<div class="mjschool_float_right_width_35">
-												<?php
-												$issue_date = 'DD-MM-YYYY';
-												if ( ! empty( $income_data ) ) {
-													$issue_date = $income_data->income_create_date;
-												}
-												if ( ! empty( $invoice_data ) ) {
-													$issue_date = $invoice_data->date;
-												}
-												if ( ! empty( $expense_data ) ) {
-													$issue_date = $expense_data->income_create_date;
-												}
-												?>
-												<div class="mjschool_fees_padding_10px">
-													<div class="mjschool_float_left_width_100"><b><?php esc_html_e( 'Issue Date', 'mjschool' ); ?>:</b>
-														<?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
-													</div>
-												</div>
-											</div>
-										</div>
-										<?php
-									} else {
-										?>
-										<div class="row">
-											<div class="mjschool-width-50px mjschool-float-left-width-100px">
-												<div class="col-md-8 col-sm-8 col-xs-5 mjschool-custom-padding-0 mjschool-float-left mjschool-display-grid mjschool-display-inherit-res mjschool-margin-bottom-20px mjschool-rs-main-billed-to">
-													<div class="mjschool-billed-to mjschool-display-flex mjschool-invoice-address-heading mjschool-rs-width-billed-to">
-														<?php
-														$issue_date = 'DD-MM-YYYY';
-														if ( ! empty( $income_data ) ) {
-															$issue_date     = $income_data->income_create_date;
-															$payment_status = $income_data->payment_status;
-														}
-														if ( ! empty( $invoice_data ) ) {
-															$issue_date     = $invoice_data->date;
-															$payment_status = $invoice_data->payment_status;
-														}
-														if ( ! empty( $expense_data ) ) {
-															$issue_date     = $expense_data->income_create_date;
-															$payment_status = $expense_data->payment_status;
-														}
-														?>
-														<h3 class="mjschool-billed-to-lable mjschool-invoice-model-heading mjschool-bill-to-width-12px mjschool-rs-bill-to-width-40px"><?php esc_html_e( 'Bill To', 'mjschool' ); ?> : </h3>
-														<?php
-														if ( ! empty( $expense_data ) ) {
-															$party_name = $expense_data->supplier_name;
-															if ( $party_name ) {
-																$processed_name = chunk_split( ucwords( $party_name ), 30, '<br>' );
-																$escaped_name   = wp_kses( $processed_name, array( 'br' => array() ) );
-																echo '<h3 class="display_name mjschool-invoice-width-100px">' . wp_kses_post( $escaped_name ) . '</h3>';
-															} else {
-																esc_html_e( 'N/A', 'mjschool' );
-															}
-														} else {
-															if ( ! empty( $income_data ) ) {
-																$student_id = $income_data->supplier_name;
-															}
-															if ( ! empty( $invoice_data ) ) {
-																$student_id = $invoice_data->student_id;
-															}
-															$patient = get_userdata( $student_id );
-															if ( $patient ) {
-																$raw_name       = $patient->display_name;
-																$capitalized    = ucwords( $raw_name );
-																$chunked_name   = chunk_split( $capitalized, 30, '<br>' );
-																$escaped_output = wp_kses( $chunked_name, array( 'br' => array() ) );
-																echo '<h3 class="display_name mjschool-invoice-width-100px">' . wp_kses_post( $escaped_output ) . '</h3>';
-															} else {
-																esc_html_e( 'N/A', 'mjschool' );
-															}
-														}
-														?>
-													</div>
-													<div class="mjschool-width-60px mjschool-address-information-invoice">
-														<?php
-														if ( ! empty( $expense_data ) ) {
-															echo "";
-														} else {
-															if ( ! empty( $income_data ) ) {
-																$student_id = $income_data->supplier_name;
-															}
-															if ( ! empty( $invoice_data ) ) {
-																$student_id = $invoice_data->student_id;
-															}
-															$patient           = get_userdata( $student_id );
-															$address           = get_user_meta( $student_id, 'address', true );
-															$formatted_address = chunk_split( esc_html( $address ), 30, "\n" );
-															echo wp_kses_post( nl2br( $formatted_address ) );
-															echo esc_html( get_user_meta( $student_id, 'city', true ) ) . ',' . '<BR>';
-															echo esc_html( get_user_meta( $student_id, 'zip_code', true ) ) . ',<BR>';
-														}
-														?>
-													</div>
-												</div>
-												<div class="col-md-3 col-sm-4 col-xs-7 mjschool-float-left">
-													<div class="mjschool-width-50px">
-														<div class="mjschool-width-20px" align="center">
-															<?php
-															if ( ! empty( $invoice_data ) ) {
-																echo "";
-															}
-															?>
-															<h5 class="mjschool-align-left"> <label class="mjschool-popup-label-heading text-transfer-upercase"><?php echo esc_html__( 'Date :', 'mjschool' ); ?> </label>&nbsp; <label class="mjschool-invoice-model-value"><?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?></label></h5>
-															<h5 class="mjschool-align-left"><label class="mjschool-popup-label-heading text-transfer-upercase"><?php echo esc_html__( 'Status :', 'mjschool' ); ?> </label> &nbsp;<label class="mjschool-invoice-model-value">
-																<?php
-																if ( $payment_status === 'Paid' ) {
-																	echo '<span class="mjschool-green-color">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
-																}
-																if ( $payment_status === 'Part Paid' ) {
-																	echo '<span class="mjschool-purpal-color">' . esc_html__( 'Partially Paid', 'mjschool' ) . '</span>';
-																}
-																if ( $payment_status === 'Unpaid' ) {
-																	echo '<span class="mjschool-red-color">' . esc_html__( 'Not Paid', 'mjschool' ) . '</span>';
-																}
-																?>
-															</h5>
+													<div class="mjschool_float_left_padding_width_75">
+														<p class="mjschool_fees_widht_100_fonts_24px"><?php echo esc_html( get_option( 'mjschool_name' ) ); ?></p>
+														<p class="mjschool_fees_center_fonts_17px"><?php echo esc_html( get_option( 'mjschool_address' ) ); ?></p>
+														<div class="mjschool_fees_center_margin_0px">
+															<p class="mjschool_fees_width_fit_content_inline"><?php esc_html_e( 'E-mail', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_email' ) ); ?></p>
+															<p class="mjschool_fees_width_fit_content_inline">&nbsp;&nbsp;<?php esc_html_e( 'Phone', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_contact_number' ) ); ?></p>
 														</div>
 													</div>
 												</div>
 											</div>
+										<?php } else { ?>
+											<h3 class="mjschool-school-name-for-invoice-view"><?php echo esc_html( get_option( 'mjschool_name' ) ); ?></h3>
+											<div class="col-md-1 col-sm-2 col-xs-3">
+												<div class="width_1 mjschool-rtl-width-80px">
+													<img class="system_logo" src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>">
+												</div>
+											</div>
+											<div class="col-md-11 col-sm-10 col-xs-9 mjschool-invoice-address mjschool-invoice-address-css">
+												<div class="row">
+													<div class="col-md-12 col-sm-12 col-xs-12 mjschool-invoice-padding-bottom-15px mjschool-padding-right-0">
+														<label class="mjschool-popup-label-heading"><?php esc_html_e( 'Address', 'mjschool' ); ?> </label><br>
+														<label class="mjschool-label-value mjschool-word-break-all"> 
+															<?php
+															echo nl2br( esc_html( chunk_split( get_option( 'mjschool_address' ), 100 ) ) );
+															?>
+														</label>
+													</div>
+													<div class="row col-md-12 mjschool-invoice-padding-bottom-15px">
+														<div class="col-md-6 col-sm-6 col-xs-6 mjschool-address-css mjschool-padding-right-0 mjschool-email-width-auto">
+															<label class="mjschool-popup-label-heading"><?php esc_html_e( 'Email', 'mjschool' ); ?> </label><br>
+															<label class="mjschool-label-value mjschool-word-break-all"><?php echo esc_html( get_option( 'mjschool_email' ) ), '<BR>'; ?></label>
+														</div>
+														<div class="col-md-6 col-sm-6 col-xs-6 mjschool-address-css mjschool-padding-right-0 mjschool-padding-left-30px">
+															<label class="mjschool-popup-label-heading"><?php esc_html_e( 'Phone', 'mjschool' ); ?> </label><br>
+															<label class="mjschool-label-value"><?php echo esc_html( get_option( 'mjschool_contact_number' ) ) . '<br>'; ?></label>
+														</div>
+													</div>
+													<div align="right" class="mjschool-width-24px"></div>
+												</div>
+											</div>
+										<?php } ?>
+									</div>
+									<div class="col-md-12 col-sm-12 col-xl-12 mjschool-mozila-display-css mjschool-margin-top-20px">
+										<?php if ( $format === '1' ) { ?>
+											<div class="mjschool_payment_style">
+												<div class="mjschool_float_left_width_100">
+													<?php
+													if ( ! empty( $expense_data ) ) {
+														$party_name = $expense_data->supplier_name;
+														$ex_name = $party_name
+														? wp_kses_post( chunk_split( ucwords( $party_name ), 30, '<br>' ) )
+														: 'N/A';
+													} else {
+														$student_id = ! empty( $income_data ) ? $income_data->supplier_name : $invoice_data->student_id;
+														$patient    = get_userdata( $student_id );
+														$in_name    = $patient ? wp_kses_post( chunk_split( ucwords( $patient->display_name ), 30, '<br>' ) ) : 'N/A';
+													}
+													?>
+													<div  class="mjschool_padding_10px">
+														<div class="mjschool_float_left_width_65"><b><?php esc_html_e( 'Bill To', 'mjschool' ); ?>:</b> 
+															<?php echo esc_html( get_user_meta( $uid, 'first_name', true ) ) . ' ' . esc_html( get_user_meta( $uid, 'student_id', true ) ); ?>&nbsp;
+															<?php
+															if ( ! empty( $expense_data ) ) {
+																// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+																echo wp_kses_post( $ex_name );
+																// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
+															} else {
+																echo esc_html( mjschool_student_display_name_with_roll( $student_id ) );
+															}
+															?>
+														</div>
+														<div class="mjschool_float_right_width_35"><b><?php esc_html_e( 'Status', 'mjschool' ); ?>:</b>
+															<?php
+															$payment_status = '';
+															if ( ! empty( $income_data ) ) {
+																$payment_status = $income_data->payment_status;
+															}
+															if ( ! empty( $invoice_data ) ) {
+																$payment_status = $invoice_data->payment_status;
+															}
+															if ( ! empty( $expense_data ) ) {
+																$payment_status = $expense_data->payment_status;
+															}
+															switch ( $payment_status ) {
+																case 'Paid':
+																	echo '<span class="mjschool-green-color">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
+																	break;
+																case 'Part Paid':
+																	echo '<span class="mjschool-purpal-color">' . esc_html__( 'Partially Paid', 'mjschool' ) . '</span>';
+																	break;
+																case 'Unpaid':
+																	echo '<span class="mjschool-red-color">' . esc_html__( 'Not Paid', 'mjschool' ) . '</span>';
+																	break;
+																default:
+																	esc_html_e( 'N/A', 'mjschool' );
+															}
+															?>
+														</div>
+													</div>
+												</div>
+												<div class="mjschool_float_left_width_65">
+													<?php
+													if ( empty( $expense_data ) ) {
+														$student_id = ! empty( $income_data ) ? $income_data->supplier_name : $invoice_data->student_id;
+														$address    = esc_html( get_user_meta( $student_id, 'address', true ) );
+														$city       = esc_html( get_user_meta( $student_id, 'city', true ) );
+														$zip        = esc_html( get_user_meta( $student_id, 'zip_code', true ) );
+														?>
+														<div class="mjschool_padding_10px">
+															<div><b><?php esc_html_e( 'Address', 'mjschool' ); ?>:</b>
+																<?php echo esc_html( $address ); ?></div>
+															<div><?php echo esc_html( $city ) . ', ' . esc_html( $zip ); ?></div>
+														</div>
+													<?php } ?>
+												</div>
+												<div class="mjschool_float_right_width_35">
+													<?php
+													$issue_date = 'DD-MM-YYYY';
+													if ( ! empty( $income_data ) ) {
+														$issue_date = $income_data->income_create_date;
+													}
+													if ( ! empty( $invoice_data ) ) {
+														$issue_date = $invoice_data->date;
+													}
+													if ( ! empty( $expense_data ) ) {
+														$issue_date = $expense_data->income_create_date;
+													}
+													?>
+													<div class="mjschool_fees_padding_10px">
+														<div class="mjschool_float_left_width_100"><b><?php esc_html_e( 'Issue Date', 'mjschool' ); ?>:</b>
+															<?php echo esc_html( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
+														</div>
+													</div>
+												</div>
+											</div>
+											<?php
+										} else {
+											?>
+											<div class="row">
+												<div class="mjschool-width-50px mjschool-float-left-width-100px">
+													<div class="col-md-8 col-sm-8 col-xs-5 mjschool-custom-padding-0 mjschool-float-left mjschool-display-grid mjschool-display-inherit-res mjschool-margin-bottom-20px mjschool-rs-main-billed-to">
+														<div class="mjschool-billed-to mjschool-display-flex mjschool-invoice-address-heading mjschool-rs-width-billed-to">
+															<?php
+															$issue_date = 'DD-MM-YYYY';
+															if ( ! empty( $income_data ) ) {
+																$issue_date     = $income_data->income_create_date;
+																$payment_status = $income_data->payment_status;
+															}
+															if ( ! empty( $invoice_data ) ) {
+																$issue_date     = $invoice_data->date;
+																$payment_status = $invoice_data->payment_status;
+															}
+															if ( ! empty( $expense_data ) ) {
+																$issue_date     = $expense_data->income_create_date;
+																$payment_status = $expense_data->payment_status;
+															}
+															?>
+															<h3 class="mjschool-billed-to-lable mjschool-invoice-model-heading mjschool-bill-to-width-12px mjschool-rs-bill-to-width-40px"><?php esc_html_e( 'Bill To', 'mjschool' ); ?> : </h3>
+															<?php
+															if ( ! empty( $expense_data ) ) {
+																$party_name = $expense_data->supplier_name;
+																if ( $party_name ) {
+																	$processed_name = chunk_split( ucwords( $party_name ), 30, '<br>' );
+																	$escaped_name   = wp_kses( $processed_name, array( 'br' => array() ) );
+																	echo '<h3 class="display_name mjschool-invoice-width-100px">' . wp_kses_post( $escaped_name ) . '</h3>';
+																} else {
+																	esc_html_e( 'N/A', 'mjschool' );
+																}
+															} else {
+																if ( ! empty( $income_data ) ) {
+																	$student_id = $income_data->supplier_name;
+																}
+																if ( ! empty( $invoice_data ) ) {
+																	$student_id = $invoice_data->student_id;
+																}
+																$patient = get_userdata( $student_id );
+																if ( $patient ) {
+																	$raw_name       = $patient->display_name;
+																	$capitalized    = ucwords( $raw_name );
+																	$chunked_name   = chunk_split( $capitalized, 30, '<br>' );
+																	$escaped_output = wp_kses( $chunked_name, array( 'br' => array() ) );
+																	echo '<h3 class="display_name mjschool-invoice-width-100px">' . wp_kses_post( $escaped_output ) . '</h3>';
+																} else {
+																	esc_html_e( 'N/A', 'mjschool' );
+																}
+															}
+															?>
+														</div>
+														<div class="mjschool-width-60px mjschool-address-information-invoice">
+															<?php
+															if ( ! empty( $expense_data ) ) {
+																echo "";
+															} else {
+																if ( ! empty( $income_data ) ) {
+																	$student_id = $income_data->supplier_name;
+																}
+																if ( ! empty( $invoice_data ) ) {
+																	$student_id = $invoice_data->student_id;
+																}
+																$patient           = get_userdata( $student_id );
+																$address           = get_user_meta( $student_id, 'address', true );
+																$formatted_address = chunk_split( esc_html( $address ), 30, "\n" );
+																echo wp_kses_post( nl2br( $formatted_address ) );
+																echo esc_html( get_user_meta( $student_id, 'city', true ) ) . ',' . '<BR>';
+																echo esc_html( get_user_meta( $student_id, 'zip_code', true ) ) . ',<BR>';
+															}
+															?>
+														</div>
+													</div>
+													<div class="col-md-3 col-sm-4 col-xs-7 mjschool-float-left">
+														<div class="mjschool-width-50px">
+															<div class="mjschool-width-20px" align="center">
+																<?php
+																if ( ! empty( $invoice_data ) ) {
+																	echo "";
+																}
+																?>
+																<h5 class="mjschool-align-left"> <label class="mjschool-popup-label-heading text-transfer-upercase"><?php echo esc_html__( 'Date :', 'mjschool' ); ?> </label>&nbsp; <label class="mjschool-invoice-model-value"><?php echo esc_html( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?></label></h5>
+																<h5 class="mjschool-align-left"><label class="mjschool-popup-label-heading text-transfer-upercase"><?php echo esc_html__( 'Status :', 'mjschool' ); ?> </label> &nbsp;<label class="mjschool-invoice-model-value">
+																	<?php
+																	if ( $payment_status === 'Paid' ) {
+																		echo '<span class="mjschool-green-color">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
+																	}
+																	if ( $payment_status === 'Part Paid' ) {
+																		echo '<span class="mjschool-purpal-color">' . esc_html__( 'Partially Paid', 'mjschool' ) . '</span>';
+																	}
+																	if ( $payment_status === 'Unpaid' ) {
+																		echo '<span class="mjschool-red-color">' . esc_html__( 'Not Paid', 'mjschool' ) . '</span>';
+																	}
+																	?>
+																</h5>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										<?php } ?>
+									</div>
+									<div class="mjschool-width-100px mjschool-margin-top-10px-res mt-4">
+										<?php
+										if ( ! empty( $invoice_data ) ) {
+											?>
+											<h3 class="display_name"><?php esc_html_e( 'Invoice Entries', 'mjschool' ); ?></h3>
+											<?php
+										} elseif ( ! empty( $income_data ) ) {
+											?>
+											<h3 class="display_name"><?php esc_html_e( 'Income Entries', 'mjschool' ); ?></h3>
+											<?php
+										} elseif ( ! empty( $expense_data ) ) {
+											?>
+											<h3 class="display_name"><?php esc_html_e( 'Expense Entries', 'mjschool' ); ?></h3>
+											<?php
+										}
+										?>
+									</div>
+									<?php if ( $format === '1' ) { ?>
+										<div class="table-responsive mjschool-rtl-padding-left-40px">
+											<table class="table table-bordered mjschool-model-invoice-table">
+												<thead class="mjschool-entry-heading mjschool-invoice-model-entry-heading mjschool_border_color_2px" >
+													<tr>
+														<th class="text-center mjschool_tables_width_15px"><?php esc_html_e( 'Number', 'mjschool' ); ?></th>
+														<th class="text-center mjschool_tables_width_20"><?php esc_html_e( 'Date', 'mjschool' ); ?></th>
+														<th class="text-center mjschool_black_solid_border_2px" ><?php esc_html_e( 'Entry', 'mjschool' ); ?></th>
+														<th class="text-center mjschool_black_solid_border_2px" ><?php esc_html_e( 'Issued By', 'mjschool' ); ?></th>
+														<th class="text-center mjschool_tables_width_15px"><?php echo esc_html__( 'Price', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?></th>
+													</tr>
+												</thead>
+												<tbody>
+													<?php
+													$id           = 1;
+													$total_amount = 0;
+													// Merge logic for income/expense entries.
+													if ( ! empty( $income_data ) || ! empty( $expense_data ) ) {
+														if ( ! empty( $expense_data ) ) {
+															$income_data = $expense_data; // Treat expense as income for this context.
+														}
+														$all_entries = $mjschool_obj_invoice->mjschool_get_one_student_income_data( mjschool_decrypt_id( wp_unslash($_REQUEST['idtest'])) );
+														foreach ( $all_entries as $entry_row ) {
+															$entry_list = json_decode( $entry_row->entry );
+															foreach ( $entry_list as $entry ) {
+																$amount        = floatval( $entry->amount );
+																$total_amount += $amount;
+																?>
+																<tr>
+																	<td class="text-center mjschool_border_black_2px"><?php echo esc_html( $id++ ); ?></td>
+																	<td class="text-center mjschool_border_black_2px"><?php echo esc_html( mjschool_get_date_in_input_box( $entry_row->income_create_date ) ); ?></td>
+																	<td class="text-center mjschool_border_black_2px"><?php echo esc_html( $entry->entry ); ?></td>
+																	<td class="text-center mjschool_border_black_2px"><?php echo esc_html( mjschool_get_display_name( $entry_row->create_by ) ); ?></td>
+																	<td class="text-center mjschool_border_black_2px"><?php echo esc_html( number_format( $amount, 2, '.', '' ) ); ?></td>
+																</tr>
+																<?php
+															}
+														}
+													}
+													// Show single invoice entry if available.
+													if ( ! empty( $invoice_data ) ) {
+														$total_amount = $invoice_data->amount;
+														?>
+														<tr>
+															<td class="text-center mjschool_border_black_2px"><?php echo esc_html( $id ); ?></td>
+															<td class="text-center mjschool_border_black_2px"><?php echo esc_html( mjschool_get_date_in_input_box( $invoice_data->date ) ); ?></td>
+															<td class="text-center mjschool_border_black_2px"><?php echo esc_html( $invoice_data->payment_title ); ?></td>
+															<td class="text-center mjschool_border_black_2px"><?php echo esc_html( mjschool_get_display_name( $invoice_data->payment_reciever_id ) ); ?></td>
+															<td class="text-center mjschool_border_black_2px"><?php echo esc_html( number_format( $invoice_data->amount, 2, '.', '' ) ); ?></td>
+														</tr>
+														<?php
+													}
+													?>
+												</tbody>
+											</table>
 										</div>
-									<?php } ?>
-								</div>
-								<table class="mjschool-width-100px mjschool-margin-top-10px-res mt-4">
-									<tbody>
-										<tr>
-											<td>
-												<?php
-												if ( ! empty( $invoice_data ) ) {
-													?>
-													<h3 class="display_name"><?php esc_html_e( 'Invoice Entries', 'mjschool' ); ?></h3>
+										<?php
+									} else {
+										?>
+										<div class="table-responsive mjschool-table-max-height-180px mjschool-rtl-padding-left-40px">
+											<table class="table mjschool-model-invoice-table">
+												<thead class="mjschool-entry-heading mjschool-invoice-model-entry-heading">
+													<tr>
+														<th class="mjschool-entry-table-heading mjschool-align-center">#</th>
+														<th class="mjschool-entry-table-heading mjschool-align-center"> <?php esc_html_e( 'Date', 'mjschool' ); ?></th>
+														<th class="mjschool-entry-table-heading mjschool-align-center"><?php esc_html_e( 'Entry', 'mjschool' ); ?> </th>
+														<th class="mjschool-entry-table-heading mjschool-align-center"><?php esc_html_e( 'Price', 'mjschool' ); ?></th>
+														<th class="mjschool-entry-table-heading mjschool-align-center"> <?php esc_html_e( 'Issue By', 'mjschool' ); ?> </th>
+													</tr>
+												</thead>
+												<tbody>
 													<?php
-												} elseif ( ! empty( $income_data ) ) {
-													?>
-													<h3 class="display_name"><?php esc_html_e( 'Income Entries', 'mjschool' ); ?></h3>
-													<?php
-												} elseif ( ! empty( $expense_data ) ) {
-													?>
-													<h3 class="display_name"><?php esc_html_e( 'Expense Entries', 'mjschool' ); ?></h3>
-													<?php
-												}
-												?>
-											<td>
-										</tr>
-									</tbody>
-								</table>
-								<?php if ( $format === 1 ) { ?>
-									<div class="table-responsive mjschool-rtl-padding-left-40px">
-										<table class="table table-bordered mjschool-model-invoice-table">
-											<thead class="mjschool-entry-heading mjschool-invoice-model-entry-heading mjschool_border_color_2px" >
-												<tr>
-													<th class="text-center mjschool_tables_width_15px"><?php esc_html_e( 'Number', 'mjschool' ); ?></th>
-													<th class="text-center mjschool_tables_width_20"><?php esc_html_e( 'Date', 'mjschool' ); ?></th>
-													<th class="text-center mjschool_black_solid_border_2px" ><?php esc_html_e( 'Entry', 'mjschool' ); ?></th>
-													<th class="text-center mjschool_black_solid_border_2px" ><?php esc_html_e( 'Issued By', 'mjschool' ); ?></th>
-													<th class="text-center mjschool_tables_width_15px"><?php echo esc_html__( 'Price', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?></th>
-												</tr>
-											</thead>
-											<tbody>
-												<?php
-												$id           = 1;
-												$total_amount = 0;
-												// Merge logic for income/expense entries.
-												if ( ! empty( $income_data ) || ! empty( $expense_data ) ) {
-													if ( ! empty( $expense_data ) ) {
-														$income_data = $expense_data; // Treat expense as income for this context.
-													}
-													$all_entries = $mjschool_obj_invoice->mjschool_get_onestudent_income_data( mjschool_decrypt_id( intval(wp_unslash($_REQUEST['idtest'])) ) );
-													foreach ( $all_entries as $entry_row ) {
-														$entry_list = json_decode( $entry_row->entry );
-														foreach ( $entry_list as $entry ) {
-															$amount        = floatval( $entry->amount );
-															$total_amount += $amount;
-															?>
-															<tr>
-																<td class="text-center mjschool_border_black_2px"><?php echo esc_html( $id++ ); ?></td>
-																<td class="text-center mjschool_border_black_2px"><?php echo esc_html( mjschool_get_date_in_input_box( $entry_row->income_create_date ) ); ?></td>
-																<td class="text-center mjschool_border_black_2px"><?php echo esc_html( $entry->entry ); ?></td>
-																<td class="text-center mjschool_border_black_2px"><?php echo esc_html( mjschool_get_display_name( $entry_row->create_by ) ); ?></td>
-																<td class="text-center mjschool_border_black_2px"><?php echo esc_html( number_format( $amount, 2, '.', '' ) ); ?></td>
-															</tr>
-															<?php
+													$id           = 1;
+													$total_amount = 0;
+													if ( ! empty( $income_data ) || ! empty( $expense_data ) ) {
+														if ( ! empty( $expense_data ) ) {
+															$income_data = $expense_data;
+														}
+														$patient_all_income = $mjschool_obj_invoice->mjschool_get_one_student_income_data( mjschool_decrypt_id( wp_unslash($_REQUEST['idtest'])) );
+														foreach ( $patient_all_income as $result_income ) {
+															$income_entries = json_decode( $result_income->entry );
+															foreach ( $income_entries as $each_entry ) {
+																$total_amount += $each_entry->amount;
+																?>
+																<tr>
+																	<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $id ); ?></td>
+																	<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_get_date_in_input_box( $result_income->income_create_date ) ); ?></td>
+																	<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $each_entry->entry ); ?> </td>
+																	<td class="mjschool-align-center mjschool-invoice-table-data"> <?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $each_entry->amount, 2, '.', '' ) ) ); ?></td>
+																	<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_get_display_name( $result_income->create_by ), 'mjschool' ); ?></td>
+																</tr>
+																<?php
+																$id += 1;
+															}
 														}
 													}
-												}
-												// Show single invoice entry if available.
-												if ( ! empty( $invoice_data ) ) {
-													$total_amount = $invoice_data->amount;
-													?>
-													<tr>
-														<td class="text-center mjschool_border_black_2px"><?php echo esc_html( $id ); ?></td>
-														<td class="text-center mjschool_border_black_2px"><?php echo esc_html( mjschool_get_date_in_input_box( $invoice_data->date ) ); ?></td>
-														<td class="text-center mjschool_border_black_2px"><?php echo esc_html( $invoice_data->payment_title ); ?></td>
-														<td class="text-center mjschool_border_black_2px"><?php echo esc_html( mjschool_get_display_name( $invoice_data->payment_reciever_id ) ); ?></td>
-														<td class="text-center mjschool_border_black_2px"><?php echo esc_html( number_format( $invoice_data->amount, 2, '.', '' ) ); ?></td>
-													</tr>
-													<?php
-												}
-												?>
-											</tbody>
-										</table>
-									</div>
-									<?php
-								} else {
-									?>
-									<div class="table-responsive mjschool-table-max-height-180px mjschool-rtl-padding-left-40px">
-										<table class="table mjschool-model-invoice-table">
-											<thead class="mjschool-entry-heading mjschool-invoice-model-entry-heading">
-												<tr>
-													<th class="mjschool-entry-table-heading mjschool-align-center">#</th>
-													<th class="mjschool-entry-table-heading mjschool-align-center"> <?php esc_html_e( 'Date', 'mjschool' ); ?></th>
-													<th class="mjschool-entry-table-heading mjschool-align-center"><?php esc_html_e( 'Entry', 'mjschool' ); ?> </th>
-													<th class="mjschool-entry-table-heading mjschool-align-center"><?php esc_html_e( 'Price', 'mjschool' ); ?></th>
-													<th class="mjschool-entry-table-heading mjschool-align-center"> <?php esc_html_e( 'Issue By', 'mjschool' ); ?> </th>
-												</tr>
-											</thead>
-											<tbody>
-												<?php
-												$id           = 1;
-												$total_amount = 0;
-												if ( ! empty( $income_data ) || ! empty( $expense_data ) ) {
-													if ( ! empty( $expense_data ) ) {
-														$income_data = $expense_data;
+													if ( ! empty( $invoice_data ) ) {
+														$total_amount = $invoice_data->amount
+														?>
+														<tr>
+															<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $id ); ?></td>
+															<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_get_date_in_input_box( $invoice_data->date ) ); ?></td>
+															<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $invoice_data->payment_title ); ?> </td>
+															<td class="mjschool-align-center mjschool-invoice-table-data"> <?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $invoice_data->amount, 2, '.', '' ) ) ); ?></td>
+															<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_get_display_name( $invoice_data->payment_reciever_id ) ); ?></td>
+														</tr>
+														<?php
 													}
-													$patient_all_income = $mjschool_obj_invoice->mjschool_get_onestudent_income_data( mjschool_decrypt_id( intval(wp_unslash($_REQUEST['idtest'])) ) );
-													foreach ( $patient_all_income as $result_income ) {
-														$income_entries = json_decode( $result_income->entry );
-														foreach ( $income_entries as $each_entry ) {
-															$total_amount += $each_entry->amount;
-															?>
-															<tr>
-																<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $id ); ?></td>
-																<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_get_date_in_input_box( $result_income->income_create_date ) ); ?></td>
-																<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $each_entry->entry ); ?> </td>
-																<td class="mjschool-align-center mjschool-invoice-table-data"> <?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $each_entry->amount, 2, '.', '' ) ) ); ?></td>
-																<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_get_display_name( $result_income->create_by ), 'mjschool' ); ?></td>
-															</tr>
-															<?php
-															$id += 1;
-														}
-													}
-												}
-												if ( ! empty( $invoice_data ) ) {
-													$total_amount = $invoice_data->amount
 													?>
-													<tr>
-														<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $id ); ?></td>
-														<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_get_date_in_input_box( $invoice_data->date ) ); ?></td>
-														<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $invoice_data->payment_title ); ?> </td>
-														<td class="mjschool-align-center mjschool-invoice-table-data"> <?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $invoice_data->amount, 2, '.', '' ) ) ); ?></td>
-														<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_get_display_name( $invoice_data->payment_reciever_id ) ); ?></td>
-													</tr>
-													<?php
-												}
-												?>
-											</tbody>
-										</table>
-									</div>
-								<?php }
-								if ( ! empty( $invoice_data ) ) {
-									$grand_total = $total_amount;
-									$sub_total   = $invoice_data->fees_amount;
-									$tax_amount  = $invoice_data->tax_amount;
-									if ( ! empty( $invoice_data->tax ) ) {
-										$tax_name = mjschool_tax_name_by_tax_id_array_for_invoice( esc_html( $invoice_data->tax ) );
-									} else {
-										$tax_name = '';
-									}
-								}
-								if ( ! empty( $income_data ) ) {
-									if ( ! empty( $income_data->tax ) ) {
-										$tax_name = mjschool_tax_name_by_tax_id_array_for_invoice( esc_html( $income_data->tax ) );
-									} else {
-										$tax_name = '';
-									}
-									$sub_total = 0;
-									if ( ! empty( $income_data->entry ) ) {
-										$all_income_entry = json_decode( $income_data->entry );
-										foreach ( $all_income_entry as $one_entry ) {
-											$sub_total += $one_entry->amount;
+												</tbody>
+											</table>
+										</div>
+									<?php }
+									if ( ! empty( $invoice_data ) ) {
+										$grand_total = $total_amount;
+										$sub_total   = $invoice_data->fees_amount;
+										$tax_amount  = $invoice_data->tax_amount;
+										if ( ! empty( $invoice_data->tax ) ) {
+											$tax_name = mjschool_tax_name_by_tax_id_array_for_invoice( esc_html( $invoice_data->tax ) );
+										} else {
+											$tax_name = '';
 										}
 									}
-									$tax_amount  = $income_data->tax_amount;
-									$grand_total = $sub_total + $tax_amount;
-								}
-								?>
-								<?php
-								if ( $format === 1 ) {
+									if ( ! empty( $income_data ) ) {
+										if ( ! empty( $income_data->tax ) ) {
+											$tax_name = mjschool_tax_name_by_tax_id_array_for_invoice( esc_html( $income_data->tax ) );
+										} else {
+											$tax_name = '';
+										}
+										$sub_total = 0;
+										if ( ! empty( $income_data->entry ) ) {
+											$all_income_entry = json_decode( $income_data->entry );
+											foreach ( $all_income_entry as $one_entry ) {
+												$sub_total += $one_entry->amount;
+											}
+										}
+										$tax_amount  = $income_data->tax_amount;
+										$grand_total = $sub_total + $tax_amount;
+									}
 									?>
-									<div class="table-responsive mjschool-rtl-padding-left-40px mjschool-rtl-float-left-width-100px">
-										<table class="table table-bordered mjschool_fees_collapse_width_100">
-											<tbody>
-												<?php if ( isset( $tax_amount ) && ! empty( $tax_amount ) ) : ?>
-													<tr>
-														<th style="width: 85%; text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 2px solid black;" scope="row">
-															<?php echo esc_html__( 'Sub Total', 'mjschool' ) . ' :'; ?>
-														</th>
-														<td style="width: 15%; text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 2px solid black;">
-															<?php echo esc_html( number_format( $sub_total, 2, '.', '' ) ); ?>
-														</td>
-													</tr>
-													<tr>
-														<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 2px solid black;" scope="row">
-															<?php echo esc_html__( 'Tax Amount', 'mjschool' ) . ' ( ' . esc_html( $tax_name ) . ' ) :'; ?>
-														</th>
-														<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 2px solid black;">
-															<?php echo '+' . esc_html( number_format( $tax_amount, 2, '.', '' ) ); ?>
-														</td>
-													</tr>
-												<?php endif; ?>
-											</tbody>
-										</table>
-									</div>
 									<?php
-								} else {
-									?>
-									<div class="table-responsive mjschool-rtl-padding-left-40px mjschool-rtl-float-left-width-100px">
-										<table width="100%" border="0">
-											<tbody>
-												<?php
-												if ( isset( $tax_amount ) && ! empty( $tax_amount ) ) {
-													?>
-													<tr>
-														<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" align="right"><?php echo esc_html__( 'Sub Total', 'mjschool' ) . '  :'; ?></td>
-														<td align="right" class="mjschool-rtl-width-15px mjschool-padding-bottom-15px mjschool-rtl-text-align-left mjschool-total-value"><?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $sub_total, 2, '.', '' ) ) ); ?></td>
-													</tr>
-													<tr>
-														<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" align="right"><?php echo esc_html__( 'Tax Amount', 'mjschool' ) . '( ' . esc_attr( $tax_name ) . ' )' . '  :'; ?></td>
-														<td align="right" class="mjschool-rtl-width-15px mjschool-padding-bottom-15px mjschool-rtl-text-align-left mjschool-total-value"><?php echo '+' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $tax_amount, 2, '.', '' ) ) ); ?></td>
-													</tr>
+									if ( $format === '1' ) {
+										?>
+										<div class="table-responsive mjschool-rtl-padding-left-40px mjschool-rtl-float-left-width-100px">
+											<table class="table table-bordered mjschool_fees_collapse_width_100">
+												<tbody>
+													<?php if ( isset( $tax_amount ) && ! empty( $tax_amount ) ) : ?>
+														<tr>
+															<th style="width: 85%; text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 2px solid black;" scope="row">
+																<?php echo esc_html__( 'Sub Total', 'mjschool' ) . ' :'; ?>
+															</th>
+															<td style="width: 15%; text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 2px solid black;">
+																<?php echo esc_html( number_format( $sub_total, 2, '.', '' ) ); ?>
+															</td>
+														</tr>
+														<tr>
+															<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 2px solid black;" scope="row">
+																<?php echo esc_html__( 'Tax Amount', 'mjschool' ) . ' ( ' . esc_html( $tax_name ) . ' ) :'; ?>
+															</th>
+															<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 2px solid black;">
+																<?php echo '+' . esc_html( number_format( $tax_amount, 2, '.', '' ) ); ?>
+															</td>
+														</tr>
+													<?php endif; ?>
+												</tbody>
+											</table>
+										</div>
+										<?php
+									} else {
+										?>
+										<div class="table-responsive mjschool-rtl-padding-left-40px mjschool-rtl-float-left-width-100px">
+											<table width="100%" border="0">
+												<tbody>
 													<?php
-												}
+													if ( isset( $tax_amount ) && ! empty( $tax_amount ) ) {
+														?>
+														<tr>
+															<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" align="right"><?php echo esc_html__( 'Sub Total', 'mjschool' ) . '  :'; ?></td>
+															<td align="right" class="mjschool-rtl-width-15px mjschool-padding-bottom-15px mjschool-rtl-text-align-left mjschool-total-value"><?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $sub_total, 2, '.', '' ) ) ); ?></td>
+														</tr>
+														<tr>
+															<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" align="right"><?php echo esc_html__( 'Tax Amount', 'mjschool' ) . '( ' . esc_attr( $tax_name ) . ' )' . '  :'; ?></td>
+															<td align="right" class="mjschool-rtl-width-15px mjschool-padding-bottom-15px mjschool-rtl-text-align-left mjschool-total-value"><?php echo '+' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $tax_amount, 2, '.', '' ) ) ); ?></td>
+														</tr>
+														<?php
+													}
+													?>
+												</tbody>
+											</table>
+										</div>
+									<?php } ?>
+									<div id="mjschool-res-rtl-width-100px" class="row mjschool-margin-top-10px-res mjschool-res-rtl-width-100px col-md-4 col-sm-4 col-xs-4 mjschool-view-invoice-lable-css mjschool-inovice-width-100px-rs mjschool-float-left mjschool-grand-total-div mjschool-invoice-table-grand-total mjschool_float_margin_right_0px">
+										<div class="mjschool-width-50-res mjschool-align-right col-md-5 col-sm-5 col-xs-5 mjschool-view-invoice-lable mjschool-padding-11 mjschool-padding-right-0-left-0 mjschool-float-left mjschool-grand-total-label-div mjschool-invoice-model-height mjschool-line-height-15 mjschool-padding-left-0px">
+											<h3 class="padding mjschool-color-white margin mjschool-invoice-total-label mjschool_float_right"><?php esc_html_e( 'Grand Total', 'mjschool' ); ?> </h3>
+										</div>
+										<div class="mjschool-width-50-res mjschool-align-right col-md-7 col-sm-7 col-xs-7 mjschool-view-invoice-lable  padding_right_5_left_5 mjschool-padding-11 mjschool-float-left mjschool-grand-total-amount-div">
+											<h3 class="padding margin text-right mjschool-color-white mjschool-invoice-total-value mjschool_float_right" >
+												<?php
+												$formatted_amount = number_format( $grand_total, 2, '.', '' );
+												$currency_symbol  = mjschool_get_currency_symbol(); // Use this if your project has a function to get the symbol.
+												echo esc_html( "({$currency_symbol}){$formatted_amount}" );
 												?>
-											</tbody>
-										</table>
-									</div>
-								<?php } ?>
-								<div id="mjschool-res-rtl-width-100px" class="row mjschool-margin-top-10px-res mjschool-res-rtl-width-100px col-md-4 col-sm-4 col-xs-4 mjschool-view-invoice-lable-css mjschool-inovice-width-100px-rs mjschool-float-left mjschool-grand-total-div mjschool-invoice-table-grand-total mjschool_float_margin_right_0px">
-									<div class="mjschool-width-50-res mjschool-align-right col-md-5 col-sm-5 col-xs-5 mjschool-view-invoice-lable mjschool-padding-11 mjschool-padding-right-0-left-0 mjschool-float-left mjschool-grand-total-label-div mjschool-invoice-model-height mjschool-line-height-15 mjschool-padding-left-0px">
-										<h3 class="padding mjschool-color-white margin mjschool-invoice-total-label mjschool_float_right"><?php esc_html_e( 'Grand Total', 'mjschool' ); ?> </h3>
-									</div>
-									<div class="mjschool-width-50-res mjschool-align-right col-md-7 col-sm-7 col-xs-7 mjschool-view-invoice-lable  padding_right_5_left_5 mjschool-padding-11 mjschool-float-left mjschool-grand-total-amount-div">
-										<h3 class="padding margin text-right mjschool-color-white mjschool-invoice-total-value mjschool_float_right" >
-											<?php
-											$formatted_amount = number_format( $grand_total, 2, '.', '' );
-											$currency_symbol  = mjschool_get_currency_symbol(); // Use this if your project has a function to get the symbol.
-											echo esc_html( "({$currency_symbol}){$formatted_amount}" );
-											?>
-										</h3>
+											</h3>
+										</div>
 									</div>
 								</div>
 								<div class="rtl_sings mjschool_fees_border_2px_margin_20px">
 									<!-- Teacher Signature (Middle). -->
 									<div class="mjschool_fees_center_width_33">
-										<div> <img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" class="mjschool_width_100px" /> </div>
+										<div> <img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" class="mjschool_sign_width_100px" /> </div>
 										<div class="mjschool_fees_width_150px"></div>
 										<div class="mjschool_margin_top_5px"> <?php esc_html_e( 'Principal Signature', 'mjschool' ); ?> </div>
 									</div>
@@ -1871,11 +1875,11 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 										<?php
 										if ( isset( $_REQUEST['web_type'] ) && sanitize_text_field(wp_unslash($_REQUEST['web_type'])) === 'wpschool_app' ) {
 											if ( isset( $_POST['download_app_pdf'] ) ) {
-												$file_path = esc_url(content_url( '/uploads/invoice_pdf/income/' . mjschool_decrypt_id( intval(wp_unslash($_REQUEST['idtest'])) ) . '.pdf'));
+												$file_path = esc_url(content_url( '/uploads/invoice_pdf/income/' . mjschool_decrypt_id( wp_unslash($_REQUEST['idtest'])) ) . '.pdf');
 												if ( file_exists( ABSPATH . str_replace( content_url(), 'wp-content', $file_path ) ) ) {
 													unlink( $file_path ); // Delete the file.
 												}
-												$generate_pdf = mjschool_fees_income_pdf_for_mobile_app( intval(wp_unslash($_REQUEST['idtest'])), sanitize_text_field(wp_unslash($_REQUEST['invoice_type'])) );
+												$generate_pdf = mjschool_fees_income_pdf_for_mobile_app( wp_unslash($_REQUEST['idtest']), sanitize_text_field(wp_unslash($_REQUEST['invoice_type'])) );
 												wp_safe_redirect( $file_path );
 												die();
 											}
@@ -1895,7 +1899,9 @@ if ( isset( $_POST['delete_selected_expense'] ) ) {
 										} else {
 											?>
 											<div class="col-md-3 mjschool-pdf-btn-rs mjschool-width-50-res">
-												<a href="<?php echo esc_url( '?page=mjschool_payment&print=pdf&invoice_id=' . intval( wp_unslash( $_REQUEST['idtest'] ) ) . '&invoice_type=' . sanitize_text_field( wp_unslash( $_REQUEST['invoice_type'] ) ) ); ?>" target="_blank" class="btn mjschool-color-white mjschool-invoice-btn-div btn mjschool-save-btn"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-pdf.png' ); ?>"></a>
+												<a href="javascript:void(0)" id="download_fees_invoice_pdf" class="btn mjschool-color-white mjschool-invoice-btn-div mjschool-save-btn">
+													<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-pdf.png' ); ?>">
+												</a>
 											</div>
 											<?php
 										}

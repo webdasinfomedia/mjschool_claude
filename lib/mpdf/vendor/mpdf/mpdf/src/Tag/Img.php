@@ -246,7 +246,7 @@ class Img extends Tag
 				+ $objattr['margin_right'] + $objattr['border_left']['w'] + $objattr['border_right']['w'];
 
 			// mPDF 5.7.3 TRANSFORMS
-			if (isset($properties['BACKGROUND-COLOR']) && $properties['BACKGROUND-COLOR'] != '') {
+			if (isset($properties['BACKGROUND-COLOR']) && $properties['BACKGROUND-COLOR'] !== '') {
 				$objattr['bgcolor'] = $this->colorConverter->convert($properties['BACKGROUND-COLOR'], $this->mpdf->PDFAXwarnings);
 			}
 

@@ -39,10 +39,11 @@ if ( isset( $_GET['tab'] ) ) {
 			}
 		}
 	}	
-	$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+	$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 	$module                    = 'message';
+	$obj_message = new Mjschool_Message();
 	$user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
-	$message_data              = mjschool_get_send_message( get_current_user_id(), $max, $offset );
+	$message_data              = $obj_message->mjschool_get_send_message( get_current_user_id(), $max, $offset );
 	if ( ! empty( $message_data ) ) {
 		?>
 		<form name="wcwm_report" action="" method="post"><!-- Form-div. -->
@@ -124,11 +125,12 @@ if ( isset( $_GET['tab'] ) ) {
 												$smgt_class_id = get_post_meta( $msg_post->ID, 'smgt_class_id', true );
 												if ( $smgt_class_id === '' || $smgt_class_id === 'all' ) {
 													esc_html_e( 'All', 'mjschool' );
-												} elseif ( $smgt_class_id != '' ) {
+												} elseif ( $smgt_class_id !== '' ) {
 													$class_id_array   = explode( ',', $smgt_class_id );
 													$class_name_array = array();
+													$mjschool_class = new Mjschool_Class();
 													foreach ( $class_id_array as $data ) {
-														$class_name_array[] = mjschool_get_class_name( $data );
+														$class_name_array[] = $mjschool_class->mjschool_get_class_name( $data );
 													}
 													echo esc_html( implode( ',', $class_name_array ) );
 												} else {

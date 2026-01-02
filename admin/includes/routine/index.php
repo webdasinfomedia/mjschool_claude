@@ -27,7 +27,7 @@ $cust_class_room = get_option( 'mjschool_class_room' );
 //-------- Check Browser Javascript. ----------//
 mjschool_browser_javascript_check();
 $mjschool_role = mjschool_get_user_role( get_current_user_id() );
-$action        = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+$action        = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 if ( $mjschool_role === 'administrator' ) {
 	$user_access_add    = '1';
 	$user_access_edit   = '1';
@@ -39,26 +39,26 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_edit   = $user_access['edit'];
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
-	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+	if ( isset( $_GET['page'] ) ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $action ) ) {
 			if ( 'schedule' === $user_access['page_link'] && ( $action === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'schedule' === $user_access['page_link'] && ( $action === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'schedule' === $user_access['page_link'] && ( $action === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -70,7 +70,7 @@ if ( $mjschool_role === 'administrator' ) {
 <?php
 $mjschool_obj_route        = new Mjschool_Class_Routine();
 $obj_virtual_classroom     = new Mjschool_Virtual_Classroom();
-$mjschool_page_name        = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+$mjschool_page_name        = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 //---------- Save class Routine.  ------------//
 if ( isset( $_POST['save_route'] ) ) {
 	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
@@ -84,18 +84,18 @@ if ( isset( $_POST['save_route'] ) ) {
 		$end_time           = mjschool_time_convert( $end_time_raw );
 		$start_time_1       = $start_time_raw;
 		$end_time_1         = $end_time_raw;
-		$start_time_convert = gmdate( 'h:i', strtotime( $start_time_raw ) );
-		$end_time_convert   = gmdate( 'h:i', strtotime( $end_time_raw ) );
+		$start_time_convert = wp_date( 'h:i', strtotime( $start_time_raw ) );
+		$end_time_convert   = wp_date( 'h:i', strtotime( $end_time_raw ) );
 		$start_time_data    = explode( ':', $start_time_1 );
 		$start_hour         = str_pad( isset( $start_time_data[0] ) ? $start_time_data[0] : '00', 2, '0', STR_PAD_LEFT );
 		$start_min          = str_pad( isset( $start_time_data[1] ) ? $start_time_data[1] : '00', 2, '0', STR_PAD_LEFT );
 		$start_time_new     = $start_hour . ':' . $start_min;
-		$start_time_in_24_hour_format = gmdate( 'H:i', strtotime( $start_time_new ) );
+		$start_time_in_24_hour_format = wp_date( 'H:i', strtotime( $start_time_new ) );
 		$end_time_data                = explode( ':', $end_time_1 );
 		$end_hour                     = str_pad( isset( $end_time_data[0] ) ? $end_time_data[0] : '00', 2, '0', STR_PAD_LEFT );
 		$end_min                      = str_pad( isset( $end_time_data[1] ) ? $end_time_data[1] : '00', 2, '0', STR_PAD_LEFT );
 		$end_time_new                 = $end_hour . ':' . $end_min;
-		$end_time_in_24_hour_format   = gmdate( 'H:i', strtotime( $end_time_new ) );
+		$end_time_in_24_hour_format   = wp_date( 'H:i', strtotime( $end_time_new ) );
 		
 		$subject_id_post    = isset( $_POST['subject_id'] ) ? intval( $_POST['subject_id'] ) : 0;
 		$class_id_post      = isset( $_POST['class_id'] ) ? intval( $_POST['class_id'] ) : 0;
@@ -139,7 +139,7 @@ if ( isset( $_POST['save_route'] ) ) {
 			}
 			if ( $action === 'edit' ) { //------- Edit class routine. --------//
 				if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'edit_action' ) ) {
-					$route_id_val = isset( $_REQUEST['route_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['route_id'] ) ) : '';
+					$route_id_val = isset( $_GET['route_id'] ) ? sanitize_text_field( wp_unslash( $_GET['route_id'] ) ) : '';
 					$route_id     = array( 'route_id' => mjschool_decrypt_id( $route_id_val ) );
 					$mjschool_obj_route->mjschool_update_route( $route_data, $route_id );
 
@@ -164,11 +164,12 @@ if ( isset( $_POST['save_route'] ) ) {
 						$create_virtual_classroom = isset( $_POST['create_virtual_classroom'] ) && $_POST['create_virtual_classroom'] === '1';
 						if ( $create_virtual_classroom ) {
 							foreach ( $route_id_array as $route_id_item ) {
-								$start_date     = isset( $_POST['start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) : gmdate( 'Y-m-d' );
-								$end_date       = isset( $_POST['end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) : gmdate( 'Y-m-d' );
+								$start_date     = isset( $_POST['start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) : wp_date( 'Y-m-d' );
+								$end_date       = isset( $_POST['end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) : wp_date( 'Y-m-d' );
 								$agenda         = isset( $_POST['agenda'] ) ? sanitize_textarea_field( wp_unslash( $_POST['agenda'] ) ) : '';
 								$obj_mark       = new Mjschool_Class_Routine();
-								$route_data_obj = mjschool_get_route_by_id( $route_id_item );
+								$mjschool_class = new Mjschool_Class();
+								$route_data_obj = $mjschool_class->mjschool_get_route_by_id( $route_id_item );
 								$start_time_vc  = mjschool_start_time_convert( $start_time_raw );
 								$end_time_vc    = mjschool_end_time_convert( $end_time_raw );
 								if ( empty( $_POST['password'] ) ) {
@@ -251,6 +252,7 @@ if ( isset( $_POST['save_import_csv'] ) ) {
 			$rows   = array_map( 'str_getcsv', file( $file_tmp ) );
 			$header = array_map( 'strtolower', array_shift( $rows ) );
 			$csv    = array();
+			$obj_subject = new Mjschool_Subject();
 			foreach ( $rows as $row ) {
 				if ( empty( array_filter( $row ) ) ) {
 					continue;
@@ -260,7 +262,7 @@ if ( isset( $_POST['save_import_csv'] ) ) {
 				$mjschool_time_table = $wpdb->prefix . 'mjschool_time_table';
 				$subject_code        = isset( $csv['subject id'] ) ? sanitize_text_field( $csv['subject id'] ) : '';
 				$subject_name        = isset( $csv['subject name'] ) ? sanitize_text_field( $csv['subject name'] ) : '';
-				$subject_data        = mjschool_get_subject( $subject_code );
+				$subject_data        = $obj_subject->mjschool_get_subject( $subject_code );
 				$routedata           = array();
 				if ( isset( $_POST['class_id'] ) ) {
 					$routedata['class_id'] = intval( $_POST['class_id'] );
@@ -326,8 +328,9 @@ if ( isset( $_POST['create_meeting'] ) ) {
 if ( $action === 'delete' ) {
 	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'delete_action' ) ) {
 		$tablenm      = 'mjschool_time_table';
-		$route_id_val = isset( $_REQUEST['route_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['route_id'] ) ) : '';
-		$result       = mjschool_delete_route( $tablenm, mjschool_decrypt_id( $route_id_val ) );
+		$route_id_val = isset( $_GET['route_id'] ) ? sanitize_text_field( wp_unslash( $_GET['route_id'] ) ) : '';
+		$mjschool_class = new Mjschool_Class();
+		$result       = $mjschool_class->mjschool_delete_route( $tablenm, mjschool_decrypt_id( $route_id_val ) );
 		if ( $result ) {
 			$nonce_redirect = wp_create_nonce( 'mjschool_class_routine_tab' );
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_route&tab=route_list&_wpnonce=' . esc_attr( $nonce_redirect ) . '&message=3' ) );
@@ -343,8 +346,8 @@ if ( $action === 'routine_export_csv' ) {
 		// For backward compatibility, also check without nonce but add nonce to links.
 	}
 	$nonce_redirect = wp_create_nonce( 'mjschool_class_routine_tab' );
-	$class_id       = isset( $_REQUEST['class_id'] ) ? intval( $_REQUEST['class_id'] ) : 0;
-	$section_name   = isset( $_REQUEST['class_section'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) ) : '';
+	$class_id       = isset( $_GET['class_id'] ) ? intval( $_GET['class_id'] ) : 0;
+	$section_name   = isset( $_GET['class_section'] ) ? sanitize_text_field( wp_unslash( $_GET['class_section'] ) ) : '';
 	if ( $class_id !== 0 && ( $section_name === 'remove' || $section_name === '' ) ) { //------- Only Class Select -------//
 		$class_route_list = mjschool_get_time_table_using_class_and_section( $class_id, 0 );
 	} else {
@@ -367,16 +370,18 @@ if ( $action === 'routine_export_csv' ) {
 		if ( false === $fh ) {
 			wp_die( esc_html__( "Can't open file", 'mjschool' ) );
 		}
+		$mjschool_class = new Mjschool_Class();
+		$mjschool_subject = new Mjschool_Subject();
 		fputcsv( $fh, $header );
 		foreach ( $class_route_list as $retrive_data ) {
 			$row       = array();
-			$classname = mjschool_get_class_name( $retrive_data->class_id );
+			$classname = $mjschool_class->mjschool_get_class_name( $retrive_data->class_id );
 			if ( $retrive_data->section_name !== '0' && $retrive_data->section_name !== 0 ) {
-				$section_name_new = mjschool_get_section_name( $retrive_data->section_name );
+				$section_name_new = $mjschool_class->mjschool_get_section_name( $retrive_data->section_name );
 			} else {
 				$section_name_new = 'No Section';
 			}
-			$sub_name           = mjschool_get_single_subject_name( $retrive_data->subject_id );
+			$sub_name           = $mjschool_subject->mjschool_get_single_subject_name( $retrive_data->subject_id );
 			$teacher_first_name = get_user_meta( $retrive_data->teacher_id, 'first_name', true );
 			$teacher_last_name  = get_user_meta( $retrive_data->teacher_id, 'last_name', true );
 			$teacher_name       = $teacher_first_name . ' ' . $teacher_last_name;
@@ -402,7 +407,7 @@ if ( $action === 'routine_export_csv' ) {
 		header( 'Pragma: public' );       // Required.
 		header( 'Expires: 0' );           // No cache.
 		header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-		header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime($file ) ) . ' GMT' );
+		header( 'Last-Modified: ' . wp_date( 'D, d M Y H:i:s', filemtime($file ) ) . ' GMT' );
 		header( 'Cache-Control: private', false);
 		header( 'Content-Type: ' . $mime);
 		header( 'Content-Disposition: attachment; filename="' . basename($file) . '"' );
@@ -421,7 +426,7 @@ if ( $action === 'routine_export_csv' ) {
 	<div class="mjschool_grade_page mjschool-main-list-margin-15px">
 		<?php
 		//-------- Class routine messages. ---------//
-		$message        = isset( $_REQUEST['message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message'] ) ) : '0';
+		$message        = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '0';
 		$message_string = '';
 		switch ( $message ) {
 			case '1':
@@ -473,12 +478,12 @@ if ( $action === 'routine_export_csv' ) {
 					<?php $nonce = wp_create_nonce( 'mjschool_class_routine_tab' ); ?>
 					<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 						<li class="<?php if ( $active_tab === 'route_list' ) { ?>active<?php } ?>">
-							<a href="?page=mjschool_route&tab=route_list&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'route_list' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_route&tab=route_list&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'route_list' ? 'active' : ''; ?>">
 								<?php esc_html_e( 'Routine list', 'mjschool' ); ?>
 							</a>
 						</li>
 						<li class="<?php if ( $active_tab === 'teacher_timetable' ) { ?>active<?php } ?>">
-							<a href="?page=mjschool_route&tab=teacher_timetable&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'teacher_timetable' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_route&tab=teacher_timetable&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'teacher_timetable' ? 'active' : ''; ?>">
 								<?php esc_html_e( 'Teacher TimeTable', 'mjschool' ); ?>
 							</a>
 						</li>
@@ -494,7 +499,7 @@ if ( $action === 'routine_export_csv' ) {
 						} elseif ( $mjschool_page_name === 'mjschool_route' && $active_tab === 'addroute' ) {
 							?>
 							<li class="<?php if ( $active_tab === 'addroute' ) { ?>active<?php } ?>">
-								<a href="?page=mjschool_library&tab=addbook" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'addroute' ? 'nav-tab-active' : ''; ?>">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_library&tab=addbook' ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'addroute' ? 'nav-tab-active' : ''; ?>">
 									<?php esc_html_e( 'Add Class Time Table', 'mjschool' ); ?>
 								</a>
 							</li>
@@ -540,7 +545,7 @@ if ( $action === 'routine_export_csv' ) {
 																	<a href="#" title="<?php esc_attr_e( 'Import CSV', 'mjschool' ); ?>" type="submit" data-toggle="tooltip" class_id="<?php echo esc_attr( $class->class_id ); ?>" section_id="<?php echo esc_attr( $class->class_section ); ?>" class="mjschool-float-right mjschool-routine-import-csv mjschool-rootine-export-import-button mjschool-custom-padding-0"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-export-csv.png' ); ?>"></a>
 																</div>
 																<div class="col-md-4 mjschool-width-50px mjschool-rtl-margin-left-20px mjschool-exam-result-pdf-margin mjschool_margin_right_22px">
-																	<a href="?page=mjschool_route&tab=route_list&action=routine_export_csv&class_id=<?php echo esc_attr( $class->class_id ); ?>&class_section=<?php echo esc_attr( $class->class_section ); ?>&_wpnonce=<?php echo esc_attr( $nonce ); ?>" title="<?php esc_attr_e( 'Export CSV', 'mjschool' ); ?>" type="submit" data-toggle="tooltip" class="mjschool-float-right mjschool-rootine-export-import-button mjschool-custom-padding-0"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-import-csv.png' ); ?>"></a>
+																	<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_route&tab=route_list&action=routine_export_csv&class_id='.rawurlencode( $class->class_id ).'&class_section='.rawurlencode( $class->class_section ).'&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" title="<?php esc_attr_e( 'Export CSV', 'mjschool' ); ?>" type="submit" data-toggle="tooltip" class="mjschool-float-right mjschool-rootine-export-import-button mjschool-custom-padding-0"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-import-csv.png' ); ?>"></a>
 																</div>
 															</div>
 														</button>
@@ -572,13 +577,14 @@ if ( $action === 'routine_export_csv' ) {
 																				}
 																			);
 																			if ( ! empty( $period ) ) {
+																				$mjschool_subject = new Mjschool_Subject();
 																				foreach ( $period as $period_data ) {
 																					$route_id = mjschool_encrypt_id( $period_data->route_id );
 																					echo '<div class="btn-group m-b-sm">';
 																					if ( $period_data->multiple_teacher === 'yes' ) {
-																						echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( mjschool_get_single_subject_name( $period_data->subject_id ) ) . '( ' . esc_html( mjschool_get_display_name( $period_data->teacher_id ) ) . ' )';
+																						echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) ) . '( ' . esc_html( mjschool_get_display_name( $period_data->teacher_id ) ) . ' )';
 																					} else {
-																						echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( mjschool_get_single_subject_name( $period_data->subject_id ) );
+																						echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) );
 																					}
 																					$start_time_data = explode( ':', $period_data->start_time );
 																					$start_hour      = str_pad( isset( $start_time_data[0] ) ? $start_time_data[0] : '00', 2, '0', STR_PAD_LEFT );
@@ -643,7 +649,8 @@ if ( $action === 'routine_export_csv' ) {
 											$meeting_statrt_link = '';
 											$sectionname         = '';
 											$sectionid           = '';
-											$class_sectionsdata  = mjschool_get_class_sections( $class->class_id );
+											$mjschool_class = new Mjschool_Class();
+											$class_sectionsdata  = $mjschool_class->mjschool_get_class_sections( $class->class_id );
 											if ( ! empty( $class_sectionsdata ) ) {
 												foreach ( $class_sectionsdata as $section ) {
 													++$i;
@@ -661,7 +668,7 @@ if ( $action === 'routine_export_csv' ) {
 																		<a href="#" title="<?php esc_attr_e( 'Import CSV', 'mjschool' ); ?>" type="submit" data-toggle="tooltip" class_id="<?php echo esc_attr( $class->class_id ); ?>" section_id="<?php echo esc_attr( $sectionid ); ?>" class="mjschool-float-right mjschool-routine-import-csv mjschool-rootine-export-import-button mjschool-custom-padding-0"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-export-csv.png' ); ?>"></a>
 																	</div>
 																	<div class="col-md-4 mjschool-width-50px mjschool-rtl-margin-left-20px mjschool-exam-result-pdf-margin mjschool_margin_right_22px">
-																		<a href="?page=mjschool_route&tab=route_list&action=routine_export_csv&class_id=<?php echo esc_attr( $class->class_id ); ?>&class_section=<?php echo esc_attr( $sectionid ); ?>&_wpnonce=<?php echo esc_attr( $nonce ); ?>" title="<?php esc_attr_e( 'Export CSV', 'mjschool' ); ?>" type="submit" data-toggle="tooltip" class="mjschool-float-right mjschool-rootine-export-import-button mjschool-custom-padding-0"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-import-csv.png' ); ?>"></a>
+																		<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_route&tab=route_list&action=routine_export_csv&class_id='.rawurlencode( $class->class_id ).'&class_section='.rawurlencode( $sectionid ).'&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" title="<?php esc_attr_e( 'Export CSV', 'mjschool' ); ?>" type="submit" data-toggle="tooltip" class="mjschool-float-right mjschool-rootine-export-import-button mjschool-custom-padding-0"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-import-csv.png' ); ?>"></a>
 																	</div>
 																</div>
 															</button>
@@ -694,13 +701,14 @@ if ( $action === 'routine_export_csv' ) {
 																					);
 																				}
 																				if ( ! empty( $period ) ) {
+																					$mjschool_subject = new Mjschool_Subject();
 																					foreach ( $period as $period_data ) {
 																						$route_id = mjschool_encrypt_id( $period_data->route_id );
 																						echo '<div class="btn-group m-b-sm">';
 																						if ( $period_data->multiple_teacher === 'yes' ) {
-																							echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( mjschool_get_single_subject_name( $period_data->subject_id ) ) . '( ' . esc_html( mjschool_get_display_name( $period_data->teacher_id ) ) . ' )';
+																							echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) ) . '( ' . esc_html( mjschool_get_display_name( $period_data->teacher_id ) ) . ' )';
 																						} else {
-																							echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( mjschool_get_single_subject_name( $period_data->subject_id ) );
+																							echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) );
 																						}
 																						$start_time_data = explode( ':', $period_data->start_time );
 																						$start_hour      = str_pad( isset( $start_time_data[0] ) ? $start_time_data[0] : '00', 2, '0', STR_PAD_LEFT );
@@ -799,7 +807,8 @@ if ( $action === 'routine_export_csv' ) {
 							<div class="mjschool-panel-body"><!-------- Panel body. ------->
 								<div id="accordion" class="mjschool_fix_accordion panel-group accordion accordion-flush mjschool-padding-top-15px-res" aria-multiselectable="true" role="tablist">
 									<?php
-									$teacherdata = mjschool_get_users_data( 'teacher' );
+									$mjschool_user = new Mjschool_User();
+									$teacherdata = $mjschool_user->mjschool_get_users_data( 'teacher' );
 									if ( ! empty( $teacherdata ) ) {
 										$i = 0;
 										foreach ( $teacherdata as $retrieved_data ) {
@@ -807,9 +816,10 @@ if ( $action === 'routine_export_csv' ) {
 											$classes     = '';
 											$classes     = $teacher_obj->mjschool_get_class_by_teacher( $retrieved_data->ID );
 											$classname   = '';
+											$mjschool_class = new Mjschool_Class();
 											if ( is_array( $classes ) ) {
 												foreach ( $classes as $class ) {
-													$classname .= mjschool_get_class_name( $class['class_id'] ) . ',';
+													$classname .= $mjschool_class->mjschool_get_class_name( $class['class_id'] ) . ',';
 												}
 											}
 											$classname_rtrim = rtrim( $classname, ', ' );
@@ -864,10 +874,11 @@ if ( $action === 'routine_export_csv' ) {
 																					return $startA <=> $startB;
 																				}
 																			);
+																			$mjschool_subject = new Mjschool_Subject();
 																			foreach ( $period as $period_data ) {
 																				$route_id = mjschool_encrypt_id( $period_data->route_id );
 																				echo '<div class="btn-group m-b-sm">';
-																				echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( mjschool_get_single_subject_name( $period_data->subject_id ) );
+																				echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) );
 																				$start_time_data = explode( ':', $period_data->start_time );
 																				$start_hour      = str_pad( isset( $start_time_data[0] ) ? $start_time_data[0] : '00', 2, '0', STR_PAD_LEFT );
 																				$start_min       = str_pad( isset( $start_time_data[1] ) ? $start_time_data[1] : '00', 2, '0', STR_PAD_LEFT );
@@ -896,7 +907,8 @@ if ( $action === 'routine_export_csv' ) {
 																						$meeting_statrt_link = '';
 																					}
 																				}
-																				echo '<span>' . esc_html( mjschool_get_class_name( $period_data->class_id ) ) . '</span>';
+																				$mjschool_class = new Mjschool_Class();
+																				echo '<span>' . esc_html( $mjschool_class->mjschool_get_class_name( $period_data->class_id ) ) . '</span>';
 																				echo '</span></span><span class="caret"></span></button>';
 																				echo '<ul role="menu" class="pt-2 dropdown-menu">
 																						<li class="mjschool-float-left-width-100px"><a class="mjschool-float-left-width-100px text-decoration-none" href="?page=mjschool_route&tab=addroute&action=edit&route_id=' . esc_attr( $route_id ) . '&_wpnonce=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) . '">' . esc_html__( 'Edit', 'mjschool' ) . '</a></li>

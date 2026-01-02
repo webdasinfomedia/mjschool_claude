@@ -61,7 +61,7 @@ if ( $active_tab === 'addexpense' ) {
 					<div class="col-md-6">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input id="invoice_date" class="form-control validate[required]" type="text" value="<?php if ( $edit ) { echo esc_attr( $result->income_create_date ); } elseif ( isset( $_POST['invoice_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['invoice_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="invoice_date" readonly>
+								<input id="invoice_date" class="form-control validate[required]" type="text" value="<?php if ( $edit ) { echo esc_attr( $result->income_create_date ); } elseif ( isset( $_POST['invoice_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['invoice_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>" name="invoice_date" readonly>
 								<label for="invoice_date"><?php esc_html_e( 'Date', 'mjschool' ); ?><span class="required">*</span></label>
 							</div>
 						</div>
@@ -155,7 +155,7 @@ if ( $active_tab === 'addexpense' ) {
 			<?php wp_nonce_field( 'save_expense_fees_admin_nonce' ); ?>
 			<?php
 			// --------- Get Module-Wise Custom Field Data. --------------//
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'expense';
 			$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 			?>

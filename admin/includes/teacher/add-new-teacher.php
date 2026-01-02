@@ -191,7 +191,8 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 						?>
 						<select name="class_name[]" multiple="multiple" class="form-control" id="class_name">
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $teacher_obj->mjschool_in_array_r( $classdata['class_id'], $classes ), true ); ?>> <?php echo esc_html( $classdata['class_name'] ); ?> </option>
 							<?php } ?>
@@ -471,7 +472,7 @@ $document_size      = get_option( 'mjschool_upload_document_size' );
 		</div>
 		<?php
 		// --------- Get module-wise custom field data. --------------//
-		$custom_field_obj = new Mjschool_Custome_Field();
+		$custom_field_obj = new Mjschool_Custom_Field();
 		$module           = 'teacher';
 		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>

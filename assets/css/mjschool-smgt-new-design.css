@@ -4476,3 +4476,403 @@ span.sign {
 	border-top: 2px solid #97C4E7 !important; 
 	border:none;
 }
+/* PDF-only styles */
+.pdf-export {
+    width: 794px !important;     /* A4 @ 96 DPI */
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+}
+
+.pdf-export table {
+    font-size: 14px !important;
+}
+
+.pdf-export .mjschool_fees_widht_100_fonts_24px {
+    font-size: 22px !important;
+}
+/* ONLY applied during invoice PDF generation */
+.mjschool-pdf-mode table,
+.mjschool-pdf-mode th,
+.mjschool-pdf-mode td,
+.mjschool-pdf-mode div {
+    border-color: #2c3e50 !important;  /* darker */
+}
+
+.mjschool-pdf-mode table {
+    border-collapse: collapse;
+}
+
+.mjschool-pdf-mode td,
+.mjschool-pdf-mode th {
+    border-width: 2px !important;      /* 🔥 KEY FIX */
+}
+.mjschool-pdf-mode{
+    font-size: 15px !important;
+}
+.mjschool-certificate-pdf-mode {
+    font-size: 16px !important;
+    line-height: 1.4;
+}
+.mjschool-certificate-pdf-mode table,
+.mjschool-certificate-pdf-mode th,
+.mjschool-certificate-pdf-mode td,
+.mjschool-certificate-pdf-mode div {
+    border-color: #2c3e50 !important;  /* darker */
+}
+
+.mjschool-certificate-pdf-mode table {
+    border-collapse: collapse;
+}
+
+.mjschool-certificate-pdf-mode td,
+.mjschool-certificate-pdf-mode th {
+    border-width: 2px !important;      /* 🔥 KEY FIX */
+}
+/* A4 exact width for PDF */
+.mjschool-certificate-pdf-mode {
+    width: 794px !important;   /* A4 @ 96dpi */
+    max-width: 794px !important;
+    background: #ffffff;
+}
+.mjschool_sign_width_100px{
+	width: 100px;
+}
+/* Result view css. */
+.mjschool-bottom-8px {
+	margin-bottom:8px;
+}
+.mjschool-result-header {
+	border: 2px solid;
+	float:left;
+	width:100%;
+	margin: 6px 0px 0px 0px;
+	padding:20px;
+	padding-top: 4px;
+	padding-bottom: 5px;
+}
+.mjschool-float-left-width-100pr {
+	float:left;
+	width:100%;
+}
+.mjschool-float-left-width-25pr {
+	float:left;
+	width:25%;
+}
+.mjschool-float-left-border-radius-50px {
+	float:left;
+	border-radius:50px;
+}
+.mjschool-result-logo {
+	height: 130px;
+	border-radius:50%;
+	background-repeat:no-repeat;
+	background-size:cover;
+	margin-top: 3px;
+}
+.mjschool-float-left-width-75-padding-top-10px {
+	float:left;
+	width:75%;
+	padding-top:10px;
+}
+.mjschool-name-style {
+	margin:0px;
+	width:100%;
+	font-weight:bold;
+	color:#1B1B8D;
+	font-size:24px;
+	text-align:center;
+}
+.mjschool-address-style {
+	margin:0px;
+	font-size:17px;
+	text-align:center;
+}
+.mjschool-margin0px-width-100-text-align-center {
+	margin:0px;
+	width:100%;
+	text-align:center;
+}
+.mjschool-email-phone-style {
+	margin: 0px;
+	width: fit-content;
+	font-size: 17px;
+	display: inline-block;
+}
+.mjschool-info-column-left {
+    float: left;
+    width: 50%;
+}
+.mjschool-info-column-right {
+    float: left;
+    width: 50%;
+}
+.mjschool-info-column-right-with-margin {
+    width: 50%;
+    float: left;
+    margin-bottom: 5px;
+}
+/* Utility Classes. */
+.mjschool-clear-both {
+    clear: both;
+}
+/* Table Header Styles. */
+.mjschool-table-header-row {
+    background-color: #b8daff;
+}
+.mjschool-table-header-cell {
+    border: 1px solid #000;
+}
+/* Table Body Cell Styles */
+.mjschool-table-cell-marks {
+    border: 1px solid #000;
+    font-size: 18px;
+}
+.mjschool-result-marks-table {
+	float:left;
+	width:100%;
+	border:1px solid #000;
+	margin-bottom:12px;
+}
+/* Summary Table Styles */
+
+.mjschool-summary-header-cell {
+    border: 1px solid #000;
+    font-size: 12px;
+}
+
+.mjschool-summary-data-cell {
+    border: 1px solid #000;
+}
+
+/* Signature Column Styles */
+.mjschool-signature-column-left {
+    float: left;
+    width: 33.33%;
+}
+
+.mjschool-comment-content {
+    margin-left: 20px;
+}
+
+.mjschool-signature-column-center {
+    float: left;
+    width: 33.33%;
+    text-align: center;
+    margin-top: 0px;
+}
+
+.mjschool-signature-column-right {
+    float: left;
+    width: 30%;
+    text-align: right;
+    padding-right: 20px;
+}
+
+/* Signature Image Styles */
+.mjschool-signature-image {
+    width: 100px;
+    height: 45px;
+}
+
+.mjschool-signature-placeholder {
+    width: 100px;
+    height: 45px;
+}
+
+.mjschool-signature-line {
+    border-top: 1px solid #000;
+    width: 150px;
+    margin: 5px auto;
+}
+
+/* Principal Signature Styles */
+
+.mjschool-principal-signature-line {
+    border-top: 1px solid #000;
+    width: 150px;
+    margin: 5px 0 5px auto;
+}
+
+.mjschool-principal-signature-label {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+/* Student Info Container Styles */
+.mjschool-student-info-container {
+    border: 2px solid;
+    margin-bottom: 8px;
+    float: left;
+    width: 100%;
+    padding: 20px;
+    margin-top: 10px;
+}
+
+.mjschool-info-padding {
+    padding: 10px;
+}
+
+.mjschool-info-padding-top {
+    padding-top: 10px;
+}
+
+.mjschool-info-field-left {
+    float: left;
+    width: 50%;
+}
+
+.mjschool-info-field-right {
+    float: left;
+    width: 50%;
+}
+
+.mjschool-info-field-width-50 {
+    width: 50%;
+}
+
+.mjschool-info-section-left {
+    float: left;
+    width: 50%;
+}
+
+.mjschool-info-section-right {
+    float: right;
+    width: 50%;
+}
+
+/* Marks Table RTL Styles */
+.mjschool-marks-table-rtl {
+    float: right;
+    width: 100%;
+    border: 2px solid;
+    margin-bottom: 8px;
+    direction: rtl;
+}
+
+.mjschool-marks-table-header-row {
+    border-bottom: 2px solid;
+    background-color: #b8daff;
+}
+
+.mjschool-marks-table-header-cell-right {
+    border-bottom: 2px solid;
+    text-align: right;
+    border-right: 2px solid;
+}
+
+.mjschool-marks-table-body-row {
+    border-bottom: 2px solid;
+}
+
+.mjschool-marks-table-body-cell {
+    border-bottom: 2px solid;
+    border-right: 2px solid;
+}
+
+/* Summary Table RTL Styles */
+.mjschool-summary-table-rtl {
+    float: right;
+    width: 100%;
+    border: 2px solid;
+    margin-bottom: 8px;
+    direction: rtl;
+}
+
+.mjschool-summary-table-header-row {
+    border-bottom: 2px solid;
+    background-color: #b8daff;
+}
+
+.mjschool-summary-table-header-cell-center {
+    border-bottom: 2px solid;
+    text-align: center;
+    border-right: 2px solid;
+}
+
+.mjschool-summary-table-header-cell-no-border {
+    border-bottom: 2px solid;
+    text-align: center;
+}
+
+.mjschool-summary-table-body-row {
+    border-bottom: 2px solid;
+}
+
+.mjschool-summary-table-body-cell {
+    border-bottom: 2px solid;
+    border-right: 2px solid;
+}
+
+.mjschool-summary-table-body-cell-no-border {
+    border-bottom: 2px solid;
+}
+
+/* Signature Container Styles (reused from previous) */
+.mjschool-signature-container {
+    border: 2px solid;
+    width: 100%;
+    float: left;
+    margin-bottom: 12px;
+    padding: 15px 10px;
+    overflow: hidden;
+}
+.mjschool-marks-table-ltr {
+    float: left;
+    width: 100%;
+    border: 2px solid;
+    border-bottom: 2px;
+    margin-bottom: 8px;
+    border-right: 1px;
+}
+.mjschool-marks-table-header-row-ltr {
+    border-bottom: 2px solid;
+    background-color: #b8daff;
+}
+.mjschool-marks-table-header-cell-left {
+    border-bottom: 2px solid;
+    text-align: left;
+    border-right: 2px solid;
+}
+.mjschool-marks-table-body-row-ltr {
+    border-bottom: 2px solid;
+}
+.mjschool-marks-table-body-cell-ltr {
+    border-bottom: 2px solid;
+    border-right: 2px solid;
+}
+/* Summary Table LTR Styles */
+.mjschool-summary-table-ltr {
+    float: left;
+    width: 100%;
+    border: 2px solid;
+    border-bottom: 2px;
+    margin-bottom: 8px;
+}
+.mjschool-summary-table-header-row-ltr {
+    border-bottom: 2px solid;
+    background-color: #b8daff;
+}
+.mjschool-summary-table-header-cell-center-ltr {
+    border-bottom: 2px solid;
+    text-align: center;
+    border-right: 2px solid;
+}
+.mjschool-summary-table-header-cell-no-border-ltr {
+    border-bottom: 2px solid;
+    text-align: center;
+}
+.mjschool-summary-table-body-row-ltr {
+    border-bottom: 2px solid;
+}
+#invoice-pdf {
+	background: #fff;
+	color: #000;
+}
+table {
+	page-break-inside: avoid;
+}
+.mjschool-model-invoice-table {
+	border-collapse: collapse;
+}
+.mjschool-margin-top-10pr{
+	margin-top: 5%;
+}

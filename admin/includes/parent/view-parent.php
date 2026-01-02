@@ -9,11 +9,11 @@
 defined( 'ABSPATH' ) || exit;
 
 if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'view_action' ) ) {
-	$parent_id_encrypted       = isset( $_REQUEST['parent_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['parent_id'] ) ) : '';
+	$parent_id_encrypted       = isset( $_GET['parent_id'] ) ? sanitize_text_field( wp_unslash( $_GET['parent_id'] ) ) : '';
 	$parent_id                 = intval( mjschool_decrypt_id( $parent_id_encrypted ) );
-	$active_tab1               = isset( $_REQUEST['tab1'] ) ? sanitize_key( wp_unslash( $_REQUEST['tab1'] ) ) : 'general';
+	$active_tab1               = isset( $_GET['tab1'] ) ? sanitize_key( wp_unslash( $_GET['tab1'] ) ) : 'general';
 	$parent_data               = get_userdata( $parent_id );
-	$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+	$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 	$user_meta                 = get_user_meta( $parent_id, 'child', true );
 	?>
 	<div class="mjschool-panel-body mjschool-view-page-main"><!-- Start panel body div.-->
@@ -25,7 +25,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 						<div class="col-xl-10 col-md-9 col-sm-10">
 							<div class="mjschool-user-profile-header-left mjschool-float-left-width-100px">
 								<?php
-								$umetadata = mjschool_get_user_image( $parent_data->ID );
+								$mjschool_user = new Mjschool_User();
+								$umetadata = $mjschool_user->mjschool_get_user_image( $parent_data->ID );
 								?>
 								<img class="mjschool-user-view-profile-image" src="<?php if ( ! empty( $umetadata ) ) { echo esc_url( $umetadata ); } else { echo esc_url( get_option( 'mjschool_parent_thumb_new' ) ); } ?>">
 								<div class="row mjschool-profile-user-name">
@@ -286,7 +287,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 								</div>
 								<?php
 								$module = 'parent';
-								$mjschool_custom_field_obj->mjschool_show_inserted_customfield_data_in_datail_page( $module );
+								$mjschool_custom_field_obj->mjschool_show_inserted_custom_field_data_in_datail_page( $module );
 								?>
 							</div>
 						</div>
@@ -325,7 +326,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 																				<?php
 																				$umetadata = '';
 																				if ( $childsdata ) {
-																					$umetadata = mjschool_get_user_image( $childsdata );
+																					$mjschool_user = new Mjschool_User();
+																					$umetadata = $mjschool_user->mjschool_get_user_image( $childsdata );
 																				}
 																				if ( empty( $umetadata ) ) {
 																					echo '<img src="' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . '" height="50px" width="50px" class="img-circle" />';

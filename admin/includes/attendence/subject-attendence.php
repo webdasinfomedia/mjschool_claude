@@ -1,16 +1,16 @@
 <?php
 /**
- * Admin Subject-wise Attendance Management Page
+ * Admin Subject-wise Attendance Management Page.
  *
  * This file handles the subject-level attendance feature within the admin dashboard.
  * It provides functionality for selecting classes, sections, and subjects, and
  * allows teachers or admins to take, update, and save attendance for each student.
  *
  * It also supports:
- * - Preventing attendance on holidays
- * - Displaying student lists dynamically based on filters
- * - Optional email/SMS notifications to parents for absentees
- * - University/school type differentiation
+ * - Preventing attendance on holidays.
+ * - Displaying student lists dynamically based on filters.
+ * - Optional email/SMS notifications to parents for absentees.
+ * - University/school type differentiation.
  *
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/attendance
@@ -18,6 +18,7 @@
  */
 defined( 'ABSPATH' ) || exit;
 $school_type = get_option( 'mjschool_custom_class' );
+$mjschool_obj_holiday      = new Mjschool_Holiday();
 if ( $active_tab1 === 'subject_attendence' ) {
 
 	// Check nonce for subject attendence tab.
@@ -37,7 +38,7 @@ if ( $active_tab1 === 'subject_attendence' ) {
 					<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input id="curr_date_subject" class="form-control date_picker curr_date" type="text" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['curr_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="curr_date" readonly>
+								<input id="curr_date_subject" class="form-control date_picker curr_date" type="text" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['curr_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>" name="curr_date" readonly>
 								<label class="date_label" for="curr_date_subject"><?php esc_html_e( 'Date', 'mjschool' ); ?></label>
 							</div>
 						</div>
@@ -52,7 +53,8 @@ if ( $active_tab1 === 'subject_attendence' ) {
 						<select name="class_id" id="mjschool-class-list" class="form-control validate[required]">
 							<option value=""><?php esc_html_e( 'Select class Name', 'mjschool' ); ?></option>
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 								<?php
@@ -74,7 +76,8 @@ if ( $active_tab1 === 'subject_attendence' ) {
 								<?php
 								if ( isset( $_REQUEST['class_section'] ) ) {
 									$class_section = sanitize_text_field(wp_unslash($_REQUEST['class_section']));
-									foreach ( mjschool_get_class_sections( sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) ) as $sectiondata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_class_sections( sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) ) as $sectiondata ) {
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 										<?php
@@ -92,9 +95,8 @@ if ( $active_tab1 === 'subject_attendence' ) {
 							$sub_id = 0;
 							if ( isset( $_POST['sub_id'] ) ) {
 								$sub_id = sanitize_text_field(wp_unslash($_POST['sub_id']));
-								?>
-								<?php
-								$allsubjects = mjschool_get_subject_by_class_id( sanitize_text_field(wp_unslash($_POST['class_id'])) );
+								$obj_subject = new Mjschool_Subject();
+								$allsubjects = $obj_subject->mjschool_get_subject_by_class_id( sanitize_text_field(wp_unslash($_POST['class_id'])) );
 								foreach ( $allsubjects as $subjectdata ) {
 									?>
 									<option value="<?php echo esc_attr( $subjectdata->subid ); ?>" <?php selected( $subjectdata->subid, $sub_id ); ?>><?php echo esc_html( $subjectdata->sub_name ); ?></option>
@@ -119,11 +121,11 @@ if ( $active_tab1 === 'subject_attendence' ) {
 	<div class="clearfix"> </div>
 	<?php
 	if ( isset( $_REQUEST['attendence'] )) {
-		if (! isset($_POST['security']) || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['security'])), 'mjschool_attendance_take_nonce')) {
+		if ( ! isset( $_POST['security'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'mjschool_attendance_take_nonce' ) ) {
 			wp_die(esc_html__('Security check failed.', 'mjschool'));
 		}
 		$attendanace_date = sanitize_text_field(wp_unslash($_REQUEST['curr_date']));
-		$holiday_dates    = mjschool_get_all_date_of_holidays();
+		$holiday_dates    = $mjschool_obj_holiday->mjschool_get_all_date_of_holidays();
 		if ( in_array( $attendanace_date, $holiday_dates ) ) {
 			?>
 			<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible mjschool_margin_20px">
@@ -132,7 +134,7 @@ if ( $active_tab1 === 'subject_attendence' ) {
 			</div>
 			<?php
 		} else {
-			if ( isset( $_REQUEST['class_id'] ) && sanitize_text_field(wp_unslash($_REQUEST['class_id'])) !== ' ' ) {
+			if ( isset( $_REQUEST['class_id'] ) && sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) !== '' ) {
 				$class_id = sanitize_text_field(wp_unslash($_REQUEST['class_id']));
 			} else {
 				$class_id = 0;
@@ -145,20 +147,17 @@ if ( $active_tab1 === 'subject_attendence' ) {
 				<?php
 			} else {
 					
-				if ( isset( $_REQUEST['class_section']) && sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) ) !== "") {
+				if ( isset( $_REQUEST['class_section']) && sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) ) !== "" ) {
 					$student = mjschool_get_student_name_with_class_and_section($class_id, sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) ));
 					sort($student);
 				} else {
-					if ( $school_type === 'university' )
-					{
-						if ( isset( $_REQUEST['sub_id']) && !empty( sanitize_text_field( wp_unslash( $_REQUEST['sub_id'] ) ) ) ) {
+					if ( $school_type === 'university' ) {
+						if ( isset( $_REQUEST['sub_id']) && ! empty( sanitize_text_field( wp_unslash( $_REQUEST['sub_id'] ) ) ) ) {
 							$student = mjschool_get_students_assigned_to_subject(sanitize_text_field(wp_unslash($_REQUEST['sub_id'])));
 						} else {
 							$student = array(); // fallback if no subject selected.
 						}
-					}
-					else
-					{	
+					} else {
 						$student = mjschool_get_student_name_with_class($class_id);
 						sort( $student );
 					}
@@ -172,9 +171,9 @@ if ( $active_tab1 === 'subject_attendence' ) {
 							<input type="hidden" name="sub_id" value="<?php echo esc_attr( $sub_id ); ?>" />
 							<input type="hidden" name="security" id="mjschool_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_subject_attendance_nonce' ) ); ?>">
 							<input type="hidden" name="class_section" value="<?php if( isset( $_REQUEST['class_section'] ) ) { echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['class_section'])) ); }?>" />
-							<input type="hidden" name="curr_date" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['curr_date'])) ) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" />
+							<input type="hidden" name="curr_date" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['curr_date'])) ) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" />
 							<div class="mjschool-panel-heading mjschool-margin-top-20px mjschool-margin-top-15px-rs">
-								<h4 class="mjschool-panel-title"> <?php esc_html_e( 'Class', 'mjschool' ); ?> : <?php echo esc_attr( mjschool_get_class_name( $class_id ) ); ?> , <?php esc_html_e( 'Date', 'mjschool' ); ?> : <?php echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['curr_date'])) ) ); ?> </h4>
+								<h4 class="mjschool-panel-title"> <?php $mjschool_class = new Mjschool_Class(); esc_html_e( 'Class', 'mjschool' ); ?> : <?php echo esc_attr( $mjschool_class->mjschool_get_class_name( $class_id ) ); ?> , <?php esc_html_e( 'Date', 'mjschool' ); ?> : <?php echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['curr_date'])) ) ); ?> </h4>
 							</div>
 							<div class="col-md-12 mjschool-padding-payment mjschool_att_tbl_list">
 								<div class="table-responsive padding_top_0px">
@@ -188,15 +187,16 @@ if ( $active_tab1 === 'subject_attendence' ) {
 										<?php
 										$date = sanitize_text_field(wp_unslash($_POST['curr_date']));
 										$i    = 1;
+										$mjschool_user = new Mjschool_User();
 										foreach ( $student as $mjschool_user ) {
-											$umetadata = mjschool_get_user_image( $mjschool_user->ID );
+											$umetadata = $mjschool_user->mjschool_get_user_image( $mjschool_user->ID );
 											if ( empty( $umetadata ) ) {
 												$profile_path = get_option( 'mjschool_student_thumb_new' );
 											} else {
 												$profile_path = $umetadata;
 											}
-											$date             = date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_POST['curr_date'])) ) );
-											if ( $school_type === 'school' ){
+											$date             = wp_date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_POST['curr_date'])) ) );
+											if ( $school_type === 'school' ) {
 												$check_attendance = $obj_attend->mjschool_check_has_subject_attendace( $mjschool_user->ID, $class_id, $date, sanitize_text_field(wp_unslash($_POST['sub_id'])), sanitize_text_field(wp_unslash($_POST['class_section'])) );
 											}
 											if ( ! empty( $check_attendance ) ) {
@@ -207,7 +207,7 @@ if ( $active_tab1 === 'subject_attendence' ) {
 											echo '<tr>';
 											echo '<td>' . esc_html( $i ) . '</td>';
 											
-											echo '<td class="mjschool_padding_left_0px"><img src=' . esc_url($profile_path) . ' class="img-circle" /><span class="ms-2">' . esc_html( mjschool_student_display_name_with_roll($mjschool_user->ID ) ) . '</span></td>';
+											echo '<td class="mjschool_padding_left_0px"><img src=' . esc_url( $profile_path ) . ' class="img-circle" /><span class="ms-2">' . esc_html( mjschool_student_display_name_with_roll( $mjschool_user->ID ) ) . '</span></td>';
 											
 											?>
 											<td class="mjschool_padding_left_0px">

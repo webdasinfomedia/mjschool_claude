@@ -12,6 +12,7 @@
  */
 defined( 'ABSPATH' ) || exit;
 $obj_mark   = new Mjschool_Marks_Manage();
+$obj_attend = new Mjschool_Attendence_Manage();
 $active_tab = isset( $_REQUEST['tab'] ) ? sanitize_text_field(wp_unslash($_REQUEST['tab'])) : 'stud_attendance';
 $mjschool_role       = 'student';
 if ( isset( $_REQUEST['student_id'] ) ) {
@@ -39,7 +40,8 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 					<div class="row">
 						<div class="col-md-3 col-sm-4 col-xs-12">	
 							<?php
-							$umetadata = mjschool_get_user_image( sanitize_text_field(wp_unslash($_REQUEST['student_id'])) );
+							$mjschool_user = new Mjschool_User();
+							$umetadata = $mjschool_user->mjschool_get_user_image( sanitize_text_field(wp_unslash($_REQUEST['student_id'])) );
 							
 							if(empty($umetadata ) )
 							{
@@ -72,11 +74,11 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 					</div>
 					<div class="form-group col-md-3">
 						<label for="exam_id"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
-						<input type="text"  class="form-control sdate" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['sdate'])) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" readonly>                               
+						<input type="text"  class="form-control sdate" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['sdate'])) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" readonly>                               
 					</div>
 					<div class="form-group col-md-3">
 						<label for="exam_id"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
-						<input type="text" class="form-control edate" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['edate'])) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" readonly>                               
+						<input type="text" class="form-control edate" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['edate'])) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" readonly>                               
 					</div>
 					<div class="form-group col-md-3 button-possition">
 						<label for="subject_id">&nbsp;</label>
@@ -94,7 +96,7 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 						new DateInterval( 'P1D' ),
 						new DateTime( $end_date )
 					);
-					$attendance   = mjschool_view_student_attendance( $start_date, $end_date, $user_id );
+					$attendance   = $obj_attend->mjschool_view_student_attendance( $start_date, $end_date, $user_id );
 					$curremt_date = $start_date;
 					?>
 					<div class="mjschool-panel-body">
@@ -122,20 +124,21 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 								</tfoot> 
 								<tbody>
 									<?php
+									$mjschool_class = new Mjschool_Class();
 									while ( $end_date >= $curremt_date ) {
 											echo '<tr>';
 											echo '<td>';
 										echo esc_html( mjschool_get_display_name( $user_id ) );
 											echo '</td>';
 											echo '<td>';
-										echo esc_html( mjschool_get_class_name_by_id( get_user_meta( $user_id, 'class_name', true ) ) );
+										echo esc_html( $mjschool_class->mjschool_get_class_name_by_id( get_user_meta( $user_id, 'class_name', true ) ) );
 											echo '</td>';
 											echo '<td>';
 										echo esc_html( mjschool_get_date_in_input_box( $curremt_date ) );
 											echo '</td>';
 											$attendance_status = mjschool_get_attendence( $user_id, $curremt_date );
 											echo '<td>';
-											echo esc_html( date( 'D', strtotime( $curremt_date ) ) );
+											echo esc_html( wp_date( 'D', strtotime( $curremt_date ) ) );
 											echo '</td>';
 										if ( ! empty( $attendance_status ) ) {
 											echo '<td>';
@@ -147,11 +150,11 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 											echo '</td>';
 										}
 										echo '<td>';
-										echo esc_html( mjschool_get_attendence_comment( $user_id, $curremt_date ) );
+										echo esc_html( $obj_attend->mjschool_get_attendence_comment( $user_id, $curremt_date ) );
 										echo '</td>';
 										echo '</tr>';
 										$curremt_date = strtotime( '+1 day', strtotime( $curremt_date ) );
-										$curremt_date = date( 'Y-m-d', $curremt_date );
+										$curremt_date = wp_date( 'Y-m-d', $curremt_date );
 									}
 									?>
 								</tbody>        
@@ -172,8 +175,8 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 					<div class="row">
 						<div class="col-md-3 col-sm-4 col-xs-12">	
 							<?php
-							$umetadata = mjschool_get_user_image( sanitize_text_field(wp_unslash($_REQUEST['student_id'])) );
-							
+							$mjschool_user = new Mjschool_User();
+							$umetadata = $mjschool_user->mjschool_get_user_image( sanitize_text_field(wp_unslash($_REQUEST['student_id'])) );
 							if(empty($umetadata ) )
 							{
 								echo '<img class="img-circle img-responsive member-profile w-150-px h-150-px" src='.esc_url( get_option( 'mjschool_student_thumb_new' ) ).'/>';
@@ -205,11 +208,11 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 					</div>
 					<div class="form-group col-md-3">
 						<label for="exam_id"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>									
-						<input type="text"  class="form-control sdate" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_REQUEST['sdate'])) ) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" readonly>                           
+						<input type="text"  class="form-control sdate" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_REQUEST['sdate'])) ) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" readonly>                           
 					</div>
 					<div class="form-group col-md-3">
 						<label for="exam_id"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
-						<input type="text"   class="form-control edate" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_REQUEST['edate'])) ) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" readonly>                               
+						<input type="text"   class="form-control edate" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_REQUEST['edate'])) ) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" readonly>                               
 					</div>					
 					<div class="form-group col-md-3">
 						<label for="class_id"><?php esc_html_e( 'Select Subject', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>			
@@ -221,7 +224,8 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 							if ( isset( $_POST['sub_id'] ) ) {
 								$sub_id = sanitize_text_field(wp_unslash($_POST['sub_id']));
 							}
-							$allsubjects = mjschool_get_subject_by_class_id( $class_id );
+							$obj_subject = new Mjschool_Subject();
+							$allsubjects = $obj_subject->mjschool_get_subject_by_class_id( $class_id );
 							foreach ( $allsubjects as $subjectdata ) {
 								?>
 								<option value="<?php echo esc_attr( $subjectdata->subid ); ?>" <?php selected( $subjectdata->subid, $sub_id ); ?>><?php echo esc_html( $subjectdata->sub_name ); ?></option>
@@ -240,7 +244,7 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 					$end_date   = sanitize_text_field(wp_unslash($_REQUEST['edate']));
 					$user_id    = sanitize_text_field(wp_unslash($_REQUEST['user_id']));
 					$sub_id     = sanitize_text_field(wp_unslash($_REQUEST['sub_id']));
-					$attendance = mjschool_view_student_attendance( $start_date, $end_date, $user_id );
+					$attendance = $obj_attend->mjschool_view_student_attendance( $start_date, $end_date, $user_id );
 					$curremt_date = $start_date;
 					?>
 					<div class="table-responsive">
@@ -257,13 +261,13 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 								echo '<td>';
 								echo esc_html( mjschool_get_date_in_input_box( $curremt_date ) );
 								echo '</td>';
-								$sub_attendance_status = mjschool_get_sub_attendence( $user_id, $curremt_date, $sub_id );
+								$sub_attendance_status = $obj_attend->mjschool_get_sub_attendence( $user_id, $curremt_date, $sub_id );
 								echo '<td>';
-								echo esc_html( date( 'D', strtotime( $curremt_date ) ) );
+								echo esc_html( wp_date( 'D', strtotime( $curremt_date ) ) );
 								echo '</td>';
 								if ( ! empty( $sub_attendance_status ) ) {
 									echo '<td>';
-									echo esc_html( mjschool_get_sub_attendence( $user_id, $curremt_date, $sub_id ) );
+									echo esc_html( 	$obj_attend->mjschool_get_sub_attendence( $user_id, $curremt_date, $sub_id ) );
 									echo '</td>';
 								} else {
 									echo '<td>';
@@ -271,11 +275,11 @@ if ( isset( $_REQUEST['student_id'] ) ) {
 									echo '</td>';
 								}
 								echo '<td>';
-								echo esc_html( mjschool_get_sub_attendence_comment( $user_id, $curremt_date, $sub_id ) );
+								echo esc_html( $obj_attend->mjschool_get_sub_attendence_comment( $user_id, $curremt_date, $sub_id ) );
 								echo '</td>';
 								echo '</tr>';
 								$curremt_date = strtotime( '+1 day', strtotime( $curremt_date ) );
-								$curremt_date = date( 'Y-m-d', $curremt_date );
+								$curremt_date = wp_date( 'Y-m-d', $curremt_date );
 							}
 							?>
 						</table>

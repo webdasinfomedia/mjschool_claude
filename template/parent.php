@@ -13,7 +13,8 @@
  */
 defined( 'ABSPATH' ) || exit;
 $mjschool_role_name                 = mjschool_get_user_role( get_current_user_id() );
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
+$mjschool_obj_user   = new Mjschool_User();
 $module                    = 'parent';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
@@ -64,14 +65,14 @@ if ( isset( $_POST['save_parent'] ) ) {
 			'user_url'      => null,
 			'display_name'  => $firstname . ' ' . $middlename . ' ' . $lastname,
 		);
-		if ( $_POST['password'] != '' ) {
+		if ( $_POST['password'] !== '' ) {
 			$userdata['user_pass'] = mjschool_password_validation( sanitize_text_field(wp_unslash($_POST['password'])) );
 		}
 		if ( isset( $_FILES['upload_user_avatar_image'] ) && ! empty( $_FILES['upload_user_avatar_image'] ) && $_FILES['upload_user_avatar_image']['size'] != 0 ) {
 			if ( $_FILES['upload_user_avatar_image']['size'] > 0 ) {
 				$member_image = mjschool_load_documets( $_FILES['upload_user_avatar_image'], 'upload_user_avatar_image', 'pimg' );
 			}
-			$photo = esc_url(content_url( '/uploads/school_assets/' . $member_image));
+			$photo = esc_url(content_url( '/uploads/school_assets/' . basename( $member_image ) ));
 		} else {
 			if ( isset( $_REQUEST['hidden_upload_user_avatar_image'] ) ) {
 				$member_image = sanitize_text_field(wp_unslash($_REQUEST['hidden_upload_user_avatar_image']));
@@ -122,9 +123,9 @@ if ( isset( $_POST['save_parent'] ) ) {
 		if ( isset($_REQUEST['action']) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
 				$userdata['ID'] = mjschool_decrypt_id( intval(wp_unslash($_REQUEST['parent_id'])) );
-				$result         = mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $role );
+				$result         = $mjschool_obj_user->mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $role );
 				// UPDATE CUSTOM FIELD DATA.
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'parent';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
@@ -134,10 +135,10 @@ if ( isset( $_POST['save_parent'] ) ) {
 			} else {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 			}
-		} elseif ( ! email_exists( $_POST['email'] ) ) {
-			$result = mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $role );
+		} elseif ( ! email_exists( sanitize_email( wp_unslash($_POST['email']) ) ) ) {
+			$result = $mjschool_obj_user->mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $role );
 			// ADD CUSTOM FIELD DATA.
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'parent';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
@@ -173,7 +174,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 				}
 			}
 		}
-		$result = mjschool_delete_usedata( $parent_id );
+		$result = $mjschool_obj_user->mjschool_delete_usedata( $parent_id );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=parent&tab=parentlist&message=4' ));
 			die();
@@ -205,7 +206,7 @@ if ( isset( $_POST['delete_selected'] ) ) {
 					}
 				}
 			}
-			$result = mjschool_delete_usedata( $id );
+			$result = $mjschool_obj_user->mjschool_delete_usedata( $id );
 		}
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=parent&tab=parentlist&message=4') );
 		exit;
@@ -258,7 +259,8 @@ if ( $message ) {
 						}
 					}
 				} else {
-					$parentdata = mjschool_get_users_data( 'parent' );
+					$mjschool_user = new Mjschool_User();
+					$parentdata = $mjschool_user->mjschool_get_users_data( 'parent' );
 				}
 			}
 			// ------- PARENT DATA FOR TEACHER. ---------//
@@ -273,7 +275,8 @@ if ( $message ) {
 						}
 					}
 				} else {
-					$parentdata = mjschool_get_users_data( 'parent' );
+					$mjschool_user = new Mjschool_User();
+					$parentdata = $mjschool_user->mjschool_get_users_data( 'parent' );
 				}
 			}
 			// ------- PARENT DATA FOR PARENT. ---------//
@@ -282,7 +285,8 @@ if ( $message ) {
 				if ( $own_data === '1' ) {
 					$parentdata[] = get_userdata( $user_id );
 				} else {
-					$parentdata = mjschool_get_users_data( 'parent' );
+					$mjschool_user = new Mjschool_User();
+					$parentdata = $mjschool_user->mjschool_get_users_data( 'parent' );
 				}
 			}
 			// ------- PARENT DATA FOR SUPPORT STAFF. ---------//
@@ -304,7 +308,8 @@ if ( $message ) {
 					);
 					
 				} else {
-					$parentdata = mjschool_get_users_data( 'parent' );
+					$mjschool_user = new Mjschool_User();
+					$parentdata = $mjschool_user->mjschool_get_users_data( 'parent' );
 				}
 			}
 			if ( ! empty( $parentdata ) ) {
@@ -363,7 +368,8 @@ if ( $message ) {
 													<a  href="<?php echo esc_url('?dashboard=mjschool_user&page=parent&tab=view_parent&action=view_parent&parent_id='. mjschool_encrypt_id( $retrieved_data->ID )); ?>">
 														<?php
 														$uid       = $retrieved_data->ID;
-														$umetadata = mjschool_get_user_image( $uid );
+														$mjschool_user = new Mjschool_User();
+														$umetadata = $mjschool_user->mjschool_get_user_image( $uid );
 														
 														if (empty($umetadata ) ) {
 															echo '<img src=' . esc_url( get_option( 'mjschool_parent_thumb_new' ) ) . ' height="50px" width="50px" class="img-circle" />';
@@ -415,7 +421,7 @@ if ( $message ) {
 																	<?php
 																	if ( ! empty( $custom_field_value ) ) {
 																		?>
-																		<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																		<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . basename( $custom_field_value ) )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																		<?php
 																	} else {
 																		esc_html_e( 'Not Provided', 'mjschool' );
@@ -527,7 +533,8 @@ if ( $message ) {
 		}
 		// ------------------- Parent add form tab. -------------------//
 		if ( $active_tab === 'addparent' ) {
-			$students = mjschool_get_student_group_by_class();
+			$mjschool_obj_class = new Mjschool_Class();
+			$students = $mjschool_obj_class->mjschool_get_student_group_by_class();
 			$role     = 'parent';
 			$edit     = 0;
 			if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
@@ -890,7 +897,8 @@ if ( $message ) {
 																<input id="upload_user_avatar_button" name="document_file[]" type="file" class="p-1 form-control mjschool-file-validation file" />
 															</div>
 															<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 p-0">
-																<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $value->document_file )); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+                                                                
+																<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . basename( $value->document_file ) )); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 															</div>
 														</div>
 													</div>
@@ -984,7 +992,7 @@ if ( $message ) {
 					</div>
 					<?php
 					// --------- Get module-wise custom field data. --------------//
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'parent';
 					$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 					?>
@@ -1006,7 +1014,7 @@ if ( $message ) {
 			$parent_id                 = intval( mjschool_decrypt_id( intval( wp_unslash($_REQUEST['parent_id'])) ) );
 			$active_tab1               = isset( $_REQUEST['tab1'] ) ? sanitize_text_field(wp_unslash($_REQUEST['tab1'])) : 'general';
 			$parent_data               = get_userdata( $parent_id );
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$user_meta                 = get_user_meta( $parent_id, 'child', true );
 			
 			?>
@@ -1020,7 +1028,8 @@ if ( $message ) {
 								<div class="col-xl-10 col-md-9 col-sm-10">
 									<div class="mjschool-user-profile-header-left mjschool-float-left-width-100px">
 										<?php
-										$umetadata = mjschool_get_user_image($parent_data->ID);
+										$mjschool_user = new Mjschool_User();	
+										$umetadata = $mjschool_user->mjschool_get_user_image($parent_data->ID);
 										?>
 										<img class="mjschool-user-view-profile-image" src="<?php if ( ! empty( $umetadata ) ) { echo esc_url($umetadata);} else { echo esc_url( get_option( 'mjschool_parent_thumb_new' ) );} ?>">
 										<div class="row mjschool-profile-user-name">
@@ -1262,7 +1271,7 @@ if ( $message ) {
 																<?php
 																if ( ! empty( $value->document_file ) ) {
 																	?>
-																	<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $value->document_file )); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
+																	<a target="blank" class="mjschool-status-read btn btn-default mjschool-download-btn-syllebus" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . basename( $value->document_file ) )); ?>" record_id="<?php echo esc_attr( $key ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a> 
 																	<?php
 																} else {
 																	esc_html_e( 'Not Provided', 'mjschool' );
@@ -1281,7 +1290,7 @@ if ( $message ) {
 										</div>
 										<?php
 										$module = 'parent';
-										$mjschool_custom_field_obj->mjschool_show_inserted_customfield_data_in_datail_page( $module );
+										$mjschool_custom_field_obj->mjschool_show_inserted_custom_field_data_in_datail_page( $module );
 										?>
 									</div>
 								</div>
@@ -1319,7 +1328,8 @@ if ( $message ) {
 																						
 																						<?php
 																						if ($childsdata) {
-																							$umetadata = mjschool_get_user_image($childsdata);
+																							$mjschool_user = new Mjschool_User();
+																							$umetadata = $mjschool_user->mjschool_get_user_image($childsdata);
 																						}
 																						if (empty($umetadata ) ) {
 																							echo '<img src=' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . ' height="50px" width="50px" class="img-circle" />';

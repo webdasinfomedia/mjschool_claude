@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Migration Report Page.
  *
@@ -51,7 +50,7 @@ function mjschool_is_selected( $value, $selected_value ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -59,7 +58,7 @@ function mjschool_is_selected( $value, $selected_value ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -118,8 +117,8 @@ function mjschool_is_selected( $value, $selected_value ) {
 			$end_date   = $response[1];
 		}
 	} else {
-		$start_date = date( 'Y-m-d' ); // Today's date.
-		$end_date   = date( 'Y-m-t' );   // Last day of the current month.
+		$start_date = wp_date( 'Y-m-d' ); // Today's date.
+		$end_date   = wp_date( 'Y-m-t' );   // Last day of the current month.
 	}
 	global $wpdb;
 	$table_mjschool_migration_log = $wpdb->prefix . 'mjschool_migration_log';
@@ -259,32 +258,34 @@ function mjschool_is_selected( $value, $selected_value ) {
 									<td class="income_amount">
 										<?php
 										if ( ! empty( $result->current_class ) ) {
-											echo esc_html( mjschool_get_class_name( $result->current_class ) );
+											$mjschool_class = new Mjschool_Class();
+											echo esc_html( $mjschool_class->mjschool_get_class_name( $result->current_class ) );
 										} else {
 											esc_html_e( 'N/A', 'mjschool' ); 
 										}
 										?>
-										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_attr( mjschool_get_class_name( $result->current_class ) ); ?>"></i>
+										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_attr( $mjschool_class->mjschool_get_class_name( $result->current_class ) ); ?>"></i>
 									</td>
 									<td class="income_amount">
 										<?php
 										if ( ! empty( $result->next_class ) ) {
-											echo esc_html( mjschool_get_class_name( $result->next_class ) );
+											echo esc_html( $mjschool_class->mjschool_get_class_name( $result->next_class ) );
 										} else {
 											esc_html_e( 'N/A', 'mjschool' ); 
 										}
 										?>
-										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_attr( mjschool_get_class_name( $result->next_class ) ); ?>"></i>
+										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_attr( $mjschool_class->mjschool_get_class_name( $result->next_class ) ); ?>"></i>
 									</td>
 									<td class="income_amount">
 										<?php
+										$obj_exam = new Mjschool_Exam();
 										if ( ! empty( $result->exam_name ) && $result->exam_name !== 0 ) {
-											echo esc_html( mjschool_get_exam_name_id( $result->exam_name ) );
+											echo esc_html( $obj_exam->mjschool_get_exam_name_id( $result->exam_name ) );
 										} else {
 											esc_html_e( 'N/A', 'mjschool' ); 
 										}
 										?>
-										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_attr( mjschool_get_exam_name_id( $result->exam_name ) ); ?>"></i>
+										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php echo esc_attr( $obj_exam->mjschool_get_exam_name_id( $result->exam_name ) ); ?>"></i>
 									</td>
 									<td class="income_amount">
 										<?php

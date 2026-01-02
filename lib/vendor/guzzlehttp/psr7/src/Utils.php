@@ -178,7 +178,7 @@ final class Utils {
 						'https' => 443,
 					);
 					$scheme        = $changes['uri']->getScheme();
-					if ( isset( $standardPorts[ $scheme ] ) && $port != $standardPorts[ $scheme ] ) {
+					if ( isset( $standardPorts[ $scheme ] ) && $port !== $standardPorts[ $scheme ] ) {
 						$changes['set_headers']['Host'] .= ':' . $port;
 					}
 				}

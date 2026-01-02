@@ -33,8 +33,8 @@ class Mjschool_Leave {
 		$leavedata['student_id']     = isset( $data['student_id'] ) ? sanitize_text_field( wp_unslash( $data['student_id'] ) ) : '';
 		$leavedata['leave_type']     = isset( $data['leave_type'] ) ? sanitize_text_field( wp_unslash( $data['leave_type'] ) ) : '';
 		$leavedata['leave_duration'] = isset( $data['leave_duration'] ) ? sanitize_text_field( wp_unslash( $data['leave_duration'] ) ) : '';
-		$leavedata['start_date']     = isset( $data['start_date'] ) ? gmdate( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $data['start_date'] ) ) ) ) : gmdate( 'Y-m-d' );
-		$leavedata['end_date']       = isset( $data['end_date'] ) ? gmdate( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $data['end_date'] ) ) ) ) : '';
+		$leavedata['start_date']     = isset( $data['start_date'] ) ? wp_date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $data['start_date'] ) ) ) ) : wp_date( 'Y-m-d' );
+		$leavedata['end_date']       = isset( $data['end_date'] ) ? wp_date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $data['end_date'] ) ) ) ) : '';
 		$leavedata['status']         = isset( $data['status'] ) ? sanitize_text_field( wp_unslash( $data['status'] ) ) : '';
 		$leavedata['reason']         = isset( $data['reason'] ) ? sanitize_textarea_field( wp_unslash( $data['reason'] ) ) : '';
 		$leavedata['created_by']     = get_current_user_id();
@@ -48,14 +48,14 @@ class Mjschool_Leave {
 			}
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result  = $wpdb->update( $table_hrmgt_leave, $leavedata, $whereid );
-			$student = mjschool_get_user_name_by_id( $leavedata['student_id'] );
+			$student = mjschool_get_display_name( $leavedata['student_id'] );
 			mjschool_append_audit_log( '' . esc_html__( 'Leave Updated', 'mjschool' ) . '( ' . esc_html( $student ) . ' )' . '', get_current_user_id(), get_current_user_id(), 'edit', $page_name );
 			return $result;
 		} else {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$resultdata = $wpdb->insert( $table_hrmgt_leave, $leavedata );
 			$leave_id   = $wpdb->insert_id;
-			$student    = mjschool_get_user_name_by_id( $leavedata['student_id'] );
+			$student    = mjschool_get_display_name( $leavedata['student_id'] );
 			mjschool_append_audit_log( '' . esc_html__( 'Leave Added', 'mjschool' ) . '( ' . esc_html( $student ) . ' )' . '', get_current_user_id(), get_current_user_id(), 'insert', $page_name );
 			if ( $resultdata ) {
 				$start_date_sanitized = isset( $data['start_date'] ) ? sanitize_text_field( wp_unslash( $data['start_date'] ) ) : '';
@@ -78,14 +78,15 @@ class Mjschool_Leave {
 						// Leave request mail for student start. //
 						$arr['{{date}}']           = esc_html( $date );
 						$arr['{{leave_type}}']     = esc_html( get_the_title( $leave_type_sanitized ) );
-						$arr['{{leave_duration}}'] = esc_html( mjschool_leave_duration_label( $leave_duration_sanitized ) );
+						$arr['{{leave_duration}}'] = esc_html( $this->mjschool_leave_duration_label( $leave_duration_sanitized ) );
 						$arr['{{reason}}']         = esc_html( $reason_sanitized );
 						$arr['{{student_name}}']   = esc_html( mjschool_get_display_name( $student_id_sanitized ) );
 						$arr['{{school_name}}']    = esc_html( get_option( 'mjschool_name' ) );
 						$message                   = get_option( 'mjschool_addleave_email_template_student' );
 						$replace_message           = mjschool_string_replacement( $arr, $message );  /* Student Leave Mail Content */
 						if ( $replace_message ) {
-							$to      = mjschool_get_email_id_by_user_id( $student_id_sanitized );
+							$mjschool_obj_user   = new Mjschool_User();
+							$to      = $mjschool_obj_user->mjschool_get_email_id_by_user_id( $student_id_sanitized );
 							$subject = get_option( 'mjschool_add_leave_subject_for_student' );  /* Student Leave Mail Subject */
 							$result  = mjschool_send_mail( $to, $subject, $replace_message );
 						}
@@ -97,7 +98,7 @@ class Mjschool_Leave {
 								$user_info                   = get_userdata( intval( $p ) );
 								$arr_1['{{date}}']           = esc_html( $date );
 								$arr_1['{{leave_type}}']     = esc_html( get_the_title( $leave_type_sanitized ) );
-								$arr_1['{{leave_duration}}'] = esc_html( mjschool_leave_duration_label( $leave_duration_sanitized ) );
+								$arr_1['{{leave_duration}}'] = esc_html( $this->mjschool_leave_duration_label( $leave_duration_sanitized ) );
 								$arr_1['{{reason}}']         = esc_html( $reason_sanitized );
 								$arr_1['{{student_name}}']   = esc_html( mjschool_get_display_name( $student_id_sanitized ) );
 								$arr_1['{{parent_name}}']    = esc_html( $user_info->display_name );
@@ -156,14 +157,15 @@ class Mjschool_Leave {
 					foreach ( $admin_data as $admin ) {
 						$arr['{{date}}']           = esc_html( $date );
 						$arr['{{leave_type}}']     = esc_html( get_the_title( $leave_type_sanitized ) );
-						$arr['{{leave_duration}}'] = esc_html( mjschool_leave_duration_label( $leave_duration_sanitized ) );
+						$arr['{{leave_duration}}'] = esc_html( $this->mjschool_leave_duration_label( $leave_duration_sanitized ) );
 						$arr['{{reason}}']         = esc_html( $reason_sanitized );
 						$arr['{{student_name}}']   = esc_html( mjschool_get_display_name( $student_id_sanitized ) );
 						$arr['{{school_name}}']    = esc_html( get_option( 'mjschool_name' ) );
 						$message                   = get_option( 'mjschool_addleave_email_template_of_admin' );
 						$replace_message           = mjschool_string_replacement( $arr, $message );  /* Admin Leave Mail Content */
 						if ( $replace_message ) {
-							$to      = mjschool_get_email_id_by_user_id( $admin->ID );
+							$mjschool_obj_user   = new Mjschool_User();
+							$to      = $mjschool_obj_user->mjschool_get_email_id_by_user_id( $admin->ID );
 							$subject = get_option( 'mjschool_add_leave_subject_of_admin' );  /* Admin Leave Mail Subject */
 							$result  = mjschool_send_mail( $to, $subject, $replace_message );
 						}
@@ -256,7 +258,7 @@ class Mjschool_Leave {
 		global $wpdb;
 		$table_hrmgt_leave = $wpdb->prefix . 'mjschool_leave';
 		// Validate and sanitize the date before using it in the query.
-		$sanitized_date = $this->mjschool_sanitize_wp_date( $date );
+		$sanitized_date = $this->mjschool_sanitize_date( $date );
 		// Check if the sanitized date is valid.
 		if ( $sanitized_date === null ) {
 			return array(); // Return an empty array if the date is invalid
@@ -358,8 +360,9 @@ class Mjschool_Leave {
 			$message                = get_option( 'mjschool_leave_approve_email_template' );
 			$replace_message        = mjschool_string_replacement( $arr, $message );
 			if ( $replace_message ) {
+				$mjschool_obj_user   = new Mjschool_User();
 				$subject = get_option( 'mjschool_leave_approve_subject' );
-				$to[]    = mjschool_get_email_id_by_user_id( $leave_data->student_id );
+				$to[]    = $mjschool_obj_user->mjschool_get_email_id_by_user_id( $leave_data->student_id );
 				$emails  = get_option( 'mjschool_leave_approveemails' );
 				$emails  = explode( ',', $emails );
 				foreach ( $emails as $email ) {
@@ -424,6 +427,7 @@ class Mjschool_Leave {
 			} else {
 				$date = mjschool_get_date_in_input_box( $leave_data->start_date );
 			}
+			$mjschool_obj_user   = new Mjschool_User();
 			// Leave reject mail start.
 			$arr['{{date}}']         = esc_html( $date );
 			$arr['{{school_name}}']  = esc_html( get_option( 'mjschool_name' ) );
@@ -432,7 +436,7 @@ class Mjschool_Leave {
 			$message                 = get_option( 'mjschool_leave_reject_email_template' );
 			$replace_message         = mjschool_string_replacement( $arr, $message );
 			$subject                 = get_option( 'mjschool_leave_reject_subject' );
-			$to                      = mjschool_get_email_id_by_user_id( $leave_data->student_id );
+			$to                      = $mjschool_obj_user->mjschool_get_email_id_by_user_id( $leave_data->student_id );
 			$mail                    = mjschool_send_mail( $to, $subject, $replace_message );
 			// Leave reject mail end.
 			return true;
@@ -460,7 +464,7 @@ class Mjschool_Leave {
 		$event = $wpdb->get_row( $query );
 		if ( $event ) {
 			// Get student name securely.
-			$student   = mjschool_get_user_name_by_id( intval( $event->student_id ) );
+			$student   = mjschool_get_display_name( intval( $event->student_id ) );
 			$page_name = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
 			// Log the action.
 			mjschool_append_audit_log(
@@ -486,7 +490,7 @@ class Mjschool_Leave {
 	 * @param  string $date The date string to sanitize.
 	 * @return string|null The sanitized date string or null if the date is invalid.
 	 */
-	private function mjschool_sanitize_wp_date( $date ) {
+	private function mjschool_sanitize_date( $date ) {
 		try {
 			$datetime = new DateTime( $date );
 			return $datetime->format( 'Y-m-d' ); // Format as 'YYYY-MM-DD'.
@@ -494,4 +498,26 @@ class Mjschool_Leave {
 			return null; // Return null for invalid dates.
 		}
 	}
+
+	/**
+	 * Returns a readable label for a leave duration type.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $id Leave type ID.
+	 *
+	 * @return string Human-readable leave label.
+	 */
+	public function mjschool_leave_duration_label( $id ) {
+		$id = sanitize_key( $id );
+		
+		$labels = array(
+			'half_day'      => 'Half Day',
+			'full_day'      => 'Full Day',
+			'more_then_day' => 'More Then One Day',
+		);
+		
+		return isset( $labels[ $id ] ) ? $labels[ $id ] : '';
+	}
+
 }

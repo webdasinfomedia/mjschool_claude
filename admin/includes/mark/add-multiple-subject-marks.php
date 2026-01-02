@@ -29,7 +29,9 @@ if ( isset( $_GET['tab'] ) ) {
 						<label class="ml-1 mjschool-custom-top-label top" for="mjschool-class-list"><?php esc_html_e( 'Select Class', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control class_id_exam validate[required] text-input">
 							<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
-							<?php foreach ( mjschool_get_all_class() as $classdata ) { ?>
+							<?php 
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) { ?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php } ?>
 						</select>
@@ -40,11 +42,13 @@ if ( isset( $_GET['tab'] ) ) {
 					<div class="col-md-3 input">
 						<label class="ml-1 mjschool-custom-top-label top" for="mjschool-class-list"><?php esc_html_e( 'Select Class', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						<?php
-						$class_id = isset( $_REQUEST['class_id'] ) ? intval( wp_unslash( $_REQUEST['class_id'] ) ) : '';
+						$class_id = isset( $_GET['class_id'] ) ? intval( wp_unslash( $_GET['class_id'] ) ) : '';
 						?>
 						<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control class_id_exam validate[required] text-input">
 							<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
-							<?php foreach ( mjschool_get_all_class() as $classdata ) { ?>
+							<?php
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) { ?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php } ?>
 						</select>
@@ -53,18 +57,19 @@ if ( isset( $_GET['tab'] ) ) {
 						<label class="ml-1 mjschool-custom-top-label top" for="class_section"><?php esc_html_e( 'Select Section', 'mjschool' ); ?></label>
 						<?php
 						$class_section = '';
-						if ( isset( $_REQUEST['class_section'] ) ) {
-							$class_section = intval( wp_unslash( $_REQUEST['class_section'] ) );
-						} elseif ( isset( $_REQUEST['section_id'] ) ) {
-							$class_section = intval( wp_unslash( $_REQUEST['section_id'] ) );
+						if ( isset( $_GET['class_section'] ) ) {
+							$class_section = intval( wp_unslash( $_GET['class_section'] ) );
+						} elseif ( isset( $_GET['section_id'] ) ) {
+							$class_section = intval( wp_unslash( $_GET['section_id'] ) );
 						}
 						?>
 						<select name="class_section" class="mjschool-line-height-30px form-control mjschool-section-id-exam" id="class_section">
 							<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 							<?php
-							if ( isset( $_REQUEST['class_section'] ) && isset( $_REQUEST['class_id'] ) ) {
-								$req_class_id = intval( wp_unslash( $_REQUEST['class_id'] ) );
-								foreach ( mjschool_get_class_sections( $req_class_id ) as $sectiondata ) {
+							if ( isset( $_GET['class_section'] ) && isset( $_GET['class_id'] ) ) {
+								$req_class_id = intval( wp_unslash( $_GET['class_id'] ) );
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_class_sections( $req_class_id ) as $sectiondata ) {
 									?>
 									<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 									<?php
@@ -82,7 +87,8 @@ if ( isset( $_GET['tab'] ) ) {
 						<?php
 						if ( isset( $_POST['exam_id'] ) && isset( $_POST['class_id'] ) ) {
 							$posted_class_id = intval( wp_unslash( $_POST['class_id'] ) );
-							$exam_data = mjschool_get_all_exam_by_class_id_all( $posted_class_id );
+							$obj_exam = new Mjschool_Exam();
+							$exam_data = $obj_exam->mjschool_get_all_exam_by_class_id_all( $posted_class_id );
 							if ( ! empty( $exam_data ) ) {
 								$posted_exam_id = intval( wp_unslash( $_POST['exam_id'] ) );
 								foreach ( $exam_data as $retrieved_data ) {
@@ -122,14 +128,15 @@ if ( isset( $_GET['tab'] ) ) {
 $current_date = current_time( 'Y-m-d H:i:s' );
 $mjschool_obj = new MJSchool_Management( get_current_user_id() );
 
-if ( isset( $_REQUEST['add_single_student_mark'] ) ) {
-	// Verify nonce.
-	if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'mjschool_multiple_subject_marks' ) ) {
+if ( isset( $_POST['add_single_student_mark'] ) ) {
+	// Verify nonce. 
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'mjschool_multiple_subject_marks' ) ) {
 		wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
 	}
 	
 	if ( $school_type === 'university' ) {
-		$add_single_mark = wp_unslash( $_REQUEST['add_single_student_mark'] );
+		// University flow.
+		$add_single_mark = wp_unslash( $_POST['add_single_student_mark'] );
 		if ( is_array( $add_single_mark ) ) {
 			$keys = array_keys( $add_single_mark );
 			if ( ! empty( $keys[0] ) ) {
@@ -137,22 +144,22 @@ if ( isset( $_REQUEST['add_single_student_mark'] ) ) {
 				$user_id    = isset( $key_parts[0] ) ? intval( $key_parts[0] ) : 0;
 				$subject_id = isset( $key_parts[1] ) ? intval( $key_parts[1] ) : 0;
 
-				$section_id    = isset( $_REQUEST['section_id'] ) ? intval( wp_unslash( $_REQUEST['section_id'] ) ) : '';
-				$class_id      = isset( $_REQUEST['class_id'] ) ? intval( wp_unslash( $_REQUEST['class_id'] ) ) : '';
-				$exam_id       = isset( $_REQUEST['exam_id'] ) ? intval( wp_unslash( $_REQUEST['exam_id'] ) ) : '';
-				$contributions = isset( $_REQUEST['contributions'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['contributions'] ) ) : '';
+				$section_id    = isset( $_POST['section_id'] ) ? intval( wp_unslash( $_POST['section_id'] ) ) : '';
+				$class_id      = isset( $_POST['class_id'] ) ? intval( wp_unslash( $_POST['class_id'] ) ) : '';
+				$exam_id       = isset( $_POST['exam_id'] ) ? intval( wp_unslash( $_POST['exam_id'] ) ) : '';
+				$contributions = isset( $_POST['contributions'] ) ? sanitize_text_field( wp_unslash( $_POST['contributions'] ) ) : '';
 
 				$comment_key = 'marks_' . $user_id . '_' . $subject_id . '_comment';
 				$mark_key    = 'marks_' . $user_id . '_' . $subject_id . '_mark';
 				$mark_id_key = 'marks_' . $user_id . '_' . $subject_id . '_mark_id';
 
-				$comment     = isset( $_REQUEST[ $comment_key ] ) ? sanitize_textarea_field( wp_unslash( $_REQUEST[ $comment_key ] ) ) : '';
-				$marks       = isset( $_REQUEST[ $mark_key ] ) ? intval( wp_unslash( $_REQUEST[ $mark_key ] ) ) : 0;
-				$mark_id_val = isset( $_REQUEST[ $mark_id_key ] ) ? intval( wp_unslash( $_REQUEST[ $mark_id_key ] ) ) : 0;
+				$comment     = isset( $_POST[ $comment_key ] ) ? sanitize_textarea_field( wp_unslash( $_POST[ $comment_key ] ) ) : '';
+				$marks       = isset( $_POST[ $mark_key ] ) ? intval( wp_unslash( $_POST[ $mark_key ] ) ) : 0;
+				$mark_id_val = isset( $_POST[ $mark_id_key ] ) ? intval( wp_unslash( $_POST[ $mark_id_key ] ) ) : 0;
 
 				if ( $contributions === 'yes' ) {
 					$class_marks_key = 'class_marks_' . $user_id . '_' . $subject_id . '_mark';
-					$class_marks_raw = isset( $_REQUEST[ $class_marks_key ] ) ? wp_unslash( $_REQUEST[ $class_marks_key ] ) : array();
+					$class_marks_raw = isset( $_POST[ $class_marks_key ] ) ? wp_unslash( $_POST[ $class_marks_key ] ) : array();
 					$class_marks_array = is_array( $class_marks_raw ) ? $class_marks_raw : array( $class_marks_raw );
 					$class_marks_sanitized = array_map( 'sanitize_text_field', $class_marks_array );
 					$class_marks = wp_json_encode( $class_marks_sanitized );
@@ -201,11 +208,11 @@ if ( isset( $_REQUEST['add_single_student_mark'] ) ) {
 			}
 		}
 	} else {
-		// Non-university flow
-		$user_id      = intval( wp_unslash( $_REQUEST['add_single_student_mark'] ) );
-		$section_id   = isset( $_REQUEST['section_id'] ) ? intval( wp_unslash( $_REQUEST['section_id'] ) ) : '';
-		$class_id     = isset( $_REQUEST['class_id'] ) ? intval( wp_unslash( $_REQUEST['class_id'] ) ) : '';
-		$exam_id      = isset( $_REQUEST['exam_id'] ) ? intval( wp_unslash( $_REQUEST['exam_id'] ) ) : '';
+		// Non-university flow.
+		$user_id      = intval( wp_unslash( $_POST['add_single_student_mark'] ) );
+		$section_id   = isset( $_POST['section_id'] ) ? intval( wp_unslash( $_POST['section_id'] ) ) : '';
+		$class_id     = isset( $_POST['class_id'] ) ? intval( wp_unslash( $_POST['class_id'] ) ) : '';
+		$exam_id      = isset( $_POST['exam_id'] ) ? intval( wp_unslash( $_POST['exam_id'] ) ) : '';
 		$subject_list = $mjschool_obj_marks->mjschool_student_subject( $class_id, $section_id );
 		$current_date = current_time( 'Y-m-d H:i:s' );
 		$flag = 0;
@@ -215,16 +222,16 @@ if ( isset( $_REQUEST['add_single_student_mark'] ) ) {
 			$comment_key = 'marks_' . $user_id . '_' . $sub_id->subid . '_comment';
 			$marks_key   = 'marks_' . $user_id . '_' . $sub_id->subid . '_mark';
 			$markid_key  = 'marks_' . $user_id . '_' . $sub_id->subid . '_mark_id';
-			$comment = isset( $_REQUEST[ $comment_key ] ) ? sanitize_textarea_field( wp_unslash( $_REQUEST[ $comment_key ] ) ) : '';
+			$comment = isset( $_POST[ $comment_key ] ) ? sanitize_textarea_field( wp_unslash( $_POST[ $comment_key ] ) ) : '';
 			
 			if ( $contrib_value === 'yes' ) {
-				$class_marks_raw = isset( $_REQUEST[ 'class_marks_' . $user_id . '_' . $sub_id->subid . '_mark' ] ) ? wp_unslash( $_REQUEST[ 'class_marks_' . $user_id . '_' . $sub_id->subid . '_mark' ] ) : array();
+				$class_marks_raw = isset( $_POST[ 'class_marks_' . $user_id . '_' . $sub_id->subid . '_mark' ] ) ? wp_unslash( $_POST[ 'class_marks_' . $user_id . '_' . $sub_id->subid . '_mark' ] ) : array();
 				$class_marks_array = is_array( $class_marks_raw ) ? $class_marks_raw : array( $class_marks_raw );
 				$class_marks_sanitized = array_map( 'sanitize_text_field', $class_marks_array );
 				$class_marks = wp_json_encode( $class_marks_sanitized );
 				$marks = 0;
 			} else {
-				$marks = isset( $_REQUEST[ $marks_key ] ) ? intval( wp_unslash( $_REQUEST[ $marks_key ] ) ) : 0;
+				$marks = isset( $_POST[ $marks_key ] ) ? intval( wp_unslash( $_POST[ $marks_key ] ) ) : 0;
 				$class_marks = '';
 			}
 			
@@ -248,7 +255,7 @@ if ( isset( $_REQUEST['add_single_student_mark'] ) ) {
 			);
 			
 			if ( $mark_detail ) {
-				$mark_id_raw = isset( $_REQUEST[ $markid_key ] ) ? intval( wp_unslash( $_REQUEST[ $markid_key ] ) ) : 0;
+				$mark_id_raw = isset( $_POST[ $markid_key ] ) ? intval( wp_unslash( $_POST[ $markid_key ] ) ) : 0;
 				$mark_id     = array( 'mark_id' => $mark_id_raw );
 				$result      = $mjschool_obj_marks->mjschool_update_marks( $mark_data, $mark_id );
 				if ( $result === 1 && is_super_admin() ) {
@@ -270,15 +277,15 @@ if ( isset( $_REQUEST['add_single_student_mark'] ) ) {
 
 // Save multiple subject marks.
 if ( isset( $_POST['save_all_multiple_subject_marks'] ) ) {
-	// Verify nonce.
+	// Verify nonce. 
 	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'mjschool_multiple_subject_marks' ) ) {
 		wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
 	}
 	
-	$section_id   = isset( $_REQUEST['section_id'] ) ? intval( wp_unslash( $_REQUEST['section_id'] ) ) : '';
-	$class_id     = isset( $_REQUEST['class_id'] ) ? intval( wp_unslash( $_REQUEST['class_id'] ) ) : '';
-	$exam_id      = isset( $_REQUEST['exam_id'] ) ? intval( wp_unslash( $_REQUEST['exam_id'] ) ) : '';
-	$contributions = isset( $_REQUEST['contributions'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['contributions'] ) ) : '';
+	$section_id   = isset( $_POST['section_id'] ) ? intval( wp_unslash( $_POST['section_id'] ) ) : '';
+	$class_id     = isset( $_POST['class_id'] ) ? intval( wp_unslash( $_POST['class_id'] ) ) : '';
+	$exam_id      = isset( $_POST['exam_id'] ) ? intval( wp_unslash( $_POST['exam_id'] ) ) : '';
+	$contributions = isset( $_POST['contributions'] ) ? sanitize_text_field( wp_unslash( $_POST['contributions'] ) ) : '';
 	$subject_list = $mjschool_obj_marks->mjschool_student_subject( $class_id, $section_id );
 	
 	$exlude_id = mjschool_approve_student_list();
@@ -298,17 +305,17 @@ if ( isset( $_POST['save_all_multiple_subject_marks'] ) ) {
 		foreach ( $subject_list as $sub_id ) {
 			$mark_detail = $mjschool_obj_marks->mjschool_subject_makrs_detail_byuser( $exam_id, $class_id, $sub_id->subid, $mjschool_user->ID );
 			$comment_key = 'marks_' . $mjschool_user->ID . '_' . $sub_id->subid . '_comment';
-			$comment     = isset( $_REQUEST[ $comment_key ] ) ? sanitize_textarea_field( wp_unslash( $_REQUEST[ $comment_key ] ) ) : '';
+			$comment     = isset( $_POST[ $comment_key ] ) ? sanitize_textarea_field( wp_unslash( $_POST[ $comment_key ] ) ) : '';
 			
 			if ( $contributions === 'yes' ) {
 				$class_marks_key = 'class_marks_' . $mjschool_user->ID . '_' . $sub_id->subid . '_mark';
-				$class_marks_raw = isset( $_REQUEST[ $class_marks_key ] ) ? wp_unslash( $_REQUEST[ $class_marks_key ] ) : array();
+				$class_marks_raw = isset( $_POST[ $class_marks_key ] ) ? wp_unslash( $_POST[ $class_marks_key ] ) : array();
 				$class_marks_sanitized = is_array( $class_marks_raw ) ? array_map( 'sanitize_text_field', $class_marks_raw ) : array();
 				$class_marks = wp_json_encode( $class_marks_sanitized );
 				$marks       = 0;
 			} else {
 				$marks_key   = 'marks_' . $mjschool_user->ID . '_' . $sub_id->subid . '_mark';
-				$marks       = isset( $_REQUEST[ $marks_key ] ) ? intval( wp_unslash( $_REQUEST[ $marks_key ] ) ) : 0;
+				$marks       = isset( $_POST[ $marks_key ] ) ? intval( wp_unslash( $_POST[ $marks_key ] ) ) : 0;
 				$class_marks = '';
 			}
 			
@@ -331,7 +338,7 @@ if ( isset( $_POST['save_all_multiple_subject_marks'] ) ) {
 			);			
 			if ( $mark_detail ) {
 				$markid_key = 'marks_' . $mjschool_user->ID . '_' . $sub_id->subid . '_mark_id';
-				$mark_id = isset( $_REQUEST[ $markid_key ] ) ? intval( wp_unslash( $_REQUEST[ $markid_key ] ) ) : 0;
+				$mark_id = isset( $_POST[ $markid_key ] ) ? intval( wp_unslash( $_POST[ $markid_key ] ) ) : 0;
 				$result  = $mjschool_obj_marks->mjschool_update_marks( $mark_data, array( 'mark_id' => $mark_id ) );
 			} else {
 				$result = $mjschool_obj_marks->mjschool_save_marks( $mark_data );
@@ -354,9 +361,9 @@ if ( isset( $_POST['add_multiple_subject_marks'] ) || isset( $_POST['add_single_
 	$teacher_id    = get_current_user_id();
 	$class_name    = get_user_meta( $teacher_id, 'class_name', true );
 	
-	$class_id      = isset( $_REQUEST['class_id'] ) ? intval( wp_unslash( $_REQUEST['class_id'] ) ) : '';
-	$class_section = isset( $_REQUEST['class_section'] ) ? intval( wp_unslash( $_REQUEST['class_section'] ) ) : '';
-	$exam_id       = isset( $_REQUEST['exam_id'] ) ? intval( wp_unslash( $_REQUEST['exam_id'] ) ) : '';
+	$class_id      = isset( $_GET['class_id'] ) ? intval( wp_unslash( $_GET['class_id'] ) ) : '';
+	$class_section = isset( $_GET['class_section'] ) ? intval( wp_unslash( $_GET['class_section'] ) ) : '';
+	$exam_id       = isset( $_GET['exam_id'] ) ? intval( wp_unslash( $_GET['exam_id'] ) ) : '';
 	
 	if ( $class_section ) {
 		$subject_list = $mjschool_obj_marks->mjschool_student_subject_for_list( $class_id, $class_section );
@@ -422,7 +429,7 @@ if ( isset( $_POST['add_multiple_subject_marks'] ) || isset( $_POST['add_single_
 										<tr>
 											<th><?php esc_html_e( 'Roll No.', 'mjschool' ); ?></th>
 											<th><?php esc_html_e( 'Name', 'mjschool' ); ?></th>
-											<th><?php echo esc_html( sprintf( __( 'Mark( %s )', 'mjschool' ), $current_subject_max_marks ) ); ?></th>
+											<th><?php echo esc_html( sprintf( esc_html__( 'Mark( %s )', 'mjschool' ), $current_subject_max_marks ) ); ?></th>
 											<th><?php esc_html_e( 'Comment', 'mjschool' ); ?></th>
 											<th><?php esc_html_e( 'Action', 'mjschool' ); ?></th>
 										</tr>
@@ -451,7 +458,7 @@ if ( isset( $_POST['add_multiple_subject_marks'] ) || isset( $_POST['add_single_
 											?>
 											<tr>
 												<td><?php echo esc_html( $mjschool_user->roll_id ); ?></td>
-												<td><?php echo esc_html( mjschool_get_user_name_by_id( $mjschool_user->ID ) ); ?></td>
+												<td><?php echo esc_html( mjschool_get_display_name( $mjschool_user->ID ) ); ?></td>
 												<td>
 													<input type="text" name="marks_<?php echo esc_attr( $mjschool_user->ID ) . '_' . esc_attr( $sub_id->subid ); ?>_mark" value="<?php echo esc_attr( $marks ); ?>" class="form-control validate[required,custom[onlyNumberSp],min[0],max[<?php echo esc_attr( $current_subject_max_marks ); ?>]] text-input" placeholder="<?php esc_attr_e( 'Mark', 'mjschool' ); ?>">
 												</td>
@@ -561,11 +568,11 @@ if ( isset( $_POST['add_multiple_subject_marks'] ) || isset( $_POST['add_single_
 								if ( $contributions === 'yes' && ! empty( $contributions_data_array ) ) {
 									echo '<tr>';
 									echo '<td class="multiple_mark_value mjschool_border_subject_mark" rowspan="2" >' . esc_attr( $mjschool_user->roll_id ) . '</td>';
-									echo '<td rowspan="2" class="mjschool_border_subject_mark" ><span class="multiple_mark_value">' . esc_html( mjschool_get_user_name_by_id( $mjschool_user->ID ) ) . '</span></td>';
+									echo '<td rowspan="2" class="mjschool_border_subject_mark" ><span class="multiple_mark_value">' . esc_html( mjschool_get_display_name( $mjschool_user->ID ) ) . '</span></td>';
 								} else {
 									echo '<tr>';
 									echo '<td class="multiple_mark_value mjschool_border_subject_mark" >' . esc_html( $mjschool_user->roll_id ) . '</td>';
-									echo '<td class="mjschool_border_subject_mark" ><span class="multiple_mark_value">' . esc_html( mjschool_get_user_name_by_id( $mjschool_user->ID ) ) . '</span></td>';
+									echo '<td class="mjschool_border_subject_mark" ><span class="multiple_mark_value">' . esc_html( mjschool_get_display_name( $mjschool_user->ID ) ) . '</span></td>';
 								}
 								if ( ! empty( $subject_list ) ) {
 									foreach ( $subject_list as $sub_id ) {

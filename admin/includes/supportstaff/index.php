@@ -32,25 +32,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( 'supportstaff' === $user_access['page_link'] && ( $action === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'supportstaff' === $user_access['page_link'] && ( $action === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'supportstaff' === $user_access['page_link'] && ( $action === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -58,7 +58,8 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$mjschool_obj_user   = new Mjschool_User();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'supportstaff';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
@@ -106,7 +107,7 @@ if ( isset( $_POST['save_supportstaff'] ) ) {
 			}
 		}
 		if ( ! empty( $document_content ) ) {
-			$final_document = json_encode( $document_content );
+			$final_document = wp_json_encode( $document_content );
 		} else {
 			$final_document = '';
 		}
@@ -131,9 +132,9 @@ if ( isset( $_POST['save_supportstaff'] ) ) {
 			if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'edit_action' ) ) {
 				$supportstaff_id_encrypted = isset( $_REQUEST['supportstaff_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['supportstaff_id'] ) ) : '';
 				$userdata['ID'] = ! empty( $supportstaff_id_encrypted ) ? intval( mjschool_decrypt_id( $supportstaff_id_encrypted ) ) : 0;
-				$result         = mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
+				$result         = $mjschool_obj_user->mjschool_update_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
 				// Update custom field data.
-				$custom_field_obj    = new Mjschool_Custome_Field();
+				$custom_field_obj    = new Mjschool_Custom_Field();
 				$module              = 'supportstaff';
 				$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
@@ -144,9 +145,9 @@ if ( isset( $_POST['save_supportstaff'] ) ) {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 			}
 		} elseif ( ! email_exists( $_POST['email'] ) && ! username_exists( sanitize_user( wp_unslash( $_POST['username'] ) ) ) ) {
-			$result = mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
+			$result = $mjschool_obj_user->mjschool_add_new_user( $userdata, $usermetadata, $firstname, $middlename, $lastname, $mjschool_role );
 			// Add custom field data.
-			$custom_field_obj   = new Mjschool_Custome_Field();
+			$custom_field_obj   = new Mjschool_Custom_Field();
 			$module             = 'supportstaff';
 			$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
@@ -163,7 +164,7 @@ if ( $action === 'delete' ) {
 	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'delete_action' ) ) {
 		$supportstaff_id_encrypted = isset( $_REQUEST['supportstaff_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['supportstaff_id'] ) ) : '';
 		if ( ! empty( $supportstaff_id_encrypted ) ) {
-			$result = mjschool_delete_usedata( intval( mjschool_decrypt_id( $supportstaff_id_encrypted ) ) );
+			$result = $mjschool_obj_user->mjschool_delete_usedata( intval( mjschool_decrypt_id( $supportstaff_id_encrypted ) ) );
 		}
 		if ( $result ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_supportstaff&tab=supportstaff_list&message=4' ) );
@@ -177,7 +178,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 	if ( isset( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
 		$ids = array_map( 'intval', $_REQUEST['id'] );
 		foreach ( $ids as $id ) {
-			$result = mjschool_delete_usedata( $id );
+			$result = $mjschool_obj_user->mjschool_delete_usedata( $id );
 		}
 	}
 	if ( $result ) {
@@ -211,7 +212,7 @@ if ( isset( $_POST['staff_csv_selected'] ) ) {
 			$header[] = 'Mobile Number';
 			$header[] = 'Alternate Mobile Number';
 			$filename = 'export/mjschool-export-staff.csv';
-			$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) or wp_die( "can't open file" );
+			$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) || wp_die( "can't open file" );
 			fputcsv( $fh, $header );
 			foreach ( $staff_list as $retrive_data ) {
 				$row       = array();
@@ -240,7 +241,7 @@ if ( isset( $_POST['staff_csv_selected'] ) ) {
 			header( 'Pragma: public' );       // Required.
 			header( 'Expires: 0' );           // No cache.
 			header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-			header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+			header( 'Last-Modified: ' . wp_date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 			header( 'Cache-Control: private', false );
 			header( 'Content-Type: ' . $mime );
 			header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
@@ -302,7 +303,7 @@ if ( isset( $_REQUEST['upload_staff_csv_file'] ) ) {
 						$user_object = get_user_by( 'login', $username );
 						$user_id     = $user_object->ID;
 						$mjschool_role_name   = mjschool_get_user_role( $user_id );
-						if ( $mjschool_role_name != 'administrator' ) {
+						if ( $mjschool_role_name !== 'administrator' ) {
 							if ( ! empty( $password ) ) {
 								wp_set_password( $password, $user_id );
 							}
@@ -312,7 +313,7 @@ if ( isset( $_REQUEST['upload_staff_csv_file'] ) ) {
 						$user_id         = $user_object->ID;
 						$problematic_row = true;
 						$mjschool_role_name       = mjschool_get_user_role( $user_id );
-						if ( $mjschool_role_name != 'administrator' ) {
+						if ( $mjschool_role_name !== 'administrator' ) {
 							if ( ! empty( $password ) ) {
 								wp_set_password( $password, $user_id );
 							}
@@ -336,7 +337,7 @@ if ( isset( $_REQUEST['upload_staff_csv_file'] ) ) {
 						echo '<input type="hidden" id="mjschool_csv_error" value="1">';
 						continue;
 					}
-					if ( $mjschool_role_name != 'administrator' ) {
+					if ( $mjschool_role_name !== 'administrator' ) {
 						wp_update_user(
 							array(
 								'ID'   => $user_id,
@@ -488,7 +489,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 				<div class="mjschool-main-list-page"><!-- Mjschool-main-list-page. -->
 					<?php
 					if ( $active_tab === 'supportstaff_list' ) {
-						$teacherdata = mjschool_get_users_data( 'supportstaff' );
+						$mjschool_user = new Mjschool_User();
+						$teacherdata = $mjschool_user->mjschool_get_users_data( 'supportstaff' );
 						if ( ! empty( $teacherdata ) ) {
 							?>
 							<form name="wcwm_report" action="" method="post">
@@ -521,7 +523,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 												<tbody>
 													<?php
 													if ( ! empty( $teacherdata ) ) {
-														foreach ( mjschool_get_users_data( 'supportstaff' ) as $retrieved_data ) {
+														$mjschool_user = new Mjschool_User();
+														foreach ( $mjschool_user->mjschool_get_users_data( 'supportstaff' ) as $retrieved_data ) {
 															$uid      = $retrieved_data->ID;
 															$staff_id = mjschool_encrypt_id( $retrieved_data->ID );
 															?>
@@ -533,7 +536,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 																	<a class="mjschool-color-black" href=<?php echo esc_url("?page=mjschool_supportstaff&tab=view_supportstaff&action=view_supportstaff&supportstaff_id=".esc_attr($staff_id)."&_wpnonce=".esc_attr( mjschool_get_nonce( 'view_action' ) ) ); ?>>
 																		<?php
 																		$uid = $retrieved_data->ID;
-																		$umetadata = mjschool_get_user_image($uid);
+																		$mjschool_user = new Mjschool_User();
+																		$umetadata = $mjschool_user->mjschool_get_user_image($uid);
 																		if (empty($umetadata ) ) {
 																			echo '<img src=' . esc_url( get_option( 'mjschool_supportstaff_thumb_new' ) ) . ' height="50px" width="50px" class="img-circle" />';
 																		} else {

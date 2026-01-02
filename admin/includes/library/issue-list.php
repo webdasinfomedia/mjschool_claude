@@ -85,9 +85,10 @@ if ( $active_tab === 'issuelist' ) {
 										<td class="mjschool-user-image mjschool-width-50px-td">
 											<a href="#">
 												<?php
+												$mjschool_user = new Mjschool_User();
 												$uid                = $retrieved_data->ID;
 												$mjschool_role_name = mjschool_get_user_role( $uid );
-												$umetadata          = mjschool_get_user_image( $uid );
+												$umetadata          = $mjschool_user->mjschool_get_user_image( $uid );
 
 												if ( empty( $umetadata ) ) {
 													if ($mjschool_role_name === 'student' ) {

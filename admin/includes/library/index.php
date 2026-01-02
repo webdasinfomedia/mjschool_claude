@@ -14,7 +14,7 @@
  * @subpackage Admin/Library
  */
 defined( 'ABSPATH' ) || exit;
-// -------- Check Browser Javascript. ----------//
+// Check browser JavaScript.
 mjschool_browser_javascript_check();
 $mjschool_role = mjschool_get_user_role( get_current_user_id() );
 $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
@@ -30,25 +30,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( 'library' === $user_access['page_link'] && ( $action === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'library' === $user_access['page_link'] && ( $action === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'library' === $user_access['page_link'] && ( $action === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -56,7 +56,7 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'library';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
@@ -148,7 +148,7 @@ if ( isset( $_REQUEST['upload_csv_file'] ) ) {
 							'total_quentity' => intval( $csv['quantity'] ?? 0 ),
 							'description'    => sanitize_textarea_field( $csv['description'] ?? '' ),
 							'added_by'       => get_current_user_id(),
-							'added_date'     => date( 'Y-m-d' ),
+							'added_date'     => wp_date( 'Y-m-d' ),
 						);
 						$book_name = $bookdata['book_name'] ?? '';
 						// Rack Location.
@@ -285,7 +285,7 @@ if ( isset( $_POST['save_book'] ) ) {
 			if ( wp_verify_nonce( $nonce_action, 'edit_action' ) ) {
 				$book_id                   = isset( $_REQUEST['book_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['book_id'] ) ) : '';
 				$result                    = $mjschool_obj_lib->mjschool_add_book( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'library';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $book_id );
 				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_library&tab=booklist&_wpnonce=' . rawurlencode( $redirect_nonce ) . '&message=1' ) );
@@ -295,7 +295,7 @@ if ( isset( $_POST['save_book'] ) ) {
 			}
 		} else {
 			$result                    = $mjschool_obj_lib->mjschool_add_book( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'library';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
@@ -562,9 +562,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 																<ul  class="mjschool_ul_style">
 																	<li >
 																		<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
-																			
 																			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-more.png' ); ?>">
-																			
 																		</a>
 																		<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																			<li class="mjschool-float-left-width-100px">
@@ -606,7 +604,6 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 											<input type="checkbox" id="select_all" name="id[]" class="mjschool-sub-chk select_all mjchool_margin_top_0px" value="<?php echo esc_attr( intval( $retrieved_data->id ) ); ?>" >
 											<label for="select_all" class="mjschool-margin-right-5px"><?php esc_html_e( 'Select All', 'mjschool' ); ?></label>
 										</button>
-										
 										<?php
 										if ( $user_access_delete === '1' ) { ?>
 											<button id="delete_selected" data-toggle="tooltip" title="<?php esc_attr_e( 'Delete Selected', 'mjschool' ); ?>" name="delete_selected_book" class="delete_selected"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/listpage-icon/mjschool-delete.png' ); ?>"></button>
@@ -626,9 +623,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 						<div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px mjschool-no-data-margin row">
 							<div class="offset-md-2 col-md-4">
 								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_library&tab=addbook' ) ); ?>">
-									
 									<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ); ?>">
-									
 								</a>
 								<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
 									<label class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?> </label>
@@ -636,9 +631,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 							</div>
 							<div class="col-md-4">
 								<a data-toggle="tooltip" name="import_csv" type="button" class="importdata">
-									
 									<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/thumb-icon/mjschool-Import-list.png' ); ?>">
-									
 								</a>
 								<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
 									<label class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to import CSV.', 'mjschool' ); ?></label>
@@ -649,9 +642,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					} else {
 						?>
 						<div class="mjschool-calendar-event-new">
-							
 							<img class="mjschool-no-data-img" src="<?php echo esc_url( MJSCHOOL_NODATA_IMG ); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
-							
 						</div>
 						<?php
 					}

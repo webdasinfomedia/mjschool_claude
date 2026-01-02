@@ -52,7 +52,7 @@ trait FpdiTrait
 		$orientation = 'P';
 		$this->_setPageSize([$format['width'], $format['height']], $orientation);
 
-		if ($orientation != $this->DefOrientation) {
+		if ($orientation !== $this->DefOrientation) {
 			$this->OrientationChanges[$this->page] = true;
 		}
 

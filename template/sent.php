@@ -48,13 +48,14 @@ if ( $school_obj->role === 'student' ) {
 			</tfoot>
 			<tbody>
 				<?php
-				if ( $school_obj->role != 'parent' ) {
+				if ( $school_obj->role !== 'parent' ) {
+					$mjschool_class = new Mjschool_Class();
 					foreach ( $subjects as $retrieved_data ) {
 						?>
 						<tr>
-							<td><?php echo esc_html( mjschool_get_class_name( $retrieved_data->class_id ) ); ?></td>
+							<td><?php echo esc_html( $mjschool_class->mjschool_get_class_name( $retrieved_data->class_id ) ); ?></td>
 							<td><?php echo esc_html( $retrieved_data->sub_name ); ?></td>
-							<td><?php echo esc_html( mjschool_get_user_name_by_id( $retrieved_data->teacher_id ) ); ?></td>
+							<td><?php echo esc_html( mjschool_get_display_name( $retrieved_data->teacher_id ) ); ?></td>
 						</tr>
 						<?php
 					}
@@ -63,12 +64,13 @@ if ( $school_obj->role === 'student' ) {
 					foreach ( $chid_array as $child_id ) {
 						$class_info = $school_obj->mjschool_get_user_class_id( $child_id );
 						$subjects   = $school_obj->mjschool_subject_list( $class_info->class_id );
+						$mjschool_class = new Mjschool_Class();
 						foreach ( $subjects as $retrieved_data ) {
 							?>
 							<tr>
-								<td><?php echo esc_html( mjschool_get_class_name( $retrieved_data->class_id ) ); ?></td>
+								<td><?php echo esc_html( $mjschool_class->mjschool_get_class_name( $retrieved_data->class_id ) ); ?></td>
 								<td><?php echo esc_html( $retrieved_data->sub_name ); ?></td>
-								<td><?php echo esc_html( mjschool_get_user_name_by_id( $retrieved_data->teacher_id ) ); ?></td>
+								<td><?php echo esc_html( mjschool_get_display_name( $retrieved_data->teacher_id ) ); ?></td>
 							</tr>
 							<?php
 						}
@@ -81,6 +83,11 @@ if ( $school_obj->role === 'student' ) {
 	<div class="tab-pane fade" id="add_subject">
 		<?php
 		if ( isset( $_POST['subject'] ) ) {
+			// Verify nonce for security
+			$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field(wp_unslash($_POST['_wpnonce'])) : '';
+			if ( ! wp_verify_nonce( $nonce, 'save_subject_nonce' ) ) {
+				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+			}
 			if ( isset( $_POST['subject_syllabus'] ) ) {
 				$sullabus = 'syllabus.pdf';
 			} else {
@@ -94,28 +101,30 @@ if ( $school_obj->role === 'student' ) {
 				'author_name' => sanitize_text_field( wp_unslash($_POST['subject_author']) ),
 				'syllabus'    => $sullabus,
 			);
-			$tablename = 'subject';
+			$mjschool_subject_table_name = 'subject';
 			if ( isset($_REQUEST['action']) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 				$subid = array( 'subid' => sanitize_text_field(wp_unslash($_REQUEST['subject_id'])) );
-				mjschool_update_record( $tablename, $subjects, $subid );
+				mjschool_update_record( $mjschool_subject_table_name, $subjects, $subid );
 			} else {
-				mjschool_insert_record( $tablename, $subjects );
+				mjschool_insert_record( $mjschool_subject_table_name, $subjects );
 			}
 		}
 		?>
 		<h2>
 			<?php
 			$edit = 0;
+			$obj_subject = new Mjschool_Subject();
 			if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 				$edit = 1;
 				echo esc_html( 'Edit Subject', 'mjschool' );
-				$subject = mjschool_get_subject( sanitize_text_field(wp_unslash($_REQUEST['subject_id'])) );
+				$subject = $obj_subject->mjschool_get_subject( sanitize_text_field(wp_unslash($_REQUEST['subject_id'])) );
 			} else {
 				echo esc_html( 'Add New Subject', 'mjschool' );
 			}
 			?>
 		</h2>
 		<form name="mjschool-student-form" action="" method="post">
+			<?php wp_nonce_field( 'save_subject_nonce' ); ?>
 			<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
 			<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 			<table class="form-table">
@@ -138,7 +147,8 @@ if ( $school_obj->role === 'student' ) {
 						<select name="subject_class">
 							<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php } ?>
@@ -158,7 +168,8 @@ if ( $school_obj->role === 'student' ) {
 						<select name="subject_teacher">
 							<option value=""><?php esc_html_e( 'Select Teacher', 'mjschool' ); ?> </option>
 							<?php
-							foreach ( mjschool_get_users_data( 'teacher' ) as $teacherdata ) {
+							$mjschool_user = new Mjschool_User();
+							foreach ( $mjschool_user->mjschool_get_users_data( 'teacher' ) as $teacherdata ) {
 								?>
 								<option value="<?php echo esc_attr( $teacherdata->ID ); ?>" <?php selected( $teachval, $teacherdata->ID ); ?>><?php echo esc_html( $teacherdata->display_name ); ?></option>
 							<?php } ?>

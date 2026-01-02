@@ -141,7 +141,7 @@ if ( $active_tab === 'report1' ) {
 		$class_id = isset( $_REQUEST['class_id'] )
             ? intval( wp_unslash( $_REQUEST['class_id'] ) )
             : 0;
-		if ( isset( $_REQUEST['class_section'] ) && $_REQUEST['class_section'] != '' ) {
+		if ( isset( $_REQUEST['class_section'] ) && $_REQUEST['class_section'] !== '' ) {
 			$section_id = isset( $_REQUEST['class_section'] )
             ? intval( wp_unslash( $_REQUEST['class_section'] ) )
             : 0;
@@ -154,8 +154,9 @@ if ( $active_tab === 'report1' ) {
 			$report_1 = $wpdb->get_results( $wpdb->prepare( $query, $exam_id, $class_id ) );
 		}
 		if ( ! empty( $report_1 ) ) {
+			$mjschool_subject = new Mjschool_Subject();
 			foreach ( $report_1 as $result ) {
-				$subject       = mjschool_get_single_subject_name( $result->subject_id );
+				$subject       = $mjschool_subject->mjschool_get_single_subject_name( $result->subject_id );
 				$chart_array[] = array( "$subject", (int) $result->count );
 			}
 		}
@@ -223,14 +224,15 @@ if ( $active_tab === 'report2' ) {
 		$sdate = sanitize_text_field(wp_unslash($_POST['sdate']));
 		$edate = sanitize_text_field(wp_unslash($_POST['edate']));
 	} else {
-		$sdate = date( 'Y-m-d', strtotime( 'first day of this month' ) );
-		$edate = date( 'Y-m-d', strtotime( 'last day of this month' ) );
+		$sdate = wp_date( 'Y-m-d', strtotime( 'first day of this month' ) );
+		$edate = wp_date( 'Y-m-d', strtotime( 'last day of this month' ) );
 	}
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 	$report_2 = $wpdb->get_results( "SELECT  at.class_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent from $table_attendance as at,$table_class as cl where `attendence_date` BETWEEN '$sdate' AND '$edate' AND at.class_id = cl.class_id AND at.role_name = 'student' GROUP BY at.class_id" );
 	if ( ! empty( $report_2 ) ) {
+		$mjschool_class = new Mjschool_Class();
 		foreach ( $report_2 as $result ) {
-			$class_id      = mjschool_get_class_name( $result->class_id );
+			$class_id      = $mjschool_class->mjschool_get_class_name( $result->class_id );
 			$chart_array[] = array( "$class_id", (int) $result->Present, (int) $result->Absent );
 		}
 	}
@@ -690,7 +692,8 @@ $GoogleCharts = new GoogleCharts();
 										<select name="class_id"  id="mjschool-class-list" class="mjschool-line-height-30px form-control validate[required] class_id_exam">
 											<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
 											<?php
-											foreach ( mjschool_get_all_class() as $classdata ) {
+											$mjschool_class = new Mjschool_Class();
+											foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 												?>
 												<option  value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 												<?php
@@ -711,7 +714,7 @@ $GoogleCharts = new GoogleCharts();
 												<div class="col-md-6 mb-2">
 													<div class="form-group input">
 														<div class="col-md-12 form-control">
-															<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['start_date'])) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+															<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['start_date'])) ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 															<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 														</div>
 													</div>
@@ -719,7 +722,7 @@ $GoogleCharts = new GoogleCharts();
 												<div class="col-md-6 mb-2">
 													<div class="form-group input">
 														<div class="col-md-12 form-control">
-															<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['end_date'])) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+															<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['end_date'])) ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 															<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 														</div>
 													</div>
@@ -794,8 +797,8 @@ $GoogleCharts = new GoogleCharts();
 				}
 				$book_issue_data = mjschool_check_book_issued_by_class_id_and_date( $class_id, $start_date, $end_date );
 			} else {
-				$start_date      = date( 'Y-m-d' );
-				$end_date        = date( 'Y-m-d' );
+				$start_date      = wp_date( 'Y-m-d' );
+				$end_date        = wp_date( 'Y-m-d' );
 				$book_issue_data = mjschool_check_book_issued_by_start_date_and_end_date( $start_date, $end_date );
 			}
 			?>
@@ -939,7 +942,7 @@ $GoogleCharts = new GoogleCharts();
 								<div class="col-md-5">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text"  id="sdate" class="form-control" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['sdate'] ) ) ); } else { echo esc_attr( date( 'Y-m-d', strtotime( 'first day of this month' ) ) ); } ?>" readonly>
+											<input type="text"  id="sdate" class="form-control" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['sdate'] ) ) ); } else { echo esc_attr( wp_date( 'Y-m-d', strtotime( 'first day of this month' ) ) ); } ?>" readonly>
 											<label for="userinput1"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -947,7 +950,7 @@ $GoogleCharts = new GoogleCharts();
 								<div class="col-md-5">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text"  id="edate" class="form-control" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['edate'] ) ) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" readonly>
+											<input type="text"  id="edate" class="form-control" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['edate'] ) ) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" readonly>
 											<label for="userinput1"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -1001,7 +1004,8 @@ $GoogleCharts = new GoogleCharts();
 											?>
 											<option value=""><?php esc_html_e( 'Select class Name', 'mjschool' ); ?></option>
 											<?php
-											foreach ( mjschool_get_all_class() as $classdata ) {
+											$mjschool_class = new Mjschool_Class();
+											foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 												?>
 												<option  value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?> ><?php echo esc_html( $classdata['class_name'] ); ?></option>
 												<?php
@@ -1022,7 +1026,8 @@ $GoogleCharts = new GoogleCharts();
 											<?php
 											if ( isset( $_REQUEST['class_section'] ) ) {
 												$class_section = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) );
-												foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+												$mjschool_class = new Mjschool_Class();
+												foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 													?>
 													<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 													<?php
@@ -1036,7 +1041,7 @@ $GoogleCharts = new GoogleCharts();
 										<select id="mjschool-year" name="year" class="mjschool-line-height-30px form-control validate[required]">
 											<option ><?php esc_html_e( 'Selecte year', 'mjschool' ); ?></option>
 											<?php
-											$current_year = date( 'Y' );
+											$current_year = wp_date( 'Y' );
 											$min_year     = $current_year - 10;
 											for ( $i = $min_year; $i <= $current_year; $i++ ) {
 												$year_array[ $i ] = $i;
@@ -1051,10 +1056,10 @@ $GoogleCharts = new GoogleCharts();
 										<select id="month" name="month" class="mjschool-line-height-30px form-control class_id_exam validate[required]">
 											<option ><?php esc_html_e( 'Selecte Month', 'mjschool' ); ?></option>
 											<?php
-											$selected_month = date( 'm' ); // Current month.
+											$selected_month = wp_date( 'm' ); // Current month.
 											for ( $i_month = 1; $i_month <= 12; $i_month++ ) {
 												$selected = ( $selected_month === $i_month ? ' selected' : '' );
-												echo '<option value="' . esc_attr( $i_month ) . '"' . esc_attr( $selected ) . '>' . esc_html( date( 'F', mktime( 0, 0, 0, $i_month ) ) ) . '</option>' . "\n";
+												echo '<option value="' . esc_attr( $i_month ) . '"' . esc_attr( $selected ) . '>' . esc_html( wp_date( 'F', mktime( 0, 0, 0, $i_month ) ) ) . '</option>' . "\n";
 											}
 											?>
 										</select>       
@@ -1085,10 +1090,10 @@ $GoogleCharts = new GoogleCharts();
 						}
 						for ( $d = 1; $d <= $max_d; $d++ ) {
 							$time = mktime( 12, 0, 0, $month, $d, $year );
-							if ( date( 'm', $time ) === $month ) {
-								$date_list[] = date( 'Y-m-d', $time );
+							if ( wp_date( 'm', $time ) === $month ) {
+								$date_list[] = wp_date( 'Y-m-d', $time );
 							}
-							$day_date[]       = date( 'd D', $time );
+							$day_date[]       = wp_date( 'd D', $time );
 							$month_first_date = min( $date_list );
 							$month_last_date  = max( $date_list );
 						}
@@ -1252,7 +1257,7 @@ $GoogleCharts = new GoogleCharts();
 									<div class="col-md-8">
 										<div class="form-group input">
 											<div class="col-md-12 form-control">
-												<input type="text"  id="sdate" class="form-control" name="date" value="<?php if ( isset( $_REQUEST['date'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['date'] ) ) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" readonly>
+												<input type="text"  id="sdate" class="form-control" name="date" value="<?php if ( isset( $_REQUEST['date'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['date'] ) ) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" readonly>
 												<label for="userinput1"><?php esc_html_e( 'Date', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -1314,7 +1319,8 @@ $GoogleCharts = new GoogleCharts();
 										</thead>
 										<tbody>
 											<?php
-											foreach ( mjschool_get_all_class() as $classdata ) {
+											$mjschool_class = new Mjschool_Class();
+											foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 												$class_id      = $classdata['class_id'];
 												$total_present = mjschool_daily_attendance_report_for_date_total_present( $daily_date, $class_id );
 												$total_absent  = mjschool_daily_attendance_report_for_date_total_absent( $daily_date, $class_id );
@@ -1328,7 +1334,7 @@ $GoogleCharts = new GoogleCharts();
 												}
 												?>
 												<tr>
-													<td><?php echo esc_html( mjschool_get_class_name( $class_id ) ); ?> </td>
+													<td><?php echo esc_html( $mjschool_class->mjschool_get_class_name( $class_id ) ); ?> </td>
 													<td><?php echo esc_html( round( $total_present ) ); ?></td>
 													<td><?php echo esc_html( round( $total_absent ) ); ?></td>
 													<td><?php echo esc_html( round( $present_per ) ); ?>%</td>
@@ -1422,7 +1428,7 @@ $GoogleCharts = new GoogleCharts();
 									<div class="col-md-5">
 										<div class="form-group input">
 											<div class="col-md-12 form-control">
-												<input type="text"  id="sdate" class="form-control" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['sdate'] ) ) ); } else { echo esc_attr( date( 'Y-m-d', strtotime( 'first day of this month' ) ) ); } ?>" readonly>
+												<input type="text"  id="sdate" class="form-control" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['sdate'] ) ) ); } else { echo esc_attr( wp_date( 'Y-m-d', strtotime( 'first day of this month' ) ) ); } ?>" readonly>
 												<label for="userinput1"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -1430,7 +1436,7 @@ $GoogleCharts = new GoogleCharts();
 									<div class="col-md-5">
 										<div class="form-group input">
 											<div class="col-md-12 form-control">
-												<input type="text"  id="edate" class="form-control" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['edate'] ) ) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" readonly>
+												<input type="text"  id="edate" class="form-control" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['edate'] ) ) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" readonly>
 												<label for="userinput1"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -1448,8 +1454,8 @@ $GoogleCharts = new GoogleCharts();
 						$start_date = sanitize_text_field(wp_unslash($_POST['sdate']));
 						$end_date   = sanitize_text_field(wp_unslash($_POST['edate']));
 					} else {
-						$start_date = date( 'Y-m-d', strtotime( 'first day of this month' ) );
-						$end_date   = date( 'Y-m-d', strtotime( 'last day of this month' ) );
+						$start_date = wp_date( 'Y-m-d', strtotime( 'first day of this month' ) );
+						$end_date   = wp_date( 'Y-m-d', strtotime( 'last day of this month' ) );
 					}
 					global $wpdb;
 					$table_income = $wpdb->prefix . 'mjschool_income_expense';
@@ -1556,7 +1562,7 @@ $GoogleCharts = new GoogleCharts();
 						'11' => esc_html__( 'November', 'mjschool' ),
 						'12' => esc_html__( 'December', 'mjschool' ),
 					);
-					$year = isset( $_POST['year'] ) ? sanitize_text_field(wp_unslash($_POST['year'])) : date( 'Y' );
+					$year = isset( $_POST['year'] ) ? sanitize_text_field(wp_unslash($_POST['year'])) : wp_date( 'Y' );
 					global $wpdb;
 					$table_name = $wpdb->prefix . 'mjschool_income_expense';
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -1689,7 +1695,7 @@ $GoogleCharts = new GoogleCharts();
 									<div class="col-md-5">
 										<div class="form-group input">
 											<div class="col-md-12 form-control">
-												<input type="text"  id="sdate" class="form-control" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['sdate'] ) ) ); } else { echo esc_attr( date( 'Y-m-d', strtotime( 'first day of this month' ) ) ); } ?>" readonly>
+												<input type="text"  id="sdate" class="form-control" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['sdate'] ) ) ); } else { echo esc_attr( wp_date( 'Y-m-d', strtotime( 'first day of this month' ) ) ); } ?>" readonly>
 												<label for="userinput1"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -1697,7 +1703,7 @@ $GoogleCharts = new GoogleCharts();
 									<div class="col-md-5">
 										<div class="form-group input">
 											<div class="col-md-12 form-control">
-												<input type="text"  id="edate" class="form-control" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['edate'] ) ) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" readonly>
+												<input type="text"  id="edate" class="form-control" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['edate'] ) ) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" readonly>
 												<label for="userinput1"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -1714,8 +1720,8 @@ $GoogleCharts = new GoogleCharts();
 						$start_date = sanitize_text_field(wp_unslash($_POST['sdate']));
 						$end_date   = sanitize_text_field(wp_unslash($_POST['edate']));
 					} else {
-						$start_date = date( 'Y-m-d', strtotime( 'first day of this month' ) );
-						$end_date   = date( 'Y-m-d', strtotime( 'last day of this month' ) );
+						$start_date = wp_date( 'Y-m-d', strtotime( 'first day of this month' ) );
+						$end_date   = wp_date( 'Y-m-d', strtotime( 'last day of this month' ) );
 					}
 					global $wpdb;
 					$table_income = $wpdb->prefix . 'mjschool_income_expense';
@@ -1758,7 +1764,7 @@ $GoogleCharts = new GoogleCharts();
 																
 															</p>
 														</td>
-														<td class="patient_name"><?php echo esc_html( mjschool_get_user_name_by_id( $result->supplier_name ) ); ?>-<?php echo esc_html( get_user_meta( $result->supplier_name, 'roll_id', true ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name & Roll No.', 'mjschool' ); ?>"></i></td>
+														<td class="patient_name"><?php echo esc_html( mjschool_get_display_name( $result->supplier_name ) ); ?>-<?php echo esc_html( get_user_meta( $result->supplier_name, 'roll_id', true ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name & Roll No.', 'mjschool' ); ?>"></i></td>
 														<td class="income_amount"><?php echo '<span> ' . esc_html( mjschool_get_currency_symbol() ) . ' </span>' . esc_html( $total_amount ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Total Amount', 'mjschool' ); ?>"></i></td>
 														<td class="status"><?php echo esc_html( mjschool_get_date_in_input_box( $result->income_create_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Date', 'mjschool' ); ?>"></i></td>
 													</tr>
@@ -1822,7 +1828,7 @@ $GoogleCharts = new GoogleCharts();
 						'11' => esc_html__( 'November', 'mjschool' ),
 						'12' => esc_html__( 'December', 'mjschool' ),
 					);
-					$year  = isset( $_POST['year'] ) ? sanitize_text_field(wp_unslash($_POST['year'])) : date( 'Y' );
+					$year  = isset( $_POST['year'] ) ? sanitize_text_field(wp_unslash($_POST['year'])) : wp_date( 'Y' );
 					global $wpdb;
 					$table_name = $wpdb->prefix . 'mjschool_income_expense';
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -1959,7 +1965,8 @@ $GoogleCharts = new GoogleCharts();
 										?>
 										<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
 										<?php
-										foreach ( mjschool_get_all_class() as $classdata ) {
+										$mjschool_class = new Mjschool_Class();
+										foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 											?>
 											<option  value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php echo selected( $select_class, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 											<?php
@@ -1981,7 +1988,8 @@ $GoogleCharts = new GoogleCharts();
 										if ( isset( $_REQUEST['class_section'] ) ) {
 											$class_section = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) );
 											echo esc_html( $class_section );
-											foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+											$mjschool_class = new Mjschool_Class();
+											foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 												?>
 												<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 												<?php
@@ -1995,8 +2003,9 @@ $GoogleCharts = new GoogleCharts();
 									<select id="fees_data" class="mjschool-line-height-30px form-control validate[required]" name="fees_id">
 										<option value=""><?php esc_html_e( 'Select Fee Type', 'mjschool' ); ?></option>
 										<?php
+										$obj_fees = new Mjschool_Fees();
 										if ( isset( $_REQUEST['fees_id'] ) ) {
-											echo '<option value="' . esc_attr( $_REQUEST['fees_id'] ) . '" ' . selected( $_REQUEST['fees_id'], $_REQUEST['fees_id'] ) . '>' . esc_html( mjschool_get_fees_term_name( $_REQUEST['fees_id'] ) ) . '</option>';
+											echo '<option value="' . esc_attr( $_REQUEST['fees_id'] ) . '" ' . selected( $_REQUEST['fees_id'], $_REQUEST['fees_id'] ) . '>' . esc_html( $obj_fees->mjschool_get_fees_term_name( $_REQUEST['fees_id'] ) ) . '</option>';
 										}
 										?>
 									</select>   
@@ -2016,7 +2025,7 @@ $GoogleCharts = new GoogleCharts();
 								<div class="col-md-6">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text"  id="sdate" class="form-control" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['sdate'] ) ) ); } else { echo esc_attr( date( 'Y-m-d', strtotime( 'first day of this month' ) ) ); } ?>" readonly>
+											<input type="text"  id="sdate" class="form-control" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['sdate'] ) ) ); } else { echo esc_attr( wp_date( 'Y-m-d', strtotime( 'first day of this month' ) ) ); } ?>" readonly>
 											<label for="userinput1"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -2024,7 +2033,7 @@ $GoogleCharts = new GoogleCharts();
 								<div class="col-md-6">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text"  id="edate" class="form-control" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['edate'] ) ) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" readonly>
+											<input type="text"  id="edate" class="form-control" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['edate'] ) ) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" readonly>
 											<label for="userinput1"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -2038,7 +2047,7 @@ $GoogleCharts = new GoogleCharts();
 				</div><!-------------- Panel body. ------------------>
 				<?php
 				if ( isset( $_POST['report_4'] ) ) {
-					if ( sanitize_text_field(wp_unslash($_POST['class_id'])) != '' && sanitize_text_field(wp_unslash($_POST['fees_id'])) != '' && sanitize_text_field(wp_unslash($_POST['sdate'])) != '' && sanitize_text_field(wp_unslash($_POST['edate'])) != '' ) {
+					if ( sanitize_text_field(wp_unslash($_POST['class_id'])) !== '' && sanitize_text_field(wp_unslash($_POST['fees_id'])) !== '' && sanitize_text_field(wp_unslash($_POST['sdate'])) !== '' && sanitize_text_field(wp_unslash($_POST['edate'])) !== '' ) {
 						$class_id   = sanitize_text_field(wp_unslash($_POST['class_id']));
 						$section_id = 0;
 						if ( isset( $_POST['class_section'] ) ) {
@@ -2071,6 +2080,7 @@ $GoogleCharts = new GoogleCharts();
 									<?php
 									if ( ! empty( $result_feereport ) ) {
 										$i = 0;
+										$mjschool_class = new Mjschool_Class();
 										foreach ( $result_feereport as $retrieved_data ) {
 											$color_class_css = mjschool_table_list_background_color( $i );
 											?>
@@ -2083,17 +2093,19 @@ $GoogleCharts = new GoogleCharts();
 												<?php
 												$fees_id=explode( ',',$retrieved_data->fees_id);
 												$fees_type=array();
+												$obj_fees = new Mjschool_Fees();
 												foreach($fees_id as $id)
 												{ 
-													$fees_type[] = mjschool_get_fees_term_name($id);
+													$fees_type[] = $obj_fees->mjschool_get_fees_term_name($id);
 												}
 												?>
 												<td><?php echo esc_html( implode( " , " ,$fees_type ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Fees Term','mjschool' );?>"></i></td>
-												<td><?php echo esc_html( mjschool_get_user_name_by_id($retrieved_data->student_id ) );?>-<?php echo esc_html( get_user_meta($retrieved_data->student_id, 'roll_id',true ) );?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name & Roll No.','mjschool' );?>"></i></td>
-												<td><?php echo esc_html( mjschool_get_class_name($retrieved_data->class_id ) );?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name','mjschool' );?>"></i></td>
+												<td><?php echo esc_html( mjschool_get_display_name($retrieved_data->student_id ) );?>-<?php echo esc_html( get_user_meta($retrieved_data->student_id, 'roll_id',true ) );?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name & Roll No.','mjschool' );?>"></i></td>
+												<td><?php echo esc_html( $mjschool_class->mjschool_get_class_name($retrieved_data->class_id ) );?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name','mjschool' );?>"></i></td>
 												<td>
 													<?php 
-													$payment_status=mjschool_get_payment_status($retrieved_data->fees_pay_id);
+													$mjschool_obj_feespayment = new Mjschool_Feespayment();
+													$payment_status=$mjschool_obj_feespayment->mjschool_get_payment_status($retrieved_data->fees_pay_id);
 													if ( $payment_status === 'Not Paid' )
 													{
 													echo "<span class='mjschool-red-color'>";
@@ -2174,7 +2186,7 @@ $GoogleCharts = new GoogleCharts();
 						'11' => esc_html__( 'November', 'mjschool' ),
 						'12' => esc_html__( 'December', 'mjschool' ),
 					);
-					$year  = isset( $_POST['year'] ) ? sanitize_text_field(wp_unslash($_POST['year'])) : date( 'Y' );
+					$year  = isset( $_POST['year'] ) ? sanitize_text_field(wp_unslash($_POST['year'])) : wp_date( 'Y' );
 					global $wpdb;
 					$table_name = $wpdb->prefix . 'mjschool_fees_payment';
 					$q          = 'SELECT EXTRACT(MONTH FROM paid_by_date) as date, sum(fees_paid_amount) as count FROM ' . $table_name . ' WHERE YEAR(paid_by_date) =' . $year . ' group by month(paid_by_date) ORDER BY paid_by_date ASC';
@@ -2291,7 +2303,8 @@ $GoogleCharts = new GoogleCharts();
 									?>
 									<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
 									<?php
-									foreach ( mjschool_get_all_class() as $classdata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 										?>
 										<option  value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?> ><?php echo esc_html( $classdata['class_name'] ); ?></option>
 										<?php
@@ -2313,7 +2326,8 @@ $GoogleCharts = new GoogleCharts();
 									if ( isset( $_REQUEST['class_section'] ) ) {
 										$class_section = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) );
 										echo esc_html( $class_section );
-										foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+										$mjschool_class = new Mjschool_Class();
+										foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 											?>
 											<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 											<?php
@@ -2431,7 +2445,7 @@ $GoogleCharts = new GoogleCharts();
 												</p>
 											</td>
 											<td><?php echo esc_html( $mjschool_user->roll_id ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Roll No.', 'mjschool' ); ?>"></i></td>
-											<td><?php echo esc_html( mjschool_get_user_name_by_id( $mjschool_user->ID ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i></td>
+											<td><?php echo esc_html( mjschool_get_display_name( $mjschool_user->ID ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i></td>
 											<?php
 											if ( ! empty( $subject_list ) ) {
 												foreach ( $subject_list as $sub_id ) {

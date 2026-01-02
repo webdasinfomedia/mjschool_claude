@@ -20,7 +20,7 @@
  * - Document Description.
  * - Visibility/Sharing settings (e.g., sharing with all users/roles/classes).
  * 4. **Document List Display**: Rendering a tabular list of existing documents.
- * 5. **Custom Fields**: Integrating the `Mjschool_Custome_Field` object to fetch
+ * 5. **Custom Fields**: Integrating the `Mjschool_Custom_Field` object to fetch
  * and display any custom fields associated with the 'document' module.
  * 6. **CRUD Operations**: Processing form submissions (e.g., `save_document`) for
  * inserting/updating records and handling file uploads.
@@ -47,25 +47,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = isset( $user_access['delete'] ) ? $user_access['delete'] : 0;
 	$user_access_view   = isset( $user_access['view'] ) ? $user_access['view'] : 0;
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( isset( $user_access['page_link'] ) && $user_access['page_link'] === 'document' && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( isset( $user_access['page_link'] ) && $user_access['page_link'] === 'document' && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'delete' ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( isset( $user_access['page_link'] ) && $user_access['page_link'] === 'document' && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'insert' ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -102,7 +102,7 @@ if ( isset( $_POST['save_document'] ) ) {
 					$document_data[] = '';
 				}
 					$result                    = $mjschool_obj_document->mjschool_add_document( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ), $document_data );
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'document';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $doc_id );
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=document&tab=documentlist&message=2' ) );
@@ -132,7 +132,7 @@ if ( isset( $_POST['save_document'] ) ) {
 				$document_data[] = '';
 			}
 				$result                    = $mjschool_obj_document->mjschool_add_document( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ), $document_data );
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'document';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
@@ -171,7 +171,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 		}
 	}
 }
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'document';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 	$active_tab                = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'documentlist';
@@ -287,7 +287,8 @@ $mjschool_obj_document     = new Mjschool_Document();
 											if ( $retrieved_data->class_id === 'all class' ) {
 												esc_html_e( 'All Class', 'mjschool' );
 											} else {
-												echo esc_html( mjschool_get_class_name( $retrieved_data->class_id ) );
+												$mjschool_class = new Mjschool_Class();
+												echo esc_html( $mjschool_class->mjschool_get_class_name( $retrieved_data->class_id ) );
 											}
 											?>
 											<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class', 'mjschool' ); ?>"></i>
@@ -299,7 +300,8 @@ $mjschool_obj_document     = new Mjschool_Document();
 											} elseif ( $retrieved_data->section_id === '' ) {
 												esc_html_e( 'N/A', 'mjschool' );
 											} else {
-												echo esc_html( mjschool_get_section_name( $retrieved_data->section_id ) );
+												$mjschool_class = new Mjschool_Class();
+												echo esc_html( $mjschool_class->mjschool_get_section_name( $retrieved_data->section_id ) );
 											}
 											?>
 											<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Section', 'mjschool' ); ?>"></i>
@@ -395,7 +397,8 @@ $mjschool_obj_document     = new Mjschool_Document();
 															if ( ! empty( $doc_data[0]->value ) ) {
 																?>
 																<li class="mjschool-float-left-width-100px">
-																	<a target="blank" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value )); ?>" class="mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->homework_id ); ?>"><i class="fa fa-eye"> </i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
+													
+																	<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value )); ?>" class="mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->homework_id ); ?>"><i class="fa fa-eye"> </i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
 																</li>
 																<?php
 															}
@@ -539,9 +542,8 @@ $mjschool_obj_document     = new Mjschool_Document();
 									<option value="all class"><?php esc_html_e( 'All Class', 'mjschool' ); ?></option>
 									<?php
 								}
-								?>
-								<?php
-								foreach ( mjschool_get_all_class() as $classdata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 									?>
 									<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>> <?php echo esc_html( $classdata['class_name'] ); ?></option>
 									<?php
@@ -565,7 +567,8 @@ $mjschool_obj_document     = new Mjschool_Document();
 									<option value="all section"><?php esc_html_e( 'All Section', 'mjschool' ); ?> </option>
 									<?php
 									if ( $edit ) {
-										foreach ( mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
+										$mjschool_class = new Mjschool_Class();
+										foreach ( $mjschool_class->mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
 											?>
 											<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?> </option>
 											<?php
@@ -606,7 +609,7 @@ $mjschool_obj_document     = new Mjschool_Document();
 										<option value="all parent"><?php esc_html_e( 'All Parent', 'mjschool' ); ?> </option>
 										<?php
 									} else {
-										echo '<option value="' . esc_attr( $result->student_id ) . '" ' . selected( $result->student_id, $result->student_id ) . '>' . esc_html( mjschool_user_display_name( $result->student_id ) ) . '</option>';
+										echo '<option value="' . esc_attr( $result->student_id ) . '" ' . selected( $result->student_id, $result->student_id, false ) . '>' . esc_html( mjschool_user_display_name( $result->student_id ) ) . '</option>';
 									}
 									?>
 								</select>
@@ -642,7 +645,8 @@ $mjschool_obj_document     = new Mjschool_Document();
 										if ( ! empty( $doc_data[0]->value ) ) {
 											?>
 											<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value )); ?>" record_id="<?php echo esc_attr( $result->document_id ); ?>"> <i class="fa fa-download"></i>&nbsp;&nbsp;<?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+												
+												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value )); ?>" record_id="<?php echo esc_attr( $result->document_id ); ?>"> <i class="fa fa-download"></i>&nbsp;&nbsp;<?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 											</div>
 											<?php
 										}
@@ -689,7 +693,7 @@ $mjschool_obj_document     = new Mjschool_Document();
 				</div>
 				<?php
 				// --------- Get module-wise custom field data.--------------//
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'document';
 				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>

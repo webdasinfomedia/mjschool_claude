@@ -258,7 +258,7 @@ class OtlDump
 					$checksum = $this->sub32($checksum, $adjustment);
 				}
 				$xchecksum = $t['checksum'];
-				if ($xchecksum != $checksum) {
+				if ($xchecksum !== $checksum) {
 					throw new \Mpdf\Exception\FontException(sprintf('TTF file "%s": invalid checksum %s table: %s (expected %s)', $this->filename, dechex($checksum[0]) . dechex($checksum[1]), $t['tag'], dechex($xchecksum[0]) . dechex($xchecksum[1])));
 				}
 			}

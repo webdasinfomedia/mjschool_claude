@@ -19,24 +19,29 @@ $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
 }
 $changed = 0;
+// Verify nonce for all template save operations
+$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])) : '';
+if ( ! empty( $nonce ) && ! wp_verify_nonce( $nonce, 'save_mjschool_sms_template_nonce' ) ) {
+	wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+}
 if ( isset( $_REQUEST['save_attendance_mjschool_template'] ) ) {
 	update_option( 'mjschool_attendance_mjschool_content', mjschool_strip_tags_and_stripslashes( sanitize_text_field(wp_unslash($_REQUEST['mjschool_attendance_mjschool_content'])) ) );
 	$changed = 1;
@@ -79,7 +84,7 @@ if ( isset( $_REQUEST['save_leave_parent_mjschool_template'] ) ) {
 }
 if ( $changed ) {
 	wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=mjschool_template&message=1') );
-	die();
+	exit;
 }
 ?>
 </script>
@@ -136,6 +141,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -177,6 +183,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -220,6 +227,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -264,6 +272,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -306,6 +315,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -347,6 +357,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -389,6 +400,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -430,6 +442,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -472,6 +485,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -505,6 +519,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -546,6 +561,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -587,6 +603,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -629,6 +646,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>
@@ -670,6 +688,7 @@ if ( $changed ) {
 														</div>
 													</div>
 												</div>
+												<?php wp_nonce_field( 'save_mjschool_sms_template_nonce' ); ?>
 												<?php
 												if ( $user_access['add'] === '1' || $user_access['edit'] === '1' ) {
 													?>

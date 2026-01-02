@@ -113,7 +113,8 @@ if ( $message ) {
 				$meeting_list_data = $obj_virtual_classroom->mjschool_get_meeting_by_class_id_data_in_zoom( $class_id );
 			}
 		} elseif ( $school_obj->role === 'teacher' ) {
-			$retrieve_class_data = mjschool_get_all_class();
+			$mjschool_class = new Mjschool_Class();
+			$retrieve_class_data = $mjschool_class->mjschool_get_all_class();
 			foreach ( $retrieve_class_data as $data ) {
 				$meeting_list_data = $obj_virtual_classroom->mjschool_get_meeting_by_class_id_data_in_zoom( $data['class_id'] );
 			}
@@ -169,6 +170,8 @@ if ( $message ) {
 												$meeting_list_data = $obj_virtual_classroom->mjschool_get_meeting_by_class_id_data_in_zoom( $class_id );
 											}
 											$i = 0;
+											$teacher_obj = new Mjschool_Teacher();
+											$mjschool_class = new Mjschool_Class();
 											foreach ( $meeting_list_data as $retrieved_data ) {
 												if ( $retrieved_data->weekday_id === 1 ) {
 													$day = esc_html__( 'Monday', 'mjschool' );
@@ -185,7 +188,8 @@ if ( $message ) {
 												} elseif ( $retrieved_data->weekday_id === 7 ) {
 													$day = esc_html__( 'Sunday', 'mjschool' );
 												}
-												$route_data  = mjschool_get_route_by_id( $retrieved_data->route_id );
+												$mjschool_class = new Mjschool_Class();
+												$route_data  = $mjschool_class->mjschool_get_route_by_id( $retrieved_data->route_id );
 												$stime       = explode( ':', $route_data->start_time );
 												$start_hour  = str_pad( $stime[0], 2, '0', STR_PAD_LEFT );
 												$start_min   = str_pad( $stime[1], 2, '0', STR_PAD_LEFT );
@@ -208,29 +212,30 @@ if ( $message ) {
 													</td>
 													<td>
 														<?php
+														$mjschool_subject = new Mjschool_Subject();
 														$subid = $retrieved_data->subject_id;
-														echo esc_html( mjschool_get_single_subject_name( $subid ) );
+														echo esc_html( $mjschool_subject->mjschool_get_single_subject_name( $subid ) );
 														?>
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Subject Name', 'mjschool' ); ?>"></i>
 													</td>
 													<td>
 														<?php
 														$cid = $retrieved_data->class_id;
-														echo esc_html( $clasname = mjschool_get_class_name( $cid ) );
+														echo esc_html( $mjschool_class->mjschool_get_class_name( $cid ) );
 														?>
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name', 'mjschool' ); ?>"></i>
 													</td>
 													<td>
 														<?php
 														if ( $retrieved_data->section_id != 0 ) {
-															echo esc_html( mjschool_get_section_name( $retrieved_data->section_id ) );
+															echo esc_html( $mjschool_class->mjschool_get_section_name( $retrieved_data->section_id ) );
 														} else {
 															esc_html_e( 'No Section', 'mjschool' );
 														}
 														?>
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Section Name', 'mjschool' ); ?>"></i>
 													</td>
-													<td><?php echo esc_html( mjschool_get_teacher( $retrieved_data->teacher_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Teacher Name', 'mjschool' ); ?>"></i></td>
+													<td><?php echo esc_html( $teacher_obj->mjschool_get_teacher( $retrieved_data->teacher_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Teacher Name', 'mjschool' ); ?>"></i></td>
 													<td><?php echo esc_html( $day ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Day', 'mjschool' ); ?>"></i></td>
 													<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->start_date ) ); ?> <?php esc_html_e( 'And', 'mjschool' ); ?> <?php echo esc_html( $start_time ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Start Date & Time', 'mjschool' ); ?>"></i> </td>
 													<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->end_date ) ); ?> <?php esc_html_e( 'And', 'mjschool' ); ?> <?php echo esc_html( $end_time ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'End Date & Time', 'mjschool' ); ?>"></i> </td>
@@ -274,10 +279,12 @@ if ( $message ) {
 										}
 									}
 								} elseif ( $school_obj->role === 'teacher' ) {
-									$retrieve_class_data = mjschool_get_all_class();
+									$mjschool_class = new Mjschool_Class();
+									$retrieve_class_data = $mjschool_class->mjschool_get_all_class();
 									foreach ( $retrieve_class_data as $data ) {
 										$meeting_list_data = $obj_virtual_classroom->mjschool_get_meeting_by_class_id_data_in_zoom( $data['class_id'] );
 										$i                 = 0;
+										$teacher_obj = new Mjschool_Teacher();
 										foreach ( $meeting_list_data as $retrieved_data ) {
 											if ( $retrieved_data->weekday_id === 1 ) {
 												$day = esc_attr__( 'Monday', 'mjschool' );
@@ -294,7 +301,8 @@ if ( $message ) {
 											} elseif ( $retrieved_data->weekday_id === 7 ) {
 												$day = esc_attr__( 'Sunday', 'mjschool' );
 											}
-											$route_data  = mjschool_get_route_by_id( $retrieved_data->route_id );
+											$mjschool_class = new Mjschool_Class();
+											$route_data  = $mjschool_class->mjschool_get_route_by_id( $retrieved_data->route_id );
 											$stime       = explode( ':', $route_data->start_time );
 											$start_hour  = str_pad( $stime[0], 2, '0', STR_PAD_LEFT );
 											$start_min   = str_pad( $stime[1], 2, '0', STR_PAD_LEFT );
@@ -317,29 +325,31 @@ if ( $message ) {
 												</td>
 												<td>
 													<?php
+													$mjschool_subject = new Mjschool_Subject();
 													$subid = $retrieved_data->subject_id;
-													echo esc_html( mjschool_get_single_subject_name( $subid ) );
+													echo esc_html( $mjschool_subject->mjschool_get_single_subject_name( $subid ) );
 													?>
 													<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Subject Name', 'mjschool' ); ?>"></i>
 												</td>
 												<td>
 													<?php
 													$cid = $retrieved_data->class_id;
-													echo esc_attr( $clasname = mjschool_get_class_name( $cid ) );
+													
+													echo esc_attr( $clasname = $mjschool_class->mjschool_get_class_name( $cid ) );
 													?>
 													<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name', 'mjschool' ); ?>"></i>
 												</td>
 												<td>
 													<?php
 													if ( $retrieved_data->section_id != 0 ) {
-														echo esc_html( mjschool_get_section_name( $retrieved_data->section_id ) );
+														echo esc_html( $mjschool_class->mjschool_get_section_name( $retrieved_data->section_id ) );
 													} else {
 														esc_html_e( 'No Section', 'mjschool' );
 													}
 													?>
 													<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Section Name', 'mjschool' ); ?>"></i>
 												</td>
-												<td><?php echo esc_html( mjschool_get_teacher( $retrieved_data->teacher_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Teacher Name', 'mjschool' ); ?>"></i></td>
+												<td><?php echo esc_html( $teacher_obj->mjschool_get_teacher( $retrieved_data->teacher_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Teacher Name', 'mjschool' ); ?>"></i></td>
 												<td><?php echo esc_html( $day ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Day', 'mjschool' ); ?>"></i></td>
 												<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->start_date ) ); ?> <?php esc_html_e( 'And', 'mjschool' ); ?> <?php echo esc_html( $start_time ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Start Date & Time', 'mjschool' ); ?>"></i> </td>
 												<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->end_date ) ); ?> <?php esc_html_e( 'And', 'mjschool' ); ?> <?php echo esc_html( $end_time ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'End Date & Time', 'mjschool' ); ?>"></i> </td>
@@ -415,6 +425,8 @@ if ( $message ) {
 									}
 								} else {
 									$i = 0;
+									$mjschool_class = new Mjschool_Class();
+									$teacher_obj = new Mjschool_Teacher();
 									foreach ( $meeting_list_data as $retrieved_data ) {
 										if ( $retrieved_data->weekday_id === 1 ) {
 											$day = esc_html__( 'Monday', 'mjschool' );
@@ -431,7 +443,8 @@ if ( $message ) {
 										} elseif ( $retrieved_data->weekday_id === 7 ) {
 											$day = esc_html__( 'Sunday', 'mjschool' );
 										}
-										$route_data  = mjschool_get_route_by_id( $retrieved_data->route_id );
+										$mjschool_class = new Mjschool_Class();
+										$route_data  = $mjschool_class->mjschool_get_route_by_id( $retrieved_data->route_id );
 										$stime       = explode( ':', $route_data->start_time );
 										$start_hour  = str_pad( $stime[0], 2, '0', STR_PAD_LEFT );
 										$start_min   = str_pad( $stime[1], 2, '0', STR_PAD_LEFT );
@@ -452,29 +465,31 @@ if ( $message ) {
 											</td>
 											<td>
 												<?php
+												$mjschool_subject = new Mjschool_Subject();
 												$subid = $retrieved_data->subject_id;
-												echo esc_attr( mjschool_get_single_subject_name( $subid ) );
+												echo esc_attr( $mjschool_subject->mjschool_get_single_subject_name( $subid ) );
 												?>
 												<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Subject Name', 'mjschool' ); ?>"></i>
 											</td>
 											<td>
 												<?php
+										
 												$cid = $retrieved_data->class_id;
-												echo esc_html( $clasname = mjschool_get_class_name( $cid ) );
+												echo esc_html( $mjschool_class->mjschool_get_class_name( $cid ) );
 												?>
 												<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name', 'mjschool' ); ?>"></i>
 											</td>
 											<td>
 												<?php
 												if ( $retrieved_data->section_id != 0 ) {
-													echo esc_html( mjschool_get_section_name( $retrieved_data->section_id ) );
+													echo esc_html( $mjschool_class->mjschool_get_section_name( $retrieved_data->section_id ) );
 												} else {
 													esc_html_e( 'No Section', 'mjschool' );
 												}
 												?>
 												<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Section Name', 'mjschool' ); ?>"></i>
 											</td>
-											<td><?php echo esc_html( mjschool_get_teacher( $retrieved_data->teacher_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Teacher Name', 'mjschool' ); ?>"></i></td>
+											<td><?php echo esc_html( $teacher_obj->mjschool_get_teacher( $retrieved_data->teacher_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Teacher Name', 'mjschool' ); ?>"></i></td>
 											<td><?php echo esc_html( $day ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Day', 'mjschool' ); ?>"></i></td>
 											<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->start_date ) ); ?> <?php esc_html_e( 'And', 'mjschool' ); ?> <?php echo esc_html( $start_time ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Start Date & Time', 'mjschool' ); ?>"></i> </td>
 											<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->end_date ) ); ?> <?php esc_html_e( 'And', 'mjschool' ); ?> <?php echo esc_html( $end_time ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'End Date & Time', 'mjschool' ); ?>"></i> </td>
@@ -577,7 +592,8 @@ if ( $message ) {
 		}
 	} elseif ( $active_tab === 'edit_meeting' ) {
 		$meeting_data    = $obj_virtual_classroom->mjschool_get_single_meeting_data_in_zoom( sanitize_text_field(wp_unslash($_REQUEST['meeting_id'])) );
-		$route_data      = mjschool_get_route_by_id( $meeting_data->route_id );
+		$mjschool_class = new Mjschool_Class();
+		$route_data      = $mjschool_class->mjschool_get_route_by_id( $meeting_data->route_id );
 		$start_time_data = explode( ':', $route_data->start_time );
 		$end_time_data   = explode( ':', $route_data->end_time );
 		if ( $start_time_data[1] === 0 || $end_time_data[1] === 0 ) {
@@ -587,8 +603,9 @@ if ( $message ) {
 			$start_time_minit = $start_time_data[1];
 			$end_time_minit   = $end_time_data[1];
 		}
-		$start_time = date( 'H:i A', strtotime( "$start_time_data[0]:$start_time_minit $start_time_data[2]" ) );
-		$end_time   = date( 'H:i A', strtotime( "$end_time_data[0]:$end_time_minit $end_time_data[2]" ) );
+		$mjschool_subject = new Mjschool_Subject();
+		$start_time = wp_date( 'H:i A', strtotime( "$start_time_data[0]:$start_time_minit $start_time_data[2]" ) );
+		$end_time   = wp_date( 'H:i A', strtotime( "$end_time_data[0]:$end_time_minit $end_time_data[2]" ) );
 		?>
 		<div class="mjschool-panel-body">
 			<form name="route_form" action="" method="post" class="mjschool-form-horizontal" id="meeting_form">
@@ -616,7 +633,7 @@ if ( $message ) {
 						<div class="col-md-6">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="class_name" class="form-control" maxlength="50" type="text" value="<?php echo esc_attr( mjschool_get_class_name( $route_data->class_id ) ); ?>" name="class_name" disabled>
+									<input id="class_name" class="form-control" maxlength="50" type="text" value="<?php $mjschool_class = new Mjschool_Class(); echo esc_attr( $mjschool_class->mjschool_get_class_name( $route_data->class_id ) ); ?>" name="class_name" disabled>
 									<label for="userinput1"><?php esc_html_e( 'Class Name', 'mjschool' ); ?></label>
 								</div>
 							</div>
@@ -624,7 +641,7 @@ if ( $message ) {
 						<div class="col-md-6">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="class_section" class="form-control" maxlength="50" type="text" value="<?php echo esc_attr( mjschool_get_section_name( $route_data->section_id ) ); ?>" name="class_section" disabled>
+									<input id="class_section" class="form-control" maxlength="50" type="text" value="<?php $mjschool_class = new Mjschool_Class(); echo esc_attr( $mjschool_class->mjschool_get_section_name( $route_data->section_id ) ); ?>" name="class_section" disabled>
 									<label for="userinput1"><?php esc_html_e( 'Class Section', 'mjschool' ); ?></label>
 								</div>
 							</div>
@@ -632,7 +649,7 @@ if ( $message ) {
 						<div class="col-md-6">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="subject" class="form-control" type="text" value="<?php echo esc_attr( mjschool_get_single_subject_name( $route_data->subject_id ) ); ?>" name="class_section" disabled>
+									<input id="subject" class="form-control" type="text" value="<?php echo esc_attr( $mjschool_subject->mjschool_get_single_subject_name( $route_data->subject_id ) ); ?>" name="class_section" disabled>
 									<label for="userinput1"><?php esc_html_e( 'Subject', 'mjschool' ); ?></label>
 								</div>
 							</div>
@@ -656,7 +673,8 @@ if ( $message ) {
 						<div class="col-md-6">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="start_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_html_e( 'Enter Start Date', 'mjschool' ); ?>" name="start_date" value="<?php echo esc_attr( date( 'Y-m-d', strtotime( $meeting_data->start_date ) ) ); ?>" readonly>
+                 
+									<input id="start_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_html_e( 'Enter Start Date', 'mjschool' ); ?>" name="start_date" value="<?php echo esc_attr( gmdate( 'Y-m-d', strtotime( $meeting_data->start_date ) ) ); ?>" readonly>
 									<label for="userinput1"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 								</div>
 							</div>
@@ -664,7 +682,7 @@ if ( $message ) {
 						<div class="col-md-6">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="end_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_html_e( 'Enter Exam Date', 'mjschool' ); ?>" name="end_date" value="<?php echo esc_attr( date( 'Y-m-d', strtotime( $meeting_data->end_date ) ) ); ?>" readonly>
+									<input id="end_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_html_e( 'Enter Exam Date', 'mjschool' ); ?>" name="end_date" value="<?php echo esc_attr( gmdate( 'Y-m-d', strtotime( $meeting_data->end_date ) ) ); ?>" readonly>
 									<label for="userinput1"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 								</div>
 							</div>

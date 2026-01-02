@@ -13,7 +13,7 @@
  */
 defined( 'ABSPATH' ) || exit;
 $mjschool_role_name                 = mjschool_get_user_role( get_current_user_id() );
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'grade';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
@@ -27,25 +27,25 @@ $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
 			if ( $user_access['delete'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
@@ -76,7 +76,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 if ( isset( $_POST['save_grade'] ) ) {
 	$nonce = sanitize_text_field(wp_unslash($_POST['_wpnonce']));
 	if ( wp_verify_nonce( $nonce, 'save_grade_admin_nonce' ) ) {
-		$created_date = date( 'Y-m-d H:i:s' );
+		$created_date = wp_date( 'Y-m-d H:i:s' );
 		$mark_from    = sanitize_text_field(wp_unslash($_POST['mark_from']));
 		$mark_upto    = sanitize_text_field(wp_unslash($_POST['mark_upto']));
 		$obj_mark = new Mjschool_Marks_Manage();
@@ -97,12 +97,12 @@ if ( isset( $_POST['save_grade'] ) ) {
 					$grade_id = array( 'grade_id' => mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['grade_id'])) ) );
 					$result   = mjschool_update_record( $table_mjschool_grade, $gradedata, $grade_id );
 					// Update custom field data.
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'grade';
 					$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $gid );
 					if ( $result ) {
 						wp_safe_redirect( home_url( ' dashboard=mjschool_user&page=grade&tab=gradelist&message=2') );
-						die();
+						exit;
 					}
 				} else {
 					wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -113,12 +113,12 @@ if ( isset( $_POST['save_grade'] ) ) {
 					$result = mjschool_insert_record( $table_mjschool_grade, $gradedata );
 					global $wpdb;
 					$last_insert_id            = $wpdb->insert_id;
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'grade';
 					$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $last_insert_id );
 					if ( $result ) {
 						wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=grade&tab=gradelist&message=1') );
-						die();
+						exit;
 					}
 				} else {
 					?>
@@ -149,22 +149,24 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
+		$mjschool_obj_grade = new Mjschool_Grade();
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = mjschool_delete_grade( $table_mjschool_grade, intval( sanitize_text_field( wp_unslash( $id ) ) ) );
+			$result = $mjschool_obj_grade->mjschool_delete_grade( $table_mjschool_grade, intval( sanitize_text_field( wp_unslash( $id ) ) ) );
 		}
 	}
 	if ( $result ) {
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=grade&tab=gradelist&message=3') );
-		die();
+		exit;
 	}
 }
 // --------------- Grade delete action. ---------------//
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
-		$result = mjschool_delete_grade( $table_mjschool_grade, mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['grade_id'])) ) );
+		$mjschool_obj_grade = new Mjschool_Grade();
+		$result = $mjschool_obj_grade->mjschool_delete_grade( $table_mjschool_grade, mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['grade_id'])) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=grade&tab=gradelist&message=3') );
-			die();
+			exit;
 		}
 	} else {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -480,7 +482,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 				</div>
 				<?php
 				// --------- Get module-wise custom field data. --------------//
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'grade';
 				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>

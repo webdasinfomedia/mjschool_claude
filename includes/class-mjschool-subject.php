@@ -166,4 +166,157 @@ class Mjschool_Subject {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		return $result = $wpdb->query( $wpdb->prepare( "DELETE FROM $table_name WHERE subid= %d", $record_id ) );
 	}
+
+	/**
+	 * Retrieves the class ID for a given subject ID.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $subject_id Subject ID.
+	 *
+	 * @return int Class ID.
+	 */
+	public function mjschool_get_subject_class( $subject_id ) {
+		global $wpdb;
+		$table_mjschool_subject = $wpdb->prefix . 'mjschool_subject';
+		$id         = absint( $subject_id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$result = $wpdb->get_row( $wpdb->prepare( "SELECT class_id FROM $table_mjschool_subject WHERE subid=%d", $id ) );
+		
+		return isset( $result->class_id ) ? $result->class_id : 0;
+	}
+
+	/**
+	 * Retrieves all subject data created by the current user.
+	 *
+	 * @param string $mjschool_table_name Table name without prefix.
+	 * @return array List of subjects.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_all_own_subject_data( $mjschool_table_name ) {
+		global $wpdb;
+		$user_id = get_current_user_id();
+		// Sanitize table name
+		$mjschool_table_name = sanitize_key( $mjschool_table_name );
+		$insert_table_name          = $wpdb->prefix . $mjschool_table_name;
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subjects = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $insert_table_name WHERE created_by=%d", $user_id ) );
+		
+		return $retrieve_subjects;
+	}
+
+	/**
+	 * Retrieves subjects by class ID.
+	 *
+	 * @param int $id Class ID.
+	 * @return array List of subjects.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_subject_by_class_id( $id ) {
+		global $wpdb;
+		$table_mjschool_subject = $wpdb->prefix . 'mjschool_subject';
+		$class_id   = absint( $id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subject = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_subject WHERE class_id=%d", $class_id ) );
+		
+		return $retrieve_subject;
+	}
+
+	/**
+	 * Retrieves subject details by subject ID.
+	 *
+	 * @param int $id Subject ID.
+	 * @return object|null Subject record.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_subject( $id ) {
+		global $wpdb;
+		$table_mjschool_subject = $wpdb->prefix . 'mjschool_subject';
+		$sid        = absint( $id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_subject WHERE subid=%d", $sid ) );
+		
+		return $retrieve_subject;
+	}
+
+	/**
+	 * Retrieves subject name and code for a given subject ID.
+	 *
+	 * @param int $id Subject ID.
+	 * @return string Subject name with code.
+	 * @since 1.0.0
+	 */
+	public function mjschool_get_single_subject_name( $id ) {
+		global $wpdb;
+		$table_mjschool_subject = $wpdb->prefix . 'mjschool_subject';
+		$subject_id = absint( $id );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$retrieve_subject = $wpdb->get_row( $wpdb->prepare( "SELECT sub_name, subject_code FROM $table_mjschool_subject WHERE subid=%d", $subject_id ) );
+		
+		if ( ! empty( $retrieve_subject ) && isset( $retrieve_subject->sub_name ) && isset( $retrieve_subject->subject_code ) ) {
+			return $retrieve_subject->sub_name . '-' . $retrieve_subject->subject_code;
+		} else {
+			return '';
+		}
+	}
+
+	/**
+	 * Retrieves a subject name and code by subject ID.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $sid Subject ID.
+	 *
+	 * @return string Subject name with code or 'N/A'.
+	 */
+	public function mjschool_get_subject_by_id( $sid ) {
+		global $wpdb;
+		$tbl_name = $wpdb->prefix . 'mjschool_subject';
+		$id       = absint( $sid );
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+		$subject = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE subid = %d", $id ) );
+		
+		if ( ! empty( $subject ) && isset( $subject->sub_name ) && isset( $subject->subject_code ) ) {
+			return esc_html( $subject->sub_name ) . '-' . esc_html( $subject->subject_code );
+		} else {
+			return 'N/A';
+		}
+	}
+	/**
+	 * Retrieves all teacher IDs assigned to a specific subject.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param object $subject_id Subject object containing the property `subid`.
+	 *
+	 * @return array List of teacher IDs associated with the subject.
+	 */
+	public function mjschool_teacher_by_subject( $subject_id ) {
+		global $wpdb;
+		$teacher_rows = array();
+		if ( isset( $subject_id->subid ) ) {
+			$subid                    = absint( $subject_id->subid );
+			$table_mjschool_subject = $wpdb->prefix . 'mjschool_teacher_subject';
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+			$result = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$table_mjschool_subject} WHERE subject_id = %d", $subid
+				)
+			);
+			
+			foreach ( $result as $tch_result ) {
+				if ( isset( $tch_result->teacher_id ) ) {
+					$teacher_rows[] = absint( $tch_result->teacher_id );
+				}
+			}
+		}
+		
+		return $teacher_rows;
+	}
 }

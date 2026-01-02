@@ -51,8 +51,9 @@ if ( isset( $_POST['save_exam'] ) ) {
 		if ( $action === 'edit' ) {
 			esc_html_e( 'Edit Exam', 'mjschool' );
 			$edit      = 1;
+			$obj_exam = new Mjschool_Exam();
 			$exam_id   = isset( $_REQUEST['exam_id'] ) ? intval( wp_unslash( $_REQUEST['exam_id'] ) ) : 0;
-			$exam_data = mjschool_get_exam_by_id( $exam_id );
+			$exam_data = $obj_exam->mjschool_get_exam_by_id( $exam_id );
 		} else {
 			esc_html_e( 'Add New Exam', 'mjschool' );
 		}

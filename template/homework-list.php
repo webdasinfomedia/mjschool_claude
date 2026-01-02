@@ -19,6 +19,7 @@
  */
 defined( 'ABSPATH' ) || exit;
 $obj            = new Mjschool_Homework();
+$mjschool_subject = new Mjschool_Subject();
 $retrieve_class_data = $obj->mjschool_get_all_homework_list();
 $mjschool_role_name      = mjschool_get_user_role( get_current_user_id() );
 if ( ! isset( $user_access ) ) {
@@ -32,6 +33,7 @@ if ( ! isset( $user_access ) ) {
 			<table id="homework_list_1" class="display" cellspacing="0" width="100%">
 				<tbody>
 				<?php
+				$mjschool_class = new Mjschool_Class();
 				foreach ( $retrieve_class_data as $retrieved_data ) {
 					?>
 					<tr>
@@ -43,8 +45,8 @@ if ( ! isset( $user_access ) ) {
 						}
 						?>
 						<td><?php echo esc_html( $retrieved_data->title ); ?></td>
-						<td><?php echo esc_html( mjschool_get_class_name( $retrieved_data->class_name ) ); ?></td>
-						<td><?php echo esc_html( mjschool_get_subject_by_id( $retrieved_data->subject ) ); ?></td>
+						<td><?php echo esc_html( $mjschool_class->mjschool_get_class_name( $retrieved_data->class_name ) ); ?></td>
+						<td><?php echo esc_html( $mjschool_subject->mjschool_get_subject_by_id( $retrieved_data->subject ) ); ?></td>
 						<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->created_date ) ); ?></td>
 						<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->submition_date ) ); ?></td>
 						<td>

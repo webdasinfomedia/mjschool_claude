@@ -11,7 +11,7 @@
  * - Add or edit hostel information such as name, type, capacity, and address.
  * - Provides form validation for required fields.
  * - Uses WordPress nonces for secure form handling.
- * - Integrates with the Mjschool_Custome_Field class for module-specific custom fields.
+ * - Integrates with the Mjschool_Custom_Field class for module-specific custom fields.
  * - Supports localization and translation through WordPress functions.
  *
  * @package    MJSchool
@@ -84,8 +84,8 @@ if ( isset( $_REQUEST['action'] ) && 'edit' === sanitize_text_field( wp_unslash(
 			</div>
 		</div>
 		<?php
-		// Get Module-Wise Custom Field Data.
-		$custom_field_obj = new Mjschool_Custome_Field();
+		// Get module-wise custom field data.
+		$custom_field_obj = new Mjschool_Custom_Field();
 		$module           = 'hostel';
 		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>

@@ -54,7 +54,7 @@ class Mjschool_Document
         $documentdata['document_content'] = wp_json_encode( array_map('sanitize_text_field', (array) $document_data));
         $documentdata['description']      = sanitize_textarea_field($data['description']);
         $documentdata['createdby']        = get_current_user_id();
-        $documentdata['created_date']     = date('Y-m-d');
+        $documentdata['created_date']     = wp_date('Y-m-d');
         if ($data['action'] === 'edit' ) {
             mjschool_append_audit_log('' . esc_html__('Update Document Detail', 'mjschool') . '', null, get_current_user_id(), 'edit', sanitize_text_field(wp_unslash($_REQUEST['page'])));
             $whereid['document_id'] = intval($data['document_id']);
@@ -172,7 +172,7 @@ class Mjschool_Document
         $letter_data['certificate_type'] = sanitize_text_field($data['certificate_type']);
         $letter_data['certificate_content'] = $str_rplc;
         $letter_data['created_by']          = get_current_user_id();
-        $letter_data['created_at']          = date('Y-m-d H:i:s');
+        $letter_data['created_at']          = wp_date('Y-m-d H:i:s');
         if ($data['edit'] ) {
             $where['id'] = $data['id'];
         	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context

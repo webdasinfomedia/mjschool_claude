@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Finance Report – Expense Graph & DataTable View.
  *
@@ -55,7 +54,7 @@ if ( $active_tab === 'expense_graph_payment' ) {
 			'11' => esc_html__( 'November', 'mjschool' ),
 			'12' => esc_html__( 'December', 'mjschool' ),
 		);
-		$year        = isset( $_POST['year'] ) ? $_POST['year'] : date( 'Y' );
+		$year        = isset( $_POST['year'] ) ? $_POST['year'] : wp_date( 'Y' );
 		$chart_array = array();
 		array_push( $chart_array, array( esc_html__( 'Month', 'mjschool' ), esc_html__( 'Expense', 'mjschool' ) ) );
 		$sumArray = array();
@@ -133,7 +132,7 @@ if ( $active_tab === 'mjschool-expense-datatable' ) {
 									<div class="col-md-6 mb-2">
 										<div class="form-group input">
 											<div class="col-md-12 form-control">
-												<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+												<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 												<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -141,7 +140,7 @@ if ( $active_tab === 'mjschool-expense-datatable' ) {
 									<div class="col-md-6 mb-2">
 										<div class="form-group input">
 											<div class="col-md-12 form-control">
-												<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+												<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 												<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -171,13 +170,13 @@ if ( $active_tab === 'mjschool-expense-datatable' ) {
 				$end_date   = $response[1];
 			}
 		} else {
-			$start_date = date( 'Y-m-d' );
-			$end_date   = date( 'Y-m-d' );
+			$start_date = wp_date( 'Y-m-d' );
+			$end_date   = wp_date( 'Y-m-d' );
 		}
 		global $wpdb;
 		$table_income = $wpdb->prefix . 'mjschool_income_expense';
-		$start_date = date('Y-m-d 00:00:00', strtotime($start_date));
-		$end_date   = date('Y-m-d 23:59:59', strtotime($end_date));
+		$start_date = wp_date('Y-m-d 00:00:00', strtotime($start_date));
+		$end_date   = wp_date('Y-m-d 23:59:59', strtotime($end_date));
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$report_6 = $wpdb->get_results(
 			$wpdb->prepare( "SELECT * FROM $table_income WHERE invoice_type = %s AND income_create_date BETWEEN %s AND %s", 'expense', $start_date, $end_date )

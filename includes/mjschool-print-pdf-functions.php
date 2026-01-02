@@ -12,1201 +12,6 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class MJSchool_PDF_Generator
- *
- * Handles PDF generation for results, certificates, invoices, etc.
- *
- * @since 2.0.0
- */
-class MJSchool_PDF_Generator {
-
-    /**
-     * mPDF instance
-     *
-     * @var \Mpdf\Mpdf
-     */
-    private $mpdf;
-
-    /**
-     * Default mPDF configuration
-     *
-     * @var array
-     */
-    private $mpdf_config = array(
-        'mode'          => 'utf-8',
-        'format'        => 'A4',
-        'orientation'   => 'P',
-        'margin_left'   => 8,
-        'margin_right'  => 8,
-        'margin_top'    => 10,
-        'margin_bottom' => 10,
-    );
-
-    /**
-     * Initialize mPDF instance
-     *
-     * @since 2.0.0
-     * @param array $config Optional custom configuration.
-     * @return bool True on success.
-     */
-    private function init_mpdf( $config = array() ) {
-        if ( ! defined( 'MJSCHOOL_PLUGIN_DIR' ) ) {
-            return false;
-        }
-
-        $autoload_path = MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
-        if ( ! file_exists( $autoload_path ) ) {
-            return false;
-        }
-
-        require_once $autoload_path;
-
-        $config = wp_parse_args( $config, $this->mpdf_config );
-
-        try {
-            $this->mpdf = new \Mpdf\Mpdf( $config );
-            $this->mpdf->autoScriptToLang = true;
-            $this->mpdf->autoLangToFont   = true;
-
-            if ( is_rtl() ) {
-                $this->mpdf->SetDirectionality( 'rtl' );
-            }
-
-            return true;
-        } catch ( \Exception $e ) {
-            error_log( 'MJSchool PDF Error: ' . $e->getMessage() );
-            return false;
-        }
-    }
-
-    /**
-     * Output PDF to browser
-     *
-     * @since 2.0.0
-     * @param string $html     HTML content.
-     * @param string $title    PDF title.
-     * @param string $filename Output filename.
-     */
-    private function output_pdf( $html, $title = 'Document', $filename = 'document.pdf' ) {
-        if ( ! $this->mpdf ) {
-            wp_die( esc_html__( 'PDF generation failed.', 'mjschool' ) );
-        }
-
-        // Load stylesheet
-        $stylesheet = $this->get_stylesheet();
-        if ( $stylesheet ) {
-            $this->mpdf->WriteHTML( $stylesheet, 1 );
-        }
-
-        $this->mpdf->SetTitle( $title );
-        $this->mpdf->SetDisplayMode( 'fullwidth' );
-        $this->mpdf->WriteHTML( $html );
-
-        // Set headers
-        header( 'Content-type: application/pdf' );
-        header( 'Content-Disposition: inline; filename="' . sanitize_file_name( $filename ) . '"' );
-        header( 'Content-Transfer-Encoding: binary' );
-        header( 'Accept-Ranges: bytes' );
-
-        $this->mpdf->Output();
-
-        // Cleanup
-        unset( $this->mpdf );
-        exit;
-    }
-
-    /**
-     * Get stylesheet content safely
-     *
-     * @since 2.0.0
-     * @return string|false Stylesheet content or false.
-     */
-    private function get_stylesheet() {
-        if ( ! defined( 'MJSCHOOL_PLUGIN_DIR' ) ) {
-            return false;
-        }
-
-        $stylesheet_path = MJSCHOOL_PLUGIN_DIR . '/assets/css/mjschool-style.css';
-
-        if ( ! file_exists( $stylesheet_path ) || ! is_readable( $stylesheet_path ) ) {
-            return false;
-        }
-
-        // Use WP_Filesystem for better security
-        global $wp_filesystem;
-        if ( empty( $wp_filesystem ) ) {
-            require_once ABSPATH . 'wp-admin/includes/file.php';
-            WP_Filesystem();
-        }
-
-        if ( $wp_filesystem ) {
-            return $wp_filesystem->get_contents( $stylesheet_path );
-        }
-
-        // Fallback - but log it
-        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-        return file_get_contents( $stylesheet_path );
-    }
-
-    /**
-     * Verify request and check permissions
-     *
-     * @since 2.0.0
-     * @param string $action Required capability or 'public'.
-     * @return bool True if authorized.
-     */
-    private function verify_request( $action = 'read' ) {
-        // For public PDF generation (like student results), verify the user has access
-        if ( ! is_user_logged_in() ) {
-            return false;
-        }
-
-        // Check if user can view the requested data
-        // This should be extended based on specific requirements
-        return current_user_can( $action ) || current_user_can( 'read' );
-    }
-
-    /**
-     * Safely get request parameter
-     *
-     * @since 2.0.0
-     * @param string $key     Parameter key.
-     * @param string $type    Expected type: 'int', 'string', 'email'.
-     * @param mixed  $default Default value.
-     * @return mixed Sanitized value.
-     */
-    private function get_param( $key, $type = 'string', $default = '' ) {
-        if ( ! isset( $_REQUEST[ $key ] ) ) {
-            return $default;
-        }
-
-        $value = wp_unslash( $_REQUEST[ $key ] );
-
-        switch ( $type ) {
-            case 'int':
-                return absint( $value );
-
-            case 'encrypted_int':
-                if ( function_exists( 'mjschool_decrypt_id' ) ) {
-                    return absint( mjschool_decrypt_id( sanitize_text_field( $value ) ) );
-                }
-                return 0;
-
-            case 'email':
-                return sanitize_email( $value );
-
-            case 'textarea':
-                return sanitize_textarea_field( $value );
-
-            case 'string':
-            default:
-                return sanitize_text_field( $value );
-        }
-    }
-
-    /**
-     * Generate group result PDF
-     *
-     * @since 2.0.0
-     */
-    public function generate_group_result_pdf() {
-        if ( ! $this->verify_request() ) {
-            wp_die( esc_html__( 'Unauthorized access.', 'mjschool' ) );
-        }
-
-        $student_id = $this->get_param( 'student', 'encrypted_int' );
-        $merge_id   = $this->get_param( 'merge_id', 'encrypted_int' );
-        $class_id   = $this->get_param( 'class_id', 'encrypted_int' );
-        $section_id = $this->get_param( 'section_id', 'encrypted_int' );
-        $teacher_id = $this->get_param( 'teacher_id', 'int' ); // FIXED: Added intval
-        $comment    = $this->get_param( 'comment', 'textarea' );
-
-        if ( ! $student_id || ! $merge_id ) {
-            wp_die( esc_html__( 'Invalid parameters.', 'mjschool' ) );
-        }
-
-        // Verify student exists
-        $user = get_userdata( $student_id );
-        if ( ! $user ) {
-            wp_die( esc_html__( 'Student not found.', 'mjschool' ) );
-        }
-
-        // Get exam data
-        if ( ! class_exists( 'Mjschool_Marks_Manage' ) || ! class_exists( 'Mjschool_exam' ) ) {
-            wp_die( esc_html__( 'Required classes not found.', 'mjschool' ) );
-        }
-
-        $obj_mark   = new Mjschool_Marks_Manage();
-        $exam_obj   = new Mjschool_exam();
-        $merge_data = $exam_obj->mjschool_get_single_merge_exam_setting( $merge_id );
-
-        if ( ! $merge_data ) {
-            wp_die( esc_html__( 'Exam data not found.', 'mjschool' ) );
-        }
-
-        // Get teacher signature if provided
-        $signature_url = '';
-        if ( $teacher_id ) {
-            $metadata       = get_user_meta( $teacher_id );
-            $signature_path = isset( $metadata['signature'][0] ) ? $metadata['signature'][0] : '';
-            $signature_url  = $signature_path ? content_url( $signature_path ) : '';
-        }
-
-        // Generate HTML
-        $html = $this->render_group_result_html(
-            $student_id,
-            $merge_data,
-            $class_id,
-            $section_id,
-            $comment,
-            $signature_url,
-            $obj_mark,
-            $exam_obj
-        );
-
-        // Initialize and output PDF
-        if ( ! $this->init_mpdf() ) {
-            wp_die( esc_html__( 'Failed to initialize PDF generator.', 'mjschool' ) );
-        }
-
-        $this->output_pdf( $html, 'Result', 'group_result.pdf' );
-    }
-
-    /**
-     * Render group result HTML
-     *
-     * @since 2.0.0
-     * @param int    $student_id    Student ID.
-     * @param object $merge_data    Merge exam data.
-     * @param int    $class_id      Class ID.
-     * @param int    $section_id    Section ID.
-     * @param string $comment       Teacher comment.
-     * @param string $signature_url Teacher signature URL.
-     * @param object $obj_mark      Marks manager object.
-     * @param object $exam_obj      Exam object.
-     * @return string HTML content.
-     */
-    private function render_group_result_html( $student_id, $merge_data, $class_id, $section_id, $comment, $signature_url, $obj_mark, $exam_obj ) {
-        $merge_name        = $merge_data->merge_name;
-        $merge_config_data = json_decode( $merge_data->merge_config );
-        $subject           = $obj_mark->mjschool_student_subject_list( $class_id, $section_id );
-        $total_subject     = count( $subject );
-
-        // Prevent division by zero
-        if ( $total_subject === 0 ) {
-            return '<p>' . esc_html__( 'No subjects found.', 'mjschool' ) . '</p>';
-        }
-
-        ob_start();
-        ?>
-        <!-- School Header -->
-        <?php echo $this->render_school_header(); ?>
-
-        <!-- Student Info -->
-        <div style="border: 2px solid; margin-bottom:12px;">
-            <div class="mjschool_float_left_width_100">
-                <div class="mjschool_padding_10px">
-                    <div style="float:left; width:50%;">
-                        <b><?php esc_html_e( 'Student Name', 'mjschool' ); ?></b>:
-                        <?php echo esc_html( get_user_meta( $student_id, 'first_name', true ) . ' ' . get_user_meta( $student_id, 'last_name', true ) ); ?>
-                    </div>
-                    <div style="float:left; width:50%;">
-                        <b><?php esc_html_e( 'Exam Name', 'mjschool' ); ?></b>:
-                        <?php echo esc_html( $merge_name ); ?>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <div style="float:left; width:50%;">
-                        <b><?php esc_html_e( 'Roll Number', 'mjschool' ); ?></b>:
-                        <?php echo esc_html( get_user_meta( $student_id, 'roll_id', true ) ); ?>
-                    </div>
-                    <div style="width: 50%; float: left; margin-bottom: 5px;">
-                        <b><?php esc_html_e( 'Class & Section', 'mjschool' ); ?></b>:
-                        <?php
-                        $class_name = function_exists( 'mjschool_get_class_name' ) ? mjschool_get_class_name( $class_id ) : '';
-                        if ( ! empty( $section_id ) && function_exists( 'mjschool_get_section_name' ) ) {
-                            $section_name = mjschool_get_section_name( $section_id );
-                            echo esc_html( $class_name . ' ( ' . $section_name . ' )' );
-                        } else {
-                            echo esc_html( $class_name );
-                        }
-                        ?>
-                    </div>
-                    <div style="clear:both;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Results Table -->
-        <?php echo $this->render_group_result_table( $subject, $merge_config_data, $student_id, $class_id, $obj_mark, $exam_obj, $merge_data ); ?>
-
-        <!-- Signatures -->
-        <?php echo $this->render_signatures( $comment, $signature_url ); ?>
-
-        <?php
-        return ob_get_clean();
-    }
-
-    /**
-     * Render school header for PDFs
-     *
-     * @since 2.0.0
-     * @return string HTML content.
-     */
-    private function render_school_header() {
-        ob_start();
-        ?>
-        <div class="container" style="margin-bottom:12px;">
-            <div style="border: 2px solid;">
-                <div style="padding:20px;">
-                    <div class="mjschool_float_left_width_100">
-                        <div style="float:left;width:30%;">
-                            <div class="mjschool-custom-logo-class" style="float:left;border-radius:50px;">
-                                <div style="background-image: url('<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>');height: 150px;border-radius: 50%;background-repeat:no-repeat;background-size:cover;"></div>
-                            </div>
-                        </div>
-                        <div style="float:left; width:70%;font-size:24px;padding-top:25px;">
-                            <p class="mjschool_fees_widht_100_fonts_24px"><?php echo esc_html( get_option( 'mjschool_name' ) ); ?></p>
-                            <p class="mjschool_fees_center_fonts_17px"><?php echo esc_html( get_option( 'mjschool_address' ) ); ?></p>
-                            <div class="mjschool_fees_center_margin_0px">
-                                <p class="mjschool_fees_width_fit_content_inline">
-                                    <?php esc_html_e( 'E-mail', 'mjschool' ); ?>: <?php echo esc_html( get_option( 'mjschool_email' ) ); ?>
-                                    &nbsp;&nbsp;
-                                    <?php esc_html_e( 'Phone', 'mjschool' ); ?>: <?php echo esc_html( get_option( 'mjschool_contact_number' ) ); ?>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
-
-    /**
-     * Render group result table
-     *
-     * @since 2.0.0
-     * @param array  $subject           Subject list.
-     * @param array  $merge_config_data Merge configuration.
-     * @param int    $student_id        Student ID.
-     * @param int    $class_id          Class ID.
-     * @param object $obj_mark          Marks manager.
-     * @param object $exam_obj          Exam object.
-     * @param object $merge_data        Merge data.
-     * @return string HTML content.
-     */
-    private function render_group_result_table( $subject, $merge_config_data, $student_id, $class_id, $obj_mark, $exam_obj, $merge_data ) {
-        ob_start();
-
-        $total_obtained     = 0;
-        $total_max_possible = 0;
-        $any_subject_failed = false;
-
-        ?>
-        <table style="float:left;width:100%;border:1px solid #000;margin-bottom:12px;" cellpadding="10" cellspacing="0">
-            <thead>
-                <tr style="background-color:#b8daff;">
-                    <th rowspan="2" style="border:1px solid #000;"><?php esc_html_e( 'Subjects', 'mjschool' ); ?></th>
-                    <?php
-                    if ( ! empty( $merge_config_data ) ) {
-                        foreach ( $merge_config_data as $item ) {
-                            $exam_id   = $item->exam_id;
-                            $exam_name = function_exists( 'mjschool_get_exam_name_id' ) ? mjschool_get_exam_name_id( $exam_id ) : '';
-
-                            if ( function_exists( 'mjschool_check_contribution' ) && mjschool_check_contribution( $exam_id ) === 'yes' ) {
-                                $exam_data                = $exam_obj->mjschool_exam_data( $exam_id );
-                                $contributions_data_array = json_decode( $exam_data->contributions_data, true );
-                                $colspan                  = is_array( $contributions_data_array ) ? count( $contributions_data_array ) : 1;
-                                echo '<th colspan="' . esc_attr( $colspan ) . '" style="border:1px solid #000;">' . esc_html( $exam_name ) . '</th>';
-                            } else {
-                                echo '<th style="border:1px solid #000;">' . esc_html( $exam_name ) . '</th>';
-                            }
-                        }
-                    }
-                    ?>
-                    <th colspan="2" style="border:1px solid #000;">
-                        <?php
-                        if ( function_exists( 'mjschool_print_weightage_data_pdf' ) ) {
-                            echo esc_html( mjschool_print_weightage_data_pdf( $merge_data->merge_config ) );
-                        }
-                        ?>
-                    </th>
-                </tr>
-                <tr style="background-color:#b8daff;">
-                    <?php
-                    if ( ! empty( $merge_config_data ) ) {
-                        foreach ( $merge_config_data as $item ) {
-                            $exam_id = $item->exam_id;
-
-                            if ( function_exists( 'mjschool_check_contribution' ) && mjschool_check_contribution( $exam_id ) === 'yes' ) {
-                                $exam_data                = $exam_obj->mjschool_exam_data( $exam_id );
-                                $contributions_data_array = json_decode( $exam_data->contributions_data, true );
-
-                                if ( is_array( $contributions_data_array ) ) {
-                                    foreach ( $contributions_data_array as $con_value ) {
-                                        echo '<th style="border:1px solid #000;">' . esc_html( $con_value['label'] ) . ' (' . esc_html( $con_value['mark'] ) . ')</th>';
-                                    }
-                                }
-                            } else {
-                                ?>
-                                <th style="border:1px solid #000;"><?php esc_html_e( 'Grand Total(100)', 'mjschool' ); ?></th>
-                                <?php
-                            }
-                        }
-                    }
-                    ?>
-                    <th style="border:1px solid #000;"><?php esc_html_e( 'Grand Total(100)', 'mjschool' ); ?></th>
-                    <th style="border:1px solid #000;"><?php esc_html_e( 'Grade', 'mjschool' ); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                foreach ( $subject as $sub ) {
-                    echo '<tr>';
-                    echo '<td style="border:1px solid #000;">' . esc_html( $sub->sub_name ) . '</td>';
-
-                    $subject_total_weighted = 0;
-
-                    foreach ( $merge_config_data as $item ) {
-                        $exam_id        = $item->exam_id;
-                        $exam_weightage = isset( $item->weightage ) ? floatval( $item->weightage ) : 0;
-                        $marks          = $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $student_id );
-
-                        if ( function_exists( 'mjschool_check_contribution' ) && mjschool_check_contribution( $exam_id ) === 'yes' ) {
-                            $exam_data                = $exam_obj->mjschool_exam_data( $exam_id );
-                            $contributions_data_array = json_decode( $exam_data->contributions_data, true );
-                            $subject_total            = 0;
-
-                            if ( is_array( $contributions_data_array ) ) {
-                                foreach ( $contributions_data_array as $con_id => $con_value ) {
-                                    $mark_value     = isset( $marks[ $con_id ] ) ? floatval( $marks[ $con_id ] ) : 0;
-                                    $subject_total += $mark_value;
-                                    echo '<td style="border:1px solid #000;font-size:18px;">' . esc_html( $mark_value ) . '</td>';
-                                }
-                            }
-
-                            $weighted_marks = $exam_weightage > 0 ? ( $subject_total * $exam_weightage ) / 100 : 0;
-                            $pass_marks     = $obj_mark->mjschool_get_pass_marks( $exam_id );
-
-                            if ( $subject_total < $pass_marks ) {
-                                $any_subject_failed = true;
-                            }
-                        } else {
-                            $marks_float = floatval( $marks );
-                            echo '<td style="border:1px solid #000;font-size:18px;">' . esc_html( $marks_float ) . '</td>';
-
-                            $weighted_marks = $exam_weightage > 0 ? ( $marks_float * $exam_weightage ) / 100 : 0;
-                            $pass_marks     = $obj_mark->mjschool_get_pass_marks( $exam_id );
-
-                            if ( $marks_float < $pass_marks ) {
-                                $any_subject_failed = true;
-                            }
-                        }
-
-                        $subject_total_weighted += $weighted_marks;
-                    }
-
-                    $subject_grade = $obj_mark->mjschool_get_grade_base_on_grand_total( $subject_total_weighted );
-                    echo '<td style="border:1px solid #000;">' . esc_html( round( $subject_total_weighted, 2 ) ) . '</td>';
-                    echo '<td style="border:1px solid #000;">' . esc_html( $subject_grade ) . '</td>';
-                    echo '</tr>';
-
-                    $total_obtained     += $subject_total_weighted;
-                    $total_max_possible += 100;
-                }
-
-                // FIXED: Prevent division by zero
-                $percentage   = $total_max_possible > 0 ? ( $total_obtained / $total_max_possible ) * 100 : 0;
-                $final_grade  = $obj_mark->mjschool_get_grade_base_on_grand_total( $percentage );
-                $final_result = ( $any_subject_failed || $percentage < 33 ) ? esc_html__( 'Fail', 'mjschool' ) : esc_html__( 'Pass', 'mjschool' );
-                ?>
-            </tbody>
-        </table>
-
-        <!-- Summary Table -->
-        <table style="float:left;width:100%;border:1px solid #000;margin-bottom:12px;" cellpadding="10" cellspacing="0">
-            <thead>
-                <tr style="background-color:#b8daff;">
-                    <th style="border:1px solid #000; font-size: 12px;"><?php esc_html_e( 'Overall Mark', 'mjschool' ); ?></th>
-                    <th style="border:1px solid #000; font-size: 12px;"><?php esc_html_e( 'Percentage', 'mjschool' ); ?></th>
-                    <th style="border:1px solid #000; font-size: 12px;"><?php esc_html_e( 'Grade', 'mjschool' ); ?></th>
-                    <th style="border:1px solid #000; font-size: 12px;"><?php esc_html_e( 'Result', 'mjschool' ); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr style="background-color:#b8daff;">
-                    <td style="border:1px solid #000;"><?php echo esc_html( round( $total_obtained, 2 ) . ' / ' . $total_max_possible ); ?></td>
-                    <td style="border:1px solid #000;"><?php echo esc_html( number_format( $percentage, 2 ) . '%' ); ?></td>
-                    <td style="border:1px solid #000;"><?php echo esc_html( $final_grade ); ?></td>
-                    <td style="border:1px solid #000;"><?php echo esc_html( $final_result ); ?></td>
-                </tr>
-            </tbody>
-        </table>
-        <?php
-
-        return ob_get_clean();
-    }
-
-    /**
-     * Render signatures section
-     *
-     * @since 2.0.0
-     * @param string $comment       Teacher comment.
-     * @param string $signature_url Teacher signature URL.
-     * @return string HTML content.
-     */
-    private function render_signatures( $comment, $signature_url ) {
-        ob_start();
-        ?>
-        <div style="border: 2px solid; width:96.6%; float: left; margin-bottom:12px; padding: 15px 10px; overflow: hidden;">
-            <!-- Teacher's Comment -->
-            <div style="float: left; width: 33.33%;">
-                <div style="margin-left: 20px;">
-                    <strong><?php esc_html_e( "Teacher's Comment", 'mjschool' ); ?>:</strong>
-                    <p><?php echo esc_html( $comment ); ?></p>
-                </div>
-            </div>
-
-            <!-- Teacher Signature -->
-            <div style="float: left; width: 33.33%; text-align: center; padding-top: 0px;">
-                <?php if ( ! empty( $signature_url ) ) : ?>
-                    <div>
-                        <img src="<?php echo esc_url( $signature_url ); ?>" style="width:100px;height:45px;" alt="<?php esc_attr_e( 'Teacher Signature', 'mjschool' ); ?>">
-                    </div>
-                <?php else : ?>
-                    <div>
-                        <div style="width:100px;height:45px;"></div>
-                    </div>
-                <?php endif; ?>
-                <div class="mjschool_fees_width_150px"></div>
-                <div class="mjschool_margin_top_5px">
-                    <?php esc_html_e( 'Teacher Signature', 'mjschool' ); ?>
-                </div>
-            </div>
-
-            <!-- Principal Signature -->
-            <div style="float: left; width: 30%; text-align: right; padding-right: 20px;">
-                <div>
-                    <img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" class="mjschool_width_100px" alt="<?php esc_attr_e( 'Principal Signature', 'mjschool' ); ?>">
-                </div>
-                <div style="border-top: 1px solid #000; width: 150px; margin: 5px 0 5px auto;"></div>
-                <div style="margin-right:10px; margin-bottom:10px;">
-                    <?php esc_html_e( 'Principal Signature', 'mjschool' ); ?>
-                </div>
-            </div>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
-
-    /**
-     * Generate single exam result PDF
-     *
-     * @since 2.0.0
-     */
-    public function generate_result_pdf() {
-        if ( ! $this->verify_request() ) {
-            wp_die( esc_html__( 'Unauthorized access.', 'mjschool' ) );
-        }
-
-        $student_id = $this->get_param( 'student', 'encrypted_int' );
-        $exam_id    = $this->get_param( 'exam_id', 'encrypted_int' );
-        $class_id   = $this->get_param( 'class_id', 'encrypted_int' );
-        $section_id = $this->get_param( 'section_id', 'encrypted_int' );
-        $teacher_id = $this->get_param( 'teacher_id', 'int' );
-        $comment    = $this->get_param( 'comment', 'textarea' );
-
-        if ( ! $student_id || ! $exam_id ) {
-            wp_die( esc_html__( 'Invalid parameters.', 'mjschool' ) );
-        }
-
-        // Verify student exists
-        $user = get_userdata( $student_id );
-        if ( ! $user ) {
-            wp_die( esc_html__( 'Student not found.', 'mjschool' ) );
-        }
-
-        // Get required classes
-        if ( ! class_exists( 'Mjschool_Marks_Manage' ) || ! class_exists( 'Mjschool_exam' ) ) {
-            wp_die( esc_html__( 'Required classes not found.', 'mjschool' ) );
-        }
-
-        $obj_mark  = new Mjschool_Marks_Manage();
-        $exam_obj  = new Mjschool_exam();
-        $exam_data = $exam_obj->mjschool_exam_data( $exam_id );
-
-        if ( ! $exam_data ) {
-            wp_die( esc_html__( 'Exam data not found.', 'mjschool' ) );
-        }
-
-        // Use exam's class_id if available
-        $class_id        = $exam_data->class_id ?: $class_id;
-        $exam_section_id = $exam_data->section_id;
-
-        // Get subjects
-        if ( $exam_section_id === 0 && function_exists( 'mjschool_get_subject_by_class_id' ) ) {
-            $subject = mjschool_get_subject_by_class_id( $class_id );
-        } elseif ( function_exists( 'mjschool_get_subjects_by_class_and_section' ) ) {
-            $subject = mjschool_get_subjects_by_class_and_section( $class_id, $exam_section_id );
-        } else {
-            $subject = array();
-        }
-
-        // Get teacher signature
-        $signature_url = '';
-        if ( $teacher_id ) {
-            $metadata       = get_user_meta( $teacher_id );
-            $signature_path = isset( $metadata['signature'][0] ) ? $metadata['signature'][0] : '';
-            $signature_url  = $signature_path ? content_url( $signature_path ) : '';
-        }
-
-        // Generate HTML
-        $html = $this->render_result_html(
-            $student_id,
-            $exam_id,
-            $exam_data,
-            $class_id,
-            $section_id,
-            $subject,
-            $comment,
-            $signature_url,
-            $obj_mark,
-            $exam_obj
-        );
-
-        // Initialize and output PDF
-        if ( ! $this->init_mpdf() ) {
-            wp_die( esc_html__( 'Failed to initialize PDF generator.', 'mjschool' ) );
-        }
-
-        $this->output_pdf( $html, 'Result', 'result.pdf' );
-    }
-
-    /**
-     * Render result HTML for single exam
-     *
-     * @since 2.0.0
-     * @param int    $student_id    Student ID.
-     * @param int    $exam_id       Exam ID.
-     * @param object $exam_data     Exam data.
-     * @param int    $class_id      Class ID.
-     * @param int    $section_id    Section ID.
-     * @param array  $subject       Subject list.
-     * @param string $comment       Teacher comment.
-     * @param string $signature_url Signature URL.
-     * @param object $obj_mark      Marks manager.
-     * @param object $exam_obj      Exam object.
-     * @return string HTML content.
-     */
-    private function render_result_html( $student_id, $exam_id, $exam_data, $class_id, $section_id, $subject, $comment, $signature_url, $obj_mark, $exam_obj ) {
-        $school_type   = get_option( 'mjschool_custom_class', 'school' );
-        $total_subject = count( $subject );
-
-        // FIXED: Prevent division by zero
-        if ( $total_subject === 0 ) {
-            return '<p>' . esc_html__( 'No subjects found for this exam.', 'mjschool' ) . '</p>';
-        }
-
-        // FIXED: Initialize variables before use
-        $total       = 0;
-        $total_marks = 0;
-        $grade_point = 0;
-        $exam_marks  = isset( $exam_data->total_mark ) ? floatval( $exam_data->total_mark ) : 100;
-
-        // Check for contributions
-        $contributions            = isset( $exam_data->contributions ) ? $exam_data->contributions : 'no';
-        $contributions_data_array = array();
-
-        if ( $contributions === 'yes' && ! empty( $exam_data->contributions_data ) ) {
-            $contributions_data_array = json_decode( $exam_data->contributions_data, true );
-            if ( ! is_array( $contributions_data_array ) ) {
-                $contributions_data_array = array();
-            }
-        }
-
-        ob_start();
-
-        // Render appropriate layout based on RTL
-        if ( is_rtl() ) {
-            echo $this->render_result_rtl_html( $student_id, $exam_id, $exam_data, $class_id, $section_id, $subject, $comment, $signature_url, $obj_mark, $contributions, $contributions_data_array, $exam_marks );
-        } else {
-            echo $this->render_result_ltr_html( $student_id, $exam_id, $exam_data, $class_id, $section_id, $subject, $comment, $signature_url, $obj_mark, $contributions, $contributions_data_array, $exam_marks, $school_type );
-        }
-
-        return ob_get_clean();
-    }
-
-    /**
-     * Render LTR result HTML
-     *
-     * @since 2.0.0
-     * @return string HTML content.
-     */
-    private function render_result_ltr_html( $student_id, $exam_id, $exam_data, $class_id, $section_id, $subject, $comment, $signature_url, $obj_mark, $contributions, $contributions_data_array, $exam_marks, $school_type ) {
-        // FIXED: Initialize all variables
-        $total           = 0;
-        $total_marks     = 0;
-        $grade_point     = 0;
-        $total_pass_mark = 0;
-        $total_max_mark  = 0;
-        $total_subject   = count( $subject );
-        $percentage      = 0;
-        $GPA             = 0;
-
-        ob_start();
-        ?>
-        <!-- School Header -->
-        <?php echo $this->render_school_header(); ?>
-
-        <!-- Student Info -->
-        <div class="mjschool-width-print" style="border: 2px solid;margin-bottom:8px;float:left;width:97%;padding:20px;margin-top:10px;">
-            <div class="mjschool_float_left_width_100">
-                <div class="mjschool_padding_10px">
-                    <div class="mjschool_float_width_css">
-                        <b><?php esc_html_e( 'Student Name', 'mjschool' ); ?></b>:
-                        <?php echo esc_html( get_user_meta( $student_id, 'first_name', true ) . ' ' . get_user_meta( $student_id, 'last_name', true ) ); ?>
-                    </div>
-                    <div class="mjschool_float_width_css">
-                        <b><?php esc_html_e( 'Exam Name', 'mjschool' ); ?></b>:
-                        <?php echo esc_html( function_exists( 'mjschool_get_exam_name_id' ) ? mjschool_get_exam_name_id( $exam_id ) : '' ); ?>
-                    </div>
-                </div>
-            </div>
-            <div class="mjschool_float_width_css">
-                <div class="mjschool_padding_10px">
-                    <div class="mjschool_float_width_css">
-                        <b><?php esc_html_e( 'Roll Number', 'mjschool' ); ?></b>:
-                        <?php echo esc_html( get_user_meta( $student_id, 'roll_id', true ) ); ?>
-                    </div>
-                </div>
-            </div>
-            <div style="float:right;width:50%;">
-                <div style="padding-top:10px;">
-                    <b><?php echo esc_html( $school_type === 'university' ? __( 'Class Name', 'mjschool' ) : __( 'Class & Section', 'mjschool' ) ); ?></b>:
-                    <?php
-                    $classname    = function_exists( 'mjschool_get_class_name' ) ? mjschool_get_class_name( $class_id ) : '';
-                    $section_name = ( ! empty( $section_id ) && function_exists( 'mjschool_get_section_name' ) ) ? mjschool_get_section_name( $section_id ) : '';
-
-                    if ( $school_type === 'university' ) {
-                        echo esc_html( $classname );
-                    } else {
-                        echo esc_html( $classname . ( $section_name ? ' - ' . $section_name : '' ) );
-                    }
-                    ?>
-                </div>
-            </div>
-        </div>
-
-        <!-- Results Table -->
-        <table style="float:left;width:100%;border:1px solid #000;margin-bottom:8px;" cellpadding="10" cellspacing="0">
-            <thead>
-                <tr style="border-bottom: 1px solid #000;background-color:#b8daff;">
-                    <th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"><?php esc_html_e( 'Subjects', 'mjschool' ); ?></th>
-                    <?php
-                    if ( $contributions === 'yes' && ! empty( $contributions_data_array ) ) {
-                        foreach ( $contributions_data_array as $con_value ) {
-                            ?>
-                            <th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;">
-                                <?php echo esc_html( $con_value['label'] . ' (' . $con_value['mark'] . ')' ); ?>
-                            </th>
-                            <?php
-                        }
-                        ?>
-                        <th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;">
-                            <?php esc_html_e( 'Total', 'mjschool' ); ?>
-                        </th>
-                        <?php
-                    } else {
-                        ?>
-                        <th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;">
-                            <?php esc_html_e( 'Total', 'mjschool' ); ?>
-                        </th>
-                        <?php
-                    }
-                    ?>
-                    <th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"><?php esc_html_e( 'Grade', 'mjschool' ); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                foreach ( $subject as $sub ) {
-                    $total_pass_mark += $obj_mark->mjschool_get_pass_marks( $exam_id );
-                    ?>
-                    <tr style="border-bottom: 1px solid #000;">
-                        <td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $sub->sub_name ); ?></td>
-                        <?php
-                        $obtain_marks = $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $student_id );
-
-                        if ( $contributions === 'yes' && ! empty( $contributions_data_array ) ) {
-                            $subject_total = 0;
-                            foreach ( $contributions_data_array as $con_id => $con_value ) {
-                                $mark_value     = is_array( $obtain_marks ) ? ( isset( $obtain_marks[ $con_id ] ) ? floatval( $obtain_marks[ $con_id ] ) : 0 ) : floatval( $obtain_marks );
-                                $subject_total += $mark_value;
-                                ?>
-                                <td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $mark_value ); ?></td>
-                                <?php
-                            }
-                            ?>
-                            <td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $subject_total ); ?></td>
-                            <?php
-                            $total_marks += $subject_total;
-                        } else {
-                            $marks_float = floatval( $obtain_marks );
-                            ?>
-                            <td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $marks_float ); ?></td>
-                            <?php
-                            $total_marks += $marks_float;
-                        }
-                        ?>
-                        <td style="border-bottom: 1px solid #000;border-right: 1px solid #000;">
-                            <?php echo esc_html( $obj_mark->mjschool_get_grade( $exam_id, $class_id, $sub->subid, $student_id ) ); ?>
-                        </td>
-                    </tr>
-                    <?php
-                    $grade_point += $obj_mark->mjschool_get_grade_point( $exam_id, $class_id, $sub->subid, $student_id );
-                }
-
-                $total          = $total_marks;
-                $total_max_mark = $exam_marks * $total_subject;
-
-                // FIXED: Prevent division by zero
-                $GPA        = $total_subject > 0 ? $grade_point / $total_subject : 0;
-                $percentage = ( $total > 0 && $total_max_mark > 0 ) ? ( $total / $total_max_mark ) * 100 : 0;
-                ?>
-            </tbody>
-        </table>
-
-        <!-- Summary Table -->
-        <table style="float:left;width:100%;border:1px solid #000;margin-bottom:8px;" cellpadding="10" cellspacing="0">
-            <thead>
-                <tr style="border-bottom: 1px solid #000;background-color:#b8daff;">
-                    <th style="border-bottom: 1px solid #000;text-align:center;border-right: 1px solid #000;"><?php esc_html_e( 'Marks Obtainable', 'mjschool' ); ?></th>
-                    <th style="border-bottom: 1px solid #000;text-align:center;border-right: 1px solid #000;"><?php esc_html_e( 'Marks Obtained', 'mjschool' ); ?></th>
-                    <th style="border-bottom: 1px solid #000;text-align:center;border-right: 1px solid #000;"><?php esc_html_e( 'Percentage(%)', 'mjschool' ); ?></th>
-                    <th style="border-bottom: 1px solid #000;text-align:center;border-right: 1px solid #000;"><?php esc_html_e( 'GPA', 'mjschool' ); ?></th>
-                    <th style="border-bottom: 1px solid #000;text-align:center;border-right: 1px solid #000;"><?php esc_html_e( 'Result', 'mjschool' ); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr style="border-bottom: 1px solid #000;">
-                    <td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $total_max_mark ); ?></td>
-                    <td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $total ); ?></td>
-                    <td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $percentage > 0 ? number_format( $percentage, 2 ) : '-' ); ?></td>
-                    <td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( round( $GPA, 2 ) ); ?></td>
-                    <td style="border-bottom: 1px solid #000;border-right: 1px solid #000;">
-                        <?php
-                        $result      = array();
-                        $result_fail = array();
-
-                        foreach ( $subject as $sub ) {
-                            $obtain_marks = $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $student_id );
-
-                            if ( $contributions === 'yes' && ! empty( $contributions_data_array ) ) {
-                                $subject_total = 0;
-                                foreach ( $contributions_data_array as $con_id => $con_value ) {
-                                    $mark_value     = is_array( $obtain_marks ) ? ( isset( $obtain_marks[ $con_id ] ) ? floatval( $obtain_marks[ $con_id ] ) : 0 ) : floatval( $obtain_marks );
-                                    $subject_total += $mark_value;
-                                }
-                                $marks_total = $subject_total;
-                            } else {
-                                $marks_total = floatval( $obtain_marks );
-                            }
-
-                            if ( $marks_total >= $obj_mark->mjschool_get_pass_marks( $exam_id ) ) {
-                                $result[] = 'pass';
-                            } else {
-                                $result_fail[] = 'fail';
-                            }
-                        }
-
-                        // FIXED: Typo - $rest1 was $result1
-                        if ( ! empty( $result ) && in_array( 'pass', $result, true ) && ! empty( $result_fail ) && in_array( 'fail', $result_fail, true ) ) {
-                            esc_html_e( 'Fail', 'mjschool' );
-                        } elseif ( ! empty( $result ) && in_array( 'pass', $result, true ) ) {
-                            esc_html_e( 'Pass', 'mjschool' );
-                        } elseif ( ! empty( $result_fail ) && in_array( 'fail', $result_fail, true ) ) {
-                            esc_html_e( 'Fail', 'mjschool' );
-                        } else {
-                            echo '-';
-                        }
-                        ?>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-        <!-- Signatures -->
-        <?php echo $this->render_signatures( $comment, $signature_url ); ?>
-        <?php
-
-        return ob_get_clean();
-    }
-
-    /**
-     * Render RTL result HTML
-     *
-     * @since 2.0.0
-     * @return string HTML content.
-     */
-    private function render_result_rtl_html( $student_id, $exam_id, $exam_data, $class_id, $section_id, $subject, $comment, $signature_url, $obj_mark, $contributions, $contributions_data_array, $exam_marks ) {
-        // RTL version - similar structure but with RTL-specific styling
-        // For brevity, this would mirror render_result_ltr_html but with float:right instead of float:left
-        return $this->render_result_ltr_html( $student_id, $exam_id, $exam_data, $class_id, $section_id, $subject, $comment, $signature_url, $obj_mark, $contributions, $contributions_data_array, $exam_marks, get_option( 'mjschool_custom_class', 'school' ) );
-    }
-
-    /**
-     * Generate certificate PDF
-     *
-     * @since 2.0.0
-     */
-    public function generate_certificate_pdf() {
-        if ( ! $this->verify_request() ) {
-            wp_die( esc_html__( 'Unauthorized access.', 'mjschool' ) );
-        }
-
-        $certificate_id = $this->get_param( 'certificate_id', 'encrypted_int' );
-        $include_header = $this->get_param( 'certificate_header', 'string' ) === '1';
-
-        if ( ! $certificate_id ) {
-            wp_die( esc_html__( 'Invalid certificate ID.', 'mjschool' ) );
-        }
-
-        // Get certificate data
-        if ( ! function_exists( 'mjschool_get_certificate_by_id' ) ) {
-            wp_die( esc_html__( 'Certificate function not found.', 'mjschool' ) );
-        }
-
-        $certificate = mjschool_get_certificate_by_id( $certificate_id );
-
-        if ( ! $certificate || empty( $certificate->certificate_content ) ) {
-            wp_die( esc_html__( 'Certificate not found.', 'mjschool' ) );
-        }
-
-        // Build HTML
-        $html = '';
-
-        if ( $include_header ) {
-            $html .= $this->render_school_header();
-        }
-
-        $html .= wp_kses_post( stripslashes( $certificate->certificate_content ) );
-
-        // Initialize and output PDF
-        if ( ! $this->init_mpdf() ) {
-            wp_die( esc_html__( 'Failed to initialize PDF generator.', 'mjschool' ) );
-        }
-
-        $this->mpdf->SetTitle( 'Transfer Certificate' );
-        $this->mpdf->WriteHTML( $html );
-        $this->mpdf->Output( 'transfer_certificate.pdf', 'I' );
-        exit;
-    }
-
-    /**
-     * Generate invoice PDF
-     *
-     * @since 2.0.0
-     */
-    public function generate_invoice_pdf() {
-        if ( ! $this->verify_request() ) {
-            wp_die( esc_html__( 'Unauthorized access.', 'mjschool' ) );
-        }
-
-        $invoice_id   = $this->get_param( 'invoice_id', 'string' );
-        $invoice_type = $this->get_param( 'invoice_type', 'string' );
-
-        if ( ! $invoice_id || ! $invoice_type ) {
-            wp_die( esc_html__( 'Invalid parameters.', 'mjschool' ) );
-        }
-
-        if ( ! function_exists( 'mjschool_student_invoice_pdf' ) ) {
-            wp_die( esc_html__( 'Invoice function not found.', 'mjschool' ) );
-        }
-
-        ob_start();
-        mjschool_student_invoice_pdf( $invoice_id, $invoice_type );
-        $html = ob_get_clean();
-
-        // Initialize and output PDF
-        if ( ! $this->init_mpdf( array( 'format' => 'A4' ) ) ) {
-            wp_die( esc_html__( 'Failed to initialize PDF generator.', 'mjschool' ) );
-        }
-
-        $this->mpdf->SetTitle( 'Payment' );
-        $this->mpdf->WriteHTML( $html );
-        $this->mpdf->Output( 'invoice.pdf', 'I' );
-        exit;
-    }
-}
-
-/**
- * Main PDF generation handler
- *
- * @since 1.0.0
- */
-function mjschool_generate_pdf() {
-    $print_type = isset( $_REQUEST['print'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['print'] ) ) : '';
-
-    if ( empty( $print_type ) && ! isset( $_REQUEST['student_exam_receipt_pdf'] ) ) {
-        return;
-    }
-
-    // REMOVED: error_reporting(1) - should never be in production
-    $pdf_generator = new MJSchool_PDF_Generator();
-
-    // Group result PDF
-    if ( $print_type === 'group_result_pdf' && isset( $_REQUEST['student'] ) ) {
-        $pdf_generator->generate_group_result_pdf();
-        return;
-    }
-
-    // Single exam result PDF
-    if ( $print_type === 'pdf' && isset( $_REQUEST['student'] ) && isset( $_REQUEST['exam_id'] ) ) {
-        $pdf_generator->generate_result_pdf();
-        return;
-    }
-
-    // Invoice PDF
-    if ( $print_type === 'pdf' && isset( $_REQUEST['invoice_type'] ) ) {
-        $pdf_generator->generate_invoice_pdf();
-        return;
-    }
-
-    // Certificate PDF
-    if ( $print_type === 'pdf' && isset( $_REQUEST['certificate_id'] ) ) {
-        $pdf_generator->generate_certificate_pdf();
-        return;
-    }
-
-    // Payment history PDF
-    if ( $print_type === 'pdf' && isset( $_REQUEST['fee_paymenthistory'] ) ) {
-        mjschool_generate_payment_history_pdf();
-        return;
-    }
-
-    // Receipt history PDF
-    if ( $print_type === 'pdf' && isset( $_REQUEST['fee_receipthistory'] ) ) {
-        mjschool_generate_receipt_history_pdf();
-        return;
-    }
-
-    // Exam receipt PDF
-    if ( isset( $_REQUEST['student_exam_receipt_pdf'] ) && $_REQUEST['student_exam_receipt_pdf'] === 'student_exam_receipt_pdf' ) {
-        mjschool_generate_exam_receipt_pdf();
-        return;
-    }
-}
-add_action( 'init', 'mjschool_generate_pdf' );
-
-/**
- * Generate payment history PDF
- *
- * @since 2.0.0
- */
-function mjschool_generate_payment_history_pdf() {
-    if ( ! is_user_logged_in() ) {
-        wp_die( esc_html__( 'Unauthorized access.', 'mjschool' ) );
-    }
-
-    $payment_id = isset( $_REQUEST['payment_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['payment_id'] ) ) : '';
-
-    if ( ! $payment_id || ! function_exists( 'mjschool_student_payment_history_pdf' ) ) {
-        wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
-    }
-
-    ob_start();
-    mjschool_student_payment_history_pdf( $payment_id );
-    $html = ob_get_clean();
-
-    mjschool_output_simple_pdf( $html, 'Fees Payment', 'feepaymenthistory.pdf' );
-}
-
-/**
- * Generate receipt history PDF
- *
- * @since 2.0.0
- */
-function mjschool_generate_receipt_history_pdf() {
-    if ( ! is_user_logged_in() ) {
-        wp_die( esc_html__( 'Unauthorized access.', 'mjschool' ) );
-    }
-
-    $payment_id = isset( $_REQUEST['payment_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['payment_id'] ) ) : '';
-    $receipt_id = isset( $_REQUEST['receipt_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['receipt_id'] ) ) : '';
-
-    if ( ! $payment_id || ! $receipt_id || ! function_exists( 'mjschool_student_receipt_history_pdf' ) ) {
-        wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
-    }
-
-    ob_start();
-    mjschool_student_receipt_history_pdf( $payment_id, $receipt_id );
-    $html = ob_get_clean();
-
-    mjschool_output_simple_pdf( $html, 'Receipt Payment', 'receiptpayment.pdf' );
-}
-
-/**
- * Generate exam receipt PDF
- *
- * @since 2.0.0
- */
-function mjschool_generate_exam_receipt_pdf() {
-    if ( ! is_user_logged_in() ) {
-        wp_die( esc_html__( 'Unauthorized access.', 'mjschool' ) );
-    }
-
-    $student_id = isset( $_REQUEST['student_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['student_id'] ) ) : '';
-    $exam_id    = isset( $_REQUEST['exam_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['exam_id'] ) ) : '';
-
-    if ( ! $student_id || ! $exam_id || ! function_exists( 'mjschool_student_exam_receipt_pdf' ) || ! function_exists( 'mjschool_decrypt_id' ) ) {
-        wp_die( esc_html__( 'Invalid request.', 'mjschool' ) );
-    }
-
-    ob_start();
-    mjschool_student_exam_receipt_pdf( mjschool_decrypt_id( $student_id ), mjschool_decrypt_id( $exam_id ) );
-    $html = ob_get_clean();
-
-    mjschool_output_simple_pdf( $html, 'Hall Ticket', 'examreceipt.pdf' );
-}
-
-/**
- * Output a simple PDF
- *
- * @since 2.0.0
- * @param string $html     HTML content.
- * @param string $title    PDF title.
- * @param string $filename Output filename.
- */
-function mjschool_output_simple_pdf( $html, $title, $filename ) {
-    if ( ! defined( 'MJSCHOOL_PLUGIN_DIR' ) ) {
-        wp_die( esc_html__( 'Plugin directory not defined.', 'mjschool' ) );
-    }
-
-    require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
-
-    header( 'Content-type: application/pdf' );
-    header( 'Content-Disposition: inline; filename="' . sanitize_file_name( $filename ) . '"' );
-    header( 'Content-Transfer-Encoding: binary' );
-    header( 'Accept-Ranges: bytes' );
-
-    $mpdf = new \Mpdf\Mpdf();
-    $mpdf->SetTitle( $title );
-    $mpdf->autoScriptToLang = true;
-    $mpdf->autoLangToFont   = true;
-
-    if ( is_rtl() ) {
-        $mpdf->SetDirectionality( 'rtl' );
-    }
-
-    $mpdf->WriteHTML( $html );
-    $mpdf->Output();
-
-    unset( $mpdf );
-    exit;
-}
-
-/**
  * Print the student fees invoice in HTML format.
  *
  * Retrieves fee payment details, invoice number, student data, and renders
@@ -1224,10 +29,10 @@ function mjschool_student_fees_invoice_print( $fees_pay_id ) {
 	wp_print_styles();
 	$format                     = get_option( 'mjschool_invoice_option' );
 	$fees_pay_id                = intval( mjschool_decrypt_id( $fees_pay_id ) );
-	$fees_detail_result         = mjschool_get_single_fees_payment_record( $fees_pay_id );
-	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
+	$obj_feespayment            = new Mjschool_Feespayment();
+	$fees_detail_result         = $obj_feespayment->mjschool_get_single_fee_payment( $fees_pay_id );
+	$fees_history_detail_result = $obj_feespayment->mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
 	$invoice_number             = mjschool_generate_invoice_number( $fees_pay_id );
-	$obj_feespayment            = new mjschool_feespayment();
 	if ( is_rtl() ) {
 		?>
 		<style>
@@ -1403,7 +208,7 @@ function mjschool_student_fees_invoice_print( $fees_pay_id ) {
 									<div  class="mjschool_padding_0_10px">
 										<div class="mjschool_float_left_width_100">
 											<b><?php esc_html_e( 'Issue Date', 'mjschool' ); ?>:</b>
-											<?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
+											<?php echo esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
 										</div>
 									</div>
 								</div>
@@ -1411,7 +216,8 @@ function mjschool_student_fees_invoice_print( $fees_pay_id ) {
 									<div class="mjschool_padding_top_10px">
 										<b> <?php esc_html_e( 'Status', 'mjschool' ); ?>: </b>
 										<?php
-										$payment_status = mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
+										$mjschool_obj_feespayment = new Mjschool_Feespayment();
+										$payment_status = $mjschool_obj_feespayment->mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
 										if ( $payment_status === 'Fully Paid' ) {
 											echo '<span class="mjschool-green-color">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
 										}
@@ -1470,11 +276,12 @@ function mjschool_student_fees_invoice_print( $fees_pay_id ) {
 												<?php
 												$issue_date     = 'DD-MM-YYYY';
 												$issue_date     = $fees_detail_result->paid_by_date;
-												$payment_status = mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
+												$mjschool_obj_feespayment = new Mjschool_Feespayment();
+												$payment_status = $mjschool_obj_feespayment->mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
 												?>
 												<h5 class="mjschool-align-left"> 
 													<label class="mjschool-popup-label-heading text-transfer-upercase"> <?php echo esc_html__( 'Date :', 'mjschool' ); ?> </label>&nbsp; 
-													<label class="mjschool-invoice-model-value"> <?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?> </label>
+													<label class="mjschool-invoice-model-value"> <?php echo esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?> </label>
 												</h5>
 												<h5 class="mjschool-align-left">
 													<label class="mjschool-popup-label-heading text-transfer-upercase"> <?php echo esc_html__( 'Status :', 'mjschool' ); ?> </label> &nbsp;
@@ -1524,12 +331,13 @@ function mjschool_student_fees_invoice_print( $fees_pay_id ) {
 									$fees_id = explode( ',', $fees_detail_result->fees_id );
 									$x       = 1;
 									$amounts = 0;
+									$obj_fees = new Mjschool_Fees();
 									foreach ( $fees_id as $id ) {
 										?>
 										<tr>
 											<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_font_14px" > <?php echo esc_html( $x ); ?> </td>
 											<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_font_14px" > <?php echo esc_html( mjschool_get_date_in_input_box( $fees_detail_result->created_date ) ); ?> </td>
-											<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_font_14px" > <?php echo esc_html( mjschool_get_fees_term_name( $id ) ); ?> </td>
+											<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_font_14px" > <?php echo esc_html( $obj_fees->mjschool_get_fees_term_name( $id ) ); ?> </td>
 											<td class="mjschool-align-left mjschool-invoice-table-data mjschool_border_font_14px" >
 												<?php
 												$amount   = $obj_feespayment->mjschool_feetype_amount_data( $id );
@@ -1574,12 +382,13 @@ function mjschool_student_fees_invoice_print( $fees_pay_id ) {
 									$fees_id = explode( ',', $fees_detail_result->fees_id );
 									$x       = 1;
 									$amounts = 0;
+									$obj_fees = new Mjschool_Fees();
 									foreach ( $fees_id as $id ) {
 										?>
 										<tr>
 											<td class="<?php if ( ! is_rtl() ) { ?> mjschool-align-left <?php } ?> mjschool-invoice-table-data"> <?php echo esc_html( $x ); ?> </td>
 											<td class="<?php if ( ! is_rtl() ) { ?> mjschool-align-left <?php } ?> mjschool-invoice-table-data"> <?php echo esc_html( mjschool_get_date_in_input_box( $fees_detail_result->created_date ) ); ?> </td>
-											<td class="<?php if ( ! is_rtl() ) { ?> mjschool-align-left <?php } ?> mjschool-invoice-table-data"> <?php echo esc_html( mjschool_get_fees_term_name( $id ) ); ?> </td>
+											<td class="<?php if ( ! is_rtl() ) { ?> mjschool-align-left <?php } ?> mjschool-invoice-table-data"> <?php echo esc_html( $obj_fees->mjschool_get_fees_term_name( $id ) ); ?> </td>
 											<td class="<?php if ( ! is_rtl() ) { ?> mjschool-align-left <?php } ?> mjschool-invoice-table-data">
 												<?php
 												$amount   = $obj_feespayment->mjschool_feetype_amount_data( $id );
@@ -1917,17 +726,16 @@ add_action( 'init', 'mjschool_print_exam_receipt' );
  * @return void
  */
 function mjschool_student_exam_receipt_print( $student_id, $exam_id ) {
-
+	$obj_exam = new Mjschool_Exam();
+	$mjschool_obj_hall      = new Mjschool_Hall();
 	$student_id      = intval( mjschool_decrypt_id( $student_id ) );
 	$exam_id         = intval( mjschool_decrypt_id( $exam_id ) );
 	$student_data    = get_userdata( $student_id );
-	$umetadata       = mjschool_get_user_image( $student_id );
-	$exam_data       = mjschool_get_exam_by_id( $exam_id );
-	
-	$exam_hall_data  = mjschool_get_exam_hall_name( $student_id, $exam_id );
-	
-	$exam_hall_name  = mjschool_get_hall_name( $exam_hall_data->hall_id );
-	$obj_exam        = new mjschool_exam();
+	$mjschool_user = new Mjschool_User();
+	$umetadata       = $mjschool_user->mjschool_get_user_image( $student_id );
+	$exam_data       = $obj_exam->mjschool_get_exam_by_id( $exam_id );
+	$exam_hall_data  = $mjschool_obj_hall->mjschool_get_exam_hall_name( $student_id, $exam_id );
+	$exam_hall_name  = $mjschool_obj_hall->mjschool_get_hall_by_id( $exam_hall_data->hall_id );
 	$exam_time_table = $obj_exam->mjschool_get_exam_time_table_by_exam( $exam_id );
 	?>
 	<style>
@@ -2184,13 +992,14 @@ function mjschool_student_exam_receipt_print( $student_id, $exam_id ) {
 								<td class="mjschool-border-bottom" align="left"> <strong><?php esc_html_e( 'Exam Name', 'mjschool' ); ?> : </strong><?php echo esc_html( $exam_data->exam_name ); ?> </td>
 							</tr>
 							<tr>
-								<td class="mjschool-border-bottom-rigth" align="left"> <strong><?php esc_html_e( 'Class Name', 'mjschool' ); ?></strong><?php echo esc_html( mjschool_get_class_name( $student_data->class_name ) ); ?> </td>
+								<td class="mjschool-border-bottom-rigth" align="left"> <strong><?php esc_html_e( 'Class Name', 'mjschool' ); ?></strong><?php $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_class_name( $student_data->class_name ) ); ?> </td>
 								<td class="mjschool-border-bottom" align="left">
 									<strong><?php esc_html_e( 'Section Name', 'mjschool' ); ?> : </strong>
 									<?php
 									$section_name = $student_data->class_section;
-									if ( $section_name != '' ) {
-										echo esc_html( mjschool_get_section_name( $section_name ) );
+									$mjschool_class = new Mjschool_Class();
+									if ( $section_name !== '' ) {
+										echo esc_html( $mjschool_class->mjschool_get_section_name( $section_name ) );
 									} else {
 										esc_html_e( 'No Section', 'mjschool' );
 									}
@@ -2245,11 +1054,12 @@ function mjschool_student_exam_receipt_print( $student_id, $exam_id ) {
 						<tbody>
 							<?php
 							if ( ! empty( $exam_time_table ) ) {
+								$mjschool_subject = new Mjschool_Subject();
 								foreach ( $exam_time_table as $retrieved_data ) {
 									?>
 									<tr>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
+										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( $mjschool_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
+										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( $mjschool_subject->mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
 										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?></td>
 										<?php
 										$start_time_data = explode( ':', $retrieved_data->start_time );
@@ -2356,14 +1166,15 @@ function mjschool_student_exam_receipt_print( $student_id, $exam_id ) {
 							</tr>
 							<tr>
 								<td class="mjschool-border-bottom-rigth" align="left">
-									<strong><?php esc_html_e( 'Class Name', 'mjschool' ); ?> : </strong><?php echo esc_html( mjschool_get_class_name( $student_data->class_name ) ); ?>
+									<strong><?php esc_html_e( 'Class Name', 'mjschool' ); ?> : </strong><?php $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_class_name( $student_data->class_name ) ); ?>
 								</td>
 								<td class="mjschool-border-bottom" align="left">
 									<strong><?php esc_html_e( 'Section Name', 'mjschool' ); ?> : </strong>
 									<?php
 									$section_name = $student_data->class_section;
-									if ( $section_name != '' ) {
-										echo esc_html( mjschool_get_section_name( $section_name ) );
+									$mjschool_class = new Mjschool_Class();
+									if ( $section_name !== '' ) {
+										echo esc_html( $mjschool_class->mjschool_get_section_name( $section_name ) );
 									} else {
 										esc_html_e( 'No Section', 'mjschool' );
 									}
@@ -2423,11 +1234,12 @@ function mjschool_student_exam_receipt_print( $student_id, $exam_id ) {
 						<tbody>
 							<?php
 							if ( ! empty( $exam_time_table ) ) {
+								$mjschool_subject = new Mjschool_Subject();
 								foreach ( $exam_time_table as $retrieved_data ) {
 									?>
 									<tr>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
+										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( $mjschool_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
+										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( $mjschool_subject->mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
 										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin"><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?></td>
 										<?php
 										$start_time_data = explode( ':', $retrieved_data->start_time );
@@ -2481,832 +1293,6 @@ function mjschool_student_exam_receipt_print( $student_id, $exam_id ) {
 }
 
 /**
- * Generates and outputs the student examination hall ticket in printable HTML format.
- *
- * @since 1.0.0
- *
- * @param int $student_id Student ID for whom the hall ticket is generated.
- * @param int $exam_id    Exam ID associated with the hall ticket.
- *
- * @return void Outputs HTML content directly.
- */
-function mjschool_student_exam_receipt_pdf( $student_id, $exam_id ) {
-	$student_data    = get_userdata( $student_id );
-	$umetadata       = mjschool_get_user_image( $student_id );
-	$exam_data       = mjschool_get_exam_by_id( $exam_id );
-	$exam_hall_data  = mjschool_get_exam_hall_name( $student_id, $exam_id );
-	$exam_hall_name  = mjschool_get_hall_name( $exam_hall_data->hall_id );
-	$obj_exam        = new mjschool_exam();
-	$exam_time_table = $obj_exam->mjschool_get_exam_time_table_by_exam( $exam_id );
-	?>
-	<style>
-		table,
-		.header,
-		span.sign {
-			font-family: Poppins;
-			font-size: 12px;
-			color: #444;
-		}
-		.borderpx {
-			border: 2px solid #97C4E7;
-		}
-		.count td,
-		.count th {
-			height: 40px;
-		}
-		.td_pdf {
-			padding-left: 10px;
-		}
-		.mjschool-th-margin {
-			padding-left: 0px;
-		}
-		.resultdate {
-			float: left;
-			width: 200px;
-			padding-top: 100px;
-			text-align: center;
-		}
-		.signature {
-			float: right;
-			width: 200px;
-			padding-top: 55px;
-			text-align: center;
-		}
-		.exam_receipt_print {
-			width: 100%;
-			margin: 0 auto;
-		}
-		.header_logo {
-			float: left;
-			width: 100%;
-			text-align: center;
-		}
-		.font_22 {
-			font-size: 22px;
-		}
-		.mjschool-Examination-header {
-			float: left;
-			width: 100%;
-			font-size: 18px;
-			text-align: center;
-			padding-bottom: 20px;
-		}
-		.mjschool-Examination-header-color {
-			color: #970606;
-		}
-		.mjschool-float-width {
-			float: left;
-			width: 100%;
-		}
-		.mjschool-padding-top-20 {
-			padding-top: 20px;
-		}
-		.mjschool-img-td {
-			text-align: center;
-			border-right: 2px solid #97C4E7;
-		}
-		.mjschool-border-bottom {
-			border-bottom: 1px solid #97C4E7;
-		}
-		.mjschool-border-bottom-0 {
-			border-bottom: 0px;
-		}
-		.mjschool-border-bottom-rigth {
-			border-bottom: 1px solid #97C4E7;
-			border-right: 1px solid #97C4E7;
-		}
-		.mjschool-border-rigth {
-			border-right: 1px solid #97C4E7;
-		}
-		.mjschool-main-td {
-			text-align: center;
-			border-bottom: 1px solid #97C4E7;
-		}
-		.hr_color {
-			color: #97C4E7;
-		}
-		.header_color {
-			color: #204759;
-		}
-		.max_height_100 {
-			max-height: 100px;
-		}
-		.mjschool-tr-back-color {
-			background-color: #337AB7;
-		}
-		.mjschool-color-white {
-			color: white;
-		}
-	</style>
-	<?php
-	$obj_subject = new Mjschool_Subject();
-	if ( is_rtl() ) {
-		?>
-		<div class="modal-body mjschool_direction_rtl" >
-			<div id="exam_receipt_print" class="exam_receipt_print">
-				<div class="container" style="margin-bottom:12px;">
-					<div style="border: 2px solid;">
-						<div style="padding:20px;">
-							<div class="mjschool_float_left_width_100">
-								<div class="mjschool_float_left_width_25">
-									<div class="mjschool-custom-logo-class" style="float:left;border-radius:50px;">
-										<div style="width: 150px;background-image: url( '<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>' );height: 150px;border-radius: 50%;background-repeat:no-repeat;background-size:cover;"></div>
-									</div>
-								</div>
-								<div style="float:left; width:74%;font-size:24px;padding-top:25px;">
-									<p class="mjschool_fees_widht_100_fonts_24px"> <?php echo esc_html( get_option( 'mjschool_name' ) ); ?></p>
-									<p class="mjschool_fees_center_fonts_17px"> <?php echo esc_html( get_option( 'mjschool_address' ) ); ?></p>
-									<div class="mjschool_fees_center_margin_0px">
-										<p class="mjschool_fees_width_fit_content_inline">
-											<?php esc_html_e( 'E-mail', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_email' ) ); ?>&nbsp;&nbsp;<?php esc_html_e( 'Phone', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_contact_number' ) ); ?>
-										</p>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="header mjschool-Examination-header" style="margin-top: 10px;">
-					<span><strong class="mjschool-Examination-header-color"><?php esc_html_e( 'Examination Hall Ticket', 'mjschool' ); ?></strong></span>
-				</div>
-				<div class="mjschool-float-width">
-					<table width="100%" class="count borderpx" cellspacing="0" cellpadding="0">
-						<thead>
-						</thead>
-						<tbody>
-							<tr>
-								
-								<td rowspan="4" class="mjschool-img-td">
-									<?php
-									if (empty($umetadata ) ) { ?>
-										<img src="<?php echo esc_url( get_option( 'mjschool_student_thumb_new' ) ); ?>" width="100px" height="100px">
-										<?php
-									} else {
-										?>
-										<img src="<?php echo esc_url($umetadata); ?>" width="100px" height="100px">
-										<?php
-									}
-									?>
-								</td>
-								
-								<td colspan="2" class="mjschool-border-bottom td_pdf"> <strong><?php esc_html_e( 'Student Name', 'mjschool' ); ?> : </strong><?php echo esc_html( $student_data->display_name ); ?></a> </td>
-							</tr>
-							<tr>
-								<td class="mjschool-border-bottom-rigth td_pdf" align="left"> <strong><?php esc_html_e( 'Roll Nunmber', 'mjschool' ); ?> : </strong><?php echo esc_html( $student_data->roll_id ); ?> </td>
-								<td class="mjschool-border-bottom td_pdf" align="left"> <strong><?php esc_html_e( 'Exam Name', 'mjschool' ); ?> : </strong><?php echo esc_html( $exam_data->exam_name ); ?> </td>
-							</tr>
-							<tr>
-								<td class="mjschool-border-bottom-rigth td_pdf" align="left">
-									<strong><?php esc_html_e( 'Class Name', 'mjschool' ); ?> : </strong><?php echo esc_html( mjschool_get_class_name( $student_data->class_name ) ); ?>
-								</td>
-								<td class="mjschool-border-bottom td_pdf" align="left">
-									<strong><?php esc_html_e( 'Section Name', 'mjschool' ); ?> : </strong>
-									<?php
-									$section_name = $student_data->class_section;
-									if ( $section_name != '' ) {
-										echo esc_html( mjschool_get_section_name( $section_name ) );
-									} else {
-										esc_html_e( 'No Section', 'mjschool' );
-									}
-									?>
-								</td>
-							</tr>
-							<tr>
-								<td class="mjschool-border-rigth td_pdf" align="left">
-									<strong><?php esc_html_e( 'Start Date', 'mjschool' ); ?> : </strong><?php echo esc_html( mjschool_get_date_in_input_box( $exam_data->exam_start_date ) ); ?>
-								</td>
-								<td class="mjschool-border-bottom-0 td_pdf" align="left">
-									<strong><?php esc_html_e( 'End Date', 'mjschool' ); ?> : </strong><?php echo esc_html( mjschool_get_date_in_input_box( $exam_data->exam_end_date ) ); ?>
-								</td>
-							</tr>
-						</tbody>
-						<tfoot>
-						</tfoot>
-					</table>
-				</div>
-				<div class="mjschool-padding-top-20 mjschool-float-width">
-					<table width="100%" class="count borderpx" cellspacing="0" cellpadding="0">
-						<thead>
-						</thead>
-						<tbody>
-							<tr>
-								<td class="mjschool-border-bottom td_pdf">
-									<strong><?php esc_html_e( 'Examination Centre', 'mjschool' ); ?> : </strong>
-									<?php echo esc_html( $exam_hall_name ); ?>,
-									<?php echo esc_html( get_option( 'mjschool_name' ) ); ?>
-								</td>
-							</tr>
-							<tr>
-								<td class="mjschool-border-bottom-0 td_pdf">
-									<strong><?php esc_html_e( 'Examination Centre Address', 'mjschool' ); ?> : </strong><?php echo esc_html( get_option( 'mjschool_address' ) ); ?>
-								</td>
-							</tr>
-						</tbody>
-						<tfoot>
-						</tfoot>
-					</table>
-				</div>
-				<div class="mjschool-padding-top-20 mjschool-float-width">
-					<table width="100%" cellspacing="0" cellpadding="0" class="count borderpx">
-						<thead>
-							<tr>
-								<th colspan="5" class="mjschool-border-bottom"> <?php esc_html_e( 'Time Table For Exam Hall', 'mjschool' ); ?></th>
-							</tr>
-							<tr class="mjschool-tr-back-color">
-								<th class="mjschool-main-td mjschool-color-white mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php esc_html_e( 'Subject Code', 'mjschool' ); ?></th>
-								<th class="mjschool-main-td mjschool-color-white mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php esc_html_e( 'Subject', 'mjschool' ); ?></th>
-								<th class="mjschool-main-td mjschool-color-white mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php esc_html_e( 'Exam Date', 'mjschool' ); ?></th>
-								<th class="mjschool-main-td mjschool-color-white mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php esc_html_e( 'Exam Time', 'mjschool' ); ?></th>
-								<th class="mjschool-main-td mjschool-color-white mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php esc_html_e( 'Examiner Sign.', 'mjschool' ); ?></th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php
-							if ( ! empty( $exam_time_table ) ) {
-								foreach ( $exam_time_table as $retrieved_data ) {
-									?>
-									<tr>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?></td>
-										<?php
-										$start_time_data = explode( ':', $retrieved_data->start_time );
-										$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
-										$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
-										$start_am_pm     = $start_time_data[2];
-										$start_time      = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
-										$end_time_data   = explode( ':', $retrieved_data->end_time );
-										$end_hour        = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
-										$end_min         = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
-										$end_am_pm       = $end_time_data[2];
-										$end_time        = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
-										?>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px">
-											<?php echo esc_html( $start_time ); ?>
-											<?php esc_html_e( 'To', 'mjschool' ); ?>
-											<?php echo esc_html( $end_time ); ?>
-										</td>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"></td>
-									</tr>
-									<?php
-								}
-							}
-							?>
-						</tbody>
-						<tfoot>
-						</tfoot>
-					</table>
-				</div>
-				<div class="resultdate">
-					<hr color="#97C4E7">
-					<span><?php esc_html_e( 'Student Signature', 'mjschool' ); ?></span>
-				</div>
-				<div class="signature">
-					<span>
-						
-						<img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" style="width:100px; margin-right:15px;" />
-					</span>
-					<hr color="#97C4E7">
-					<span><?php esc_html_e( 'Authorized Signature', 'mjschool' ); ?></span>
-				</div>
-			</div>
-		</div>
-		<!-- RTL END --->
-		<?php
-	} else {
-		?>
-		<div class="modal-body">
-			<div id="exam_receipt_print" class="exam_receipt_print">
-				<div style="margin-bottom:8px;">
-					<div class="mjschool-width-print" style="border: 2px solid;float:left;width:96%;margin: 6px 0px 0px 0px;padding:20px;">
-						<div class="mjschool_float_left_width_100">
-							<div class="mjschool_float_left_width_25">
-								<div class="mjschool-custom-logo-class mjschool_left_border_redius_50">
-									<img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ) ?>" style="height: 150px;border-radius:50%;background-repeat:no-repeat;background-size:cover;" />
-								</div>
-								
-							</div>
-							<div class="mjschool_float_left_padding_width_75">
-								<p class="mjschool_fees_widht_100_fonts_24px"> <?php echo esc_html( get_option( 'mjschool_name' ) ); ?> </p>
-								<p class="mjschool_fees_center_fonts_17px"> <?php echo esc_html( get_option( 'mjschool_address' ) ); ?> </p>
-								<div class="mjschool_fees_center_margin_0px">
-									<p class="mjschool_fees_width_fit_content_inline">
-										<?php esc_html_e( 'E-mail', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_email' ) ); ?>
-									</p>
-									<p class="mjschool_fees_width_fit_content_inline">
-										&nbsp;&nbsp;
-										<?php esc_html_e( 'Phone', 'mjschool' ); ?> : <?php echo esc_html( get_option( 'mjschool_contact_number' ) ); ?>
-									</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="header mjschool-Examination-header" style="margin-top: 10px;">
-					<span><strong class="mjschool-Examination-header-color"> <?php esc_html_e( 'Examination Hall Ticket', 'mjschool' ); ?> </strong></span>
-				</div>
-				<div class="mjschool-float-width">
-					<table width="100%" class="count borderpx" cellspacing="0" cellpadding="0">
-						<thead>
-						</thead>
-						<tbody>
-							<tr>
-								<td rowspan="4" class="mjschool-img-td">
-									<?php 
-									if (empty($umetadata ) ) { ?>
-										<img src="<?php echo esc_url( get_option( 'mjschool_student_thumb_new' ) ); ?>" width="100px" height="100px">
-										<?php
-									} else {
-										?>
-										<img src="<?php echo esc_url($umetadata); ?>" width="100px" height="100px">
-										<?php
-									}
-									?>
-									
-								</td>
-								<td colspan="2" class="mjschool-border-bottom td_pdf">
-									<strong> <?php esc_html_e( 'Student Name', 'mjschool' ); ?> : </strong>
-									<?php echo esc_html( $student_data->display_name ); ?></a>
-								</td>
-								</td>
-							</tr>
-							<tr>
-								<td class="mjschool-border-bottom-rigth td_pdf" align="left">
-									<strong> <?php esc_html_e( 'Roll Number', 'mjschool' ); ?> : </strong>
-									<?php echo esc_html( $student_data->roll_id ); ?>
-								</td>
-								<td class="mjschool-border-bottom td_pdf" align="left">
-									<strong> <?php esc_html_e( 'Exam Name', 'mjschool' ); ?> : </strong>
-									<?php echo esc_html( $exam_data->exam_name ); ?>
-								</td>
-							</tr>
-							<tr>
-								<td class="mjschool-border-bottom-rigth td_pdf" align="left">
-									<strong> <?php esc_html_e( 'Class Name', 'mjschool' ); ?> : </strong>
-									<?php echo esc_html( mjschool_get_class_name( $student_data->class_name ) ); ?>
-								</td>
-								<td class="mjschool-border-bottom td_pdf" align="left">
-									<strong> <?php esc_html_e( 'Section Name', 'mjschool' ); ?> : </strong>
-									<?php
-									$section_name = $student_data->class_section;
-									if ( $section_name != '' ) {
-										echo esc_html( mjschool_get_section_name( $section_name ) );
-									} else {
-										esc_html_e( 'No Section', 'mjschool' );
-									}
-									?>
-								</td>
-							</tr>
-							<tr>
-								<td class="mjschool-border-rigth td_pdf" align="left">
-									<strong> <?php esc_html_e( 'Start Date', 'mjschool' ); ?> : </strong>
-									<?php echo esc_html( mjschool_get_date_in_input_box( $exam_data->exam_start_date ) ); ?>
-								</td>
-								<td class="mjschool-border-bottom-0 td_pdf" align="left">
-									<strong> <?php esc_html_e( 'End Date', 'mjschool' ); ?> : </strong>
-									<?php echo esc_html( mjschool_get_date_in_input_box( $exam_data->exam_end_date ) ); ?>
-								</td>
-							</tr>
-						</tbody>
-						<tfoot>
-						</tfoot>
-					</table>
-				</div>
-				<div class="mjschool-padding-top-20 mjschool-float-width">
-					<table width="100%" class="count borderpx" cellspacing="0" cellpadding="0">
-						<thead>
-						</thead>
-						<tbody>
-							<tr>
-								<td class="mjschool-border-bottom td_pdf">
-									<strong> <?php esc_html_e( 'Examination Centre', 'mjschool' ); ?> : </strong>
-									<?php echo esc_html( $exam_hall_name ); ?>,
-									<?php echo esc_html( get_option( 'mjschool_name' ) ); ?>
-								</td>
-							</tr>
-							<tr>
-								<td class="mjschool-border-bottom-0 td_pdf">
-									<strong> <?php esc_html_e( 'Examination Centre Address', 'mjschool' ); ?> : </strong>
-									<?php echo esc_html( get_option( 'mjschool_address' ) ); ?>
-								</td>
-							</tr>
-						</tbody>
-						<tfoot>
-						</tfoot>
-					</table>
-				</div>
-				<div class="mjschool-padding-top-20 mjschool-float-width">
-					<table width="100%" cellspacing="0" cellpadding="0" class="count borderpx">
-						<thead>
-							<tr>
-								<th colspan="5" class="mjschool-border-bottom"> <?php esc_html_e( 'Time Table For Exam Hall', 'mjschool' ); ?> </th>
-							</tr>
-							<tr class="mjschool-tr-back-color">
-								<th class="mjschool-main-td mjschool-color-white mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"> <?php esc_html_e( 'Subject Code', 'mjschool' ); ?> </th>
-								<th class="mjschool-main-td mjschool-color-white mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"> <?php esc_html_e( 'Subject', 'mjschool' ); ?> </th>
-								<th class="mjschool-main-td mjschool-color-white mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"> <?php esc_html_e( 'Exam Date', 'mjschool' ); ?> </th>
-								<th class="mjschool-main-td mjschool-color-white mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"> <?php esc_html_e( 'Exam Time', 'mjschool' ); ?> </th>
-								<th class="mjschool-main-td mjschool-color-white mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"> <?php esc_html_e( 'Examiner Sign.', 'mjschool' ); ?> </th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php
-							if ( ! empty( $exam_time_table ) ) {
-								foreach ( $exam_time_table as $retrieved_data ) {
-									?>
-									<tr>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) ); ?></td>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject_id ) ); ?></td>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->exam_date ) ); ?></td>
-										<?php
-										$start_time_data = explode( ':', $retrieved_data->start_time );
-										$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
-										$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
-										$start_am_pm     = $start_time_data[2];
-										$start_time      = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
-										$end_time_data   = explode( ':', $retrieved_data->end_time );
-										$end_hour        = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
-										$end_min         = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
-										$end_am_pm       = $end_time_data[2];
-										$end_time        = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
-										?>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px">
-											<?php echo esc_html( $start_time ); ?>
-											<?php esc_html_e( 'To', 'mjschool' ); ?>
-											<?php echo esc_html( $end_time ); ?>
-										</td>
-										<td class="mjschool-main-td mjschool-border-rigth mjschool-th-margin mjschool_padding_10px"></td>
-									</tr>
-									<?php
-								}
-							}
-							?>
-						</tbody>
-						<tfoot>
-						</tfoot>
-					</table>
-				</div>
-				<div class="resultdate">
-					<hr color="#97C4E7">
-					<span> <?php esc_html_e( 'Student Signature', 'mjschool' ); ?> </span>
-				</div>
-				<div class="signature">
-					
-					<span> <img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" style="width:100px; margin-right:15px;" /> </span>
-					
-					<hr color="#97C4E7">
-					<span> <?php esc_html_e( 'Authorized Signature', 'mjschool' ); ?> </span>
-				</div>
-			</div>
-		</div>
-		<?php
-	}
-}
-
-/**
- * Generates and outputs a PDF of an individual student's exam result.
- *
- * Uses MPDF to create a formatted result sheet including marks, grades,
- * GPA calculation, and student details.
- *
- * @since 1.0.0
- *
- * @param int $sudent_id Student ID.
- *
- * @return void Outputs the PDF directly to the browser.
- */
-function mjschool_download_result_pdf( $sudent_id ) {
-	ob_start();
-	$obj_mark      = new mjschool_Marks_Manage();
-	$exam_obj      = new mjschool_exam();
-	$uid           = $sudent_id;
-	$user          = get_userdata( $uid );
-	$user_meta     = get_user_meta( $uid );
-	$class_id      = $user_meta['class_name'][0];
-	$section_id    = $user_meta['class_section'][0];
-	$subject       = $obj_mark->mjschool_student_subject_list( $class_id, $section_id );
-	$total_subject = count( $subject );
-	$exam_id       = intval(wp_unslash($_REQUEST['exam_id']));
-	$total         = 0;
-	$grade_point   = 0;
-	$umetadata     = mjschool_get_user_image( $uid );
-	?>
-	<center>
-		
-		<div class="mjschool_float_left_width_100"> <img src="<?php echo esc_html( get_option( 'mjschool_logo' ) ) ?>" style="max-height:50px;" /> <?php echo esc_html( get_option( 'mjschool_name' ) ); ?> </div>
-		<div style="width:100%;float:left;border-bottom:1px solid red;"></div>
-		<div style="width:100%;float:left;border-bottom:1px solid yellow;padding-top:5px;"></div>
-		<br>
-		<div style="float:left;width:100%;padding:10px 0;">
-			<div style="width:70%;float:left;text-align:left;">
-				<p>
-					<?php esc_html_e( 'Surname', 'mjschool' ); ?> : <?php get_user_meta($uid, 'last_name', true); ?>
-				</p>
-				<p>
-					<?php esc_html_e( 'First Name', 'mjschool' ); ?> : <?php echo esc_html( get_user_meta($uid, 'first_name', true ) ); ?>
-				</p>
-				<p>
-					<?php esc_html_e( 'Class', 'mjschool' ); ?> :
-					<?php $class_id = get_user_meta($uid, 'class_name', true);
-					$classname = mjschool_get_class_name($class_id);
-					echo esc_html( $classname)
-					?>
-				</p>
-				<p>
-					<?php esc_html_e( 'Exam Name', 'mjschool' ); ?> : <?php echo esc_html( mjschool_get_exam_name_id($exam_id ) ); ?>
-				</p>
-			</div>
-			<div style="float:right;width:30%;"> <img src="<?php echo esc_url($umetadata['meta_value']); ?>" /> </div>
-			
-		</div>
-		<br>
-		<table style="float:left;width:100%;border:1px solid #000;" cellpadding="0" cellspacing="0">
-			<thead>
-				<?php
-				$exam_data     = $exam_obj->mjschool_exam_data( $exam_id );
-				$contributions = $exam_data->contributions;
-				if ( $contributions === 'yes' ) {
-					$contributions_data       = $exam_data->contributions_data;
-					$contributions_data_array = json_decode( $contributions_data, true );
-				}
-				?>
-				<tr style="border-bottom: 1px solid #000;">
-					<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"> <?php esc_html_e( 'S/No', 'mjschool' ); ?></th>
-					<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"> <?php esc_html_e( 'Subject', 'mjschool' ); ?></th>
-					<?php
-					if ( $contributions === 'yes' ) {
-						foreach ( $contributions_data_array as $con_id => $con_value ) {
-							?>
-							<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"> <?php echo esc_html( $con_value['label'] ) . '<br>' . '(out of ' . esc_html( $con_value['mark'] ) . ' )'; ?>
-							</th>
-							<?php
-						}
-					} else {
-						?>
-						<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"> <?php esc_html_e( 'Obtain Mark', 'mjschool' ); ?></th>
-						<?php
-					}
-					?>
-					<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"><?php esc_html_e( 'Grade', 'mjschool' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php
-				$i = 1;
-				foreach ( $subject as $sub ) {
-					?>
-					<tr style="border-bottom: 1px solid #000;">
-						<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $i ); ?> </td>
-						<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"> <?php echo esc_html( $sub->sub_name ); ?></td>
-						<?php
-						$obtain_marks = $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid );
-						if ( $contributions === 'yes' ) {
-							foreach ( $contributions_data_array as $con_id => $con_value ) {
-								?>
-								<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;">
-									<?php
-									if ( is_array( $obtain_marks ) ) {
-										echo esc_html( $obtain_marks[ $con_id ] );
-									} else {
-										echo esc_html( $obtain_marks );
-									}
-									?>
-								</td>
-								<?php
-							}
-						} else {
-							?>
-							<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"> <?php echo esc_html( $obtain_marks ); ?> </td>
-							<?php
-						}
-						?>
-						<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;">
-							<?php echo esc_html( $obj_mark->mjschool_get_grade( $exam_id, $class_id, $sub->subid, $uid ) ); ?>
-						</td>
-					</tr>
-					<?php
-					++$i;
-					if ( $contributions === 'yes' ) {
-						$tmarks = 0; // Initialize the variable.
-						foreach ( $contributions_data_array as $con_id => $con_value ) {
-							if ( is_array( $obtain_marks ) ) {
-								$tmarks += (int) $obtain_marks[ $con_id ];
-							} else {
-								$tmarks += (int) $obtain_marks;
-							}
-						}
-						$total_marks = $tmarks;
-					} else {
-						$total_marks += $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid );
-					}
-					$total       += $total_marks;
-					$grade_point += $obj_mark->mjschool_get_grade_point( $exam_id, $class_id, $sub->subid, $uid );
-				}
-				?>
-			</tbody>
-		</table>
-		<p class="result_total">
-			<?php
-			esc_html_e( 'Total Marks', 'mjschool' );
-			echo ' : ' . esc_html( $total );
-			?>
-		</p>
-		<p class="result_point">
-			<?php
-			esc_html_e( 'GPA(grade point average)', 'mjschool' );
-			$GPA = $grade_point / $total_subject;
-			echo ' : ' . esc_html( round( $GPA, 2 ) );
-			?>
-		</p>
-		<hr />
-	</center>
-	<?php
-	$out_put = ob_get_contents();
-	ob_clean();
-	header( 'Content-type: application/pdf' );
-	header( 'Content-Disposition: inline; filename="result"' );
-	header( 'Content-Transfer-Encoding: binary' );
-	header( 'Accept-Ranges: bytes' );
-	require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
-	$mpdf = new Mpdf\Mpdf();
-	$mpdf->WriteHTML( $out_put );
-	$mpdf->Output();
-	unset( $out_put );
-	unset( $mpdf );
-	die();
-}
-/**
- * Generates and outputs a PDF of a group's exam result for a student.
- *
- * Similar to the individual result PDF, this includes subject marks,
- * grade calculation, and dynamic contribution-based marks where applicable.
- *
- * @since 1.0.0
- *
- * @param int $sudent_id Student ID.
- *
- * @return void Outputs the PDF directly to the browser.
- */
-function mjschool_download_group_result_pdf( $sudent_id ) {
-	ob_start();
-	$obj_mark      = new mjschool_Marks_Manage();
-	$exam_obj      = new mjschool_exam();
-	$uid           = $sudent_id;
-	$user          = get_userdata( $uid );
-	$user_meta     = get_user_meta( $uid );
-	$class_id      = $user_meta['class_name'][0];
-	$section_id    = $user_meta['class_section'][0];
-	$subject       = $obj_mark->mjschool_student_subject_list( $class_id, $section_id );
-	$total_subject = count( $subject );
-	$exam_id       = intval(wp_unslash($_REQUEST['exam_id']));
-	$total         = 0;
-	$grade_point   = 0;
-	$umetadata     = mjschool_get_user_image( $uid );
-	?>
-	<center>
-		
-		<div class="mjschool_float_left_width_100"> <img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ) ?>" style="max-height:50px;" /> <?php echo esc_html( get_option( 'mjschool_name' ) ); ?> </div>
-		
-		<div style="width:100%;float:left;border-bottom:1px solid red;"></div>
-		<div style="width:100%;float:left;border-bottom:1px solid yellow;padding-top:5px;"></div>
-		<br>
-		<div style="float:left;width:100%;padding:10px 0;">
-			<div style="width:70%;float:left;text-align:left;">
-				<p> <?php esc_html_e( 'Surname', 'mjschool' ); ?> : <?php get_user_meta( $uid, 'last_name', true ); ?> </p>
-				<p> <?php esc_html_e( 'First Name', 'mjschool' ); ?> : <?php echo esc_html( get_user_meta( $uid, 'first_name', true ) ); ?> </p>
-				<p>
-					<?php esc_html_e( 'Class', 'mjschool' ); ?> :
-					<?php
-					$class_id  = get_user_meta( $uid, 'class_name', true );
-					$classname = mjschool_get_class_name( $class_id );
-					echo esc_html( $classname )
-					?>
-				</p>
-				<p>
-					<?php esc_html_e( 'Exam Name', 'mjschool' ); ?> : <?php echo esc_html( mjschool_get_exam_name_id( $exam_id ) ); ?>
-				</p>
-			</div>
-			
-			<div style="float:right;width:30%;"> <img src="<?php echo esc_url($umetadata['meta_value']); ?>" /> </div>
-			
-		</div>
-		<br>
-		<table style="float:left;width:100%;border:1px solid #000;" cellpadding="0" cellspacing="0">
-			<thead>
-				<?php
-				$exam_data     = $exam_obj->mjschool_exam_data( $exam_id );
-				$contributions = $exam_data->contributions;
-				if ( $contributions === 'yes' ) {
-					$contributions_data       = $exam_data->contributions_data;
-					$contributions_data_array = json_decode( $contributions_data, true );
-				}
-				?>
-				<tr style="border-bottom: 1px solid #000;">
-					<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"> <?php esc_html_e( 'S/No', 'mjschool' ); ?></th>
-					<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"> <?php esc_html_e( 'Subject', 'mjschool' ); ?></th>
-					<?php
-					if ( $contributions === 'yes' ) {
-						foreach ( $contributions_data_array as $con_id => $con_value ) {
-							?>
-							<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"> <?php echo esc_html( $con_value['label'] ) . '<br>' . '(out of ' . esc_html( $con_value['mark'] ) . ' )'; ?> </th>
-							<?php
-						}
-					} else {
-						?>
-						<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"> <?php esc_html_e( 'Obtain Mark', 'mjschool' ); ?></th>
-						<?php
-					}
-					?>
-					<th style="border-bottom: 1px solid #000;text-align:left;border-right: 1px solid #000;"> <?php esc_html_e( 'Grade', 'mjschool' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php
-				$i = 1;
-				foreach ( $subject as $sub ) {
-					?>
-					<tr style="border-bottom: 1px solid #000;">
-						<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"><?php echo esc_html( $i ); ?> </td>
-						<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;"> <?php echo esc_html( $sub->sub_name ); ?></td>
-						<?php
-						$obtain_marks = $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid );
-						if ( $contributions === 'yes' ) {
-							foreach ( $contributions_data_array as $con_id => $con_value ) {
-								?>
-								<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;">
-									<?php
-									if ( is_array( $obtain_marks ) ) {
-										echo esc_html( $obtain_marks[ $con_id ] );
-									} else {
-										echo esc_html( $obtain_marks );
-									}
-									?>
-								</td>
-								<?php
-							}
-						} else {
-							?>
-							<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;">
-								<?php echo esc_html( $obtain_marks ); ?> </td>
-							<?php
-						}
-						?>
-						<td style="border-bottom: 1px solid #000;border-right: 1px solid #000;">
-							<?php echo esc_html( $obj_mark->mjschool_get_grade( $exam_id, $class_id, $sub->subid, $uid ) ); ?>
-						</td>
-					</tr>
-					<?php
-					++$i;
-					if ( $contributions === 'yes' ) {
-						$tmarks = 0; // Initialize the variable.
-						foreach ( $contributions_data_array as $con_id => $con_value ) {
-							if ( is_array( $obtain_marks ) ) {
-								$tmarks += (int) $obtain_marks[ $con_id ];
-							} else {
-								$tmarks += (int) $obtain_marks;
-							}
-						}
-						$total_marks = $tmarks;
-					} else {
-						$total_marks += $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid );
-					}
-					$total       += $total_marks;
-					$grade_point += $obj_mark->mjschool_get_grade_point( $exam_id, $class_id, $sub->subid, $uid );
-				}
-				?>
-			</tbody>
-		</table>
-		<p class="result_total">
-			<?php
-			esc_html_e( 'Total Marks', 'mjschool' );
-			echo ' : ' . esc_html( $total );
-			?>
-		</p>
-		<p class="result_point">
-			<?php
-			esc_html_e( 'GPA(grade point average)', 'mjschool' );
-			$GPA = $grade_point / $total_subject;
-			echo ' : ' . esc_html( round( $GPA, 2 ) );
-			?>
-		</p>
-		<hr />
-	</center>
-	<?php
-	$out_put = ob_get_contents();
-	ob_clean();
-	header( 'Content-type: application/pdf' );
-	header( 'Content-Disposition: inline; filename="result"' );
-	header( 'Content-Transfer-Encoding: binary' );
-	header( 'Accept-Ranges: bytes' );
-	require_once MJSCHOOL_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php';
-	$mpdf = new Mpdf\Mpdf();
-	$mpdf->WriteHTML( $out_put );
-	$mpdf->Output();
-	unset( $out_put );
-	unset( $mpdf );
-	die();
-}
-/**
  * Generates and prints the student's exam result report.
  *
  * This function fetches exam details, subject-wise marks, grades,
@@ -3340,7 +1326,8 @@ function mjschool_download_result_print( $sudent_id, $class_id, $section_id, $te
 	$signature_path  = isset( $metadata['signature'][0] ) ? $metadata['signature'][0] : '';
 	$signature_url   = $signature_path ? content_url( $signature_path ) : '';
 	if ( $exam_section_id == 0 ) {
-		$subject = mjschool_get_subject_by_class_id($class_id);
+		$obj_subject = new Mjschool_Subject();
+		$subject = $obj_subject->mjschool_get_subject_by_class_id($class_id);
 	} else {
 		$subject = mjschool_get_subjects_by_class_and_section($class_id, $exam_section_id);
 	}
@@ -3348,7 +1335,8 @@ function mjschool_download_result_print( $sudent_id, $class_id, $section_id, $te
 	// $exam_id = $_REQUEST['exam_id'];
 	$total       = 0;
 	$grade_point = 0;
-	$umetadata   = mjschool_get_user_image( $uid );
+	$mjschool_user = new Mjschool_User();
+	$umetadata   = $mjschool_user->mjschool_get_user_image( $uid );
 	ob_start();
 	 
 	?>
@@ -3384,7 +1372,7 @@ function mjschool_download_result_print( $sudent_id, $class_id, $section_id, $te
 						<b><?php esc_html_e( 'Student Name', 'mjschool' ); ?></b>:<?php echo esc_html(  get_user_meta( $uid, 'first_name', true ) ); ?>&nbsp;<?php echo esc_html(  get_user_meta( $uid, 'last_name', true ) ); ?>
 					</div>
 					<div style="float:left;width:50%;">
-						<b><?php esc_html_e( 'Exam Name', 'mjschool' ); ?></b>:<?php echo esc_html(  mjschool_get_exam_name_id( $exam_id ) ); ?>
+						<b><?php esc_html_e( 'Exam Name', 'mjschool' ); ?></b>:<?php echo esc_html( $obj_exam->mjschool_get_exam_name_id( $exam_id ) ); ?>
 					</div>
 				</div>
 			</div>
@@ -3399,8 +1387,9 @@ function mjschool_download_result_print( $sudent_id, $class_id, $section_id, $te
 				<div  style="padding-top:10px;">
 					<b><?php esc_html_e( 'Class & Section', 'mjschool' ); ?></b>:
 					<?php
-					$classname = mjschool_get_class_name( $class_id );
-					$section_name = ! empty( $section_id ) ? mjschool_get_section_name( $section_id ) : esc_html__( 'No Section', 'mjschool' );
+					$mjschool_class = new Mjschool_Class();
+					$classname = $mjschool_class->mjschool_get_class_name( $class_id );
+					$section_name = ! empty( $section_id ) ? $mjschool_class->mjschool_get_section_name( $section_id ) : esc_html__( 'No Section', 'mjschool' );
 					echo esc_html(  $classname ) . ' - ' . esc_html(  $section_name );
 					?>
 				</div>
@@ -3616,7 +1605,7 @@ function mjschool_download_result_print( $sudent_id, $class_id, $section_id, $te
 						<b><?php esc_html_e( 'Student Name', 'mjschool' ); ?></b>: <?php echo esc_html(  get_user_meta( $uid, 'first_name', true ) ); ?>&nbsp;<?php echo esc_html(  get_user_meta( $uid, 'last_name', true ) ); ?>
 					</div>
 					<div style="float:left;width:50%;">
-						<b><?php esc_html_e( 'Exam Name', 'mjschool' ); ?></b>: <?php echo esc_html(  mjschool_get_exam_name_id( $exam_id ) ); ?>
+						<b><?php esc_html_e( 'Exam Name', 'mjschool' ); ?></b>: <?php echo esc_html( $obj_exam->mjschool_get_exam_name_id( $exam_id ) ); ?>
 					</div>
 				</div>
 			</div>
@@ -3632,8 +1621,9 @@ function mjschool_download_result_print( $sudent_id, $class_id, $section_id, $te
 					<div  style="padding-top:10px;">
 						<b><?php esc_html_e( 'Class & Section', 'mjschool' ); ?></b>:
 						<?php
-						$classname    = mjschool_get_class_name( $class_id );
-						$section_name = ! empty( $section_id ) ? mjschool_get_section_name( $section_id ) : esc_html__( 'No Section', 'mjschool' );
+						$mjschool_class = new Mjschool_Class();
+						$classname    = $mjschool_class->mjschool_get_class_name( $class_id );
+						$section_name = ! empty( $section_id ) ? $mjschool_class->mjschool_get_section_name( $section_id ) : esc_html__( 'No Section', 'mjschool' );
 						echo esc_html(  $classname ) . ' - ' . esc_html(  $section_name );
 						?>
 					</div>
@@ -3641,7 +1631,8 @@ function mjschool_download_result_print( $sudent_id, $class_id, $section_id, $te
 					<div  style="padding-top:10px;">
 						<b><?php esc_html_e( 'Class Name', 'mjschool' ); ?></b>:
 						<?php
-						$classname    = mjschool_get_class_name( $class_id );
+						$mjschool_class = new Mjschool_Class();
+						$classname    = $mjschool_class->mjschool_get_class_name( $class_id );
 						echo esc_html(  $classname );
 						?>
 					</div>
@@ -3839,7 +1830,7 @@ function mjschool_download_result_print( $sudent_id, $class_id, $section_id, $te
 					<td style="border-bottom: 2px solid;border-right: 2px solid;"><?php echo esc_html(  round( $GPA, 2 ) ); ?> </td>
 					<td style="border-bottom: 2px solid;">
 						<?php
-						if ( $school_type != 'university' )
+						if ( $school_type !== 'university' )
 						{
 							$result = array();
 							$rest1  = array();
@@ -3875,7 +1866,7 @@ function mjschool_download_result_print( $sudent_id, $class_id, $section_id, $te
 							$rest1  = array();
 							foreach ( $subject as $sub ) {
 								$obtain_marks = $obj_mark->mjschool_get_marks( $exam_id, $class_id, $sub->subid, $uid ) ?? 0;
-								if ( $obtain_marks >= $exam_subject_lookup[$sub->subid]['passing_marks'] ) {
+								if ( isset( $exam_subject_lookup[ $sub->subid ]['passing_marks'] ) && $obtain_marks >= $exam_subject_lookup[ $sub->subid ]['passing_marks'] ) {
 									$result[] = 'pass';
 								} else {
 									$result1[] = 'fail';
@@ -3967,7 +1958,8 @@ function mjschool_download_group_result_print( $sudent_id, $class_id, $section_i
 	$user_meta      = get_user_meta( $uid );
 	$subject        = $obj_mark->mjschool_student_subject_list( $class_id, $section_id );
 	$total_subject  = count( $subject );
-	$umetadata      = mjschool_get_user_image( $uid );
+	$mjschool_user = new Mjschool_User();
+	$umetadata      = $mjschool_user->mjschool_get_user_image( $uid );
 	$metadata       = get_user_meta( $teacher_id );
 	$signature_path = isset( $metadata['signature'][0] ) ? $metadata['signature'][0] : '';
 	$signature_url  = $signature_path ? content_url( $signature_path ) : '';
@@ -4069,9 +2061,11 @@ function mjschool_download_group_result_print( $sudent_id, $class_id, $section_i
 				<div style="float:left; width:50%; margin-top:12px;">
 					<b><?php esc_html_e( 'Class & Section', 'mjschool' ); ?></b>:
 					<?php
-					$classname = mjschool_get_class_name( $class_id );
+					$mjschool_class = new Mjschool_Class();
+					$classname = $mjschool_class->mjschool_get_class_name( $class_id );
 					if ( ! empty( $section_id ) ) {
-						$section_name = mjschool_get_section_name( $section_id );
+						
+						$section_name = $mjschool_class->mjschool_get_section_name( $section_id );
 						echo esc_html(  $classname ) . ' - ' . esc_html(  $section_name );
 					} else {
 						echo esc_html(  $classname );
@@ -4090,7 +2084,7 @@ function mjschool_download_group_result_print( $sudent_id, $class_id, $section_i
 					if ( ! empty( $merge_config_data ) ) {
 						foreach ( $merge_config_data as $item ) {
 							$exam_id   = $item->exam_id;
-							$exam_name = mjschool_get_exam_name_id( $exam_id );
+							$exam_name = $obj_exam->mjschool_get_exam_name_id( $exam_id );
 							if ( mjschool_check_contribution( $exam_id ) === 'yes' ) {
 								$exam_data                = $exam_obj->mjschool_exam_data( $exam_id );
 								$contributions_data_array = json_decode( $exam_data->contributions_data, true );
@@ -4328,570 +2322,6 @@ add_action( 'init', 'mjschool_print_init_student_side' );
 add_action( 'init', 'mjschool_print_init_admin_side' );
 
 /**
- * Generate and display the student payment history invoice in PDF format.
- *
- * This function retrieves payment details, invoice information, student data,
- * billing address, fees breakdown, tax, discounts, payment status, and renders
- * them into an invoice layout based on the selected template format.
- *
- * @param string $id Encrypted payment history ID.
- *
- * @since 1.0.0
- */
-function mjschool_student_payment_history_pdf( $id ) {
-	// lol.
-	$format                     = get_option( 'mjschool_invoice_option' );
-	$fees_pay_id                = mjschool_decrypt_id( $id );
-	$invoice_number             = mjschool_generate_invoice_number( $fees_pay_id );
-	$fees_detail_result         = mjschool_get_single_fees_payment_record( $fees_pay_id );
-	$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id( $fees_pay_id );
-	?>
-	
-	<?php
-	if ( $format != 1 ) {
-		if ( is_rtl() ) {
-			?>
-			<h3 class=""><?php echo esc_html( get_option( 'mjschool_school_name' ) ); ?></h3>
-			<table style="float: right;position: absolute;vertical-align: top;background-repeat: no-repeat;">
-				<tbody>
-					<tr>
-						<?php // @codingStandardsIgnoreStart ?>
-						<td>
-							<img class=" invoiceimage float_left invoice_image_model"
-								src="<?php echo esc_url(plugins_url('/mjschool/assets/images/listpage_icon/invoice_rtl.png')); ?>"
-								width="100%">
-						</td>
-					</tr>
-				</tbody>
-			</table>
-			<?php
-		} else {
-			?>
-			<h3 class=""><?php echo esc_html(get_option('mjschool_school_name')) ?></h3>
-			<table style="float: left;position: absolute;vertical-align: top;background-repeat: no-repeat;">
-				<tbody>
-					<tr>
-						<td>
-							<img class="invoiceimage float_left invoice_image_model"
-								src="<?php echo esc_url(plugins_url('/mjschool/assets/images/listpage_icon/invoice.png')); ?>"
-								width="100%">
-						</td>
-					</tr>
-				</tbody>
-			</table>
-
-			<?php
-		}
-	}
-	?>
-	<?php if ($format === 1) { ?>
-		<div class="width_print"
-			style="border: 2px solid;float:left;width:96%;margin: 0px 0px 0px 0px;padding:20px;padding-top: 4px;padding-bottom: 5px;margin-bottom: 0px !important">
-			<div style="float:left;width:100%; ">
-				<div style="float:left;width:25%;">
-					<div class="asasa" style="float:letf;border-radius:50px;">
-						<img src="<?php echo esc_url(get_option('mjschool_school_logo')) ?>"
-							style="height: 130px;border-radius:50%;background-repeat:no-repeat;background-size:cover;margin-top: 3px;" />
-					</div>
-				</div>
-				<div style="float:left; width:75%;padding-top:10px;">
-					<p style="margin:0px;width:100%;font-weight:bold;color:#1B1B8D;font-size:24px;text-align:center;">
-						<?php echo esc_html(get_option('mjschool_school_name')); ?></p>
-					<p style="margin:0px;font-size:17px;text-align:center;">
-						<?php echo esc_html(get_option('mjschool_school_address')); ?></p>
-					<div style="margin:0px;width:100%;text-align:center;">
-						<p style="margin: 0px;width: fit-content;font-size: 17px;display: inline-block;">
-							<?php esc_html_e('E-mail', 'mjschool'); ?> :
-							<?php echo esc_html(get_option('mjschool_email')); ?>&nbsp;&nbsp;<?php esc_html_e('Phone', 'mjschool'); ?>
-							: <?php echo esc_html(get_option('mjschool_contact_number')); ?></p>
-					</div>
-				</div>
-			</div>
-		</div>
-	<?php } else { ?>
-
-		<table style="float: left;width: 100%;position: absolute!important;margin-top:-160px;">
-			<tbody>
-				<tr>
-					<td width="80%">
-						<table>
-							<tbody>
-								<tr>
-									<td width="10%">
-										<img class="system_logo"
-											src="<?php echo esc_url(get_option('mjschool_school_logo')); ?>">
-									</td>
-									<?php // @codingStandardsIgnoreEnd ?>
-									<td width="90%" style="padding-left: 20px;">
-										<h4 class="popup_label_heading"><?php esc_html_e( 'Address', 'mjschool' ); ?>
-										</h4>
-										<label for="" class="label_value word_break_all"
-											style="font-size: 16px !important;color: #333333 !important;font-weight: 400;">
-											<?php
-											$school_address  = get_option( 'mjschool_school_address' );
-											$escaped_address = esc_html( $school_address );
-											$split_address   = str_replace( '<br>', '<BR>', chunk_split( $escaped_address, 100, '<br>' ) );
-											echo wp_kses_post( $split_address );
-											?>
-											</label><br>
-										<h4 class="popup_label_heading"><?php esc_html_e( 'Email', 'mjschool' ); ?>
-										</h4>
-										<label for=""
-											style="font-size: 16px !important;color: #333333 !important;font-weight: 400;"
-											class="label_value word_break_all"><?php echo esc_html( get_option( 'mjschool_email' ) ), '<BR>'; ?></label><br>
-										<h4 class="popup_label_heading"><?php esc_html_e( 'Phone', 'mjschool' ); ?>
-										</h4>
-										<label for=""
-											style="font-size: 16px !important;color: #333333 !important;font-weight: 400;"
-											class="label_value"><?php echo esc_html( get_option( 'mjschool_contact_number' ) ) . '<br>'; ?></label>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	<?php } ?>
-	<br>
-	<?php
-	if ( $format === 1 ) {
-		
-		?>
-		<div class="width_print"
-			style="border: 2px solid;margin-bottom:8px;float:left;width:96%;padding:20px;padding-top: 5px;padding-bottom: 5px;margin-bottom: 0px !important;margin-top: 0px !important">
-			<div style="float:left;width:100%;">
-				<?php
-				$student_id = $fees_detail_result->student_id;
-				$patient    = get_userdata( $student_id );
-				if ( $patient ) {
-
-					$display_name         = isset( $patient->display_name ) ? $patient->display_name : '';
-					$escaped_display_name = esc_html( ucwords( $display_name ) );
-					$split_display_name   = chunk_split( $escaped_display_name, 30, '<br>' );
-				} else {
-					esc_html_e( 'N/A', 'mjschool' );
-				}
-				?>
-				<div class="123" style="padding:10px;">
-					<div style="float:left;width:65%;"><b><?php esc_html_e( 'Bill To', 'mjschool' ); ?>:</b>
-						<?php echo esc_html( mjschool_student_display_name_with_roll( $student_id ) ); ?></div>
-
-					<div style="float:left;width:35%;"><b><?php esc_html_e( 'Invoice Number', 'mjschool' ); ?>:</b>
-						<?php echo esc_html( $invoice_number ); ?>
-					</div>
-				</div>
-			</div>
-			<div style="float:left; width:64%;">
-				<?php
-				$student_id = $fees_detail_result->student_id;
-				$patient    = get_userdata( $student_id );
-
-				if ( $patient ) {
-					$address = esc_html( get_user_meta( $student_id, 'address', true ) );
-					$city    = esc_html( get_user_meta( $student_id, 'city', true ) );
-					$zip     = esc_html( get_user_meta( $student_id, 'zip_code', true ) );
-					?>
-					<div style="padding:10px;">
-						<div><b><?php esc_html_e( 'Address', 'mjschool' ); ?>:</b>
-							<?php echo esc_html( $address ); ?></div>
-						<div><?php echo esc_html( $city ) . ', ' . esc_html( $zip ); ?></div>
-					</div>
-
-				<?php } ?>
-			</div>
-			<div style="float:right;width: 35.3%;">
-				<?php
-				$issue_date = 'DD-MM-YYYY';
-				$issue_date = $fees_detail_result->paid_by_date;
-				if ( ! empty( $income_data ) ) {
-					$issue_date = $income_data->income_create_date;
-				} elseif ( ! empty( $invoice_data ) ) {
-					$issue_date = $invoice_data->date;
-				} elseif ( ! empty( $expense_data ) ) {
-					$issue_date = $expense_data->income_create_date;
-				}
-				?>
-				<div style="padding:10px 0;">
-					<div style="float:left;width:100%;"><b><?php esc_html_e( 'Issue Date', 'mjschool' ); ?>:</b>
-						<?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
-					</div>
-				</div>
-			</div>
-			<div style="float:right;width: 35.3%;">
-				<div style="padding:10px 0;">
-					<b><?php esc_html_e( 'Status', 'mjschool' ); ?>:</b>
-
-					<?php
-					$payment_status = mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
-					if ( $payment_status === 'Fully Paid' ) {
-						echo '<span class="green_color">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
-					}
-					if ( $payment_status === 'Partially Paid' ) {
-						echo '<span class="perpal_color">' . esc_html__( 'Partially Paid', 'mjschool' ) . '</span>';
-					}
-					if ( $payment_status === 'Not Paid' ) {
-						echo '<span class="red_color">' . esc_html__( 'Not Paid', 'mjschool' ) . '</span>';
-					}
-					?>
-				</div>
-			</div>
-		</div>
-		<?php
-	} else {
-		?>
-		<table>
-			<tbody>
-				<tr>
-					<td width="40%">
-						<h3 class="billed_to_lable invoice_model_heading bill_to_width_12">
-							<?php esc_html_e( 'Bill To', 'mjschool' ); ?> : </h3>
-						<?php
-						$student_id = $fees_detail_result->student_id;
-						$patient    = get_userdata( $student_id );
-						if ( $patient ) {
-							$display_name = esc_html( ucwords( $patient->display_name ) );
-							$split_name   = str_replace( '<br>', '<BR>', chunk_split( $display_name, 30, '<br>' ) );
-							echo "<h3 class='display_name invoice_width_100'>" . wp_kses_post( $split_name ) . '</h3>';
-						} else {
-							esc_html_e( 'N/A', 'mjschool' );
-						}
-						?>
-						<div>
-							<?php
-							$student_id = $fees_detail_result->student_id;
-							$patient    = get_userdata( $student_id );
-							if ( $patient ) {
-								$address         = get_user_meta( $student_id, 'address', true );
-								$escaped_address = esc_html( $address );
-								$split_address   = str_replace( '<br>', '<BR>', chunk_split( $escaped_address, 30, '<br>' ) );
-								echo wp_kses_post( $split_address );
-								echo esc_html( get_user_meta( $student_id, 'city', true ) ) . ',' . '<BR>';
-								echo esc_html( get_user_meta( $student_id, 'zip_code', true ) ) . ',<BR>';
-							}
-							?>
-						</div>
-					</td>
-					<td width="15%">
-						<?php
-						$issue_date     = 'DD-MM-YYYY';
-						$issue_date     = $fees_detail_result->paid_by_date;
-						$payment_status = mjschool_get_payment_status( $fees_detail_result->fees_pay_id );
-						?>
-						<label
-							style="color: #818386 !important;font-size: 14px !important;text-transform: uppercase;font-weight: 500;line-height: 0px;"><?php echo esc_html__( 'Invoice Number', 'mjschool' ); ?>
-						</label>: <label class="invoice_model_value"
-							style="font-weight: 600;color: #333333;font-size: 16px !important;"><?php echo esc_html( $invoice_number ); ?></label>
-						<br>
-						<label
-							style="color: #818386 !important;font-size: 14px !important;text-transform: uppercase;font-weight: 500;line-height: 0px;"><?php echo esc_html__( 'Date', 'mjschool' ); ?>
-						</label>: <label class="invoice_model_value"
-							style="font-weight: 600;color: #333333;font-size: 16px !important;"><?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?></label><br>
-						<label
-							style="color: #818386 !important;font-size: 14px !important;text-transform: uppercase;font-weight: 500;line-height: 0px;"><?php echo esc_html__( 'Status', 'mjschool' ); ?>
-						</label>: <label class="invoice_model_value"
-							style="font-weight: 600;color: #333333;font-size: 16px !important;">
-							<?php
-							if ( $payment_status === 'Fully Paid' ) {
-								echo '<span style="color:green;">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
-							}
-							if ( $payment_status === 'Partially Paid' ) {
-								echo '<span style="color:#3895d3;">' . esc_html__( 'Partially Paid', 'mjschool' ) . '</span>';
-							}
-							if ( $payment_status === 'Not Paid' ) {
-								echo '<span style="color:red;">' . esc_html__( 'Not Paid', 'mjschool' ) . '</span>';
-							}
-							?>
-							</label>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	<?php } ?>
-	<h4 style="font-size: 14px;font-weight: 600;color: #333333;"><?php esc_html_e( 'Invoice Entry', 'mjschool' ); ?></h4>
-	<div class="table-responsive mjschool-table-max-height-180px mjschool-rtl-padding-left-40px">
-		<?php if ( $format === 1 ) { ?>
-			<table class="table table-bordered mjschool-model-invoice-table" width="100%"
-				style="border-collapse: collapse; border: 1px solid black;">
-				<thead style="background-color: #F2F2F2;">
-					<tr>
-						<th style="text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black;background-color: #b8daff !important;width: 15%;font-size: 14px;">Number</th>
-						<th style="text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black;background-color: #b8daff !important;width: 20%;font-size: 14px;"><?php esc_html_e( 'Date', 'mjschool' ); ?></th>
-						<th style="text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black;background-color: #b8daff !important;font-size: 14px;"><?php esc_html_e( 'Fees Type', 'mjschool' ); ?></th>
-						<th style="text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black;background-color: #b8daff !important;width: 15%;font-size: 14px;"><?php echo esc_html__( 'Total', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php
-					$fees_id = explode( ',', $fees_detail_result->fees_id );
-					$x       = 1;
-					$amounts = 0;
-					foreach ( $fees_id as $id ) {
-						$obj_feespayment = new mjschool_feespayment();
-						$amount          = $obj_feespayment->mjschool_feetype_amount_data( $id );
-						$amounts        += $amount;
-						?>
-						<tr>
-							<td style="text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black;font-size: 14px;"><?php echo esc_html( $x ); ?></td>
-							<td style="text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black;font-size: 14px;"><?php echo esc_html( mjschool_get_date_in_input_box( $fees_detail_result->created_date ) ); ?></td>
-							<td style="text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black;font-size: 14px;"><?php echo esc_html( mjschool_get_fees_term_name( $id ) ); ?></td>
-							<td style="text-align: center; font-weight: 600; color: black; padding: 10px; border: 1px solid black;font-size: 14px;"><?php echo esc_html( number_format( $amount, 2, '.', '' ) ); ?></td>
-						</tr>
-						<?php
-						++$x;
-					}
-					$sub_total = $amounts;
-					if ( ! empty( $fees_detail_result->tax ) ) {
-						$tax_name = mjschool_tax_name_by_tax_id_array_for_invoice( esc_html( $fees_detail_result->tax ) );
-					} else {
-						$tax_name = '';
-					}
-					if ( $fees_detail_result->discount ) {
-						$discount_name = mjschool_get_discount_name( $fees_detail_result->discount, $fees_detail_result->discount_type );
-					} else {
-						$discount_name = '';
-					}
-					?>
-				</tbody>
-			</table>
-			<?php
-		} else {
-			?>
-			<table class="table table-bordered" width="100%">
-				<thead style="background-color: #F2F2F2 !important;">
-					<tr style="background-color: #F2F2F2 !important;">
-						<th class="mjschool-align-left mjschool_border_padding_15px">#</th>
-						<th class="mjschool-align-left mjschool_border_padding_15px"><?php esc_html_e( 'Date', 'mjschool' ); ?></th>
-						<th class ="mjschool-align-left mjschool_border_padding_15px"><?php esc_html_e( 'Fees Type', 'mjschool' ); ?></th>
-						<th class="mjschool-align-left" style="color: #818386 !important;font-weight: 600;border-bottom-color: #E1E3E5 !important;padding: 15px;"><?php esc_html_e( 'Total', 'mjschool' ); ?> </th>
-					</tr>
-				</thead>
-				<?php
-				$fees_id = explode( ',', $fees_detail_result->fees_id );
-				$x       = 1;
-				$amounts = 0;
-				foreach ( $fees_id as $id ) {
-					?>
-					<tbody>
-						<tr style=" border-bottom: 1px solid #E1E3E5 !important;">
-							<td class="align-center mjschool_tables_bottoms"> <?php echo esc_html( $x ); ?></td>
-							<td class="align-center mjschool_tables_bottoms"> <?php echo esc_html( mjschool_get_date_in_input_box( $fees_detail_result->created_date ) ); ?></td>
-							<td class="align-center mjschool_tables_bottoms"> <?php echo esc_html( mjschool_get_fees_term_name( $id ) ); ?></td>
-							<td class="align-center mjschool_tables_bottoms">
-								<?php
-								$obj_feespayment = new mjschool_feespayment();
-								$amount          = $obj_feespayment->mjschool_feetype_amount_data( $id );
-								$amounts        += $amount;
-								echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $amount, 2, '.', '' ) ) );
-								?>
-							</td>
-						</tr>
-					</tbody>
-					<?php
-					++$x;
-				}
-				$sub_total = $amounts;
-				if ( ! empty( $fees_detail_result->tax ) ) {
-					$tax_name = mjschool_tax_name_by_tax_id_array_for_invoice( esc_html( $fees_detail_result->tax ) );
-				} else {
-					$tax_name = '';
-				}
-				if ( $fees_detail_result->discount ) {
-					$discount_name = mjschool_get_discount_name( $fees_detail_result->discount, $fees_detail_result->discount_type );
-				} else {
-					$discount_name = '';
-				}
-				?>
-			</table>
-		<?php } ?>
-		<?php
-		if ( $format === 1 ) {
-			?>
-			<div class="table-responsive mjschool-rtl-padding-left-40px mjschool-rtl-float-left-width-100px" style="margin-top: 10px;">
-				<table class="table table-bordered" style="width: 100%; border-collapse: collapse;margin-bottom: 0px !important;">
-					<tbody>
-						<tr>
-							<th style="width: 85%; text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;" scope="row"> <?php echo esc_html__( 'Sub Total', 'mjschool' ) . ' :'; ?> </th>
-							<td style="width: 15%; text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;"> <?php echo esc_html( number_format( $sub_total, 2, '.', '' ) ); ?> </td>
-						</tr>
-						<?php if ( isset( $fees_detail_result->discount_amount ) && ( $fees_detail_result->discount_amount ) != 0 ) { ?>
-							<tr>
-								<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;" scope="row"> <?php echo esc_html__( 'Discount Amount', 'mjschool' ) . ' ( ' . esc_html( $discount_name ) . ' ) :'; ?> </th>
-								<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;"> <?php echo '-' . esc_html( number_format( $fees_detail_result->discount_amount, 2, '.', '' ) ); ?> </td>
-							</tr>
-						<?php } ?>
-						<?php if ( isset( $fees_detail_result->tax_amount ) && ( $fees_detail_result->tax_amount ) != 0 ) { ?>
-							<tr>
-								<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;" scope="row"> <?php echo esc_html__( 'Tax Amount', 'mjschool' ) . ' ( ' . esc_html( $tax_name ) . ' ) :'; ?> </th>
-								<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;"> <?php echo '+' . esc_html( number_format( $fees_detail_result->tax_amount, 2, '.', '' ) ); ?> </td>
-							</tr>
-						<?php } ?>
-						<tr>
-							<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;" scope="row"> <?php echo esc_html__( 'Payment Made :', 'mjschool' ); ?> </th>
-							<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;"> <?php echo esc_html( number_format( $fees_detail_result->fees_paid_amount, 2, '.', '' ) ); ?> </td>
-						</tr>
-						<tr>
-							<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black; font-size: 14px;" scope="row"> <?php echo esc_html__( 'Due Amount :', 'mjschool' ); ?> </th>
-							<?php $Due_amount = $fees_detail_result->total_amount - $fees_detail_result->fees_paid_amount; ?>
-							<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 1px solid black; font-size: 14px;"> <?php echo esc_html( number_format( $Due_amount, 2, '.', '' ) ); ?> </td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-			<?php
-		} else {
-			?>
-			<table width="100%" border="0">
-				<tbody>
-					<tr>
-						<td width="80%" <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?> style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;"> <?php esc_html_e( 'Sub Total :', 'mjschool' ); ?></td>
-						<td <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?> style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;"> <?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $sub_total, 2, '.', '' ) ) ); ?> </td>
-					</tr>
-					<?php if ( isset( $fees_detail_result->discount_amount ) && ( $fees_detail_result->discount_amount ) != 0 ) { ?>
-						<tr>
-							<td width="80%" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;" <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?>> <?php echo esc_html__( 'Discount Amount', 'mjschool' ) . '( ' . esc_html( $discount_name ) . ' )' . '  :'; ?> </td>
-							<td <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?> style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;">
-								<?php echo '-' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $fees_detail_result->discount_amount, 2, '.', '' ) ) ); ?>
-							</td>
-						</tr>
-					<?php } ?>
-					<?php
-					if ( isset( $fees_detail_result->tax_amount ) && ( $fees_detail_result->tax_amount ) != 0 ) {
-						?>
-						<tr>
-							<td width="80%" style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;" <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?>> <?php echo esc_html__( 'Tax Amount', 'mjschool' ) . '( ' . esc_html( $tax_name ) . ' )' . '  :'; ?> </td>
-							<td <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?> style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;">
-								<?php echo '+' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $fees_detail_result->tax_amount, 2, '.', '' ) ) ); ?>
-							</td>
-						</tr>
-						<?php
-					}
-					?>
-					<tr>
-						<td width="80%" <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?> style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;"> <?php esc_html_e( 'Payment Made :', 'mjschool' ); ?></td>
-						<td <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?> style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;"> <?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $fees_detail_result->fees_paid_amount, 2, '.', '' ) ) ); ?> </td>
-					</tr>
-					<tr>
-						<td width="80%" <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?> style="padding-bottom: 10px;font-size: 18px;color: #818386 !important;font-weight: 500;"> <?php esc_html_e( 'Due Amount :', 'mjschool' ); ?></td>
-						<?php $Due_amount = $fees_detail_result->total_amount - $fees_detail_result->fees_paid_amount; ?>
-						<td <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?> style="padding-bottom: 10px;font-size: 18px;color: #333333 !important;font-weight: 700;">
-							<?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $Due_amount, 2, '.', '' ) ) ); ?>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		<?php } ?>
-	</div>
-	<?php
-	$subtotal    = $fees_detail_result->total_amount;
-	$paid_amount = $fees_detail_result->fees_paid_amount;
-	$grand_total = $subtotal - $paid_amount;
-	?>
-	<table style="width:100%">
-		<tbody>
-			<tr>
-				<td width="62%" align="left"></td>
-				<td align="right" style="float:right; background-color:  <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>;color: #fff;">
-					<table style="background-color: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>;color: #fff;">
-						<tbody>
-							<tr>
-								<?php
-								$subtotal    = $fees_detail_result->total_amount;
-								$paid_amount = $fees_detail_result->fees_paid_amount;
-								$grand_total = $subtotal - $paid_amount;
-								?>
-								<td style="background-color: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>;color: #fff;padding:10px">
-									<h3> <?php esc_html_e( 'Grand Total', 'mjschool' ); ?> </h3>
-								</td>
-								<td style="background-color: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>;color: #fff;padding:10px;">
-									<h3>
-										<?php
-										$formatted_amount = number_format( $subtotal, 2, '.', '' );
-										$currency         = mjschool_get_currency_symbol();
-										echo esc_html( "($currency)$formatted_amount" );
-										?>
-									</h3>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</td>
-			</tr>
-		</tbody>
-	</table>
-	<?php
-	if ( ! empty( $fees_history_detail_result ) && sanitize_text_field(wp_unslash($_REQUEST['certificate_header'])) == 1 ) {
-		?>
-		<table class="mjschool-width-100px mjschool-margin-top-10px-res">
-			<tbody>
-				<tr>
-					<td> <p class="display_name mjschool-res-pay-his-mt-10px"><?php esc_html_e( 'Payment History', 'mjschool' ); ?> </p> </td>
-				</tr>
-			</tbody>
-		</table>
-		<div class="table-responsive mjschool-rtl-padding-left-40px">
-			<table width="100%" style="border-collapse: collapse; border: 1px solid black; margin-top: 10px;">
-				<thead style="background-color: #b8daff;">
-					<tr>
-						<th style="text-align: center; font-weight: 600; color: black; padding: 8px; border: 1px solid black; font-size: 14px;background-color: #b8daff;"><?php esc_html_e( 'Date', 'mjschool' ); ?></th>
-						<th style="text-align: center; font-weight: 600; color: black; padding: 8px; border: 1px solid black; font-size: 14px;background-color: #b8daff;"><?php esc_html_e( 'Method', 'mjschool' ); ?></th>
-						<th style="text-align: center; font-weight: 600; color: black; padding: 8px; border: 1px solid black; font-size: 14px;background-color: #b8daff;"><?php echo esc_html__( 'Amount', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ( $fees_history_detail_result as $retrive_date ) { ?>
-						<tr>
-							<td style="text-align: center; padding: 8px; border: 1px solid black; font-size: 13px;"> <?php echo esc_html( mjschool_get_date_in_input_box( $retrive_date->paid_by_date ) ); ?></td>
-							<td style="text-align: center; padding: 8px; border: 1px solid black; font-size: 13px;"> <?php echo esc_html( $retrive_date->payment_method ); ?></td>
-							<td style="text-align: center; padding: 8px; border: 1px solid black; font-size: 13px;"> <?php echo esc_html( number_format( $retrive_date->amount, 2, '.', '' ) ); ?></td>
-						</tr>
-					<?php } ?>
-				</tbody>
-			</table>
-		</div>
-		<?php
-		$total_payment = 0;
-		foreach ( $fees_history_detail_result as $retrive_date ) {
-			$total_payment += floatval( $retrive_date->amount );
-		}
-		$subtotal         = $total_payment;
-		$currency         = mjschool_get_currency_symbol();
-		$formatted_amount = number_format( $subtotal, 2, '.', '' );
-		?>
-		<table width="100%" style="margin-top:20px; border-collapse: collapse;">
-			<tr>
-				<td width="50%"></td>
-				<td width="50%" align="right">
-					<table width="100%" style="border-collapse: collapse; background-color: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>; color: #fff;"> 
-						<tr>
-							<td style="padding: 10px; font-size: 16px; font-weight: bold;"> <?php esc_html_e( 'Total Payment', 'mjschool' ); ?> </td>
-							<td style="padding: 10px; font-size: 16px; font-weight: bold;" align="right"> (<?php echo esc_html( $currency ); ?>)<?php echo esc_html( $formatted_amount ); ?> </td>
-						</tr>
-					</table>
-				</td>
-			</tr>
-		</table>
-		<?php
-	}
-	?>
-	<div class=""
-		style="border: 2px solid; width:100%; float: left; margin-bottom:12px; padding: 15px 10px; overflow: hidden;margin-top: 4px;">
-		<!-- Teacher Signature (Middle) -->
-		<div style="float: right; width: 33.33%; text-align: center;">
-			<div>
-				<img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" style="width:100px;" />
-			</div>
-			<div style="border-top: 1px solid #000; width: 150px; margin: 5px auto;"></div>
-			<div style="margin-top: 5px;">
-				<?php esc_html_e( 'Principal Signature', 'mjschool' ); ?>
-			</div>
-		</div>
-	</div>
-	<?php
-}
-
-/**
  * Prints the invoice layout for students, income, or expense entries.
  *
  * This function prepares and renders the full printable invoice HTML,
@@ -4915,7 +2345,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 	$obj_invoice = new mjschool_invoice();
 	$sanitize_invoice_type = isset($_REQUEST['invoice_type']) ? sanitize_text_field(wp_unslash($_REQUEST['invoice_type'])) : '';
 	if ( $sanitize_invoice_type === 'invoice' ) {
-		$invoice_data = mjschool_get_payment_by_id( $invoice_id );
+		$invoice_data = $obj_invoice->mjschool_get_payment_by_id( $invoice_id );
 	}
 	if ( $sanitize_invoice_type === 'income' ) {
 		$income_data = $obj_invoice->mjschool_get_income_data( $invoice_id );
@@ -5113,7 +2543,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 									?>
 									<div class="mjschool_fees_padding_10px">
 										<div class="mjschool_float_left_width_100">
-											<b> <?php esc_html_e( 'Issue Date', 'mjschool' ); ?>: </b> <?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
+											<b> <?php esc_html_e( 'Issue Date', 'mjschool' ); ?>: </b> <?php echo esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
 										</div>
 									</div>
 								</div>
@@ -5197,7 +2627,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 											<div class="mjschool-width-20px" align="right">
 												<h5 class="mjschool-align-left"> 
 													<label class="mjschool-popup-label-heading text-transfer-upercase"> <?php echo esc_html__( 'Date :', 'mjschool' ); ?> </label>&nbsp; 
-													<label class="mjschool-invoice-model-value"> <?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?> </label>
+													<label class="mjschool-invoice-model-value"> <?php echo esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?> </label>
 												</h5>
 												<h5 class="mjschool-align-left">
 													<label class="mjschool-popup-label-heading text-transfer-upercase"> <?php echo esc_html__( 'Status :', 'mjschool' ); ?> </label> &nbsp;
@@ -5265,7 +2695,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 										if ( ! empty( $expense_data ) ) {
 											$income_data = $expense_data;
 										}
-										$patient_all_income = $obj_invoice->mjschool_get_onepatient_income_data( $income_data->supplier_name );
+										$patient_all_income = $obj_invoice->mjschool_get_one_patient_income_data( $income_data->supplier_name );
 										foreach ( $patient_all_income as $result_income ) {
 											$income_entries = json_decode( $result_income->entry );
 											foreach ( $income_entries as $each_entry ) {
@@ -5288,7 +2718,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 										?>
 										<tr>
 											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"> <?php echo esc_html( $id ); ?> </td>
-											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"> <?php echo esc_html( date( 'Y-m-d', strtotime( $invoice_data->date ) ) ); ?> </td>
+											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"> <?php echo esc_html( gmdate( 'Y-m-d', strtotime( $invoice_data->date ) ) ); ?> </td>
 											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"> <?php echo esc_html( $invoice_data->payment_title ); ?> </td>
 											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"> <?php echo esc_html( mjschool_get_display_name( $invoice_data->payment_reciever_id ) ); ?> </td>
 											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"> <?php echo esc_html( number_format( $invoice_data->amount, 2, '.', '' ) ); ?> </td>
@@ -5321,7 +2751,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 										if ( ! empty( $expense_data ) ) {
 											$income_data = $expense_data;
 										}
-										$patient_all_income = $obj_invoice->mjschool_get_onepatient_income_data( $income_data->supplier_name );
+										$patient_all_income = $obj_invoice->mjschool_get_one_patient_income_data( $income_data->supplier_name );
 										foreach ( $patient_all_income as $result_income ) {
 											$income_entries = json_decode( $result_income->entry );
 											foreach ( $income_entries as $each_entry ) {
@@ -5344,7 +2774,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 										?>
 										<tr>
 											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $id ); ?></td>
-											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( date( 'Y-m-d', strtotime( $invoice_data->date ) ) ); ?></td>
+											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( gmdate( 'Y-m-d', strtotime( $invoice_data->date ) ) ); ?></td>
 											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $invoice_data->payment_title ); ?></td>
 											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $invoice_data->amount, 2, '.', '' ) ) ); ?></td>
 											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_get_display_name( $invoice_data->payment_reciever_id ) ); ?></td>
@@ -5571,7 +3001,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 									?>
 									<div class="mjschool_fees_padding_10px">
 										<div class="mjschool_float_left_width_100">
-											<b> <?php esc_html_e( 'Issue Date', 'mjschool' ); ?>: </b> <?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
+											<b> <?php esc_html_e( 'Issue Date', 'mjschool' ); ?>: </b> <?php echo esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
 										</div>
 									</div>
 								</div>
@@ -5660,7 +3090,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 											<div class="mjschool-width-20px" align="right">
 												<h5 class="mjschool-align-left"> 
 													<label class="mjschool-popup-label-heading text-transfer-upercase"> <?php echo esc_html__( 'Date :', 'mjschool' ); ?> </label>&nbsp; 
-													<label class="mjschool-invoice-model-value"> <?php echo esc_html( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?> </label>
+													<label class="mjschool-invoice-model-value"> <?php echo esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?> </label>
 												</h5>
 												<h5 class="mjschool-align-left">
 													<label class="mjschool-popup-label-heading text-transfer-upercase"> <?php echo esc_html__( 'Status :', 'mjschool' ); ?> </label> &nbsp;
@@ -5728,7 +3158,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 										if ( ! empty( $expense_data ) ) {
 											$income_data = $expense_data;
 										}
-										$patient_all_income = $obj_invoice->mjschool_get_onepatient_income_data( $income_data->supplier_name );
+										$patient_all_income = $obj_invoice->mjschool_get_one_patient_income_data( $income_data->supplier_name );
 										foreach ( $patient_all_income as $result_income ) {
 											$income_entries = json_decode( $result_income->entry );
 											foreach ( $income_entries as $each_entry ) {
@@ -5751,7 +3181,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 										?>
 										<tr>
 											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"><?php echo esc_html( $id ); ?></td>
-											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"><?php echo esc_html( date( 'Y-m-d', strtotime( $invoice_data->date ) ) ); ?></td>
+											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"><?php echo esc_html( gmdate( 'Y-m-d', strtotime( $invoice_data->date ) ) ); ?></td>
 											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"><?php echo esc_html( $invoice_data->payment_title ); ?></td>
 											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"><?php echo esc_html( mjschool_get_display_name( $invoice_data->payment_reciever_id ) ); ?></td>
 											<td class="mjschool-align-center mjschool-invoice-table-data mjschool_border_black_1px"><?php echo esc_html( number_format( $invoice_data->amount, 2, '.', '' ) ); ?></td>
@@ -5784,7 +3214,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 										if ( ! empty( $expense_data ) ) {
 											$income_data = $expense_data;
 										}
-										$patient_all_income = $obj_invoice->mjschool_get_onepatient_income_data( $income_data->supplier_name );
+										$patient_all_income = $obj_invoice->mjschool_get_one_patient_income_data( $income_data->supplier_name );
 										foreach ( $patient_all_income as $result_income ) {
 											$income_entries = json_decode( $result_income->entry );
 											foreach ( $income_entries as $each_entry ) {
@@ -5807,7 +3237,7 @@ function mjschool_student_invoice_print( $invoice_id ) {
 										?>
 										<tr>
 											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $id ); ?> </td>
-											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( date( 'Y-m-d', strtotime( $invoice_data->date ) ) ); ?> </td>
+											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( gmdate( 'Y-m-d', strtotime( $invoice_data->date ) ) ); ?> </td>
 											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( $invoice_data->payment_title ); ?> </td>
 											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $invoice_data->amount, 2, '.', '' ) ) ); ?> </td>
 											<td class="mjschool-align-center mjschool-invoice-table-data"><?php echo esc_html( mjschool_get_display_name( $invoice_data->payment_reciever_id ) ); ?> </td>
@@ -5959,12 +3389,14 @@ function mjschool_send_mail_receipt_pdf( $emails, $subject, $message, $student_i
 	if ( ! file_exists( $document_path ) ) {
 		mkdir( $document_path, 0777, true );
 	}
+	$mjschool_obj_hall      = new Mjschool_Hall();
+	$obj_exam = new Mjschool_Exam();
 	$student_data    = get_userdata( $student_id );
-	$umetadata       = mjschool_get_user_image( $student_id );
-	$exam_data       = mjschool_get_exam_by_id( $exam_id );
-	$exam_hall_data  = mjschool_get_exam_hall_name( $student_id, $exam_id );
-	$exam_hall_name  = mjschool_get_hall_name( $exam_hall_data->hall_id );
-	$obj_exam        = new mjschool_exam();
+	$mjschool_user = new Mjschool_User();
+	$umetadata       = $mjschool_user->mjschool_get_user_image( $student_id );
+	$exam_data       = $obj_exam->mjschool_get_exam_by_id( $exam_id );
+	$exam_hall_data  = $mjschool_obj_hall->mjschool_get_exam_hall_name( $student_id, $exam_id );
+	$exam_hall_name  = $mjschool_obj_hall->mjschool_get_hall_by_id( $exam_hall_data->hall_id );
 	$exam_time_table = $obj_exam->mjschool_get_exam_time_table_by_exam( $exam_id );
 	 
 	$header_html = '<div style="margin-bottom:8px;">
@@ -6033,12 +3465,14 @@ function mjschool_send_mail_receipt_pdf( $emails, $subject, $message, $student_i
 	$mpdf->WriteHTML( '</tr>' );
 	$mpdf->WriteHTML( '<tr>' );
 	$mpdf->WriteHTML( '<td class="mjschool-border-bottom-rigth" align="left">' );
-	$mpdf->WriteHTML( '<strong>' . esc_html__( 'Class Name', 'mjschool' ) . ': </strong>' . mjschool_get_class_name( $student_data->class_name ) . '</td>' );
+	$mjschool_class = new Mjschool_Class();
+	$mpdf->WriteHTML( '<strong>' . esc_html__( 'Class Name', 'mjschool' ) . ': </strong>' . $mjschool_class->mjschool_get_class_name( $student_data->class_name ) . '</td>' );
 	$mpdf->WriteHTML( '<td class="mjschool-border-bottom" align="left">' );
 	$mpdf->WriteHTML( '<strong>' . esc_html__( 'Section Name', 'mjschool' ) . ' : </strong>' );
 	$section_name = $student_data->class_section;
-	if ( $section_name != '' ) {
-		$mpdf->WriteHTML( '' . mjschool_get_section_name( $section_name ) . '' );
+	if ( $section_name !== '' ) {
+		$mjschool_class = new Mjschool_Class();
+		$mpdf->WriteHTML( '' . $mjschool_class->mjschool_get_section_name( $section_name ) . '' );
 	} else {
 		$mpdf->WriteHTML( '' . esc_html__( 'No Section', 'mjschool' ) );
 	}
@@ -6089,10 +3523,11 @@ function mjschool_send_mail_receipt_pdf( $emails, $subject, $message, $student_i
 	$mpdf->WriteHTML( '</thead>' );
 	$mpdf->WriteHTML( '<tbody>' );
 	if ( ! empty( $exam_time_table ) ) {
+		$mjschool_subject = new Mjschool_Subject();
 		foreach ( $exam_time_table as $retrieved_data ) {
 			$mpdf->WriteHTML( '<tr>' );
-			$mpdf->WriteHTML( '<td class="mjschool-main-td mjschool-border-rigth mjschool_padding_10px">' . $obj_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) . '</td>' );
-			$mpdf->WriteHTML( '<td class="mjschool-main-td mjschool-border-rigth mjschool_padding_10px">' . mjschool_get_single_subject_name( $retrieved_data->subject_id ) . '</td>' );
+			$mpdf->WriteHTML( '<td class="mjschool-main-td mjschool-border-rigth mjschool_padding_10px">' . $mjschool_subject->mjschool_get_single_subject_code( $retrieved_data->subject_id ) . '</td>' );
+			$mpdf->WriteHTML( '<td class="mjschool-main-td mjschool-border-rigth mjschool_padding_10px">' . $mjschool_subject->mjschool_get_single_subject_name( $retrieved_data->subject_id ) . '</td>' );
 			$mpdf->WriteHTML( '<td class="mjschool-main-td mjschool-border-rigth mjschool_padding_10px">' . mjschool_get_date_in_input_box( $retrieved_data->exam_date ) . '</td>' );
 			$start_time_data = explode( ':', $retrieved_data->start_time );
 			$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
@@ -6536,9 +3971,10 @@ function mjschool_print_id_card( $id ) {
 		<?php
 		$counter = 0;
 		$printed = false;
+		$mjschool_user = new Mjschool_User();
 		foreach ( $id as $row ) {
 			$student_data = get_userdata( $row );
-			$userimage    = mjschool_get_user_image( $row );
+			$userimage    = $mjschool_user->mjschool_get_user_image( $row );
 			$usersdata    = get_user_meta( $row, 'mjschool_user_avatar', true );
 			$class_id     = get_user_meta( $row, 'class_name', true );
 			$section_name = get_user_meta( $row, 'class_section', true );
@@ -6896,9 +4332,10 @@ function mjschool_print_standard_id_card( $id ) {
 		<?php
 		$counter = 0;
 		$printed = false;
+		$mjschool_user = new Mjschool_User();
 		foreach ( $id as $row ) {
 			$student_data = get_userdata( $row );
-			$userimage    = mjschool_get_user_image( $row );
+			$userimage    = $mjschool_user->mjschool_get_user_image( $row );
 			$usersdata    = get_user_meta( $row, 'mjschool_user_avatar', true );
 			$class_id     = get_user_meta( $row, 'class_name', true );
 			$section_name = get_user_meta( $row, 'class_section', true );
@@ -7001,3 +4438,869 @@ function mjschool_print_standard_id_card( $id ) {
 	<?php
 	$out_put = ob_get_contents();
 }
+
+
+/**
+ * Generates and prints the student fees payment receipt.
+ *
+ * This function decrypts the incoming fee payment ID, retrieves fee details,
+ * payment history, student information, invoice references, custom fields,
+ * and renders a fully formatted printable HTML receipt with all payment data.
+ *
+ * @since 1.0.0
+ *
+ * @param string $fees_pay_id Encrypted fees payment ID used to retrieve the receipt.
+ *
+ * @return void Outputs HTML and inline CSS for printing the fees receipt.
+ */
+function mjschool_student_fees_receipt_print( $fees_pay_id ) {
+	wp_print_styles();
+	
+	$fees_pay_id = absint( mjschool_decrypt_id( $fees_pay_id ) );
+	
+	// Validate receipt_id with isset() check
+	$receipt_id = isset( $_REQUEST['receipt_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['receipt_id'] ) ) : '';
+	if ( empty( $receipt_id ) ) {
+		return;
+	}
+	
+	$fee_pay_id = absint( mjschool_decrypt_id( $receipt_id ) );
+	$obj_feespayment            = new Mjschool_Feespayment();
+	$fees_detail_result = $obj_feespayment->mjschool_get_single_fee_payment( $fees_pay_id );
+	$invoice_number     = mjschool_generate_invoice_number( $fees_pay_id );
+	$fees_history       = mjschool_get_single_payment_history( $fee_pay_id );
+	
+	// Validate required data exists
+	if ( empty( $fees_detail_result ) || empty( $fees_history ) ) {
+		return;
+	}
+	?>
+	<?php if ( is_rtl() ) : ?>
+		<style>
+			.rtl_billto {
+				margin-right: -18px;
+			}
+			.new-rtl-padding-fix {
+				padding-left: 12px !important;
+			}
+			.rtl_sings {
+				width: 98% !important;
+				margin-left: 2% !important;
+			}
+		</style>
+	<?php endif; ?>
+	<style>
+		body,
+		body * {
+			font-family: 'Poppins' !important;
+		}
+		table thead {
+			-webkit-print-color-adjust: exact;
+		}
+		.mjschool-invoice-table-grand-total {
+			-webkit-print-color-adjust: exact;
+			background-color: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>;
+		}
+		@media print {
+			* {
+				color-adjust: exact !important;
+				-webkit-print-color-adjust: exact !important;
+				print-color-adjust: exact !important;
+			}
+			.invoice_description {
+				width: 75%;
+			}
+			.mjschool_invoce_notice {
+				width: 100%;
+				float: left;
+			}
+		}
+	</style>
+	<div id="Fees_invoice">
+		<div class="modal-body mjschool-margin-top-15px-rs mjschool-invoice-model-body mjschool-float-left-width-100px mjschool-custom-padding-0_res height_1000px">
+			<div id="mjschool-invoice-print" class="mjschool-main-div mjschool-float-left-width-100px mjschool-payment-invoice-popup-main-div">
+				<div class="mjschool-invoice-width-100px mjschool-float-left" border="0">
+					<div class="row mjschool_margin_right_0px">
+						<div class="mjschool-width-print mjschool_border_print_width_98">
+							<div class="mjschool_float_left_width_100">
+								<div class="mjschool_float_left_width_25">
+									<div class="mjschool-custom-logo-class mjschool_left_border_redius_50">
+										<img src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>" class="mjschool_main_logo_class" alt="<?php echo esc_attr( get_option( 'mjschool_name' ) ); ?>" />
+									</div>
+								</div>
+								<div class="mjschool_float_left_width_75">
+									<p class="mjschool_fees_widht_100_fonts_24px">
+										<?php echo esc_html( get_option( 'mjschool_name' ) ); ?>
+									</p>
+									<p class="mjschool_print_invoice_line_height_30px">
+										<?php echo esc_html( get_option( 'mjschool_address' ) ); ?>
+									</p>
+									<div class="mjschool_fees_center_margin_0px">
+										<p class="mjschool_receipt_print_margin_0px">
+											<?php esc_html_e( 'E-mail', 'mjschool' ); ?>: <?php echo esc_html( get_option( 'mjschool_email' ) ); ?>
+										</p>
+										<p class="mjschool_receipt_print_margin_0px">
+											&nbsp;&nbsp;<?php esc_html_e( 'Phone', 'mjschool' ); ?>: <?php echo esc_html( get_option( 'mjschool_contact_number' ) ); ?>
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12 col-xl-12 mjschool-mozila-display-css mjschool-margin-top-10px">
+						<div class="mjschool-width-print rtl_billto mjschool_print_padding_bottom_top_border_2px">
+							<div class="mjschool_float_left_width_100">
+								<?php
+								$student_id = isset( $fees_detail_result->student_id ) ? absint( $fees_detail_result->student_id ) : 0;
+								$patient    = get_userdata( $student_id );
+								
+								if ( $patient && isset( $patient->display_name ) ) {
+									$display_name         = $patient->display_name;
+									$escaped_display_name = esc_html( ucwords( $display_name ) );
+									$split_display_name   = chunk_split( $escaped_display_name, 30, '<br>' );
+								} else {
+									$split_display_name = esc_html__( 'N/A', 'mjschool' );
+								}
+								?>
+								<div class="mjschool_padding_10px">
+									<div class="mjschool_float_left_width_65">
+										<b><?php esc_html_e( 'Bill To', 'mjschool' ); ?>:</b>
+										<?php echo esc_html( mjschool_student_display_name_with_roll( $student_id ) ); ?>
+									</div>
+									<div class="mjschool_float_right_width_35">
+										<b><?php esc_html_e( 'Receipt Number', 'mjschool' ); ?>:</b>
+										<?php echo esc_html( mjschool_generate_receipt_number( $fee_pay_id ) ); ?>
+									</div>
+								</div>
+							</div>
+							<div class="mjschool_float_left_width_65">
+								<?php if ( $patient ) : ?>
+									<?php
+									$address = esc_html( get_user_meta( $student_id, 'address', true ) );
+									$city    = esc_html( get_user_meta( $student_id, 'city', true ) );
+									$zip     = esc_html( get_user_meta( $student_id, 'zip_code', true ) );
+									?>
+									<div class="mjschool_padding_10px">
+										<div>
+											<b><?php esc_html_e( 'Address', 'mjschool' ); ?>:</b> <?php echo esc_html( $address ); ?>
+										</div>
+										<div><?php echo esc_html( $city ) . ', ' . esc_html( $zip ); ?></div>
+									</div>
+								<?php endif; ?>
+							</div>
+							<div class="mjschool_float_right_width_35">
+								<?php
+								$issue_date = isset( $fees_history[0]->paid_by_date ) ? $fees_history[0]->paid_by_date : '';
+								$issue_date = sanitize_text_field( $issue_date );
+								?>
+								<div class="mjschool_padding_0_10px">
+									<div class="mjschool_float_left_width_100">
+										<b><?php esc_html_e( 'Issue Date', 'mjschool' ); ?>:</b>
+										<?php
+										if ( ! empty( $issue_date ) ) {
+											echo esc_html( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $issue_date ) ) ) );
+										}
+										?>
+									</div>
+								</div>
+							</div>
+							<div class="mjschool_float_right_width_35">
+								<div class="mjschool_fees_padding_10px">
+									<div class="mjschool_float_left_width_100">
+										<b><?php esc_html_e( 'Payment Method', 'mjschool' ); ?>:</b>
+										<?php echo isset( $fees_history[0]->payment_method ) ? esc_html( $fees_history[0]->payment_method ) : ''; ?>
+									</div>
+								</div>
+							</div>
+							<div class="mjschool_float_right_width_35">
+								<div class="mjschool_fees_padding_10px">
+									<div class="mjschool_float_left_width_100">
+										<b><?php esc_html_e( 'Invoice Reference', 'mjschool' ); ?>:</b>
+										<?php echo esc_html( $invoice_number ); ?>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<table class="mjschool-width-100px mjschool-margin-top-10px-res mt-2">
+						<tbody>
+							<tr>
+								<td>
+									<h3 class="display_name mjschool-res-pay-his-mt-10px mjschool_fees_center_font_24px">
+										<?php esc_html_e( 'Payment Receipt', 'mjschool' ); ?>
+									</h3>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="mjschool_fees_padding_10px mb-3">
+						<div class="mjschool_float_left_width_100">
+							<b><?php esc_html_e( 'Transaction Id', 'mjschool' ); ?>:</b>
+							<?php echo isset( $fees_history[0]->trasaction_id ) ? esc_html( $fees_history[0]->trasaction_id ) : ''; ?>
+						</div>
+					</div>
+					<?php
+					$custom_field_obj = new mjschool_custom_field();
+					$module           = 'fee_transaction';
+					$custom_field_obj->mjschool_show_inserted_custom_field_receipt( $module );
+					?>
+					<div class="table-responsive mjschool-rtl-padding-left-40px">
+						<table class="table table-bordered mjschool-model-invoice-table mjschool_fees_collapse_width_100">
+							<thead class="mjschool-entry-heading mjschool-invoice-model-entry-heading mjschool_white_black_color">
+								<tr>
+									<th class="mjschool-entry-table-heading mjschool-align-left mjschool_border_print_width_70">
+										<?php esc_html_e( 'Description', 'mjschool' ); ?>
+									</th>
+									<th class="mjschool-entry-table-heading mjschool-align-left mjschool_border_print_width_30">
+										<?php echo esc_html__( 'Amount', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php
+								foreach ( $fees_history as $retrive_date ) {
+									if ( ! isset( $retrive_date->payment_note ) || ! isset( $retrive_date->amount ) ) {
+										continue;
+									}
+									?>
+									<tr class="mjschool_height_150px">
+										<td class="mjschool_print_vertical_align_70">
+											<?php echo esc_html( $retrive_date->payment_note ); ?>
+										</td>
+										<td class="mjschool_print_vertical_align_30">
+											<?php echo esc_html( number_format( floatval( $retrive_date->amount ), 2, '.', '' ) ); ?>
+										</td>
+									</tr>
+								<?php } ?>
+								<tr>
+									<th class="mjschool_right_width_70">
+										<?php echo esc_html__( 'Total', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
+									</th>
+									<th class="mjschool_left_width_30">
+										<?php
+										if ( isset( $retrive_date->amount ) ) {
+											echo esc_html( number_format( floatval( $retrive_date->amount ), 2, '.', '' ) );
+										}
+										?>
+									</th>
+								</tr>
+							</tbody>
+						</table>
+						<p class="mt-2 mjschool_width_700_font_16px">
+							<?php
+							if ( isset( $retrive_date->amount ) ) {
+								echo esc_html( ucfirst( mjschool_convert_number_to_words( $retrive_date->amount ) ) . ' Only' );
+							}
+							?>
+						</p>
+					</div>
+					<?php
+					if ( is_rtl() ) {
+						$align = 'left';
+					} else {
+						$align = 'right';
+					}
+					?>
+					<div class="rtl_sings mjschool_print_boder_2px_margin_float_left">
+						<div class="mjschool_fees_center_width_33">
+							<div>
+								<img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" class="mjschool_width_100px" alt="<?php esc_attr_e( 'Principal Signature', 'mjschool' ); ?>" />
+							</div>
+							<div class="mjschool_fees_width_150px"></div>
+							<div class="mjschool_margin_top_5px">
+								<?php esc_html_e( 'Principal Signature', 'mjschool' ); ?>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<?php
+}
+/**
+ * Generate and display the PDF layout for a student invoice, income, or expense record.
+ *
+ * This function prepares all required data based on the invoice type,
+ * formats the content layout (RTL/LTR), and renders the invoice view
+ * including billing details, payment status, invoice entries, taxes,
+ * discounts, and final totals.
+ *
+ * @since 1.0.0
+ *
+ * @param int    $invoice_id   Encrypted invoice ID used to fetch invoice data.
+ * @param string $invoice_type Type of invoice. Accepted values: 'invoice', 'income', 'expense'.
+ *
+ * @return void
+ */
+function mjschool_student_invoice_pdf( $invoice_id, $invoice_type ) {
+	$format      = get_option( 'mjschool_invoice_option' );
+	$invoice_id  = intval( mjschool_decrypt_id( $invoice_id ) );
+	$obj_invoice = new mjschool_invoice();
+	if ( $invoice_type === 'invoice' ) {
+		$invoice_data = $obj_invoice->mjschool_get_payment_by_id( $invoice_id );
+	}
+	if ( $invoice_type === 'income' ) {
+		$income_data = $obj_invoice->mjschool_get_income_data( $invoice_id );
+	}
+	if ( $invoice_type === 'expense' ) {
+		$expense_data = $obj_invoice->mjschool_get_income_data( $invoice_id );
+	}
+	?>
+	<style>
+		.mjschool-popup-label-heading {
+			color: #818386;
+			font-size: 14px !important;
+			font-weight: 500;
+			font-family: 'Poppins' !important;
+			text-transform: capitalize;
+		}
+	</style>
+	<?php
+	if ( $format != 1 ) {
+		if ( is_rtl() ) {
+			?>
+			<h3 ><?php echo esc_html( get_option( 'mjschool_name' ) ); ?></h3>
+			<table style="float: right;position: absolute;vertical-align: top;background-repeat: no-repeat;">
+				<tbody>
+					<tr>
+
+						<td> <img class="mjschool-invoice-image mjschool-float-left mjschool-invoice-image-model" src="<?php echo esc_url(plugins_url( '/mjschool/assets/images/listpage_icon/invoice_rtl.png' ) ); ?>" width="100%"> </td>
+					</tr>
+				</tbody>
+			</table>
+			<?php
+		} else {
+			?>
+			<table style="float: left;position: absolute;vertical-align: top;background-repeat: no-repeat;">
+				<tbody>
+					<tr>
+						<td> <img class="mjschool-invoice-image mjschool-float-left mjschool-invoice-image-model" src="<?php echo esc_url(plugins_url( '/mjschool/assets/images/listpage_icon/invoice.png' ) ); ?>" width="100%"> </td>
+					</tr>
+				</tbody>
+			</table>
+			<?php
+		}
+	}
+	?>
+	<?php if ($format === 1) { ?>
+		<?php
+		if (is_rtl()) {
+			?>
+			<div class="width_print" style="border: 2px solid;margin-bottom:8px;float:left;width:96%;padding:20px;">
+			<?php } else { ?>
+				<div class="width_print" style="border: 2px solid;margin-bottom:8px;float:left;width:100%;padding:20px;">
+				<?php } ?>
+				<div style="float:left;width:100%; ">
+					<div style="float:left;width:25%;">
+						<div class="asasa" style="float:letf;border-radius:50px;">
+							<img src="<?php echo esc_url(get_option('mjschool_school_logo')); ?>" style="height: 130px;border-radius:50%;background-repeat:no-repeat;background-size:cover;margin-top: 3px;" />
+						</div>
+					</div>
+					<div style="float:left; width:75%;padding-top:10px;">
+						<p style="margin:0px;width:100%;font-weight:bold;color:#1B1B8D;font-size:24px;text-align:center;"> <?php echo esc_html(get_option('mjschool_school_name')); ?></p>
+						<p style="margin:0px;font-size:17px;text-align:center;"> <?php echo esc_html(get_option('mjschool_school_address')); ?></p>
+						<div style="margin:0px;width:100%;text-align:center;">
+							<p style="margin: 0px;width: fit-content;font-size: 17px;display: inline-block;">
+								<?php esc_html_e('E-mail', 'mjschool'); ?> : <?php echo esc_html(get_option('mjschool_email')); ?>&nbsp;&nbsp;<?php esc_html_e('Phone', 'mjschool'); ?> : <?php echo esc_html(get_option('mjschool_contact_number')); ?>
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		<?php } else { ?>
+			<table style="float: left;width: 100%;position: absolute!important;margin-top:-170px;">
+				<tbody>
+					<tr>
+						<td>
+							<table>
+								<tbody>
+									<tr>
+										<td width="22%">
+											<img class="system_logo" src="<?php echo esc_url(get_option('mjschool_school_logo')); ?>">
+										</td>
+										<?php // @codingStandardsIgnoreEnd ?>
+										<td width="80%" style="padding-left: 10px;">
+											<label class="popup_label_heading"><?php esc_html_e( 'Address', 'mjschool' ); ?></label><br>
+											<label class="label_value word_break_all" style="color: #333333 !important;font-weight: 400;">
+												<?php
+												$school_address  = get_option( 'mjschool_school_address' );
+												$escaped_address = esc_html( $school_address );
+												$split_address   = str_replace( '<br>', '<BR>', chunk_split( $escaped_address, 100, '<br>' ) );
+												echo wp_kses_post( $split_address );
+												?>
+												</label><br>
+											<label class="popup_label_heading"><?php esc_html_e( 'Email', 'mjschool' ); ?> </label><br>
+											<label style="color: #333333 !important;font-weight: 400;" class="label_value word_break_all"><?php echo esc_html( get_option( 'mjschool_email' ) ), '<BR>'; ?></label><br>
+											<label class="popup_label_heading"><?php esc_html_e( 'Phone', 'mjschool' ); ?> </label><br>
+											<label style="color: #333333 !important;font-weight: 400;" class="label_value"><?php echo esc_html( get_option( 'mjschool_contact_number' ) ) . '<br>'; ?></label>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		<?php } ?>
+	<br>
+	<?php
+	if ( $format === 1 ) {?>
+			<?php
+			if ( is_rtl() ) {
+				?>
+				<div class="width_print" style="border: 2px solid;margin-bottom:8px;float:left;width:96%;padding:20px;">
+				<?php } else { ?>
+					<div class="width_print" style="border: 2px solid;margin-bottom:8px;float:left;width:100%;padding:20px;">
+					<?php } ?>
+					<div style="float:left;width:100%;">
+						<?php
+						if ( ! empty( $expense_data ) ) {
+							$party_name = $expense_data->supplier_name;
+							$ex_name = $party_name
+							? wp_kses_post( chunk_split( ucwords( $party_name ), 30, '<br>' ) )
+							: 'N/A';
+						} else {
+							$student_id = ! empty( $income_data ) ? $income_data->supplier_name : $invoice_data->student_id;
+							$patient    = get_userdata( $student_id );
+							$in_name    = $patient ? wp_kses_post( chunk_split( ucwords( $patient->display_name ), 30, '<br>' ) ) : 'N/A';
+						}
+						?>
+						<div class="123" style="padding:10px;">
+							<div style="float:left;width:65%;"><b><?php esc_html_e( 'Bill To:', 'mjschool' ); ?></b>
+								<?php echo esc_html( get_user_meta( $uid, 'first_name', true ) ) . ' ' . esc_html( get_user_meta( $uid, 'student_id', true ) ); ?>&nbsp;
+											<?php
+											if ( ! empty( $expense_data ) ) {
+												// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+												echo wp_kses_post( $ex_name );
+												// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
+											} else {
+												echo esc_html( mjschool_student_display_name_with_roll( $student_id ) );
+											}
+											?>
+										</div>
+
+							<div style="float:left;width:35%;"><b><?php esc_html_e( 'Status:', 'mjschool' ); ?></b>
+								<?php
+								$payment_status = '';
+								if ( ! empty( $income_data ) ) {
+									$payment_status = $income_data->payment_status;
+								}
+								if ( ! empty( $invoice_data ) ) {
+									$payment_status = $invoice_data->payment_status;
+								}
+								if ( ! empty( $expense_data ) ) {
+									$payment_status = $expense_data->payment_status;
+								}
+
+								switch ( $payment_status ) {
+									case 'Paid':
+										echo '<span class="green_color">' . esc_html__( 'Fully Paid', 'mjschool' ) . '</span>';
+										break;
+									case 'Part Paid':
+										echo '<span class="perpal_color">' . esc_html__( 'Partially Paid', 'mjschool' ) . '</span>';
+										break;
+									case 'Unpaid':
+										echo '<span class="red_color">' . esc_html__( 'Not Paid', 'mjschool' ) . '</span>';
+										break;
+									default:
+										esc_html_e( 'N/A', 'mjschool' );
+								}
+								?>
+							</div>
+						</div>
+					</div>
+					<div style="float:left; width:64%;">
+						<?php
+						if ( empty( $expense_data ) ) {
+							$student_id = ! empty( $income_data ) ? $income_data->supplier_name : $invoice_data->student_id;
+							$address    = esc_html( get_user_meta( $student_id, 'address', true ) );
+							$city       = esc_html( get_user_meta( $student_id, 'city', true ) );
+							$zip        = esc_html( get_user_meta( $student_id, 'zip_code', true ) );
+
+							?>
+							<div style="padding:10px;">
+								<div><b><?php esc_html_e( 'Address:', 'mjschool' ); ?></b>
+									<?php echo esc_html( $address ); ?></div>
+								<div><?php echo esc_html( $city ) . ', ' . esc_html( $zip ); ?></div>
+							</div>
+						<?php } ?>
+					</div>
+					<div style="float:right;width: 35.3%;">
+						<?php
+						$issue_date = 'DD-MM-YYYY';
+						if ( ! empty( $income_data ) ) {
+							$issue_date = $income_data->income_create_date;
+						}
+						if ( ! empty( $invoice_data ) ) {
+							$issue_date = $invoice_data->date;
+						}
+						if ( ! empty( $expense_data ) ) {
+							$issue_date = $expense_data->income_create_date;
+						}
+
+						?>
+						<div style="padding:10px 0;">
+							<div style="float:left;width:100%;"><b><?php esc_html_e( 'Issue Date:', 'mjschool' ); ?></b>
+								<?php echo esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?>
+							</div>
+						</div>
+					</div>
+				</div>
+			<?php
+	} else {
+		?>
+			<table>
+				<tbody>
+					<tr>
+						<td width="70%">
+							<h3 class="billed_to_lable invoice_model_heading bill_to_width_12">
+							<?php esc_html_e( 'Bill To', 'mjschool' ); ?> : </h3>
+						<?php
+						if ( ! empty( $expense_data ) ) {
+							echo esc_html( $party_name = $expense_data->supplier_name );
+						} else {
+							if ( ! empty( $income_data ) ) {
+								$student_id = $income_data->supplier_name;
+							} elseif ( ! empty( $invoice_data ) ) {
+								$student_id = $invoice_data->student_id;
+							}
+							$patient = get_userdata( $student_id );
+							if ( $patient ) {
+								$display_name = esc_html( ucwords( $patient->display_name ) );
+								$split_name   = str_replace( '<br>', '<BR>', chunk_split( $display_name, 100, '<br>' ) );
+								echo '<h3 class="display_name invoice_width_100" >' . wp_kses_post( $split_name ) . '</h3>';
+							} else {
+								esc_html_e( 'N/A', 'mjschool' );
+							}
+						}
+						?>
+							<div>
+							<?php
+							if ( ! empty( $expense_data ) ) {
+								echo esc_html( $party_name = $expense_data->supplier_name );
+							} else {
+								if ( ! empty( $income_data ) ) {
+									$student_id = $income_data->supplier_name;
+								}
+								$patient = get_userdata( $student_id );
+
+								$address         = get_user_meta( $student_id, 'address', true );
+								$escaped_address = esc_html( $address );
+								$split_address   = str_replace( '<br>', '<BR>', chunk_split( $escaped_address, 30, '<br>' ) );
+								echo wp_kses_post( $split_address );
+								echo esc_html( get_user_meta( $student_id, 'city', true ) ) . ',' . '<BR>';
+								echo esc_html( get_user_meta( $student_id, 'zip_code', true ) ) . ',<BR>';
+							}
+							?>
+							</div>
+						</td>
+						<td width="15%">
+							<?php
+							$issue_date = 'DD-MM-YYYY';
+							if ( ! empty( $income_data ) ) {
+								$issue_date     = $income_data->income_create_date;
+								$payment_status = $income_data->payment_status;
+							}
+							if ( ! empty( $invoice_data ) ) {
+								$d              = strtotime( $invoice_data->date );
+								$issue_date     = gmdate( 'Y-m-d', $d );
+								$payment_status = $invoice_data->payment_status;
+							}
+							if ( ! empty( $expense_data ) ) {
+								$issue_date     = $expense_data->income_create_date;
+								$payment_status = $expense_data->payment_status;
+							}
+							?>
+							<label
+								style="color: #818386 !important;font-size: 14px !important;text-transform: uppercase;font-weight: 500;line-height: 0px;"><?php echo esc_html__( 'Date', 'mjschool' ); ?>
+							</label>: <label class="invoice_model_value"
+								style="font-weight: 600;color: #333333;font-size: 16px !important;"><?php echo esc_html( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $issue_date ) ) ) ); ?></label><br>
+							<label
+								style="color: #818386 !important;font-size: 14px !important;text-transform: uppercase;font-weight: 500;line-height: 0px;"><?php echo esc_html__( 'Status', 'mjschool' ); ?>
+							</label>: <label class="invoice_model_value"
+								style="font-weight: 600;color: #333333;font-size: 16px !important;">
+							<?php
+							if ( $payment_status === 'Paid' ) {
+								echo "<span style='color:green;'>" . esc_attr__( 'Fully Paid', 'mjschool' ) . '</span>';
+							}
+							if ( $payment_status === 'Part Paid' ) {
+								echo "<span style='color:#537ab7;'>" . esc_attr__( 'Partially Paid', 'mjschool' ) . '</span>';
+							}
+							if ( $payment_status === 'Unpaid' ) {
+								echo "<span style='color:red;'>" . esc_attr__( 'Not Paid', 'mjschool' ) . '</span>';
+							}
+							?>
+							</label>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		<?php } ?>
+	<h4 style="font-size: 16px;font-weight: 600;color: #333333;"> <?php esc_html_e( 'Invoice Entry', 'mjschool' ); ?></h4>
+	<?php if ( $format === 1 ) { ?>
+		<table class="table" width="100%" style="border-collapse: collapse; border: 1px solid black;">
+			<thead style="background-color: #b8daff !important;border: 1px solid black;">
+				<tr>
+					<th style="font-weight: bold; color: #333; text-align: center; padding: 10px;background-color: #b8daff !important; text-align: !important;color: black !important;border: 1px solid black;width: 15%;"> Number</th>
+					<th style="font-weight: bold; color: #333; text-align: center; padding: 10px;background-color: #b8daff !important; text-align: !important;color: black !important;border: 1px solid black;width: 20%;"> <?php esc_html_e( 'Date', 'mjschool' ); ?></th>
+					<th style="font-weight: bold; color: #333; text-align: center; padding: 10px;background-color: #b8daff !important; text-align: !important;color: black !important;border: 1px solid black;"> <?php esc_html_e( 'Entry', 'mjschool' ); ?></th>
+					<th style="font-weight: bold; color: #333; text-align: center; padding: 10px;background-color: #b8daff !important; text-align: !important;color: black !important;border: 1px solid black;"> <?php esc_html_e( 'Issued By', 'mjschool' ); ?></th>
+					<th style="font-weight: bold; color: #333; text-align: center; padding: 10px;background-color: #b8daff !important; text-align: !important;color: black !important;border: 1px solid black;width: 15%;"> <?php echo esc_html__( 'Price', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol() ) . ' )'; ?>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php
+				$id           = 1;
+				$total_amount = 0;
+				if ( ! empty( $income_data ) || ! empty( $expense_data ) ) {
+					if ( ! empty( $expense_data ) ) {
+						$income_data = $expense_data;
+					}
+					$patient_all_income = $obj_invoice->mjschool_get_one_patient_income_data( $income_data->supplier_name );
+					if ( ! empty( $patient_all_income ) ) {
+						foreach ( $patient_all_income as $result_income ) {
+							$income_entries = json_decode( $result_income->entry );
+							foreach ( $income_entries as $each_entry ) {
+								$total_amount += $each_entry->amount;
+								?>
+								<tr>
+									<td style="text-align: center; padding: 8px; border: 1px solid black; font-weight: normal;"><?php echo esc_html( $id++ ); ?></td>
+									<td style="text-align: center; padding: 8px; border: 1px solid black; font-weight: normal;"> <?php echo esc_html( $result_income->income_create_date ); ?></td>
+									<td style="text-align: center; padding: 8px; border: 1px solid black; font-weight: normal;"><?php echo esc_html( $each_entry->entry ); ?></td>
+									<td style="text-align: center; padding: 8px; border: 1px solid black; font-weight: normal;"> <?php echo esc_html( mjschool_get_display_name( $result_income->create_by ) ); ?></td>
+									<td style="text-align: center; padding: 8px; border: 1px solid black; font-weight: normal;"> <?php echo esc_html( number_format( $each_entry->amount, 2 ) ); ?></td>
+								</tr>
+								<?php
+							}
+						}
+					}
+				}
+				if ( ! empty( $invoice_data ) ) {
+					$total_amount = $invoice_data->amount;
+					?>
+					<tr>
+						<td style="<?php esc_attr( $cell_style ); ?>"><?php echo esc_html( $id ); ?></td>
+						<td style="<?php esc_attr( $cell_style ); ?>"><?php echo esc_html( gmdate( 'Y-m-d', strtotime( $invoice_data->date ) ) ); ?></td>
+						<td style="<?php esc_attr( $cell_style ); ?>"><?php echo esc_html( $invoice_data->payment_title ); ?></td>
+						<td style="<?php esc_attr( $cell_style ); ?>"><?php echo esc_html( mjschool_get_display_name( $invoice_data->payment_reciever_id ) ); ?> </td>
+						<td style="<?php esc_attr( $cell_style ); ?>"><?php echo esc_html( number_format( $invoice_data->amount, 2 ) ); ?></td>
+					</tr>
+					<?php
+				}
+				?>
+			</tbody>
+		</table>
+		<?php
+	}
+	if ( ! empty( $invoice_data ) ) {
+		$grand_total     = $total_amount;
+		$sub_total       = $invoice_data->fees_amount;
+		$tax_amount      = $invoice_data->tax_amount;
+		$discount_amount = $invoice_data->discount_amount;
+		if ( ! empty( $invoice_data->tax ) ) {
+			$tax_name = mjschool_tax_name_by_tax_id_array_for_invoice( esc_html( $invoice_data->tax ) );
+		} else {
+			$tax_name = '';
+		}
+		if ( $invoice_data->discount ) {
+			$discount_name = mjschool_get_discount_name( $invoice_data->discount, $invoice_data->discount_type );
+		} else {
+			$discount_name = '';
+		}
+	}
+	if ( ! empty( $income_data ) ) {
+		if ( ! empty( $income_data->tax ) ) {
+			$tax_name = mjschool_tax_name_by_tax_id_array_for_invoice( esc_html( $income_data->tax ) );
+		} else {
+			$tax_name = '';
+		}
+		if ( ! empty($income_data->discount) ) {
+			$discount_name = mjschool_get_discount_name( $income_data->discount, $income_data->discount_type );
+		} else {
+			$discount_name = '';
+		}
+		$sub_total = 0;
+		if ( ! empty( $income_data->entry ) ) {
+			$all_income_entry = json_decode( $income_data->entry );
+			foreach ( $all_income_entry as $one_entry ) {
+				$sub_total += $one_entry->amount;
+			}
+		}
+		if( ! empty( $income_data->discount_amount ) )
+		{
+			$discount_amount = $income_data->discount_amount;
+		}
+		$tax_amount      = $income_data->tax_amount;
+		$grand_total     = $sub_total + $tax_amount;
+	}
+	?>
+	<?php
+	if ( $format === 1 ) {
+		?>
+		<div class="table-responsive mjschool-rtl-padding-left-40px mjschool-rtl-float-left-width-100px">
+			<table class="table table-bordered" style="margin-top: 20px; width: 100%; border-collapse: collapse;margin-bottom: 0px !important;">
+				<tbody>
+					<tr>
+						<th style="width: 85%; text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black;" scope="row">
+							<?php echo esc_html__( 'Sub Total', 'mjschool' ) . ' :'; ?>
+						</th>
+						<td style="width: 15%; text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 1px solid black;">
+							<?php echo esc_html( number_format( $sub_total, 2, '.', '' ) ); ?>
+						</td>
+					</tr>
+					<?php if ( isset( $discount_amount ) && ( $discount_amount ) != 0 ) { ?>
+						<tr>
+							<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black;" scope="row">
+								<?php echo esc_html__( 'Discount Amount', 'mjschool' ) . ' ( ' . esc_html( $discount_name ) . ' ) :'; ?>
+							</th>
+							<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 1px solid black;">
+								<?php echo '-' . esc_html( number_format( $fees_detail_result->discount_amount, 2, '.', '' ) ); ?>
+							</td>
+						</tr>
+					<?php } ?>
+					<?php if ( isset( $tax_amount ) && ! empty( $tax_amount ) ) : ?>
+						<tr>
+							<th style="text-align: <?php echo is_rtl() ? 'left' : 'right'; ?>; font-weight: 600; background-color: #b8daff; padding: 10px; border: 1px solid black;" scope="row">
+								<?php echo esc_html__( 'Tax Amount', 'mjschool' ) . ' ( ' . esc_html( $tax_name ) . ' ) :'; ?>
+							</th>
+							<td style="text-align: <?php echo is_rtl() ? 'right' : 'left'; ?>; padding: 10px; font-weight: 600; border: 1px solid black;">
+								<?php echo '+' . esc_html( number_format( $tax_amount, 2, '.', '' ) ); ?>
+							</td>
+						</tr>
+					<?php endif; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php
+	} else {
+		?>
+		<table width="100%" border="0" <?php if ( is_rtl() ) { ?> class="mjschool_direction_rtl" <?php } ?>>
+			<tbody>
+				<tr>
+					<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?>>
+						<?php echo esc_attr__( 'Sub Total', 'mjschool' ) . '  :'; ?>
+					</td>
+					<td align="right" class="mjschool-rtl-width-15px mjschool-padding-bottom-15px mjschool-total-value">
+						<?php echo '+' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $sub_total, 2, '.', '' ) ) ); ?>
+					</td>
+				</tr>
+				<?php if ( isset( $discount_amount ) && ! empty( $discount_amount ) ) { ?>
+					<tr>
+						<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?>>
+							<?php echo esc_attr__( 'Discount Amount', 'mjschool' ) . '( ' . esc_html( $discount_amount ) . ' )' . '  :'; ?>
+						</td>
+						<td align="right" class="mjschool-rtl-width-15px mjschool-padding-bottom-15px mjschool-total-value">
+							<?php echo '-' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $tax_amount, 2, '.', '' ) ) ); ?>
+						</td>
+					</tr>
+					<?php
+				}
+				?>
+				<?php if ( isset( $tax_amount ) && ! empty( $tax_amount ) ) { ?>
+					<tr>
+						<td width="85%" class="mjschool-rtl-float-left_label mjschool-padding-bottom-15px mjschool-total-heading" <?php if ( is_rtl() ) { ?> align="left" <?php } else { ?> align="right" <?php } ?>>
+							<?php echo esc_attr__( 'Tax Amount', 'mjschool' ) . '( ' . esc_html( $tax_name ) . ' )' . '  :'; ?>
+						</td>
+						<td align="right" class="mjschool-rtl-width-15px mjschool-padding-bottom-15px mjschool-total-value">
+							<?php echo '+' . esc_html( mjschool_currency_symbol_position_language_wise( number_format( $tax_amount, 2, '.', '' ) ) ); ?>
+						</td>
+					</tr>
+					<?php
+				}
+				?>
+			</tbody>
+		</table>
+	<?php } ?>
+	<table style="margin-left: 52px; margin-top: 18px;">
+		<tbody>
+			<tr>
+				<td width="66%"></td>
+				<td>
+					<table style="background-color: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>;color: #fff;">
+						<tbody>
+							<tr>
+								<td style="background-color: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>;color: #fff;padding:10px">
+									<h3> <?php esc_html_e( 'Grand Total', 'mjschool' ); ?> </h3>
+								</td>
+								<td style="background-color: <?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>;color: #fff;padding:10px">
+									<h3>
+										<?php
+										$formatted_amount = number_format( $grand_total, 2, '.', '' );
+										$currency_symbol  = mjschool_get_currency_symbol(); // Use this if your project has a function to get the symbol.
+										echo esc_html( "({$currency_symbol}){$formatted_amount}" );
+										?>
+									</h3>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<div class="" style="border: 2px solid; width:100%; float: left; margin-bottom:12px; padding: 15px 10px; overflow: hidden;margin-top: 20px;">
+		<!-- Teacher Signature (Middle) -->
+		<div style="float: right; width: 33.33%; text-align: center;">
+			<div>
+				<img src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" style="width:100px;" />
+			</div>
+			<div style="border-top: 1px solid #000; width: 150px; margin: 5px auto;"></div>
+			<div style="margin-top: 5px;">
+				<?php esc_html_e( 'Principal Signature', 'mjschool' ); ?>
+			</div>
+		</div>
+	</div>
+	<?php
+}
+/**
+ * Initializes the invoice print process for student payments.
+ *
+ * Loads required stylesheets, triggers the browser print dialog,
+ * and renders the invoice content when the `print` and `page` parameters match.
+ *
+ * @since 1.0.0
+ *
+ * @return void
+ */
+function mjschool_print_invoice() {
+	// Check with isset() for all required parameters
+	if ( ! isset( $_REQUEST['print'] ) || ! isset( $_REQUEST['page'] ) ) {
+		return;
+	}
+	
+	$print = sanitize_text_field( wp_unslash( $_REQUEST['print'] ) );
+	$page  = sanitize_text_field( wp_unslash( $_REQUEST['page'] ) );
+	
+	if ( $print !== 'print' || $page !== 'mjschool_payment' ) {
+		return;
+	}
+	
+	// Enqueue styles
+	if ( is_rtl() ) {
+		wp_enqueue_style( 'bootstrap-rtl', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap.rtl.min.css', __FILE__ ) );
+		wp_enqueue_style( 'mjschool-custome-rtl', plugins_url( '/assets/css/mjschool-custome-rtl.css', __FILE__ ) );
+		wp_enqueue_style( 'mjschool-newdesign-rtl', plugins_url( '/assets/css/mjschool-new-design-rtl.css', __FILE__ ) );
+	}
+	
+	wp_enqueue_style( 'mjschool-style', plugins_url( '/assets/css/mjschool-style.css', __FILE__ ) );
+	wp_enqueue_style( 'mjschool-new-design', plugins_url( '/assets/css/mjschool-smgt-new-design.css', __FILE__ ) );
+	wp_enqueue_style( 'bootstrap', plugins_url( '/assets/css/third-party-css/bootstrap/bootstrap.min.css', __FILE__ ) );
+	wp_enqueue_style( 'buttons-dataTables', plugins_url( '/assets/css/third-party-css/buttons.dataTables.min.css', __FILE__ ) );
+	wp_enqueue_style( 'mjschool-poppins-fontfamily', plugins_url( '/assets/css/mjschool-popping-font.css', __FILE__ ) );
+	
+	// Trigger for JS
+	echo '<div id="mjschool-print-invoice-trigger" data-print="1"></div>';
+	
+	// Validate invoice_id exists
+	if ( ! isset( $_REQUEST['invoice_id'] ) ) {
+		wp_die( esc_html__( 'Invoice ID is required.', 'mjschool' ) );
+	}
+	
+	$invoice_id = sanitize_text_field( wp_unslash( $_REQUEST['invoice_id'] ) );
+	
+	mjschool_student_invoice_print( mjschool_decrypt_id( $invoice_id ) );
+	exit;
+}
+add_action( 'init', 'mjschool_print_invoice' );

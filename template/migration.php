@@ -25,25 +25,25 @@ $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
 			if ( $user_access['delete'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
@@ -58,13 +58,14 @@ if ( isset( $_REQUEST['migration'] ) ) {
 		if ( $current_class !== $next_class ) {
 			$exam_id       = sanitize_text_field( wp_unslash($_REQUEST['exam_id']) );
 			$passing_marks = sanitize_text_field( wp_unslash($_REQUEST['passing_marks']) );
-			$student_fail  = mjschool_fail_student_list( $current_class, $next_class, $exam_id, $passing_marks );
-			$update        = mjschool_migration( $current_class, $next_class, $exam_id, $student_fail, $passing_marks );
+			$mjschool_obj_marks = new Mjschool_Marks_Manage();
+			$student_fail  = $mjschool_obj_marks->mjschool_fail_student_list( $current_class, $next_class, $exam_id, $passing_marks );
+			$update        = $mjschool_obj_marks->mjschool_migration( $current_class, $next_class, $exam_id, $student_fail, $passing_marks );
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=migration&message=1' ) );
-			die();
+			exit;
 		} else {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=migration&message=2' ) );
-			die();
+			exit;
 		}
 	}
 }
@@ -78,7 +79,7 @@ if ( isset( $_REQUEST['migration'] ) ) {
 			case '1':
 				$message_string = esc_html__( 'Migration Completed Successfully.', 'mjschool' ) . ' <a href="' . esc_url($log_url) . '">Go to View Log</a>';
 				break;
-			case '2';
+			case '2':
 				$message_string = esc_html__( 'Current Class and Next Class can not be same.', 'mjschool' );
 				break;
 		}
@@ -106,19 +107,20 @@ if ( isset( $_REQUEST['migration'] ) ) {
 						<div class="form-body mjschool-user-form">
 							<div class="row">
 								<div class="col-md-6 input">
-									<label class="ml-1 mjschool-custom-top-label top" for="current_class"><?php esc_html_e( 'Select Current Class', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
-									<select name="current_class" id="current_class" class="mjschool-line-height-30px form-control validate[required] text-input">
+							<label class="ml-1 mjschool-custom-top-label top" for="mjschool-current-class"><?php esc_html_e( 'Select Current Class', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
+							<select name="current_class" id="mjschool-current-class" class="mjschool-line-height-30px form-control validate[required] text-input">
 										<option value=""><?php esc_html_e( 'Select Current Class', 'mjschool' ); ?></option>
 										<?php
-										foreach ( mjschool_get_all_class() as $classdata ) {
+										$mjschool_class = new Mjschool_Class();
+										foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 											?>
 											<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
 										<?php } ?>
 									</select>
 								</div>
 								<div class="col-md-6 input mjschool-error-msg-left-margin">
-									<label class="ml-1 mjschool-custom-top-label top" for="next_class"><?php esc_html_e( 'Select Next Class Name', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
-									<select name="next_class" id="next_class" class="mjschool-line-height-30px form-control validate[required] text-input">
+							<label class="ml-1 mjschool-custom-top-label top" for="mjschool-next-class"><?php esc_html_e( 'Select Next Class Name', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
+							<select name="next_class" id="mjschool-next-class" class="mjschool-line-height-30px form-control validate[required] text-input">
 										<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 										<?php
 										$tablename = 'mjschool_class';
@@ -132,12 +134,12 @@ if ( isset( $_REQUEST['migration'] ) ) {
 									</select>
 								</div>
 								<div class="col-md-6 input">
-									<label class="ml-1 mjschool-custom-top-label top" for="exam_id"><?php esc_html_e( 'Select Exam', 'mjschool' ); ?><span class="mjschool-require-field"></span></label>
-									<?php
-									$tablename      = 'mjschool_exam';
-									$retrieve_class_data = mjschool_get_all_data( $tablename );
-									?>
-									<select name="exam_id" id="exam_id" class="mjschool-line-height-30px form-control  text-input">
+								<label class="ml-1 mjschool-custom-top-label top" for="mjschool-exam-id"><?php esc_html_e( 'Select Exam', 'mjschool' ); ?><span class="mjschool-require-field"></span></label>
+								<?php
+								$tablename      = 'mjschool_exam';
+								$retrieve_class_data = mjschool_get_all_data( $tablename );
+								?>
+								<select name="exam_id" id="mjschool-exam-id" class="mjschool-line-height-30px form-control  text-input">
 										<option value=""><?php esc_html_e( 'Select Exam', 'mjschool' ); ?></option>
 										<?php
 										foreach ( $retrieve_class_data as $retrieved_data ) {

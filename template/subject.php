@@ -13,7 +13,10 @@
  */
 defined( 'ABSPATH' ) || exit;
 $role_name         = mjschool_get_user_role( get_current_user_id() );
-$custom_field_obj  = new Mjschool_Custome_Field();
+$teacher_obj = new Mjschool_Teacher();
+$obj_subject = new Mjschool_Subject();
+$mjschool_user = new Mjschool_User();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'subject';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 $school_type = get_option( 'mjschool_custom_class' );
@@ -21,32 +24,32 @@ $school_type = get_option( 'mjschool_custom_class' );
 <?php
 // -------- Check browser javascript. ----------//
 mjschool_browser_javascript_check();
-$obj_subject = new Mjschool_Subject();
+
 $active_tab  = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'])) : 'subjectlist';
 // --------------- Access-wise role. -----------//
 $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
 			if ( $user_access['delete'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
@@ -62,7 +65,7 @@ if ( isset( $_POST['subject'] ) ) {
 			$extensions = array( 'pdf' );
 			if ( in_array( $file_ext, $extensions ) === false ) {
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=subject&message=3') );
-				die();
+				exit;
 			}
 			if ( $_FILES['subject_syllabus']['size'] > 0 ) {
 				$syllabus = mjschool_inventory_image_upload( $_FILES['subject_syllabus'] );
@@ -103,7 +106,7 @@ if ( isset( $_POST['subject'] ) ) {
 				$result_sub = mjschool_get_subject_by_class_and_code($class_id, $subject_code);
 					if ( $result_sub->subid != wp_unslash($_REQUEST['subject_id']) ) {
 						wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=subject&tab=addsubject&action=edit&subject_id=' . $sub_id . '&message=5') );
-						die();
+						exit;
 					}
 				}
 				global $wpdb;
@@ -111,7 +114,6 @@ if ( isset( $_POST['subject'] ) ) {
 				$subject_id         = intval( wp_unslash($_REQUEST['subject_id']) );
 				$subid              = array( 'subid' => intval( wp_unslash($_REQUEST['subject_id']) ) );
 				// UPDATE CUSTOM FIELD DATA.
-				$custom_field_obj    = new Mjschool_Custome_Field();
 				$module              = 'subject';
 				$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $subject_id );
 				$result              = mjschool_update_record( $tablename, $subjects, $subid );
@@ -134,10 +136,11 @@ if ( isset( $_POST['subject'] ) ) {
 				}
 				/* Send Assign Subject Mail. */
 				if ( isset( $_POST['mjschool_mail_service_enable'] ) ) {
+			
 					foreach ( $_POST['subject_teacher'] as $teacher_id ) {
 						$smgt_mail_service_enable = sanitize_text_field(wp_unslash($_POST['mjschool_mail_service_enable']));
 						if ( $smgt_mail_service_enable ) {
-							$search['{{teacher_name}}'] = mjschool_get_teacher( $teacher_id );
+							$search['{{teacher_name}}'] = $teacher_obj->mjschool_get_teacher( $teacher_id );
 							$search['{{subject_name}}'] = sanitize_text_field( wp_unslash($_POST['subject_name']) );
 							$search['{{school_name}}']  = get_option( 'mjschool_name' );
 							$message                    = mjschool_string_replacement( $search, get_option( 'mjschool_assign_subject_mailcontent' ) );
@@ -147,7 +150,7 @@ if ( isset( $_POST['subject'] ) ) {
 								$attechment = '';
 							}
 							if ( get_option( 'mjschool_mail_notification' ) === 1 ) {
-								mjschool_send_mail_for_homework( mjschool_get_email_id_by_user_id( $teacher_id ), get_option( 'mjschool_assign_subject_title' ), $message, $attechment );
+								mjschool_send_mail_for_homework( $mjschool_obj_user->mjschool_get_email_id_by_user_id( $teacher_id ), get_option( 'mjschool_assign_subject_title' ), $message, $attechment );
 							}
 						}
 					}
@@ -168,7 +171,7 @@ if ( isset( $_POST['subject'] ) ) {
 					$result_sub = mjschool_get_subject_by_class_and_code($class_id, $subject_code);
 					if ( ! empty( $result_sub ) ) {
 						wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=subject&message=5' ) );
-						die();
+						exit;
 					} else {
 						// INSERT IN SUBJECT TABLE.
 						$student_ids_array = isset($_POST['student_id'][0]) ? wp_unslash($_POST['student_id'][0]) : array();
@@ -190,7 +193,6 @@ if ( isset( $_POST['subject'] ) ) {
 						$result    = mjschool_insert_record( $tablename, $subjects );
 						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 						$lastid             = $wpdb->insert_id;
-						$custom_field_obj   = new Mjschool_Custome_Field();
 						$module             = 'subject';
 						$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $lastid );
 						$selected_teachers  = isset( $_POST['subject_teacher'][ $key ] ) ? wp_unslash($_POST['subject_teacher'][ $key ]) : array();
@@ -221,7 +223,7 @@ if ( isset( $_POST['subject'] ) ) {
 									'type'  => 'notification',
 								),
 							);
-							$json              = json_encode( $notification_data );
+							$json              = wp_json_encode( $notification_data );
 							$message           = mjschool_send_push_notification( $json );
 							/* Send Push Notification. */
 						}
@@ -231,7 +233,7 @@ if ( isset( $_POST['subject'] ) ) {
 								foreach ( $selected_teachers as $teacher_id ) {
 									$smgt_mail_service_enable = sanitize_text_field(wp_unslash($_POST['mjschool_mail_service_enable']));
 									if ( $smgt_mail_service_enable ) {
-										$search['{{teacher_name}}'] = mjschool_get_teacher( $teacher_id );
+										$search['{{teacher_name}}'] = $teacher_obj->mjschool_get_teacher( $teacher_id );
 										$search['{{subject_name}}'] = sanitize_text_field( wp_unslash($_POST['subject_name']) );
 										$search['{{school_name}}']  = get_option( 'mjschool_name' );
 										$message                    = mjschool_string_replacement( $search, get_option( 'mjschool_assign_subject_mailcontent' ) );
@@ -241,7 +243,7 @@ if ( isset( $_POST['subject'] ) ) {
 											$attechment = '';
 										}
 										if ( get_option( 'mjschool_mail_notification' ) === 1 ) {
-											mjschool_send_mail_for_homework( mjschool_get_email_id_by_user_id( $teacher_id ), get_option( 'mjschool_assign_subject_title' ), $message, $attechment );
+											mjschool_send_mail_for_homework( $mjschool_obj_user->mjschool_get_email_id_by_user_id( $teacher_id ), get_option( 'mjschool_assign_subject_title' ), $message, $attechment );
 										}
 									}
 								}
@@ -253,7 +255,6 @@ if ( isset( $_POST['subject'] ) ) {
 			}
 		}
 	}
-$subject_obj = new Mjschool_Subject();
 // --------------- MULTIPLE SELECTED SUBJECT DELETE. -----------------//
 if ( isset( $_REQUEST['delete_selected'] ) ) {
 	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bulk_delete_books' ) ) {
@@ -264,19 +265,18 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 			$tablename = 'mjschool_subject';
 			$result    = $subject_obj->mjschool_delete_subject( $tablename, $subject_id );
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=subject&message=4') );
-			die();
+			exit;
 		}
 	}
 }
 // -------------- Delete SUBJECT. -------------------//
-$teacher_obj = new Mjschool_Teacher();
 $tablename   = 'mjschool_subject';
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
 		$result = $subject_obj->mjschool_delete_subject( $tablename, mjschool_decrypt_id( wp_unslash($_REQUEST['subject_id']) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=subject&message=4') );
-			die();
+			exit;
 		}
 	} else {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -344,9 +344,10 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 			$own_data = $user_access['own_data'];
 			if ( $own_data === '1' ) {
 				$subjects      = array();
+				$obj_subject = new Mjschool_Subject();
 				$subjects_data = $obj_subject->mjschool_get_teacher_own_subject( $user_id );
 				foreach ( $subjects_data as $s_id ) {
-					$subjects[] = mjschool_get_subject( $s_id->subject_id );
+					$subjects[] = $obj_subject->mjschool_get_subject( $s_id->subject_id );
 				}
 			} else {
 				$subjects = mjschool_get_all_data( 'mjschool_subject' );
@@ -397,7 +398,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		else {
 			$own_data = $user_access['own_data'];
 			if ( $own_data === '1' ) {
-				$subjects = mjschool_get_all_own_subject_data( 'mjschool_subject', );
+				$subjects = $obj_subject->mjschool_get_all_own_subject_data( 'mjschool_subject' );
 			} else {
 				$subjects = mjschool_get_all_data( 'mjschool_subject' );
 			}
@@ -449,12 +450,12 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 								foreach ( $subjects as $retrieved_data ) {
 									$teacher_group   = array();
 									$teacher_display = array();
-									$teacher_ids     = mjschool_teacher_by_subject( $retrieved_data );
+									$teacher_ids     = $obj_subject->mjschool_teacher_by_subject( $retrieved_data );
 									$ti              = 0;
 									foreach ( $teacher_ids as $teacher_id ) {
-										$teacher_group[] = mjschool_get_teacher( $teacher_id );
+										$teacher_group[] = $teacher_obj->mjschool_get_teacher( $teacher_id );
 										if ( $ti < 3 ) {
-											$teacher_display[] = mjschool_get_teacher( $teacher_id );
+											$teacher_display[] = $teacher_obj->mjschool_get_teacher( $teacher_id );
 										}
 										++$ti;
 									}
@@ -465,9 +466,9 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 									$student_ids = explode( ',', $retrieved_data->selected_students);
 									$ti = 0;
 									foreach ($student_ids as $student_id) {
-										$student_group[] = mjschool_get_teacher($student_id);
+										$student_group[] = $teacher_obj->mjschool_get_teacher($student_id);
 										if ($ti < 3) {
-											$student_display[] = mjschool_get_teacher($student_id);
+											$student_display[] = $teacher_obj->mjschool_get_teacher($student_id);
 										}
 										$ti++;
 									}
@@ -598,7 +599,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 															<?php
 															if ( ! empty( $custom_field_value ) ) {
 																?>
-																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . basename( $custom_field_value ) )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																<?php
 															} else {
 																esc_html_e( 'Not Provided', 'mjschool' );
@@ -711,7 +712,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		$edit = 0;
 		if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 			$edit    = 1;
-			$subject = mjschool_get_subject( mjschool_decrypt_id( wp_unslash($_REQUEST['subject_id']) ) );
+			$subject = $obj_subject->mjschool_get_subject( mjschool_decrypt_id( wp_unslash($_REQUEST['subject_id']) ) );
 		}
 		?>
 		<div class="mjschool-panel-body"><!------------ Panel body. ------------>
@@ -769,7 +770,9 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 								?>
 								<select name="<?php echo esc_attr($name_attr); ?>" class="mjschool-line-height-30px form-control validate[required] class_by_teacher_subject" id="class_list_subject">
 									<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
-									<?php foreach ( mjschool_get_all_class() as $classdata ) { ?>
+									<?php 
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) { ?>
 										<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 									<?php } ?>
 								</select>
@@ -783,7 +786,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 									}
 									else
 									{
-										$teacherdata_array = mjschool_get_users_data( 'student' );
+										$teacherdata_array = $mjschool_user->mjschool_get_users_data( 'student' );
 									}
 									$selected_students = array();
 									if ( isset( $subject->selected_students ) && !empty( $subject->selected_students ) ) {
@@ -819,7 +822,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 										if ( ! empty( $syllabus ) ) {
 											?>
 											<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $syllabus )); ?>" record_id="<?php echo esc_attr( $subject->subject ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
+												<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . basename( $syllabus ) )); ?>" record_id="<?php echo esc_attr( $subject->subject ); ?>"><i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></a>
 											</div>
 											<?php
 										}
@@ -873,7 +876,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 									?>
 									<select name="subject_class" class="mjschool-line-height-30px form-control validate[required] class_by_teacher_subject" id="class_list_subject">
 										<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
-										<?php foreach ( mjschool_get_all_class() as $classdata ) { ?>
+										<?php 
+										foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) { ?>
 											<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 										<?php } ?>
 									</select>
@@ -893,7 +897,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 										<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 										<?php
 										if ( $edit ) {
-											foreach ( mjschool_get_class_sections( $subject->class_id ) as $sectiondata ) {
+											foreach ( $mjschool_class->mjschool_get_class_sections( $subject->class_id ) as $sectiondata ) {
 												?>
 												<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 												<?php
@@ -918,10 +922,11 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 										<?php
 										$teachval = array();
 										if ( $edit ) {
-											$teachval          = mjschool_teacher_by_subject( $subject );
-											$teacherdata_array = mjschool_get_teacher_by_class_id( $subject->class_id );
+											$teachval          = $obj_subject->mjschool_teacher_by_subject( $subject );
+											$teacherdata_array = $teacher_obj->mjschool_get_teacher_by_class_id( $subject->class_id );
 										} else {
-											$teacherdata_array = mjschool_get_users_data( 'teacher' );
+											
+											$teacherdata_array = $mjschool_user->mjschool_get_users_data( 'teacher' );
 										}
 										?>
 										<select name="subject_teacher[]" multiple="multiple" id="subject_teacher_subject" class="form-control validate[required] teacher_list">
@@ -958,7 +963,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 										<label class="ml-1 mjschool-custom-top-label top" for="class_list_subject"><?php esc_html_e( 'Class', 'mjschool' ); ?><span class="required">*</span></label>
 										<select name="subject_class[]" class="form-control validate[required] mjschool-width-100px class_by_teacher_subject mjschool_heights_47px" id="class_list_subject" >
 											<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
-											<?php foreach ( mjschool_get_all_class() as $classdata ) { ?>
+											<?php 
+											foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) { ?>
 												<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
 											<?php } ?>
 										</select>
@@ -984,7 +990,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 									?>
 									<div class="col-md-5 col-10 mjschool-rtl-margin-top-15px mjschool-teacher-list-multiselect">
 										<div class="col-sm-12 mjschool-multiselect-validation-teacher mjschool-multiple-select mjschool-rtl-padding-left-right-0px mjschool-res-rtl-width-100px">
-											<?php $teacherdata_array = mjschool_get_users_data( 'teacher' ); ?>
+											<?php 
+											$teacherdata_array = $mjschool_user->mjschool_get_users_data( 'teacher' ); ?>
 											<select name="subject_teacher[0][]" multiple="multiple" id="subject_teacher_subject" class="form-control validate[required]">
 												<?php
 												foreach ( $teacherdata_array as $teacherdata ) {
@@ -1045,7 +1052,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 				</div>
 				<?php
 				// --------- Get module-wise custom field data. --------------//
-				$custom_field_obj = new Mjschool_Custome_Field();
+				$custom_field_obj = new Mjschool_Custom_Field();
 				$module           = 'subject';
 				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>

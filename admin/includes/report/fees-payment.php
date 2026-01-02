@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Fees Payment Report – Graph & DataTable View.
  *
@@ -61,7 +60,7 @@ if ( $active_tab === 'fees_payment_graph' ) {
 			'11' => esc_html__( 'November', 'mjschool' ),
 			'12' => esc_html__( 'December', 'mjschool' ),
 		);
-		$year = isset( $_POST['year'] ) ? $_POST['year'] : date( 'Y' );
+		$year = isset( $_POST['year'] ) ? $_POST['year'] : wp_date( 'Y' );
 		$chart_array = array();
 		// $chart_array[] = array(esc_html__( 'Month','mjschool' ),esc_html__( 'Fees Payment','mjschool' ) );
 		array_push( $chart_array, array( esc_html__( 'Month', 'mjschool' ), esc_html__( 'Payment', 'mjschool' ) ) );
@@ -131,7 +130,8 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 							<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
 							<option value="all_class" <?php echo selected( $select_class, 'all_class' ); ?>><?php esc_html_e( 'All Class', 'mjschool' ); ?></option>
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php echo selected( $select_class, $classdata['class_id'] ); ?>> <?php echo esc_html( $classdata['class_name'] ); ?></option>
 								<?php
@@ -153,7 +153,8 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 								<?php
 								if ( isset( $_REQUEST['class_section'] ) ) {
 									echo esc_html( $class_section = $_REQUEST['class_section'] );
-									foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>> <?php echo esc_attr( $sectiondata->section_name ); ?></option>
 										<?php
@@ -195,7 +196,7 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 					<div class="col-md-3">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input type="text" id="sdate" class="form-control" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( $_REQUEST['sdate'] ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( 'first day of this month' ) ) ) ); } ?>"readonly>
+								<input type="text" id="sdate" class="form-control" name="sdate" value="<?php if ( isset( $_REQUEST['sdate'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( $_REQUEST['sdate'] ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( 'first day of this month' ) ) ) ); } ?>"readonly>
 								<label for="sdate"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 							</div>
 						</div>
@@ -203,7 +204,7 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 					<div class="col-md-3">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input type="text" id="edate" class="form-control" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) {echo esc_attr( mjschool_get_date_in_input_box( $_REQUEST['edate'] ) );} else {echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) );}?>"readonly>
+								<input type="text" id="edate" class="form-control" name="edate" value="<?php if ( isset( $_REQUEST['edate'] ) ) {echo esc_attr( mjschool_get_date_in_input_box( $_REQUEST['edate'] ) );} else {echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) );}?>"readonly>
 								<label for="edate"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 							</div>
 						</div>
@@ -235,7 +236,7 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 	<?
 	$obj_library = new MjSchool_Library();
 	if ( isset( $_POST['report_4'] ) ) {
-		if ( $_POST['class_id'] != ' ' && $_POST['fees_id'] != ' ' && $_POST['sdate'] != ' ' && $_POST['edate'] != ' ' ) {
+		if ( $_POST['class_id'] !== ' ' && $_POST['fees_id'] !== ' ' && $_POST['sdate'] !== ' ' && $_POST['edate'] !== ' ' ) {
 			$class_id   = $_POST['class_id'];
 			$section_id = 0;
 			if ( isset( $_POST['class_section'] ) ) {
@@ -313,9 +314,11 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 									<?php
 									$fees_id=explode( ',',$retrieved_data->fees_id);
 									$fees_type=array();
+									$obj_fees = new Mjschool_Fees();
+									$mjschool_obj_feespayment = new Mjschool_Feespayment();
 									foreach($fees_id as $id)
 									{ 
-										$fees_type[] = mjschool_get_fees_term_name($id);
+										$fees_type[] = $obj_fees->mjschool_get_fees_term_name($id);
 									}
 									?>
 									<td>
@@ -328,7 +331,7 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 									<td><?php if ( $retrieved_data->class_id === "0"){ esc_html_e( 'All Class','mjschool' );}else{ echo esc_html( mjschool_get_class_section_name_wise( $retrieved_data->class_id,$retrieved_data->section_id ) );} ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name','mjschool' );?>"></i></td>
 									<td>
 										<?php 
-										$payment_status=mjschool_get_payment_status($retrieved_data->fees_pay_id);
+										$payment_status=$mjschool_obj_feespayment->mjschool_get_payment_status($retrieved_data->fees_pay_id);
 										if ( $payment_status === 'Not Paid' )
 										{
 											echo "<span class='mjschool-red-color'>";

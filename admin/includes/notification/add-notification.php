@@ -35,7 +35,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 					<select name="class_id" id="mjschool-notification-class-list-id" class="form-control mjschool-max-width-100px">
 						<option value="All"><?php esc_html_e( 'All', 'mjschool' ); ?></option>
 						<?php
-						foreach ( mjschool_get_all_class() as $classdata ) {
+						$mjschool_class = new Mjschool_Class();
+						foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 							?>
 							<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php
@@ -83,7 +84,7 @@ $school_type = get_option( 'mjschool_custom_class' );
 		</div>
 		<?php
 		// --------- Get Module-Wise Custom Field Data. --------------//
-		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+		$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 		$module                    = 'notification';
 		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>

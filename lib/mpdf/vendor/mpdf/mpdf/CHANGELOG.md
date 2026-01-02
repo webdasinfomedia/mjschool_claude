@@ -513,7 +513,7 @@ Changes in mPDF 5.7 may cause some changes to the way your documents appear. The
     you previously used $mpdf->hyphenate=true;
 2) Table of Contents - appearance can now be controlled with CSS styles. By default, in mPDF 5.7, no styling is applied so you will get:
     - No indent (previous default of 5mm) - ($tocindent is ignored)
-    - Any font, font-size set ($tocfont or $tocfontsize) will not work
+    - Any font, font-size set ($tocfont || $tocfontsize) will not work
     - HyperLinks will appear with your default appearance - usually blue and underlined
     - line spacing will be narrower (can use line-height or margin-top in CSS)
 

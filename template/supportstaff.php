@@ -16,7 +16,7 @@ mjschool_browser_javascript_check();
 $role_name         = mjschool_get_user_role( get_current_user_id() );
 $active_tab        = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'])) : 'supportstaff_list';
 $obj_admission     = new Mjschool_admission();
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'supportstaff';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 // --------------- Access-wise role. -----------//
@@ -24,7 +24,7 @@ $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 }
 ?>
@@ -72,6 +72,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 						</thead>
 						<tbody>
 							<?php
+							$mjschool_user = new Mjschool_User();
 							if ( $school_obj->role === 'supportstaff' ) {
 								$own_data = $user_access['own_data'];
 								if ( $own_data === '1' ) {
@@ -79,10 +80,10 @@ if ( isset( $_REQUEST['page'] ) ) {
 									$supportstaff   = array();
 									$supportstaff[] = get_userdata( $user_id );
 								} else {
-									$supportstaff = mjschool_get_users_data( 'supportstaff' );
+									$supportstaff = $mjschool_user->mjschool_get_users_data( 'supportstaff' );
 								}
 							} else {
-								$supportstaff = mjschool_get_users_data( 'supportstaff' );
+								$supportstaff = $mjschool_user->mjschool_get_users_data( 'supportstaff' );
 							}
 							if ( ! empty( $supportstaff ) ) {
 								foreach ( $supportstaff as $retrieved_data ) {
@@ -99,7 +100,8 @@ if ( isset( $_REQUEST['page'] ) ) {
 												<a  href="#">
 													<?php
 													$uid       = $retrieved_data->ID;
-													$umetadata = mjschool_get_user_image( $uid );
+													$mjschool_user = new Mjschool_User();
+													$umetadata = $mjschool_user->mjschool_get_user_image( $uid );
 													
 													if (empty($umetadata ) ) {
 														echo '<img src=' . esc_url( get_option( 'mjschool_supportstaff_thumb_new' ) ) . ' height="50px" width="50px" class="img-circle" />';
@@ -251,7 +253,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 	// ----------------- VIEW SUPPIRT STAFF TAB. -----------------//
 	if ( $active_tab === 'view_supportstaff' ) {
 		$active_tab1      = isset( $_REQUEST['tab1'] ) ? sanitize_text_field(wp_unslash($_REQUEST['tab1'])) : 'general';
-		$custom_field_obj = new Mjschool_Custome_Field();
+		$custom_field_obj = new Mjschool_Custom_Field();
 		$staff_data       = get_userdata( mjschool_decrypt_id( wp_unslash($_REQUEST['supportstaff_id']) ) );
 		?>
 		<div class="mjschool-panel-body mjschool-support-view-page mjschool-view-page-main"><!--  Start panel body div.-->
@@ -263,7 +265,8 @@ if ( isset( $_REQUEST['page'] ) ) {
 							<div class="col-xl-10 col-md-9 col-sm-10">
 								<div class="mjschool-user-profile-header-left mjschool-float-left-width-100px">
 									<?php
-									$umetadata = mjschool_get_user_image( $staff_data->ID );
+									$mjschool_user = new Mjschool_User();
+									$umetadata = $mjschool_user->mjschool_get_user_image( $staff_data->ID );
 									?>
 									
 									<img class="mjschool-user-view-profile-image" src="<?php if ( ! empty( $umetadata ) ) { echo esc_url($umetadata); } else { echo esc_url( get_option( 'mjschool_supportstaff_thumb_new' ) ); } ?>">
@@ -506,7 +509,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 									</div>
 									<?php
 									$module = 'supportstaff';
-									$custom_field_obj->mjschool_show_inserted_customfield_data_in_datail_page( $module );
+									$custom_field_obj->mjschool_show_inserted_custom_field_data_in_datail_page( $module );
 									?>
 								</div>
 							</div>

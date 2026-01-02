@@ -20,7 +20,7 @@
  * - Optional features like SMS/Email notifications (`smgt_enable_event_mail`, `smgt_enable_event_sms`).
  * 4. **Event List Display**: Rendering a list of scheduled events, likely integrating
  * a full calendar view or a tabular list for easy management.
- * 5. **Custom Fields**: Integrating the `Mjschool_Custome_Field` object to fetch
+ * 5. **Custom Fields**: Integrating the `Mjschool_Custom_Field` object to fetch
  * and display any custom fields associated with the 'event' module.
  * 6. **CRUD Operations**: Processing form submissions and URL actions for managing
  * event data in the database.
@@ -63,14 +63,14 @@ if ( isset( $_REQUEST['page'] ) ) {
 		}
 	}
 }
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'event';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 // ------------------ Save event. --------------------//
 if ( isset( $_POST['save_event'] ) ) {
 	$nonce = sanitize_text_field(wp_unslash($_POST['_wpnonce']));
 	if ( wp_verify_nonce( $nonce, 'save_event_nonce' ) ) {
-		if ( $_FILES['upload_file']['name'] != '' && $_FILES['upload_file']['size'] > 0 ) {
+		if ( $_FILES['upload_file']['name'] !== '' && $_FILES['upload_file']['size'] > 0 ) {
 			if ( $_FILES['upload_file']['size'] > 0 ) {
 				$file_name = mjschool_load_documets_new( $_FILES['upload_file'], $_FILES['upload_file'], sanitize_text_field(wp_unslash($_POST['upload_file'])) );
 			}
@@ -82,7 +82,7 @@ if ( isset( $_POST['save_event'] ) ) {
 				$event_id = intval( wp_unslash($_REQUEST['event_id'] ) );
 				$result   = $mjschool_obj_event->mjschool_insert_event( wp_unslash($_POST), $file_name );
 				// Update custom field data.
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'event';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $event_id );
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=event&tab=eventlist&message=2' ) );
@@ -100,19 +100,19 @@ if ( isset( $_POST['save_event'] ) ) {
 			$start_min                    = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
 			$start_am_pm                  = $start_time_data[2];
 			$start_time_new               = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
-			$start_time_in_24_hour_format = date( 'H:i', strtotime( $start_time_new ) );
+			$start_time_in_24_hour_format = wp_date( 'H:i', strtotime( $start_time_new ) );
 			$end_time_data                = explode( ':', $end_time_1 );
 			$end_hour                     = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
 			$end_min                      = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
 			$end_am_pm                    = $end_time_data[2];
 			$end_time_new                 = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
-			$end_time_in_24_hour_format   = date( 'H:i', strtotime( $end_time_new ) );
+			$end_time_in_24_hour_format   = wp_date( 'H:i', strtotime( $end_time_new ) );
 			if ( $start_date === $end_date && $start_time_in_24_hour_format >= $end_time_in_24_hour_format ) {
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=event&tab=eventlist&message=4' ) );
 				die();
 			} else {
 				$result                    = $mjschool_obj_event->mjschool_insert_event( wp_unslash($_POST), $file_name );
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'event';
 				$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
@@ -388,7 +388,8 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 															if ( ! empty( $retrieved_data->event_doc ) ) {
 																?>
 																<li class="mjschool-float-left-width-100px">
-																	<a target="blank" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $retrieved_data->event_doc )); ?>" class="mjschool-status-read mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>"><i class="fas fa-eye"></i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
+
+																	<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $retrieved_data->event_doc )); ?>" class="mjschool-status-read mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->exam_id ); ?>"><i class="fas fa-eye"></i><?php esc_html_e( 'View Document', 'mjschool' ); ?></a>
 																</li>
 																<?php
 															}
@@ -510,7 +511,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 						<div class="col-sm-12 col-md-3 col-lg-3 col-xl-3">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="start_date_event" class="form-control validate[required] start_date datepicker1" autocomplete="off" type="text" name="start_date" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $result->start_date ) ) ) ); } elseif ( isset( $_POST['start_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['start_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>">
+									<input id="start_date_event" class="form-control validate[required] start_date datepicker1" autocomplete="off" type="text" name="start_date" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $result->start_date ) ) ) ); } elseif ( isset( $_POST['start_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['start_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>">
 									<label class="active" for="start_date_event"><?php esc_html_e( 'Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 								</div>
 							</div>
@@ -525,7 +526,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 						<div class="col-sm-12 col-md-3 col-lg-3 col-xl-3">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="end_date_event" class="form-control validate[required] start_date datepicker2" type="text" name="end_date" autocomplete="off" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $result->end_date ) ) ) ); } elseif ( isset( $_POST['end_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['end_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>">
+									<input id="end_date_event" class="form-control validate[required] start_date datepicker2" type="text" name="end_date" autocomplete="off" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $result->end_date ) ) ) ); } elseif ( isset( $_POST['end_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['end_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>">
 									<label for="end_date_event"><?php esc_html_e( 'End Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 								</div>
 							</div>
@@ -582,7 +583,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 				</div>
 				<?php
 				// --------- Get module-wise custom field data. --------------//
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'event';
 				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>

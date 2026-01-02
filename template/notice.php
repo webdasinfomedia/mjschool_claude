@@ -11,7 +11,7 @@
  * - **Targeting:** Allows notices to be targeted to specific classes, individual users, or all users.
  * - **Communication Channels:** Includes options for sending the notice content via both the internal system and SMS.
  * - **Form Processing:** Handles the creation (insert/update) of new notices.
- * - **Custom Fields:** Integrates custom fields managed by `Mjschool_Custome_Field` for the 'notice' module.
+ * - **Custom Fields:** Integrates custom fields managed by `Mjschool_Custom_Field` for the 'notice' module.
  *
  * @package    Mjschool
  * @subpackage Mjschool/templates
@@ -21,7 +21,8 @@
 defined( 'ABSPATH' ) || exit;
 $school_type = get_option( "mjschool_custom_class");
 $role_name                 = mjschool_get_user_role( get_current_user_id() );
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$teacher_obj = new Mjschool_Teacher();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'notice';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
@@ -34,25 +35,25 @@ $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
 			if ( $user_access['delete'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
@@ -61,8 +62,9 @@ if ( isset( $_REQUEST['page'] ) ) {
 if ( isset( $_POST['save_notice'] ) ) {
 	$nonce = sanitize_text_field(wp_unslash($_POST['_wpnonce']));
 	if ( wp_verify_nonce( $nonce, 'save_notice_admin_nonce' ) ) {
-		$start_date = date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_REQUEST['start_date'])) ) );
-		$end_date   = date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_REQUEST['end_date'])) ) );
+		$start_date = gmdate( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_REQUEST['start_date'])) ) );
+		// Replaced date() with gmdate() for UTC timestamps
+		$end_date   = gmdate( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_REQUEST['end_date'])) ) );
 		$exlude_id  = mjschool_approve_student_list();
 		if ( $start_date > $end_date ) {
 			 ?>
@@ -82,7 +84,7 @@ if ( isset( $_POST['save_notice'] ) ) {
 					);
 					$result1 = wp_update_post( $args );
 					// UPDATE CUSTOM FIELD DATA.
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'notice';
 					$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $notice_id );
 					$result2                   = update_post_meta( $notice_id, 'notice_for', sanitize_text_field(wp_unslash($_REQUEST['notice_for'])) );
@@ -127,7 +129,7 @@ if ( isset( $_POST['save_notice'] ) ) {
 					}
 					if ( $result1 || $result2 || $result3 || $result4 || isset( $result5 ) ) {
 						wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=notice&tab=noticelist&message=2') );
-						die();
+						exit;
 					}
 				} else {
 					wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -142,7 +144,7 @@ if ( isset( $_POST['save_notice'] ) ) {
 						'post_content' => sanitize_textarea_field( wp_unslash($_REQUEST['notice_content']) ),
 					)
 				);
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'notice';
 				$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $post_id );
 				if ( ! empty( $_POST['notice_for'] ) ) {
@@ -172,7 +174,7 @@ if ( isset( $_POST['save_notice'] ) ) {
 								)
 							);
 						} else {
-							$teacher_list = mjschool_get_teacher_by_class_id ($class_list );
+							$teacher_list = $teacher_obj->mjschool_get_teacher_by_class_id ($class_list );
 							if ( $teacher_list ) {
 								foreach ( $teacher_list as $teacher ) {
 									$user_list_array[] = $teacher->teacher_id;
@@ -220,7 +222,7 @@ if ( isset( $_POST['save_notice'] ) ) {
 								'type'  => 'notice',
 							),
 						);
-						$json              = json_encode( $notification_data );
+						$json              = wp_json_encode( $notification_data );
 						mjschool_send_push_notification( $json );
 						// End Send Push Notification. //
 					}
@@ -291,7 +293,7 @@ if ( isset( $_POST['save_notice'] ) ) {
 					}
 					if ( $result ) {
 						wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=notice&tab=noticelist&message=1') );
-						die();
+						exit;
 					}
 				}
 			}
@@ -306,7 +308,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 	}
 	if ( $result ) {
 		wp_safe_redirect( home_url('?dashboard=mjschool_user&page=notice&tab=noticelist&message=3') );
-		die();
+		exit;
 	}
 }
 // ----------------------------- SAVE NOTICE. -----------------------------------//
@@ -315,7 +317,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		$result = wp_delete_post( mjschool_decrypt_id( intval( wp_unslash( $_REQUEST['notice_id'] ) ) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=notice&tab=noticelist&message=3') );
-			die();
+			exit;
 		}
 	} else {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -501,7 +503,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 												} elseif ( get_post_meta( $retrieved_data->ID, 'smgt_class_id', true ) !== '' && get_post_meta( $retrieved_data->ID, 'smgt_class_id', true ) === 'all' ) {
 													esc_html_e( 'All', 'mjschool' );
 												} elseif ( get_post_meta( $retrieved_data->ID, 'smgt_class_id', true ) !== '' ) {
-													echo esc_html( mjschool_get_class_name( get_post_meta( $retrieved_data->ID, 'smgt_class_id', true ) ) );
+													$mjschool_class = new Mjschool_Class();
+													echo esc_html( $mjschool_class->mjschool_get_class_name( get_post_meta( $retrieved_data->ID, 'smgt_class_id', true ) ) );
 												}
 												?>
 												<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class', 'mjschool' ); ?>"></i>
@@ -537,7 +540,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 																		<?php
 																		if ( ! empty( $custom_field_value ) ) {
 																			?>
-																			<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+                                                                    <?php // Added basename() for security to prevent directory traversal ?>
+																			<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . basename( $custom_field_value ) )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																			<?php
 																		} else {
 																			esc_html_e( 'N/A', 'mjschool' );
@@ -690,7 +694,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 						<div class="col-md-6">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="notice_Start_date" class="datepicker form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'start_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="start_date" readonly>
+									<input id="notice_Start_date" class="datepicker form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'start_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); } ?>" name="start_date" readonly>
 									<label  for="notice_content"><?php esc_html_e( 'Notice Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 								</div>
 							</div>
@@ -699,7 +703,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 						<div class="col-md-6 mjschool-error-msg-left-margin">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="notice_end_date" class="datepicker form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'end_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="end_date" readonly>
+									<input id="notice_end_date" class="datepicker form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'end_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); } ?>" name="end_date" readonly>
 									<label  for="notice_content"><?php esc_html_e( 'Notice End Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 								</div>
 							</div>
@@ -728,7 +732,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 							<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control">
 								<option value="all"><?php esc_html_e( 'All', 'mjschool' ); ?></option>
 								<?php
-								foreach ( mjschool_get_all_class() as $classdata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 									?>
 									<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php echo selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 									<?php
@@ -752,7 +757,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 									<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 									<?php
 									if ( $edit ) {
-										foreach ( mjschool_get_class_sections( $classval ) as $sectiondata ) {
+										$mjschool_class = new Mjschool_Class();
+										foreach ( $mjschool_class->mjschool_get_class_sections( $classval ) as $sectiondata ) {
 											?>
 											<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 											<?php
@@ -798,7 +804,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 				</div>
 				<?php
 				// --------- Get module-wise custom field data. --------------//
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'notice';
 				$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>

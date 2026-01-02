@@ -23,7 +23,8 @@ defined( 'ABSPATH' ) || exit;
 $edit = 0;
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 	$edit         = 1;
-	$payment_data = mjschool_get_payment_by_id( sanitize_text_field(wp_unslash($_REQUEST['payment_id'])) );
+	$mjschool_obj_invoice = new Mjschool_Invoice();
+	$payment_data = $mjschool_obj_invoice->mjschool_get_payment_by_id( sanitize_text_field(wp_unslash($_REQUEST['payment_id'])) );
 }
 ?>
 <div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res"><!--------- Panel Body. --------->
@@ -53,7 +54,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 					<select name="class_id" id="mjschool-class-list" class="form-control validate[required] mjschool-max-width-100px">
 						<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 						<?php
-						foreach ( mjschool_get_all_class() as $classdata ) {
+						$mjschool_class = new Mjschool_Class();
+						foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 							?>
 							<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 						<?php } ?>
@@ -74,7 +76,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 						<option value=""><?php esc_html_e( 'Select Class Section', 'mjschool' ); ?></option>
 						<?php
 						if ( $edit ) {
-							foreach ( mjschool_get_class_sections( $payment_data->class_id ) as $sectiondata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_class_sections( $payment_data->class_id ) as $sectiondata ) {
 								?>
 								<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 								<?php

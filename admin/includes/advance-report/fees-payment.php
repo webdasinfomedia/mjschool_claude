@@ -15,7 +15,7 @@
  */
 
 defined( 'ABSPATH' ) || exit;
-
+$mjschool_obj_feespayment = new Mjschool_Feespayment();
 // Check nonce for advance finance report tab.
 if ( isset( $_GET['tab'] ) ) {
 	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'mjschool_advance_finance_report_tab' ) ) {
@@ -79,7 +79,7 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 							<td><?php echo esc_html( mjschool_student_display_name_with_roll( $retrieved_data->student_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i></td>
 							<td><?php echo esc_html( $retrieved_data->class_id ) === '0' ? esc_html__( 'All Class', 'mjschool' ) : esc_html( mjschool_get_class_section_name_wise( $retrieved_data->class_id, $retrieved_data->section_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name', 'mjschool' ); ?>"></i></td>
 							<td> 
-								<?php $payment_status = mjschool_get_payment_status( $retrieved_data->fees_pay_id ); if ( $payment_status === 'Not Paid' ) { echo "<span class='mjschool-red-color'>"; } elseif ( $payment_status === 'Partially Paid' ) { echo "<span class='mjschool-purpal-color'>"; } else { echo "<span class='mjschool-green-color'>"; } echo esc_html( $payment_status ); echo '</span>'; ?>
+								<?php $payment_status = $mjschool_obj_feespayment->mjschool_get_payment_status( $retrieved_data->fees_pay_id ); if ( $payment_status === 'Not Paid' ) { echo "<span class='mjschool-red-color'>"; } elseif ( $payment_status === 'Partially Paid' ) { echo "<span class='mjschool-purpal-color'>"; } else { echo "<span class='mjschool-green-color'>"; } echo esc_html( $payment_status ); echo '</span>'; ?>
 								<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Payment Status', 'mjschool' ); ?>"></i>
 							</td>
 							<td><?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $retrieved_data->total_amount, 2 ) ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Total Amount', 'mjschool' ); ?>"></i></td>
@@ -94,7 +94,7 @@ if ( $active_tab === 'fees_payment_datatable' ) {
 								$status_class = 'status-on-time';  // Default class for "On-Time Payment".
 								$status_text  = esc_html__( 'On-Time Payment', 'mjschool' );  // Default text.
 								if ( ! empty( $end_year ) && $paid_amount < $total_amount ) {
-									$today        = date( 'Y-m-d' );
+									$today        = wp_date( 'Y-m-d' );
 									$due_date     = strtotime( $end_year );
 									$current_date = strtotime( $today );
 									$diff_in_days = ( $current_date - $due_date ) / ( 60 * 60 * 24 );

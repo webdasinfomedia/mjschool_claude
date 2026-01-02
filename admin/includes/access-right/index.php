@@ -56,7 +56,7 @@ $nonce = wp_create_nonce( 'mjschool_access_rights_tab' );
                     <?php endforeach; ?>
                 </ul>
                 <div class="clearfix"></div>
-                <!-- Load Tab Content.. -->
+                <!-- Load Tab Content. -->
                 <?php
                 if ( isset( $tabs[ $active_tab ] ) ) {
                     $file_path = trailingslashit( MJSCHOOL_ADMIN_DIR . '/access-right' ) . $tabs[ $active_tab ];

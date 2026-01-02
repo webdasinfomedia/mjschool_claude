@@ -1,8 +1,14 @@
 <?php
 /** filename of the IPN log */
-define( 'MJSCHOOL_LOG_FILE', '.ipn_results.log' );
-define( 'MJSCHOOL_SSL_P_URL', 'https://www.paypal.com/cgi-bin/webscr' );
-define( 'MJSCHOOL_SSL_SAND_URL', 'https://www.sandbox.paypal.com/cgi-bin/webscr' );
+if ( ! defined( 'MJSCHOOL_LOG_FILE' ) ) {
+	define( 'MJSCHOOL_LOG_FILE', '.ipn_results.log' );
+}
+if ( ! defined( 'MJSCHOOL_SSL_P_URL' ) ) {
+	define( 'MJSCHOOL_SSL_P_URL', 'https://www.paypal.com/cgi-bin/webscr' );
+}
+if ( ! defined( 'MJSCHOOL_SSL_SAND_URL' ) ) {
+	define( 'MJSCHOOL_SSL_SAND_URL', 'https://www.sandbox.paypal.com/cgi-bin/webscr' );
+}
 class Smgt_paypal_class {
 	private $ipn_status;                // holds the last status
 	public $admin_mail;                 // receive the ipn status report pre transaction
@@ -200,7 +206,7 @@ class Smgt_paypal_class {
 		}
 		$today     = date( 'Y-m-d H:i:s ' );
 		$myFile    = '.ipn_debugs.log';
-		$fh        = fopen( $myFile, 'a' ) or wp_die( "Can't open debug file. Please manually create the 'debug.log' file and make it writable." );
+		$fh        = fopen( $myFile, 'a' ) || wp_die( "Can't open debug file. Please manually create the 'debug.log' file and make it writable." );
 		$ua_simple = preg_replace( '/(.*)\s\(.*/', "\\1", $_SERVER ['HTTP_USER_AGENT'] );
 		fwrite( $fh, $today . ' [from: ' . $_SERVER ['REMOTE_ADDR'] . "|$ua_simple] - " . $msg . "\n" );
 		fclose( $fh );

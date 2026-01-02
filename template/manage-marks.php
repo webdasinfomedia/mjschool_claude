@@ -39,16 +39,20 @@ $subject_id         = 0;
 $active_tab         = isset( $_REQUEST['tab'] ) ? sanitize_text_field(wp_unslash($_REQUEST['tab'])) : 'result';
 // ------------ Add mark. --------------//
 if ( isset( $_REQUEST['add_mark'] ) ) {
+	// Verify nonce for CSRF protection
+	if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'mjschool_manage_marks_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed', 'mjschool' ) );
+	}
 	$user_id = sanitize_text_field(wp_unslash($_REQUEST['add_mark']));
 	if ( isset($_REQUEST['contributions']) && sanitize_text_field(wp_unslash($_REQUEST['contributions'])) === 'yes' ) {
-		$class_marks = json_encode( $_REQUEST['class_marks_'][ $user_id ] );
+		$class_marks = isset( $_REQUEST['class_marks_'][ $user_id ] ) ? wp_json_encode( array_map( 'intval', (array) $_REQUEST['class_marks_'][ $user_id ] ) ) : 0;
 		$marks       = 0;
 	} else {
 		$marks       = sanitize_text_field(wp_unslash($_REQUEST[ 'marks_' . $user_id ]));
 		$class_marks = 0;
 	}
 	$comment      = sanitize_text_field(wp_unslash($_REQUEST[ 'comment_' . $user_id ]));
-	$current_date = date( 'Y-m-d H:i:s' );
+	$current_date = gmdate( 'Y-m-d H:i:s' );
 	$grade_id     = $mjschool_obj_marks->mjschool_get_grade_id( $marks );
 	if ( ! $grade_id ) {
 		$grade_id = 0;
@@ -76,7 +80,7 @@ if ( isset( $_REQUEST['add_mark'] ) ) {
 			?>
 			<div id="mjschool-message" class="mjschool-message_class mjschool-alert-msg alert alert-success alert-dismissible " role="alert">
 				
-				<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/dashboard-icon/mjschool-close.png")?>"></span> </button>
+				<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/dashboard-icon/mjschool-close.png")?>" alt="<?php esc_attr_e( 'Close', 'mjschool' ); ?>"></span> </button>
 				
 				<p><?php esc_html_e( 'Marks Updated successfully.', 'mjschool' ); ?>
 			</div>
@@ -86,6 +90,9 @@ if ( isset( $_REQUEST['add_mark'] ) ) {
 }
 // ---------------- Add multiple marks save. -------------//
 if ( isset( $_REQUEST['save_all_marks'] ) ) {
+	if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'mjschool_manage_marks_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed', 'mjschool' ) );
+	}
 	$exam_id    = intval(wp_unslash($_REQUEST['exam_id']));
 	$class_id   = intval(wp_unslash($_REQUEST['class_id']));
 	$subject_id = intval(wp_unslash($_REQUEST['subject_id']));
@@ -113,14 +120,14 @@ if ( isset( $_REQUEST['save_all_marks'] ) ) {
 		$button_text = 'inser';
 		$user_id     = $user->ID;
 		if ( isset($_REQUEST['contributions']) && sanitize_text_field(wp_unslash($_REQUEST['contributions'])) === 'yes' ) {
-			$class_marks = json_encode( $_REQUEST['class_marks_'][ $user_id ] );
+			$class_marks = isset( $_REQUEST['class_marks_'][ $user_id ] ) ? wp_json_encode( array_map( 'intval', (array) $_REQUEST['class_marks_'][ $user_id ] ) ) : 0;
 			$marks       = 0;
 		} else {
 			$marks       = sanitize_text_field(wp_unslash($_REQUEST[ 'marks_' . $user_id ]));
 			$class_marks = 0;
 		}
 		$comment      = sanitize_text_field(wp_unslash($_REQUEST[ 'comment_' . $user_id ]));
-		$current_date = date( 'Y-m-d H:i:s' );
+		$current_date = gmdate( 'Y-m-d H:i:s' );
 		$grade_id = $mjschool_obj_marks->mjschool_get_grade_id( $marks );
 		if ( ! $grade_id ) {
 			$grade_id = 0;
@@ -150,7 +157,7 @@ if ( isset( $_REQUEST['save_all_marks'] ) ) {
 	if ( $result ) {
 		?>
 		<div id="mjschool-message" class="mjschool-message_class mjschool-alert-msg alert alert-success alert-dismissible " role="alert">
-			<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/dashboard-icon/mjschool-close.png")?>"></span> </button>
+			<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/dashboard-icon/mjschool-close.png")?>" alt="<?php esc_attr_e( 'Close', 'mjschool' ); ?>"></span> </button>
 			<p><?php esc_html_e( 'Marks Updated successfully.', 'mjschool' ); ?>
 		</div>
 		<?php
@@ -213,12 +220,13 @@ if ( isset( $_POST['export_marks'] ) ) {
 		wp_die( 'Cannot open file for writing.' );
 	}
 	fputcsv( $fh, $header );
+	$mjschool_class = new Mjschool_Class();
 	foreach ( $students as $student ) {
 		$row = array(
 			get_user_meta( $student->ID, 'roll_id', true ),
-			mjschool_get_user_name_by_id( $student->ID ),
-			mjschool_get_class_name( $class_id ),
-			mjschool_get_section_name( $class_section ),
+			mjschool_get_display_name( $student->ID ),
+			$mjschool_class->mjschool_get_class_name( $class_id ),
+			$mjschool_class->mjschool_get_section_name( $class_section ),
 		);
 		$total_marks = 0;
 		foreach ( $subject_array as $sub_id ) {
@@ -313,15 +321,15 @@ if ( $message ) {
 			<!------------ Panel body. -------------->
 			<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-25px-res"> 
 				<!-------------- Manage mark form. ------------>
-				<form method="post" id="mjschool-Add-marks-form">  
-					<div class="form-body mjschool-user-form">
+				<form method="post" id="mjschool-Add-marks-form">  				<?php wp_nonce_field( 'mjschool_manage_marks_nonce' ); ?>					<div class="form-body mjschool-user-form">
 						<div class="row">
 							<div class="col-md-6 input">
 								<label class="ml-1 mjschool-custom-top-label top" for="mjschool-class-list"><?php esc_html_e( 'Select Class', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 								<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control class_id_exam validate[required] text-input">
 									<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 									<?php
-									foreach ( mjschool_get_all_class() as $classdata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 										?>
 										<option  value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 									<?php } ?>
@@ -341,7 +349,8 @@ if ( $message ) {
 										<?php
 										if ( isset( $_REQUEST['class_section'] ) ) {
 											$class_section = sanitize_text_field(wp_unslash($_REQUEST['class_section']));
-											foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+											$mjschool_class = new Mjschool_Class();
+											foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 												?>
 												<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 												<?php
@@ -356,7 +365,8 @@ if ( $message ) {
 								<select id="mjschool-exam-id" name="exam_id" class="mjschool-line-height-30px form-control exam_list validate[required] text-input">
 									<?php
 									if ( isset( $_POST['exam_id'] ) ) {
-										$exam_data = mjschool_get_all_exam_by_class_id_all( intval(wp_unslash($_POST['class_id'])) );
+										$obj_exam = new Mjschool_Exam();
+										$exam_data = $obj_exam->mjschool_get_all_exam_by_class_id_all( intval(wp_unslash($_POST['class_id'])) );
 										if ( ! empty( $exam_data ) ) {
 											foreach ( $exam_data as $retrieved_data ) {
 												?>
@@ -417,8 +427,9 @@ if ( $message ) {
 									<select name="subject_id" id="mjschool-subject-list" class="mjschool-line-height-30px form-control validate[required] text-input">
 										<?php
 										if ( isset( $_POST['subject_id'] ) ) {
-											$subject = mjschool_get_subject( intval(wp_unslash($_POST['subject_id'])) );
-											$subject = mjschool_get_subject_by_class_id( intval(wp_unslash($_POST['class_id'])) );
+											$obj_subject = new Mjschool_Subject();
+											$subject = $obj_subject->mjschool_get_subject( intval(wp_unslash($_POST['subject_id'])) );
+											$subject = $obj_subject->mjschool_get_subject_by_class_id( intval(wp_unslash($_POST['class_id'])) );
 											if ( ! empty( $subject ) ) {
 												foreach ( $subject as $ubject_data ) {
 													?>
@@ -446,8 +457,9 @@ if ( $message ) {
 			<?php
 			if ( isset( $_REQUEST['manage_mark'] ) || isset( $_REQUEST['add_mark'] ) || isset( $_REQUEST['save_all_marks'] ) || isset( $_REQUEST['upload_csv_file'] ) ) {
 				$mjschool_role = '';
+				$subject_obj = new Mjschool_Subject();
 				if ( $mjschool_role === 'teacher' ) {
-					$class_id = mjschool_get_subject_class( intval(wp_unslash($_REQUEST['subject_id'])) );
+					$class_id = $subject_obj->mjschool_get_subject_class( intval(wp_unslash($_REQUEST['subject_id'])) );
 				} else {
 					$class_id = intval(wp_unslash($_REQUEST['class_id']));
 				}
@@ -505,8 +517,7 @@ if ( $message ) {
 				}
 				?>
 				<div class="clearfix mjschool-panel-body">
-					<form method="post" class="mt-3 form-inline" id="marks_form" enctype="multipart/form-data">  
-						<input type="hidden" name="exam_id" value="<?php echo esc_attr( $exam_id ); ?>" />
+					<form method="post" class="mt-3 form-inline" id="marks_form" enctype="multipart/form-data">  					<?php wp_nonce_field( 'mjschool_manage_marks_nonce' ); ?>						<input type="hidden" name="exam_id" value="<?php echo esc_attr( $exam_id ); ?>" />
 						<input type="hidden" name="subject_id" value="<?php echo esc_attr( $subject_id ); ?>" />
 						<input type="hidden" name="class_id" value="<?php echo esc_attr( $class_id ); ?>" />
 						<input type="hidden" name="section_id" value="<?php echo esc_attr( sanitize_text_field(wp_unslash($_REQUEST['class_section'])) ); ?>" />
@@ -573,6 +584,10 @@ if ( $message ) {
 									</tr>
 									<?php
 									if ( isset( $_REQUEST['upload_csv_file'] ) ) {
+										// Verify nonce for CSRF protection
+										if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'mjschool_manage_marks_nonce' ) ) {
+											wp_die( esc_html__( 'Security check failed', 'mjschool' ) );
+										}
 										if ( isset( $_FILES['csv_file'] ) ) {
 											$errors     = array();
 											$file_name  = $_FILES['csv_file']['name'];
@@ -726,4 +741,4 @@ if ( $message ) {
 		require_once MJSCHOOL_ADMIN_DIR . '/mark/add-multiple-subject-marks.php';
 	}
 	?>
-</div> 
+</div>

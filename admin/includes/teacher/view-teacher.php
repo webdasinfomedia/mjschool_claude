@@ -26,7 +26,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 	$active_tab1 = isset( $_REQUEST['tab1'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['tab1'] ) ) : 'general';
 	$teacher_obj      = new Mjschool_Teacher();
 	$obj_route        = new Mjschool_Class_Routine();
-	$custom_field_obj = new Mjschool_Custome_Field();
+	$custom_field_obj = new Mjschool_Custom_Field();
 	$teacher_id_encrypted = isset( $_REQUEST['teacher_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['teacher_id'] ) ) : '';
 	$teacher_id = ! empty( $teacher_id_encrypted ) ? intval( mjschool_decrypt_id( $teacher_id_encrypted ) ) : 0;
 	$teacher_data     = get_userdata( $teacher_id );
@@ -43,7 +43,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 						<div class="col-xl-10 col-md-9 col-sm-10">
 							<div class="mjschool-user-profile-header-left mjschool-float-left-width-100px">
 								<?php
-								$umetadata = mjschool_get_user_image( $teacher_data->ID );
+								$mjschool_user = new Mjschool_User();
+								$umetadata = $mjschool_user->mjschool_get_user_image( $teacher_data->ID );
 								?>
 								<img class="mjschool-user-view-profile-image" src="<?php echo esc_url( ! empty( $umetadata ) ? $umetadata : get_option( 'mjschool_teacher_thumb_new' ) ); ?>">
 								<div class="row mjschool-profile-user-name">
@@ -186,7 +187,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 									?>
 									<label class="mjschool-view-page-content-labels"> 
 										<?php
-										if ( ! empty( $birth_date ) && $birth_date != '1970-01-01' && $birth_date != '0000-00-00' ) {
+										if ( ! empty( $birth_date ) && $birth_date !== '1970-01-01' && $birth_date !== '0000-00-00' ) {
 											echo esc_html( mjschool_get_date_in_input_box( $birth_date ) );
 										} else {
 											esc_html_e( 'Not Provided', 'mjschool' ); // Only shown to users without edit access.
@@ -316,8 +317,9 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 													$classes   = '';
 													$classes   = $teacher_obj->mjschool_get_class_by_teacher( $teacher_data->ID );
 													$classname = '';
+													$mjschool_class = new Mjschool_Class();
 													foreach ( $classes as $class ) {
-														$classname .= mjschool_get_class_name( $class['class_id'] ) . ',';
+														$classname .= $mjschool_class->mjschool_get_class_name( $class['class_id'] ) . ',';
 													}
 													$classname_rtrim = rtrim( $classname, ', ' );
 													$classname_ltrim = ltrim( $classname_rtrim, ', ' );
@@ -425,7 +427,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 								</div>
 								<?php
 								$module = 'teacher';
-								$custom_field_obj->mjschool_show_inserted_customfield_data_in_datail_page( $module );
+								$custom_field_obj->mjschool_show_inserted_custom_field_data_in_datail_page( $module );
 								?>
 							</div>
 						</div>
@@ -465,12 +467,12 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 																<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-attendance.png"); ?>" class="mjschool-massage-image">
 															</p>
 														</td>
-														<td ><?php echo esc_html( mjschool_get_user_name_by_id( $retrieved_data->user_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Teacher Name', 'mjschool' ); ?>"></i></td>
+														<td ><?php echo esc_html( mjschool_get_display_name( $retrieved_data->user_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Teacher Name', 'mjschool' ); ?>"></i></td>
 														<td class="name"><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->attendence_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Attendance Date', 'mjschool' ); ?>"></i></td>
 														<td >
 															<?php
 															$curremt_date = $retrieved_data->attendence_date;
-															$day          = date( 'D', strtotime( $curremt_date ) );
+															$day          = wp_date( 'D', strtotime( $curremt_date ) );
 															if ( $day === 'Mon' ) {
 																esc_html_e( 'Monday', 'mjschool' );
 															} elseif ( $day === 'Sun' ) {
@@ -707,10 +709,11 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 																			return $startA <=> $startB;
 																		}
 																	);
+																	$mjschool_subject = new Mjschool_Subject();
 																	foreach ( $period as $period_data ) {
 																		echo '<div class="btn-group m-b-sm">';
 																		echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" aria-expanded="false" data-toggle="dropdown">
-																		<span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( mjschool_get_single_subject_name( $period_data->subject_id ) );
+																		<span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) );
 																		$start_time_data = explode( ':', $period_data->start_time );
 																		$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
 																		$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
@@ -718,7 +721,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 																		$end_hour        = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
 																		$end_min         = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
 																		echo '<span class="time"> ( ' . esc_html( $start_hour ) . ':' . esc_html( $start_min ) . ' - ' . esc_html( $end_hour ) . ':' . esc_html( $end_min ) . ' ) </span>';
-																		echo '<span>' . esc_html( mjschool_get_class_name( $period_data->class_id ) ) . '</span>';
+																		$mjschool_class = new Mjschool_Class();
+																		echo '<span>' . esc_html( $mjschool_class->mjschool_get_class_name( $period_data->class_id ) ) . '</span>';
 																		echo '</span><span class="caret"></span></button>';
 																		?>
 																		<ul role="menu" class="dropdown-menu">

@@ -2,20 +2,20 @@
 /**
  * Leave Management Admin Page.
  *
- * This file handles all leave-related operations for the admin Interface,
- * including adding, editing, approving, rejecting, deleting, exporting,
- * and displaying student leave records.
+ * This file handles all leave-related operations for the admin interface.
+ * Including adding, editing, approving, rejecting, deleting, and exporting.
+ * As well as displaying student leave records.
  *
- * @package Mjschool
- * @subpackage MJSchool/admin/includes/leave
- * @since      1.0.0
+ * @package Mjschool.
+ * @subpackage MJSchool/admin/includes/leave.
+ * @since 1.0.0.
  */
 defined( 'ABSPATH' ) || exit;
 $mjschool_obj_leave        = new Mjschool_Leave();
 $active_tab                = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'leave_list';
 $to                        = array();
 $arr                       = array();
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'leave';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 if ( isset( $_POST['date_type'] ) ) {
@@ -42,8 +42,8 @@ if ( isset( $_POST['date_type'] ) ) {
 					$nonce_action = isset( $_GET['_wpnonce_action'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ) : '';
 					if ( wp_verify_nonce( $nonce_action, 'edit_action' ) ) {
 						$result = $mjschool_obj_leave->mjschool_add_leave( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
-						// UPDATE CUSTOM FIELD DATA.
-						$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+						// Update custom field data.
+						$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 						$module                    = 'leave';
 						$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $leave_id );
 						wp_safe_redirect( admin_url( 'admin.php?page=mjschool_leave&tab=leave_list&message=2' ) );
@@ -55,7 +55,7 @@ if ( isset( $_POST['date_type'] ) ) {
 					global $wpdb;
 					$result                    = $mjschool_obj_leave->mjschool_add_leave( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
 					$_POST['leave_id']         = $result;
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'leave';
 					$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 					if ( $result ) {
@@ -133,13 +133,14 @@ if ( isset( $_POST['date_type'] ) ) {
 					$header[] = 'Status';
 					$header[] = 'Created By';
 					$filename = 'export/mjschool-export-leave.csv';
-					$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) or wp_die( esc_html__( "can't open file", 'mjschool' ) );
+					$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) || wp_die( esc_html__( "can't open file", 'mjschool' ) );
 					fputcsv( $fh, $header );
+						$mjschool_obj_leave = new Mjschool_Leave();
 					foreach ( $leave_list as $retrive_data ) {
 						$row   = array();
 						$row[] = mjschool_student_display_name_with_roll( $retrive_data->student_id );
 						$row[] = get_the_title( $retrive_data->leave_type );
-						$row[] = mjschool_leave_duration_label( $retrive_data->leave_duration );
+						$row[] = $mjschool_obj_leave->mjschool_leave_duration_label( $retrive_data->leave_duration );
 						$row[] = mjschool_get_date_in_input_box( $retrive_data->start_date );
 						if ( $retrive_data->end_date ) {
 							$row[] = mjschool_get_date_in_input_box( $retrive_data->end_date );
@@ -152,15 +153,15 @@ if ( isset( $_POST['date_type'] ) ) {
 						fputcsv( $fh, $row );
 					}
 					fclose( $fh );
-					// download csv file.
+					// Download CSV file.
 					ob_clean();
-					$file = MJSCHOOL_PLUGIN_DIR . '/sample-csv/export/mjschool-export-leave.csv'; // file location.
+					$file = MJSCHOOL_PLUGIN_DIR . '/sample-csv/export/mjschool-export-leave.csv'; // File location.
 					$mime = 'text/plain';
 					header( 'Content-Type:application/force-download' );
-					header( 'Pragma: public' );       // required.
-					header( 'Expires: 0' );           // no cache.
+					header( 'Pragma: public' );       // Required.
+					header( 'Expires: 0' );           // No cache.
 					header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-					header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+					header( 'Last-Modified: ' . wp_date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 					header( 'Cache-Control: private', false );
 					header( 'Content-Type: ' . $mime );
 					header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
@@ -212,8 +213,8 @@ if ( isset( $_POST['date_type'] ) ) {
 			}
 		}
 		?>
-		<div class="mjschool-panel-white"><!--------- panel White. ------->
-			<div class="mjschool-panel-body"> <!--------- panel body. ------->
+		<div class="mjschool-panel-white"><!--------- Panel White. ------->
+			<div class="mjschool-panel-body"> <!--------- Panel body. ------->
 				<?php
 				if ( $active_tab === 'leave_list' ) {
 					?>
@@ -235,7 +236,7 @@ if ( isset( $_POST['date_type'] ) ) {
 													$emp_id = get_user_meta( $uid, 'student', true );
 												}
 												?>
-												<option value="<?php echo esc_attr( intval( $student->ID ) ); ?>" <?php selected( $student->ID, $emp_id ); ?>><?php echo esc_html( mjschool_student_display_name_with_roll( $student->ID ) ); ?></option>
+												<option value="<?php echo esc_attr( intval( $student->ID ) ); ?>" <?php echo intval( $student->ID ) === intval( $emp_id ) ? 'selected' : ''; ?>><?php echo esc_html( mjschool_student_display_name_with_roll( $student->ID ) ); ?></option>
 												<?php
 											}
 											?>
@@ -250,10 +251,10 @@ if ( isset( $_POST['date_type'] ) ) {
 											<?php
 											$select_status = isset( $_REQUEST['status'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['status'] ) ) : '';
 											?>
-											<option value="all_status" <?php selected( $select_status, 'all_status' ); ?>><?php esc_html_e( 'Select All Status', 'mjschool' ); ?></option>
-											<option value="Not Approved" <?php selected( $select_status, 'Not Approved' ); ?>><?php esc_html_e( 'Not Approved', 'mjschool' ); ?></option>
-											<option value="Approved" <?php selected( $select_status, 'Approved' ); ?>><?php esc_html_e( 'Approved', 'mjschool' ); ?></option>
-											<option value="Rejected" <?php selected( $select_status, 'Rejected' ); ?>><?php esc_html_e( 'Rejected', 'mjschool' ); ?></option>
+												<option value="all_status" <?php echo 'all_status' === $select_status ? 'selected' : ''; ?>><?php esc_html_e( 'Select All Status', 'mjschool' ); ?></option>
+												<option value="Not Approved" <?php echo 'Not Approved' === $select_status ? 'selected' : ''; ?>><?php esc_html_e( 'Not Approved', 'mjschool' ); ?></option>
+												<option value="Approved" <?php echo 'Approved' === $select_status ? 'selected' : ''; ?>><?php esc_html_e( 'Approved', 'mjschool' ); ?></option>
+												<option value="Rejected" <?php echo 'Rejected' === $select_status ? 'selected' : ''; ?>><?php esc_html_e( 'Rejected', 'mjschool' ); ?></option>
 										</select>
 									</div>
 									<div class="col-md-3 mb-3 input">
@@ -268,7 +269,7 @@ if ( isset( $_POST['date_type'] ) ) {
 												<div class="col-md-6 mb-2">
 													<div class="form-group input">
 														<div class="col-md-12 form-control">
-															<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+															<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 															<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 														</div>
 													</div>
@@ -276,7 +277,7 @@ if ( isset( $_POST['date_type'] ) ) {
 												<div class="col-md-6 mb-2">
 													<div class="form-group input">
 														<div class="col-md-12 form-control">
-															<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+															<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 															<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 														</div>
 													</div>
@@ -316,7 +317,7 @@ if ( isset( $_POST['date_type'] ) ) {
 						}
 						if ( ! empty( $leave_data ) ) {
 							?>
-							<div class="table-responsive"><!-- table-responsive. -->
+							<div class="table-responsive"><!-- Table Responsive. -->
 								<form id="mjschool-common-form" name="mjschool-common-form" method="post">
 									<table id="leave_list" class="display mjschool-admin-transport-datatable" cellspacing="0" width="100%">
 										<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
@@ -364,7 +365,7 @@ if ( isset( $_POST['date_type'] ) ) {
 													<td>
 														<?php
 														$sname = mjschool_student_display_name_with_roll( $retrieved_data->student_id );
-														if ( $sname != '' ) {
+														if ( $sname !== '' ) {
 															echo esc_html( $sname );
 														} else {
 															esc_html_e( 'N/A', 'mjschool' );
@@ -388,7 +389,7 @@ if ( isset( $_POST['date_type'] ) ) {
 													<td><?php echo esc_html( get_the_title( $retrieved_data->leave_type ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Leave Type', 'mjschool' ); ?>"></i></td>
 													<td>
 														<?php
-														$duration = mjschool_leave_duration_label( $retrieved_data->leave_duration );
+														$duration = $mjschool_obj_leave->mjschool_leave_duration_label( $retrieved_data->leave_duration );
 														echo esc_html( $duration );
 														?>
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Leave Duration', 'mjschool' ); ?>"></i>
@@ -418,13 +419,13 @@ if ( isset( $_POST['date_type'] ) ) {
 													<td>
 														<?php
 														$comment = $retrieved_data->reason;
-														$reason  = strlen( $comment ) > 30 ? substr( $comment, 0, 30 ) . '...' : $comment;
+														$reason  = mb_strlen( $comment ) > 30 ? mb_substr( $comment, 0, 30 ) . '...' : $comment;
 														echo esc_html( $reason );
 														?>
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php if ( ! empty( $comment ) ) { echo esc_attr( $comment ); } else { esc_attr_e( 'Reason', 'mjschool' ); } ?>"></i>
 													</td>
 													<?php
-													// Custom Field Values.
+													// Custom field values.
 													if ( ! empty( $user_custom_field ) ) {
 														foreach ( $user_custom_field as $custom_field ) {
 															if ( $custom_field->show_in_table === '1' ) {
@@ -488,7 +489,7 @@ if ( isset( $_POST['date_type'] ) ) {
 																	</a>
 																	<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																		<?php
-																		if ( ( $retrieved_data->status != 'Approved' ) ) {
+																		if ( ( $retrieved_data->status !== 'Approved' ) ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
 																				<a href="#" leave_id="<?php echo esc_attr( intval( $retrieved_data->id ) ); ?>" class="mjschool-float-left-width-100px leave-approve mjschool_height_17px">
@@ -497,7 +498,7 @@ if ( isset( $_POST['date_type'] ) ) {
 																			</li>
 																			<?php
 																		}
-																		if ( ( $retrieved_data->status != 'Rejected' ) ) {
+																		if ( ( $retrieved_data->status !== 'Rejected' ) ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
 																				<a href="#" leave_id="<?php echo esc_attr( intval( $retrieved_data->id ) ); ?>" class="leave-reject mjschool-float-left-width-100px">

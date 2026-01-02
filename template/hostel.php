@@ -13,7 +13,7 @@
  * - **Form Processing:** Handles saving (insert/update) and deleting single or multiple records for hostels.
  * - **View Switching:** Uses the 'tab' GET parameter to switch between 'hostel_list', 'hostel_details', and 'add_hostel' views.
  * - **DataTables:** Initializes a jQuery DataTables instance for the hostel list view.
- * - **Custom Fields:** Integrates custom fields managed by `Mjschool_Custome_Field` into the list and edit forms.
+ * - **Custom Fields:** Integrates custom fields managed by `Mjschool_Custom_Field` into the list and edit forms.
  * - **Message Display:** Shows success/error messages based on URL parameters (e.g., `message`, `room_message`, `bed_message`).
  *
  * @package    Mjschool
@@ -53,7 +53,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 		}
 	}
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'hostel';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 $obj_hostel        = new Mjschool_Hostel();
@@ -66,7 +66,7 @@ if ( isset( $_POST['save_hostel'] ) ) {
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
 				$book_id             = sanitize_text_field(wp_unslash($_REQUEST['hostel_id']));
 				$result              = $obj_hostel->mjschool_insert_hostel( wp_unslash($_POST) );
-				$custom_field_obj    = new Mjschool_Custome_Field();
+				$custom_field_obj    = new Mjschool_Custom_Field();
 				$module              = 'hostel';
 				$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $book_id );
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=hostel&tab=hostel_list&message=2' ) );
@@ -76,7 +76,7 @@ if ( isset( $_POST['save_hostel'] ) ) {
 			}
 		} else {
 			$result             = $obj_hostel->mjschool_insert_hostel( wp_unslash($_POST) );
-			$custom_field_obj   = new Mjschool_Custome_Field();
+			$custom_field_obj   = new Mjschool_Custom_Field();
 			$module             = 'hostel';
 			$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
@@ -659,7 +659,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 															<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 																<div class="form-group input">
 																	<div class="col-md-12 form-control">
-																		<input id="room_unique_id" class="form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( $room_data->room_unique_id ); } else { echo esc_attr( mjschool_generate_room_code() ); } ?>" name="room_unique_id" readonly>    
+																		<input id="room_unique_id" class="form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( $room_data->room_unique_id ); } else { echo esc_attr( $obj_hostel->mjschool_generate_room_code() ); } ?>" name="room_unique_id" readonly>    
 																		<label  for="room_unique_id"><?php esc_html_e( 'Room Unique ID', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>	
 																	</div>
 																</div>
@@ -678,7 +678,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 																		}
 																		foreach ( $activity_category as $retrive_data ) {
 																			?>
-																			<option value="<?php echo esc_attr( $retrive_data->ID ); ?>" <?php selected( $retrive_data->ID, $room_val ); ?>><?php echo esc_attr( $retrive_data->post_title ); ?> </option>
+																			<option value="<?php echo esc_attr( $retrive_data->ID ); ?>" <?php selected( $retrive_data->ID, $room_val ); ?>><?php echo esc_html( $retrive_data->post_title ); ?> </option>
 																			<?php
 																		}
 																	}
@@ -701,7 +701,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 																<div class="form-group input">
 																	<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 																		<div class="form-field">
-																			<textarea name="room_description" id="room_description" maxlength="150" class="mjschool-textarea-height-47px form-control validate[custom[description_validation]]"><?php if ( $edit ) { echo esc_attr( $room_data->room_description ); } ?></textarea>
+																			<textarea name="room_description" id="room_description" maxlength="150" class="mjschool-textarea-height-47px form-control validate[custom[description_validation]]"><?php if ( $edit ) { echo esc_textarea( $room_data->room_description ); } ?></textarea>
 																			<span class="mjschool-txt-title-label"></span>
 																			<label  class="text-area address active" for="room_description"><?php esc_html_e( 'Description', 'mjschool' ); ?></label>
 																		</div>
@@ -791,7 +791,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 													</div>
 													<?php
 													// --------- Get module-wise custom field data. --------------//
-													$custom_field_obj = new Mjschool_Custome_Field();
+													$custom_field_obj = new Mjschool_Custom_Field();
 													$module           = 'hostel';
 													$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 													?>
@@ -865,7 +865,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 																		<td>
 																			<?php
 																			if ( ! empty( $retrieved_data->hostel_id ) ) {
-																				echo esc_html( mjschool_get_hostel_name_by_id( $retrieved_data->hostel_id ) );
+																				echo esc_html( $obj_hostel->mjschool_get_hostel_name_by_id( $retrieved_data->hostel_id ) );
 																			} else {
 																				esc_html_e( 'Not Provided', 'mjschool' ); }
 																			?>
@@ -1106,7 +1106,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 																<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 																	<div class="form-group input">
 																		<div class="col-md-12 form-control">
-																			<input id="bed_unique_id" class="form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( $bed_data->bed_unique_id ); } else { echo esc_attr( mjschool_generate_bed_code() ); } ?>"  name="bed_unique_id" readonly> 
+																			<input id="bed_unique_id" class="form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( $bed_data->bed_unique_id ); } else { echo esc_attr( $obj_hostel->mjschool_generate_bed_code() ); } ?>"  name="bed_unique_id" readonly> 
 																			<label  for="bed_unique_id"><?php esc_html_e( 'Bed Unique ID', 'mjschool' ); ?> <span class="mjschool-require-field">*</span></label>	
 																		</div>
 																	</div>
@@ -1219,7 +1219,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 																			<?php echo esc_attr( $retrieved_data->bed_unique_id ); ?></a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Bed Unique ID', 'mjschool' ); ?>"></i>
 																		</td>
 																		<td>
-																			<?php echo esc_html( mjschool_get_room_unique_id_by_id( $retrieved_data->room_id ) ); ?>(<?php echo esc_html( mjschool_get_hostel_name_by_id( $hostel_id ) ); ?>) <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Room Unique ID', 'mjschool' ); ?>"></i>
+																			<?php echo esc_html( mjschool_get_room_unique_id_by_id( $retrieved_data->room_id ) ); ?>(<?php echo esc_html( $obj_hostel->mjschool_get_hostel_name_by_id( $hostel_id ) ); ?>) <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Room Unique ID', 'mjschool' ); ?>"></i>
 																		</td>
 																		<td>
 																			<?php
@@ -1436,8 +1436,9 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 															if ( ! empty( $student_data ) ) {
 																$roll_no  = get_user_meta( $student_data->student_id, 'roll_id', true );
 																$class_id = get_user_meta( $student_data->student_id, 'class_name', true );
+																$mjschool_class = new Mjschool_Class();
 																?>
-																<option value="<?php echo esc_attr( $student_data->student_id ); ?>"><?php echo esc_html( mjschool_get_display_name( $student_data->student_id ) ) . ' ( ' . esc_html( $roll_no ) . ' ) ( ' . esc_html( mjschool_get_class_name( $class_id ) ) . ' )'; ?></option>
+																<option value="<?php echo esc_attr( $student_data->student_id ); ?>"><?php echo esc_html( mjschool_get_display_name( $student_data->student_id ) ) . ' ( ' . esc_html( $roll_no ) . ' ) ( ' . esc_html( $mjschool_class->mjschool_get_class_name( $class_id ) ) . ' )'; ?></option>
 																<?php
 															} else {
 																?>
@@ -1446,8 +1447,9 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 																foreach ( $Student_result as $student ) {
 																	$roll_no  = get_user_meta( $student, 'roll_id', true );
 																	$class_id = get_user_meta( $student, 'class_name', true );
+																	$mjschool_class = new Mjschool_Class();
 																	?>
-																	<option value="<?php echo esc_attr( $student ); ?>"><?php echo esc_html( mjschool_get_display_name( $student ) ) . ' ( ' . esc_html( $roll_no ) . ' ) ( ' . esc_html( mjschool_get_class_name( $class_id ) ) . ' )'; ?></option>
+																	<option value="<?php echo esc_attr( $student ); ?>"><?php echo esc_html( mjschool_get_display_name( $student ) ) . ' ( ' . esc_html( $roll_no ) . ' ) ( ' . esc_html( $mjschool_class->mjschool_get_class_name( $class_id ) ) . ' )'; ?></option>
 																	<?php
 																}
 															}
@@ -1470,7 +1472,8 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 														<div class="col-sm-12 col-md-2 col-lg-2 col-xl-2">
 															<div class="form-group input">
 																<div class="col-md-12 col-sm-12 col-xs-12 form-control assigndate_<?php echo esc_attr( $i ); ?>" id="assigndate_<?php echo esc_attr( $i ); ?>" name="assigndate">
-																	<input id="assign_date_<?php echo esc_attr( $i ); ?>" placeholder="<?php esc_html_e( 'Enter Date', 'mjschool' ); ?>" class="datepicker form-control text-input mjschool-placeholder-color" type="text" name="assign_date[]" autocomplete="off" value="<?php echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); ?>">
+																	<input id="assign_date_<?php echo esc_attr( $i ); ?>" placeholder="<?php esc_html_e( 'Enter Date', 'mjschool' ); ?>" class="datepicker form-control text-input mjschool-placeholder-color" type="text" name="assign_date[]" autocomplete="off" value="<?php echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); ?>">
+																			<?php // Replaced date() with gmdate() for UTC timestamps ?>
 																</div>
 															</div>
 														</div>
@@ -1563,7 +1566,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
 									<input id="hostel_address" class="form-control validate[custom[popup_category_validation]] text-input" maxlength="250" type="text" value="<?php if ( $edit ) { echo esc_attr( $hostel_data->hostel_address );} ?>" name="hostel_address">
-									<label  for="hostel_type"><?php esc_html_e( 'Hostel Address', 'mjschool' ); ?></label>
+									<label  for="hostel_address"><?php esc_html_e( 'Hostel Address', 'mjschool' ); ?></label>
 								</div>
 							</div>
 						</div>
@@ -1580,7 +1583,8 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 							<div class="form-group input">
 								<div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
 									<div class="form-field">
-										<textarea name="Description" id="Description" maxlength="150" class="mjschool-textarea-height-47px form-control col-form-label  validate[custom[description_validation]]"><?php if ( $edit ) { echo esc_attr( $hostel_data->Description ); } ?></textarea>
+											<span class="mjschool-txt-title-label"></span> <?php // Changed from esc_attr to esc_textarea for proper textarea escaping ?>
+										<textarea name="Description" id="Description" maxlength="150" class="mjschool-textarea-height-47px form-control col-form-label  validate[custom[description_validation]]"><?php if ( $edit ) { echo esc_textarea( $hostel_data->Description ); } ?></textarea>
 										<span class="mjschool-txt-title-label"></span>
 										<label class="text-area address active" for="Description"><?php esc_html_e( 'Description', 'mjschool' ); ?></label>
 									</div>
@@ -1592,7 +1596,7 @@ if ( isset( $_REQUEST['delete_selected_hostel'] ) ) {
 				<div class="form-body mjschool-user-form">
 					<div class="row">
 						<div class="col-sm-6">
-							<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Hostel', 'mjschool' ); } else { esc_attr_e( 'Add Hostel', 'mjschool' ); } ?>" name="save_hostel" class="mjschool-save-btn btn btn-success" />
+							<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Hostel', 'mjschool' ); } else { esc_attr_e( 'Add Hostel', 'mjschool' ); } ?>" name="save_hostel" class="mjschool-save-btn btn btn-success" />
 						</div>
 					</div>
 				</div>

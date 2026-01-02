@@ -37,25 +37,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( 'class' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'class' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'class' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -63,7 +63,7 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'tax';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 // ------------------ Save tax. --------------------//
@@ -75,7 +75,7 @@ if ( isset( $_POST['save_tax'] ) ) {
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( $_GET['_wpnonce_action'], 'edit_action' ) ) {
 				$tax_id              = isset( $_REQUEST['tax_id'] ) ? intval( wp_unslash( $_REQUEST['tax_id'] ) ) : 0;
 				$result              = $obj_tax->mjschool_insert_tax( wp_unslash($_POST) );
-				$custom_field_obj    = new Mjschool_Custome_Field();
+				$custom_field_obj    = new Mjschool_Custom_Field();
 				$module              = 'tax';
 				$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $tax_id );
 				if ( $result ) {
@@ -87,7 +87,7 @@ if ( isset( $_POST['save_tax'] ) ) {
 			}
 		} else {
 			$result             = $obj_tax->mjschool_insert_tax( wp_unslash($_POST) );
-			$custom_field_obj   = new Mjschool_Custome_Field();
+			$custom_field_obj   = new Mjschool_Custom_Field();
 			$module             = 'tax';
 			$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {

@@ -23,8 +23,7 @@ $pfParamString = '';
 $pfPassphrase  = get_option( 'payfast_salt_passphrase' );
 $live_mode     = get_option( 'payfast_live_mode' );
 if ( $live_mode === 'no' ) {
-	if(!defined( 'MJSCHOOL_SANDBOX_MODE' ) )
-	{
+	if ( ! defined( 'MJSCHOOL_SANDBOX_MODE' ) ) {
 		define( 'MJSCHOOL_SANDBOX_MODE', true );
 	}
 }
@@ -39,7 +38,7 @@ foreach ( $pfData as $key => $val ) {
 // Convert posted variables to a string.
 foreach ( $pfData as $key => $val ) {
 	if ( $key !== 'signature' ) {
-		$pfParamString .= sanitize_key($key) . '=' . urlencode( sanitize_text_field($val) ) . '&';
+		$pfParamString .= sanitize_key( $key ) . '=' . urlencode( sanitize_text_field( $val ) ) . '&';
 	} else {
 		break;
 	}
@@ -51,8 +50,8 @@ $pfParamString = substr( $pfParamString, 0, -1 );
  * This is the first and most critical security check to ensure the ITN is genuine.
  * It compares the received signature with a signature generated locally from the data.
  *
- * @param array $pfData The POST data array from PayFast.
- * @param string $pfParamString The data string used for local signature generation.
+ * @param array       $pfData The POST data array from PayFast.
+ * @param string      $pfParamString The data string used for local signature generation.
  * @param string|null $pfPassphrase Optional passphrase for signature generation.
  * @return bool True if signatures match, false otherwise.
  */
@@ -89,9 +88,9 @@ function mjschool_pf_valid_ip_payfast() {
 	// Remove duplicates.
 	$validIps   = array_unique( $validIps );
 	$referrerIp = '';
-	if (isset($_SERVER['HTTP_REFERER'])) {
-		$parsed = parse_url( sanitize_url($_SERVER['HTTP_REFERER']) );
-		if (isset($parsed['host'])) {
+	if ( isset( $_SERVER['HTTP_REFERER'] ) ) {
+		$parsed = parse_url( sanitize_url( $_SERVER['HTTP_REFERER'] ) );
+		if ( isset( $parsed['host'] ) ) {
 			$referrerIp = gethostbyname( $parsed['host'] );
 		}
 	}
@@ -113,11 +112,11 @@ function mjschool_pf_valid_payment_data( $cartTotal, $pfData ) {
 /**
  * Performs a server-to-server confirmation request to PayFast.
  *
- * This is the final and most robust check. It ensures the transaction 
+ * This is the final and most robust check. It ensures the transaction
  * details match what PayFast has on record and confirms the payment is valid.
  *
- * @param string $pfParamString The parameter string (excluding signature and passphrase).
- * @param string $pfHost The PayFast host URL.
+ * @param string      $pfParamString The parameter string (excluding signature and passphrase).
+ * @param string      $pfHost The PayFast host URL.
  * @param string|null $pfProxy Optional proxy URL.
  * @return bool True if confirmed as 'VALID', false otherwise.
  */
@@ -163,21 +162,21 @@ if ( $check1 && $check2 && $check3 && $check4 ) {
 		require_once $root . '/wp-config.php';
 	}
 	$obj_fees_payment          = new Mjschool_Feespayment();
-	$feedata['fees_pay_id']    = sanitize_text_field($pfData['m_payment_id']);
-	$feedata['amount']         = floatval($pfData['amount_gross']);
+	$feedata['fees_pay_id']    = sanitize_text_field( $pfData['m_payment_id'] );
+	$feedata['amount']         = floatval( $pfData['amount_gross'] );
 	$feedata['payment_method'] = 'PayFast';
-	$feedata['trasaction_id']  = sanitize_text_field($pfData['pf_payment_id']);
-	$feedata['created_by']     = intval($pfData['custom_int1']);
-	$feedata['paid_by_date']   = date( 'Y-m-d' );
-	$feedata['email_address']  = sanitize_email($pfData['email_address']);
-	$feedata['name_first']     = sanitize_text_field($pfData['name_first']);
-	$feedata['name_last']      = sanitize_text_field($pfData['name_last']);
-	$results                   = $obj_fees_payment->mjschool_add_feespayment_history_For_payfast( $feedata );
+	$feedata['trasaction_id']  = sanitize_text_field( $pfData['pf_payment_id'] );
+	$feedata['created_by']     = intval( $pfData['custom_int1'] );
+	$feedata['paid_by_date']   = wp_date( 'Y-m-d' );
+	$feedata['email_address']  = sanitize_email( $pfData['email_address'] );
+	$feedata['name_first']     = sanitize_text_field( $pfData['name_first'] );
+	$feedata['name_last']      = sanitize_text_field( $pfData['name_last'] );
+	$results                   = $obj_fees_payment->mjschool_add_fees_payment_history_for_payfast( $feedata );
 	if ( $results ) {
-		wp_safe_redirect( (home_url('?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success&payment=paystack_success')) );
+		wp_safe_redirect( ( home_url( '?dashboard=mjschool_user&page=feepayment&tab=feepaymentlist&action=success&payment=paystack_success' ) ) );
 		die();
 	} else {
-		wp_safe_redirect( (home_url('?dashboard=mjschool_user&page=feepayment&action=cancel')) );
+		wp_safe_redirect( ( home_url( '?dashboard=mjschool_user&page=feepayment&action=cancel' ) ) );
 		die();
 	}
 }

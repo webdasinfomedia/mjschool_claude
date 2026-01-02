@@ -22,16 +22,17 @@ defined( 'ABSPATH' ) || exit;
 $edit = 0;
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 	$edit      = 1;
-	$hall_data = mjschool_get_hall_by_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hall_id'])) ) ) );
+	$mjschool_obj_hall      = new Mjschool_Hall();
+	$hall_data = $mjschool_obj_hall->mjschool_get_hall_by_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['hall_id'])) ) ) );
 }
 ?>
-<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res"><!-------- Panel Body -------->
+<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res"><!-- Panel Body. -->
 	<form name="hall_form" action="" method="post" class="mjschool-form-horizontal" enctype="multipart/form-data" id="hall_form">
 		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 		<input type="hidden" name="hall_id" value="<?php if ( $edit ) { echo esc_attr( $hall_data->hall_id ); } ?>" /> 
-		<div class="form-body mjschool-user-form"><!-------- Form Body. -------->
-			<div class="row"><!-------- Row Div. -------->
+		<div class="form-body mjschool-user-form"><!-- Form Body. -->
+			<div class="row"><!-- Row Div. -->
 				<div class="col-md-6">
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
@@ -68,11 +69,11 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 						</div>
 					</div>
 				</div>
-			</div><!-------- Row Div. -------->
-		</div><!-------- Form Body. -------->
+			</div><!-- Row Div. -->
+		</div><!-- Form Body. -->
 		<?php
-		// --------- Get Module-Wise Custom Field Data. --------------//
-		$custom_field_obj = new Mjschool_Custome_Field();
+		// Get module-wise custom field data.
+		$custom_field_obj = new Mjschool_Custom_Field();
 		$module           = 'examhall';
 		$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
@@ -84,4 +85,4 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 			</div>
 		</div>
 	</form>
-</div><!-------- Panel Body. -------->
+</div><!-- Panel Body. -->

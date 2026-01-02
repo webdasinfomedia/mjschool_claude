@@ -17,15 +17,20 @@
  * @subpackage Mjschool/admin/includes/class_room
  * @since      1.0.0
  */
+defined( 'ABSPATH' ) || exit;
 $edit = 0;
 if ( isset( $_REQUEST['action']) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) 
 {
+	
+	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'edit_action' ) ) {
+		wp_die( esc_html__( 'Security check failed. Please try again.', 'mjschool' ) );
+	}
 	$edit = 1;
 	$classroomdata = mjschool_get_class_room_by_id( intval( wp_unslash($_REQUEST['class_room_id']) ) );
 }
 ?>
 <div class="mjschool-panel-body"><!-------- Panel body. -------->
-	<form name="mjschool-class-room-form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-class-room-form"><!------- form Start --------->
+	<form name="mjschool-class-room-form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-class-room-form"><!------- form Start. --------->
 		<?php $action = isset($_REQUEST['action']) ? sanitize_text_field( wp_unslash($_REQUEST['action'])) : 'insert'; ?>
 		<input type="hidden" name="action" value="<?php echo esc_attr($action); ?>">
 		<div class="header">
@@ -40,7 +45,6 @@ if ( isset( $_REQUEST['action']) && sanitize_text_field( wp_unslash($_REQUEST['a
 						if ($edit) 
 						{
 							$classes = json_decode($classroomdata->class_id, true); // Ensure associative array.
-							//var_dump($classes);
 						} 
 						elseif ( isset( $_POST['class_name'] ) ) {
 							$classes = sanitize_text_field( wp_unslash($_POST['class_name']));
@@ -50,8 +54,8 @@ if ( isset( $_REQUEST['action']) && sanitize_text_field( wp_unslash($_REQUEST['a
 						?>
 						<select name="class_name[]" multiple="multiple" class="form-control" id="class_name">
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
-                                // $selected = in_array($classdata['class_id'], $classes) ? 'selected' : '';
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr($classdata['class_id']); ?>" <?php selected( in_array($classdata['class_id'], $classes), true ); ?>>
 									<?php echo esc_html( $classdata['class_name']); ?>
@@ -67,7 +71,7 @@ if ( isset( $_REQUEST['action']) && sanitize_text_field( wp_unslash($_REQUEST['a
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
 							<input id="room_name" class="form-control validate[required,custom[popup_category_validation,required]" maxlength="50" type="text" value="<?php if ($edit) { echo esc_attr($classroomdata->room_name);} ?>" name="room_name">
-							<label for="userinput1" class=""><?php esc_html_e( 'Room Name', 'mjschool' ); ?><span class="required">*</span></label>
+							<label for="room_name" class=""><?php esc_html_e( 'Room Name', 'mjschool' ); ?><span class="required">*</span></label>
 						</div>
 					</div>
 				</div>
@@ -83,7 +87,7 @@ if ( isset( $_REQUEST['action']) && sanitize_text_field( wp_unslash($_REQUEST['a
 						?>
 						<select name="mjschool-subject-list[]" multiple="multiple" id="mjschool-subject-list" class="form-control validate[required] teacher_list">
 							<?php foreach ($all_subjects as $subject) { ?>
-								<option value="<?php echo esc_attr($subject->subid); ?>" <?php echo in_array($subject->subid, $selected_subjects) ? 'selected' : ''; ?>>
+								<option value="<?php echo esc_attr($subject->subid); ?>" <?php selected( in_array($subject->subid, $selected_subjects), true ); ?>>
 									<?php echo esc_html( $subject->sub_name . " - " . $subject->subject_code); ?>
 								</option>
 							<?php } ?>
@@ -97,7 +101,7 @@ if ( isset( $_REQUEST['action']) && sanitize_text_field( wp_unslash($_REQUEST['a
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
 							<input id="room_type" class="form-control validate[required,custom[popup_category_validation,required]" maxlength="50" type="text" value="<?php if ($edit) { echo esc_attr($classroomdata->room_type);} ?>" name="room_type">
-							<label for="userinput1" class=""><?php esc_html_e( 'Room Type', 'mjschool' ); ?><span class="required">*</span></label>
+							<label for="room_type" class=""><?php esc_html_e( 'Room Type', 'mjschool' ); ?><span class="required">*</span></label>
 						</div>
 					</div>
 				</div>
@@ -105,7 +109,7 @@ if ( isset( $_REQUEST['action']) && sanitize_text_field( wp_unslash($_REQUEST['a
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
 							<input id="room_capacity" oninput="this.value = Math.abs(this.value)" class="form-control validate[min[0],maxSize[4]]" type="number" value="<?php if ($edit) { echo esc_attr($classroomdata->room_capacity); } ?>" name="room_capacity">
-							<label for="userinput1" class=""><?php esc_html_e( 'Room Capacity', 'mjschool' ); ?></label>
+							<label for="room_capacity" class=""><?php esc_html_e( 'Room Capacity', 'mjschool' ); ?></label>
 						</div>
 					</div>
 				</div>

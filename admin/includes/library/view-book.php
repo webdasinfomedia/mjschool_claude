@@ -20,7 +20,7 @@ if ( isset( $_GET['book_id'] ) && is_array( $_GET['book_id'] ) ) {
 // Now safely pass it to the function.
 $decoded_id                = mjschool_decrypt_id( $book_id );
 $book_data                 = $mjschool_obj_lib->mjschool_get_single_books( $decoded_id );
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 ?>
 <div class="mjschool-panel-body mjschool-view-page-main"><!-- Start Panel Body Div.-->
 	<div class="content-body">
@@ -35,7 +35,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 									<div class="col-xl-12 col-md-12 col-sm-12 mjschool-float-left-width-100px">
 										<span class="mjschool-view-user-name-label"><?php echo esc_html( ucfirst($book_data->book_name ) ); ?></span>
 										<div class="mjschool-view-user-edit-btn">
-											<a class="mjschool-color-white mjschool-margin-left-2px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id='.rawurlencode( sanitize_text_field(wp_unslash($_REQUEST['book_id']))).'&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>">
+											<a class="mjschool-color-white mjschool-margin-left-2px" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id='.rawurlencode( sanitize_text_field(wp_unslash($_GET['book_id']))).'&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) ); ?>">
 												<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-edit.png"); ?>">
 											</a>
 										</div>
@@ -57,7 +57,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 		<section id="mjschool-body-content-area" class="mt-5">
 			<div class="mjschool-panel-body"><!-- Start Panel Body Div. -->
 				<?php
-				if ( isset( $_REQUEST['issue_message'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['issue_message'])) === 'issue_success' ) ) {
+				if ( isset( $_GET['issue_message'] ) && ( sanitize_text_field(wp_unslash($_GET['issue_message'])) === 'issue_success' ) ) {
 					?>
 					<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
 						<p><?php esc_html_e( 'Book Issued Successfully.', 'mjschool' ); ?></p>
@@ -65,7 +65,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 					</div>
 					<?php
 				}
-				if ( isset( $_REQUEST['issue_message'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['issue_message'])) === 'return_success' ) ) {
+				if ( isset( $_GET['issue_message'] ) && ( sanitize_text_field(wp_unslash($_GET['issue_message'])) === 'return_success' ) ) {
 					?>
 					<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
 						<p><?php esc_html_e( 'Book Returned Successfully.', 'mjschool' ); ?></p>
@@ -73,7 +73,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 					</div>
 					<?php
 				}
-				if ( isset( $_REQUEST['issue_message'] ) && ( sanitize_text_field(wp_unslash($_REQUEST['issue_message'])) === 'exits_no' ) ) {
+				if ( isset( $_GET['issue_message'] ) && ( sanitize_text_field(wp_unslash($_GET['issue_message'])) === 'exits_no' ) ) {
 					?>
 					<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
 						<p><?php esc_html_e( 'Library Card No is Exits.', 'mjschool' ); ?></p>
@@ -92,7 +92,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 										<span class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'ISBN', 'mjschool' ); ?> </span> <br>
 										<?php
 										if ( $user_access_edit === '1' && empty( $book_data->ISBN ) ) {
-											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_GET['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
 											echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 										} else {
 											?>
@@ -111,7 +111,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 										<span class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Book Number', 'mjschool' ); ?> </span><br>
 										<?php
 										if ( $user_access_edit === '1' && empty( $book_data->book_number ) ) {
-											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_GET['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
 											echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 										} else {
 											?>
@@ -130,7 +130,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 										<span class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Book Category', 'mjschool' ); ?> </span><br>
 										<?php
 										if ( $user_access_edit === '1' && empty( $book_data->cat_id ) ) {
-											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_GET['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
 											echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 										} else {
 											?>
@@ -149,7 +149,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 										<span class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Author Name', 'mjschool' ); ?> </span><br>
 										<?php
 										if ( $user_access_edit === '1' && empty( $book_data->author_name ) ) {
-											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_GET['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
 											echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 										} else {
 											?>
@@ -168,7 +168,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 										<span class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Publisher', 'mjschool' ); ?> </span><br>
 										<?php
 										if ( $user_access_edit === '1' && empty( $book_data->publisher ) ) {
-											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_GET['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
 											echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 										} else {
 											?>
@@ -187,7 +187,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 										<span class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Rack Location', 'mjschool' ); ?> </span><br>
 										<?php
 										if ( $user_access_edit === '1' && empty( $book_data->rack_location ) ) {
-											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_GET['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
 											echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 										} else {
 											?>
@@ -206,7 +206,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 										<span class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Book Price', 'mjschool' ); ?> </span><br>
 										<?php
 										if ( $user_access_edit === '1' && empty( $book_data->price ) ) {
-											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_GET['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
 											echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 										} else {
 											?>
@@ -217,7 +217,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 										<span class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Remaining Quantity', 'mjschool' ); ?> </span><br>
 										<?php
 										if ( $user_access_edit === '1' && empty( $book_data->total_quentity ) ) {
-											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_GET['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
 											echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 										} else {
 											?>
@@ -228,7 +228,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 										<span class="mjschool-guardian-labels mjschool-view-page-header-labels"> <?php esc_html_e( 'Description', 'mjschool' ); ?> </span><br>
 										<?php
 										if ( $user_access_edit === '1' && empty( $book_data->description ) ) {
-											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_REQUEST['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
+											$edit_url = admin_url( 'admin.php?page=mjschool_library&tab=addbook&action=edit&book_id=' . esc_attr( sanitize_text_field(wp_unslash($_GET['book_id'])) ) . '&_wpnonce_action=' . esc_attr( mjschool_get_nonce( 'edit_action' ) ) );
 											echo '<a class="btn btn-primary mjschool-view-add-buttons btn-sm" href="' . esc_url( $edit_url ) . '">Add</a>';
 										} else {
 											?>
@@ -247,7 +247,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 							</div>
 							<?php
 							$module = 'library';
-							$mjschool_custom_field_obj->mjschool_show_inserted_customfield_data_in_datail_page( $module );
+							$mjschool_custom_field_obj->mjschool_show_inserted_custom_field_data_in_datail_page( $module );
 							?>
 						</div>
 						<?php
@@ -264,16 +264,18 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 							if ( isset($result) ) {
 								// Book Issue Mail Notification.
 								if ( isset( $_POST['mjschool_issue_book_mail_service_enable'] ) ) {
+									$teacher_obj = new Mjschool_Teacher();
+									$mjschool_obj_user   = new Mjschool_User();
 									foreach ( $_POST['book_id'] as $b_id ) {
 										$smgt_issue_book_mail_service_enable = sanitize_text_field(wp_unslash($_POST['mjschool_issue_book_mail_service_enable']));
 										if ( $smgt_issue_book_mail_service_enable ) {
-											$search['{{student_name}}'] = mjschool_get_teacher( sanitize_text_field(wp_unslash($_POST['student_id'])) );
+											$search['{{student_name}}'] = $teacher_obj->mjschool_get_teacher( sanitize_text_field(wp_unslash($_POST['student_id'])) );
 											$search['{{book_name}}']    = $mjschool_obj_lib->mjschool_get_book_name( sanitize_text_field(wp_unslash($b_id)) );
 											$search['{{issue_date}}']   = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['issue_date'])) );
 											$search['{{return_date}}']  = mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['return_date'])) );
 											$search['{{school_name}}']  = get_option( 'mjschool_name' );
 											$message                    = mjschool_string_replacement( $search, get_option( 'mjschool_issue_book_mailcontent' ) );
-											$mail_id                    = mjschool_get_email_id_by_user_id( sanitize_text_field(wp_unslash($_POST['student_id'])) );
+											$mail_id                    = $mjschool_obj_user->mjschool_get_email_id_by_user_id( sanitize_text_field(wp_unslash($_POST['student_id'])) );
 											$headers    = '';
 											$headers   .= 'From: ' . get_option( 'mjschool_name' ) . ' <noreplay@gmail.com>' . "\r\n";
 											$headers   .= "MIME-Version: 1.0\r\n";
@@ -298,7 +300,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 							<div class="mjschool-guardian-div">
 								<span class="mjschool-view-page-label-heading mb-4"> <?php esc_html_e( 'Issue Book Information', 'mjschool' ); ?> </span>
 								<form name="issue_book_form" action="" method="post" class="mjschool-form-horizontal" id="issue_book_form">
-									<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+									<?php $mjschool_action = isset( $_GET['action'] ) ? sanitize_text_field(wp_unslash($_GET['action'])) : 'insert'; ?>
 									<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 									<input type="hidden" name="issue_id" value="">
 									<input type="hidden" name="book_id" value="<?php echo esc_attr( $decoded_id ); ?>">
@@ -345,7 +347,7 @@ $mjschool_custom_field_obj = new Mjschool_Custome_Field();
 											<div class="col-sm-3 col-md-3 col-lg-3 col-xl-3">
 												<div class="form-group input">
 													<div class="col-md-12 form-control">
-														<input id="issue_date" class="datepicker form-control validate[required] text-input" type="text" name="issue_date" value="<?php echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); ?>" readonly>
+														<input id="issue_date" class="datepicker form-control validate[required] text-input" type="text" name="issue_date" value="<?php echo esc_attr( mjschool_get_date_in_input_box( current_time( 'Y-m-d' ) ) ); ?>" readonly>
 														<label  for="issue_date"><?php esc_html_e( 'Issue Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 													</div>
 												</div>

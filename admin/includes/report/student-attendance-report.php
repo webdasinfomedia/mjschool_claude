@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Attendance Report Tabs Controller.
  *

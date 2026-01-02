@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Renders the Audit Trail Report page in the MJSchool plugin.
  *
@@ -61,7 +60,7 @@ if ( isset( $_POST['date_type'] ) ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -69,7 +68,7 @@ if ( isset( $_POST['date_type'] ) ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -101,14 +100,14 @@ if ( isset( $_POST['date_type'] ) ) {
 		}
 	} else {
 		$date_action = 'all';
-		$start_date  = date( 'Y-m-d' );
-		$end_date    = date( 'Y-m-d' );
+		$start_date  = wp_date( 'Y-m-d' );
+		$end_date    = wp_date( 'Y-m-d' );
 	}
 	if ( $date_action === 'all' || $date_action === '' ) {
 		global $wpdb;
 		$table_audit_log = $wpdb->prefix . 'mjschool_audit_log';
-		$start_date = date('Y-m-d 00:00:00', strtotime($start_date));
-		$end_date   = date('Y-m-d 23:59:59', strtotime($end_date));
+		$start_date = wp_date('Y-m-d 00:00:00', strtotime($start_date));
+		$end_date   = wp_date('Y-m-d 23:59:59', strtotime($end_date));
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$report_6 = $wpdb->get_results(
 			$wpdb->prepare( "SELECT * FROM $table_audit_log WHERE created_at BETWEEN %s AND %s", $start_date, $end_date )
@@ -166,7 +165,7 @@ if ( isset( $_POST['date_type'] ) ) {
 											esc_html_e( 'N/A', 'mjschool' ); 
 										}
 										?>
-										<?php echo ' ' . 'By' . ' ' . esc_html( mjschool_get_user_name_by_id( $result->created_by ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Message', 'mjschool' ); ?>"></i>
+										<?php echo ' ' . 'By' . ' ' . esc_html( mjschool_get_display_name( $result->created_by ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Message', 'mjschool' ); ?>"></i>
 									</td>
 									<td class="income_amount">
 										<?php

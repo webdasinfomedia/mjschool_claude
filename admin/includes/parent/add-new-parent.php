@@ -10,7 +10,8 @@
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
-$students = mjschool_get_student_group_by_class();
+$mjschool_obj_class = new Mjschool_Class();
+$students = $mjschool_obj_class->mjschool_get_student_group_by_class();
 $mjschool_role = 'parent';
 ?>
 <?php
@@ -485,7 +486,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 		</div>
 		<?php
 		// --------- Get Module-Wise Custom Field Data. --------------//
-		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+		$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 		$module = 'parent';
 		$custom_field = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>

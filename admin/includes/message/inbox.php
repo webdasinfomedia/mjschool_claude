@@ -6,7 +6,7 @@
  * It displays a paginated list of all received messages for the logged-in user, along with
  * sender details, subject, description, attachments, and timestamps.
  *
- * Key Features:
+ * Key Features.
  * - Displays received messages in a DataTable with sorting and search capabilities.
  * - Supports message deletion (single or multiple) with confirmation.
  * - Includes checkboxes for bulk selection with "Select All" functionality.
@@ -31,7 +31,7 @@ if ( isset( $_GET['tab'] ) ) {
 }
 
 ?>
-<div class="mjschool-mailbox-content mjschool-custom-padding-0"><!--Mjschool-mailbox-content.  -->
+<div class="mjschool-mailbox-content mjschool-custom-padding-0"><!-- Mjschool-mailbox-content. -->
 	<?php
 	$max = 10;
 	if ( isset( $_GET['pg'] ) ) {
@@ -58,13 +58,14 @@ if ( isset( $_GET['tab'] ) ) {
 			}
 		}
 	}
-	$message = mjschool_get_inbox_message( get_current_user_id(), $limit, $max );
+	$obj_message = new Mjschool_Message();
+	$message = $obj_message->mjschool_get_inbox_message( get_current_user_id(), $limit, $max );
 	if ( ! empty( $message ) ) {
 		?>
-		<form name="wcwm_report" action="" method="post"><!-- Form-div. -->
+		<form name="wcwm_report" action="" method="post"><!-- Form div. -->
 			<?php wp_nonce_field( 'mjschool_delete_inbox', '_wpnonce' ); ?>
-			<div class="table-responsive" id="sentbox_table"><!-- Table-responsive.  -->
-				<table id="inbox_list" class="table"><!--Inbox-list table. -->
+			<div class="table-responsive" id="sentbox_table"><!-- Table-responsive. -->
+				<table id="inbox_list" class="table"><!-- Inbox-list table. -->
 					<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 						<tr>
 							<th class="mjschool-custom-padding-0 mjschool_padding_15px_0px" ><input type="checkbox" class="select_all" id="select_all"></th>
@@ -109,7 +110,8 @@ if ( isset( $_GET['tab'] ) ) {
 													?>
 												</a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Message From', 'mjschool' ); ?>"></i>
 												<?php
-												$unread_count = mjschool_count_unread_message_current_user( $msg->post_id );
+												$obj_message = new Mjschool_Message();
+												$unread_count = $obj_message->mjschool_count_unread_message_current_user( $msg->post_id );
 												if ( $unread_count > 0 ) :
 													?>
 													<span class="badge badge-success ms-1 mjschool_background_color_purple" >
@@ -124,7 +126,7 @@ if ( isset( $_GET['tab'] ) ) {
 													global $wpdb;
 													$tbl_name = $wpdb->prefix . 'mjschool_message';
 													$post_id  = $msg->post_id;
-													// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+													// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching. -- Safe direct query, caching not required in this context.
 													$get_single_user = $wpdb->get_row( "SELECT * FROM $tbl_name where post_id = $post_id" );
 													$mjschool_role            = mjschool_get_display_name( $get_single_user->receiver );
 													echo esc_html( $mjschool_role );
@@ -311,8 +313,8 @@ if ( isset( $_GET['tab'] ) ) {
 					}
 					?>
 				</div>
-			</div><!-- Table-responsive.  -->
-		</form><!-- Form-div. -->
+			</div><!-- Table-responsive. -->
+		</form><!-- Form div. -->
 		<?php
 	} else {
 		?>

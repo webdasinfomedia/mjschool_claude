@@ -1,5 +1,4 @@
 <?php 
-
 /**
  * Student Failed Report – Form, Data Processing & Chart Rendering.
  *
@@ -40,7 +39,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 					<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control validate[required] class_id_exam">
 						<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
 						<?php
-						foreach ( mjschool_get_all_class() as $classdata ) {
+						$mjschool_class = new Mjschool_Class();
+						foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 							?>
 							<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php
@@ -62,7 +62,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 							<?php
 							if ( isset( $_REQUEST['class_section'] ) ) {
 								echo esc_html( $class_section = $_REQUEST['class_section'] );
-								foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 									?>
 									<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 									<?php
@@ -151,7 +152,8 @@ if ( isset( $_REQUEST['report_1'] ) ) {
 				foreach ( $report_1 as $result ) {
 					$obtain_marks = $result->marks;
 					if ( $obtain_marks < (int) $final_data->passing_marks ) {
-						$subject = mjschool_get_single_subject_name( $final_data->subject_id );
+						$mjschool_subject = new Mjschool_Subject();
+						$subject = $mjschool_subject->mjschool_get_single_subject_name( $final_data->subject_id );
 						// Count occurrences of each subject.
 						if ( array_key_exists($subject, $subject_fail_counts ) ) {	
 							$subject_fail_counts[ $subject ] = $subject_fail_counts[ $subject ] + 1;
@@ -168,10 +170,11 @@ if ( isset( $_REQUEST['report_1'] ) ) {
 		$report_1            = mjschool_get_failed_student_report_data( $exam_id, $class_id, $section_id, $pass_marks );
 		$subject_fail_counts = array(); // Array to store failure count per subject.
 		if ( ! empty( $report_1 ) ) {
+			$mjschool_subject = new Mjschool_Subject();
 			foreach ( $report_1 as $result ) {
 				$marks_total = ( $result->contributions === 'yes' ) ? array_sum( json_decode( $result->class_marks, true ) ?? array() ) : (int) $result->marks;
 				if ( $marks_total < (int) $exam_data->passing_mark ) {
-					$subject = mjschool_get_single_subject_name( $result->subject_id );
+					$subject = $mjschool_subject->mjschool_get_single_subject_name( $result->subject_id );
 					// Count occurrences of each subject.
 					if ( ! isset( $subject_fail_counts[ $subject ] ) ) {
 						$subject_fail_counts[ $subject ] = 1;

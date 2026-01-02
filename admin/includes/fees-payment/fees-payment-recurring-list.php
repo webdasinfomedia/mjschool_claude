@@ -63,8 +63,9 @@ if ( ! empty( $retrieve_class_data ) ) {
                                     <?php
                                     $fees_id   = explode( ',', $retrieved_data->fees_id);
                                     $fees_type = array();
+                                    $obj_fees = new Mjschool_Fees();
                                     foreach ($fees_id as $id) {
-                                        $fees_type[] = mjschool_get_fees_term_name($id);
+                                        $fees_type[] = $obj_fees->mjschool_get_fees_term_name($id);
                                     }
                                     echo esc_html( implode( ' , ', $fees_type ) );
                                     ?>
@@ -173,9 +174,7 @@ if ( ! empty( $retrieve_class_data ) ) {
 	?>
     <div class="mjschool-no-data-list-div mjschool-no-data-img-mt-30px">
         <a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_fees_payment&tab=addpaymentfee' ) ); ?>">
-            
             <img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
-            
         </a>
         <div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
             <label class="mjschool-no-data-list-label"><?php esc_html_e( 'Tap on above icon to add your first Record.', 'mjschool' ); ?></label>
@@ -185,9 +184,7 @@ if ( ! empty( $retrieve_class_data ) ) {
 } else {
 	?>
     <div class="mjschool-calendar-event-new">
-        
         <img class="mjschool-no-data-img" src="<?php echo esc_url(MJSCHOOL_NODATA_IMG); ?>" alt="<?php esc_attr_e( 'No data', 'mjschool' ); ?>">
-        
     </div>
 	<?php
 }

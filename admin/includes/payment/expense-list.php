@@ -43,7 +43,7 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'expense';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>

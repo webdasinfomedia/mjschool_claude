@@ -23,13 +23,14 @@
  */
 defined( 'ABSPATH' ) || exit;
 $school_type = get_option( "mjschool_custom_class");
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
+$mjschool_obj_admission    = new Mjschool_admission();
 $mjschool_role                      = 'student';
 if ( $active_tab === 'addstudent' ) {
 	$edit = 0;
-	if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) { // -------- Edit Student -----//
+	if ( isset( $_GET['action'] ) && sanitize_text_field(wp_unslash($_GET['action'])) === 'edit' ) { // -------- Edit Student -----//
 		$edit         = 1;
-		$user_info    = get_userdata( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['student_id'])) ) ) );
+		$user_info    = get_userdata( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_GET['student_id'])) ) ) );
 		$sibling_data = $user_info->sibling_information;
 		$sibling      = json_decode( $sibling_data );
 	}
@@ -41,7 +42,7 @@ if ( $active_tab === 'addstudent' ) {
 	<div class="mjschool-panel-body"><!------ Panel body. -------->
 		<!--------- Student form. ---------->
 		<form name="mjschool-student-form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-student-form" enctype='multipart/form-data'>
-			<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
+			<?php $mjschool_action = isset( $_GET['action'] ) ? sanitize_text_field(wp_unslash($_GET['action'])) : 'insert'; ?>
 			<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 			<input type="hidden" name="role" value="<?php echo esc_attr( $mjschool_role ); ?>" />
 			<input type="hidden"  name="security" id="mjschool_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mjschool_nonce' ) ); ?>">
@@ -53,7 +54,7 @@ if ( $active_tab === 'addstudent' ) {
 					<div class="col-md-6">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input id="admission_no" class="form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( $user_info->admission_no ); } elseif ( isset( $_POST['admission_no'] ) ) { echo esc_attr( mjschool_generate_admission_number() ); } else { echo esc_attr( mjschool_generate_admission_number() ); } ?>"  name="admission_no">
+								<input id="admission_no" class="form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( $user_info->admission_no ); } elseif ( isset( $_POST['admission_no'] ) ) { echo esc_attr( $mjschool_obj_admission->mjschool_generate_admission_number() ); } else { echo esc_attr( $mjschool_obj_admission->mjschool_generate_admission_number() ); } ?>"  name="admission_no">
 								<label for="admission_no"><?php esc_html_e( 'Student ID', 'mjschool' ); ?><span class="required">*</span></label>
 							</div>
 						</div>
@@ -72,7 +73,8 @@ if ( $active_tab === 'addstudent' ) {
 						<select name="class_name" class="form-control validate[required] mjschool-class-in-student mjschool-max-width-100px" id="class_list_add_student">
 							<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 								<?php
@@ -98,7 +100,8 @@ if ( $active_tab === 'addstudent' ) {
 								<option value=""><?php esc_html_e( 'Select Section', 'mjschool' ); ?></option>
 								<?php
 								if ( $edit ) {
-									foreach ( mjschool_get_class_sections( $user_info->class_name ) as $sectiondata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_class_sections( $user_info->class_name ) as $sectiondata ) {
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 										<?php
@@ -168,7 +171,7 @@ if ( $active_tab === 'addstudent' ) {
 					<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool-error-msg-left-margin">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input id="birth_date" class="form-control date_picker validate[required]" type="text" name="birth_date"  value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( $user_info->birth_date ) ); } elseif ( isset( $_POST['birth_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['birth_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" readonly>
+								<input id="birth_date" class="form-control date_picker validate[required]" type="text" name="birth_date"  value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( $user_info->birth_date ) ); } elseif ( isset( $_POST['birth_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['birth_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>" readonly>
 								<label class="col-form-label date_label text-md-end col-sm-2 control-label" for="birth_date"><?php esc_html_e( 'Date of Birth', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 							</div>
 						</div>
@@ -292,7 +295,8 @@ if ( $active_tab === 'addstudent' ) {
 										<select name="siblingsclass[]" class="form-control validate[required] mjschool-class-in-student mjschool-max-width-100px" id="sibling_class_change_<?php echo esc_attr( $i ); ?>">
 											<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 											<?php
-											foreach ( mjschool_get_all_class() as $classdata ) {
+											$mjschool_class = new Mjschool_Class();
+											foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 												?>
 												<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $value->siblingsclass, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 												<?php
@@ -307,7 +311,8 @@ if ( $active_tab === 'addstudent' ) {
 												<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 												<?php
 												if ( $edit ) {
-													foreach ( mjschool_get_class_sections( $value->siblingsclass ) as $sectiondata ) {
+													$mjschool_class = new Mjschool_Class();
+													foreach ( $mjschool_class->mjschool_get_class_sections( $value->siblingsclass ) as $sectiondata ) {
 														?>
 														<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $value->siblingssection, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 														<?php
@@ -323,7 +328,7 @@ if ( $active_tab === 'addstudent' ) {
 											<option value=""><?php esc_html_e( 'Select Student', 'mjschool' ); ?></option>
 											<?php
 											if ( $edit ) {
-												if ( mjschool_student_display_name_with_roll( $value->siblingsstudent ) != 'N/A' ) {
+												if ( mjschool_student_display_name_with_roll( $value->siblingsstudent ) !== 'N/A' ) {
 													echo '<option value="' . esc_attr( $value->siblingsstudent ) . '" ' . selected( $value->siblingsstudent, $value->siblingsstudent ) . '>' . esc_html( mjschool_student_display_name_with_roll( $value->siblingsstudent ) ) . '</option>';
 												}
 											}
@@ -364,7 +369,8 @@ if ( $active_tab === 'addstudent' ) {
 									<select name="siblingsclass[]" class="form-control validate[required] mjschool-class-in-student mjschool-max-width-100px" id="mjschool-sibling-class-change">
 										<option value=""><?php esc_html_e( 'Select Class','mjschool' );?></option>
 										<?php
-										foreach(mjschool_get_all_class() as $classdata)
+										$mjschool_class = new Mjschool_Class();
+										foreach($mjschool_class->mjschool_get_all_class() as $classdata)
 										{
 											?>
 											<option value="<?php echo esc_attr($classdata['class_id']);?>"><?php echo esc_html( $classdata['class_name']);?></option>
@@ -410,7 +416,8 @@ if ( $active_tab === 'addstudent' ) {
 								<select name="siblingsclass[]" class="form-control validate[required] mjschool-class-in-student mjschool-max-width-100px" id="mjschool-sibling-class-change">
 									<option value=""><?php esc_html_e( 'Select Class','mjschool' );?></option>
 									<?php
-									foreach(mjschool_get_all_class() as $classdata)
+									$mjschool_class = new Mjschool_Class();
+									foreach($mjschool_class->mjschool_get_all_class() as $classdata)
 									{
 										?>
 										<option value="<?php echo esc_attr($classdata['class_id']);?>"><?php echo esc_html( $classdata['class_name']);?></option>
@@ -639,7 +646,7 @@ if ( $active_tab === 'addstudent' ) {
 			<!-- Custom fields data. -->
 			<?php
 			// --------- Get module-wise custom field data. --------------//
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'student';
 			$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 			?>

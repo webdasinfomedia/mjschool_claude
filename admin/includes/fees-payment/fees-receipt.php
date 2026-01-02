@@ -25,18 +25,18 @@
 defined( 'ABSPATH' ) || exit;
 global $wpdb;
 $fees_pay_id                = intval(mjschool_decrypt_id( wp_unslash($_REQUEST['idtest']) ) );
-$fees_detail_result         = mjschool_get_single_fees_payment_record($fees_pay_id);
-$fees_history_detail_result = mjschool_get_payment_history_by_fees_pay_id($fees_pay_id);
 $mjschool_obj_feespayment   = new Mjschool_Feespayment();
+$fees_detail_result         = $mjschool_obj_feespayment->mjschool_get_single_fee_payment( $fees_pay_id );
+$fees_history_detail_result = $mjschool_obj_feespayment->mjschool_get_payment_history_by_fees_pay_id($fees_pay_id);
 $format                     = get_option( 'mjschool_invoice_option' );
 $table                      = $wpdb->prefix . 'mjschool_fees_payment';
 $invoice_number             = mjschool_generate_invoice_number($fees_pay_id);
-$mjschool_custom_field_obj  = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj  = new Mjschool_Custom_Field();
 $module                     = 'fee_transaction';
 $user_custom_field          = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module($module);
 ?>
 <div class="penal-body">
-    <!----- Panel Body. --------->
+    <!-- Panel Body. -->
     <?php
     $retrieve_class_data = $mjschool_obj_feespayment->mjschool_get_all_fees_payments($fees_pay_id);
     if ( ! empty( $retrieve_class_data ) ) {
@@ -45,7 +45,7 @@ $user_custom_field          = $mjschool_custom_field_obj->mjschool_get_custom_fi
             <div class="table-responsive">
                 <form id="mjschool-common-form" name="mjschool-common-form" method="post">
                     <table id="feetype_list" class="display mjschool-admin-feestype-datatable" cellspacing="0" width="100%">
-                        <thead class="<?php echo esc_attr( mjschool_datatable_header( ) ); ?>">
+                        <thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
                             <tr>
                                 <th class="mjschool-checkbox-width-10px text-end"><input type="checkbox" class="select_all" id="select_all"></th>
                                 <th><?php esc_html_e( 'Image', 'mjschool' ); ?></th>
@@ -195,4 +195,4 @@ $user_custom_field          = $mjschool_custom_field_obj->mjschool_get_custom_fi
     }
     ?>
 </div>
-<!----- Panel Body. --------->
+<!-- Panel Body. -->

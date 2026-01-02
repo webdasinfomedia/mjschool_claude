@@ -25,9 +25,9 @@ if ( isset( $_GET['tab'] ) ) {
 }
 
 ?>
-<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-25px-res"><!-------- Panel Body. -------->
+<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-25px-res"><!-- Panel Body. -->
 	<form name="exam_form" action="" class="hall_recipt" method="post" class="mjschool-form-horizontal" enctype="multipart/form-data" id="receipt_form">
-		<div class="form-body"><!-------- Form Body. -------->
+		<div class="form-body"><!-- Form Body. -->
 			<div class="row">
 				<div class="col-md-9 input">
 					<label class="ml-1 mjschool-custom-top-label top" for="exam_id"><?php esc_html_e( 'Select Exam', 'mjschool' ); ?><span class="required">*</span></label>
@@ -44,9 +44,11 @@ if ( isset( $_GET['tab'] ) ) {
 						<?php
 						foreach ( $retrieve_class_data as $retrieved_data ) {
 							$cid      = $retrieved_data->class_id;
-							$clasname = mjschool_get_class_name( $cid );
+							$mjschool_class = new Mjschool_Class();
+							$clasname = $mjschool_class->mjschool_get_class_name( $cid );
 							if ( $retrieved_data->section_id != 0 ) {
-								$section_name = mjschool_get_section_name( $retrieved_data->section_id );
+								$mjschool_class = new Mjschool_Class();
+								$section_name = $mjschool_class->mjschool_get_section_name( $retrieved_data->section_id );
 							} else {
 								$section_name = esc_html__( 'No Section', 'mjschool' );
 							}
@@ -61,9 +63,9 @@ if ( isset( $_GET['tab'] ) ) {
 					<input type="button" value="<?php esc_attr_e( 'Search Exam', 'mjschool' ); ?>" name="search_exam" id="search_exam" class="btn btn-info search_exam mjschool-save-btn"/>
 				</div>
 			</div>
-		</div><!-------- Form Body. -------->
+		</div><!-- Form Body. -->
 	</form>
 	<div class="col-md-12 col-sm-12 col-xs-12 mjschool-rtl-custom-padding-0px">
 		<div class="mjschool-exam-hall-receipt-div"></div>
 	</div>
-</div> <!-------- Panel Body. -------->
+</div> <!-- Panel Body. -->

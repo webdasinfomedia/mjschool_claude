@@ -27,14 +27,14 @@ $school_type = get_option( 'mjschool_custom_class' );
 		}
 		?>
 	</h2>
-	<form name="class_form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-message-form" enctype="multipart/form-data"><!-- form div -->
+	<form name="class_form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-message-form" enctype="multipart/form-data">
 		<?php 
 	wp_nonce_field( 'mjschool_save_message', '_wpnonce' );
 		$mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; 
 		?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
-		<div class="form-body mjschool-user-form"><!--User form. -->
-			<div class="row"><!--Row. -->
+		<div class="form-body mjschool-user-form"><!-- User form. -->
+			<div class="row"><!-- Row. -->
 				<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 input">
 					<label class="ml-1 mjschool-custom-top-label top" for="send_to"><?php esc_html_e( 'Message To', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 					<select name="receiver" class="form-control validate[required] text-input mjschool-min-width-100px" id="send_to">
@@ -55,7 +55,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 					<div class="col-sm-12 mjschool-msg-multiple mjschool-multiple-select mjschool-multiselect-validation1 mjschool-rtl-custom-padding-0px">
 						<select name="multi_class_id[]" class="form-control" id="selected_class" multiple="multiple">
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
 								<?php
@@ -72,7 +73,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 					<select name="class_id" id="class_list_id" class="form-control mjschool-min-width-100px validate[required]">
 						<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 						<?php
-						foreach ( mjschool_get_all_class() as $classdata ) {
+						$mjschool_class = new Mjschool_Class();
+						foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 							?>
 							<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
 						<?php } ?>
@@ -88,7 +90,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 							<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 							<?php
 							if ( $edit && isset( $user_info->class_name ) ) {
-								foreach ( mjschool_get_class_sections( $user_info->class_name ) as $sectiondata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_class_sections( $user_info->class_name ) as $sectiondata ) {
 									?>
 									<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 									<?php
@@ -187,20 +190,20 @@ $school_type = get_option( 'mjschool_custom_class' );
 						</div>
 					</div>
 				</div>
-			</div><!--Row. -->
-		</div><!--User form. -->
+			</div><!-- Row. -->
+		</div><!-- User form. -->
 		<?php
-		// --------- Get Module Wise Custom Field Data --------------//
-		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+		// Get module wise custom field data.
+		$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 		$module                    = 'message';
 		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
-		<div class="form-body mjschool-user-form"><!--User form. -->
-			<div class="row"><!--Row. -->
+		<div class="form-body mjschool-user-form"><!-- User form. -->
+			<div class="row"><!-- Row. -->
 				<div class="col-sm-6">
 					<input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Message', 'mjschool' ); } else { esc_attr_e( 'Send Message', 'mjschool' ); } ?>" name="save_message" class="btn btn-success mjschool-save-message-selected-user mjschool-save-btn mjschool-rtl-margin-0px" />
 				</div>
-			</div><!--Row. -->
-		</div><!--User form. -->
-	</form><!-- Form div -->
+			</div><!-- Row. -->
+		</div><!-- User form. -->
+	</form>
 </div><!-- Mjschool-panel-body. -->

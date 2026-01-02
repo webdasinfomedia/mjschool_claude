@@ -55,7 +55,7 @@ if ( $active_tab === 'income_graph_payment' ) {
 			'11' => esc_html__( 'November', 'mjschool' ),
 			'12' => esc_html__( 'December', 'mjschool' ),
 		);
-		$year = isset( $_POST['year'] ) ? $_POST['year'] : date( 'Y' );
+		$year = isset( $_POST['year'] ) ? $_POST['year'] : wp_date( 'Y' );
 		$labels = array();
 		$data   = array();
 		$currency        = mjschool_get_currency_symbol();
@@ -127,7 +127,7 @@ if ( $active_tab === 'income_datatable' ) {
 									<div class="col-md-6 mb-2">
 										<div class="form-group input">
 											<div class="col-md-12 form-control">
-												<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+												<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 												<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -135,7 +135,7 @@ if ( $active_tab === 'income_datatable' ) {
 									<div class="col-md-6 mb-2">
 										<div class="form-group input">
 											<div class="col-md-12 form-control">
-												<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+												<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 												<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -165,13 +165,13 @@ if ( $active_tab === 'income_datatable' ) {
 				$end_date   = $response[1];
 			}
 		} else {
-			$start_date = date( 'Y-m-d' );
-			$end_date   = date( 'Y-m-d' );
+			$start_date = wp_date( 'Y-m-d' );
+			$end_date   = wp_date( 'Y-m-d' );
 		}
 		global $wpdb;
 		$table_income = $wpdb->prefix . 'mjschool_income_expense';
-		$start_date = date('Y-m-d 00:00:00', strtotime($start_date));
-		$end_date   = date('Y-m-d 23:59:59', strtotime($end_date));
+		$start_date = wp_date('Y-m-d 00:00:00', strtotime($start_date));
+		$end_date   = wp_date('Y-m-d 23:59:59', strtotime($end_date));
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$report_6 = $wpdb->get_results(
 			$wpdb->prepare( "SELECT * FROM $table_income WHERE invoice_type = %s AND income_create_date BETWEEN %s AND %s", 'income', $start_date, $end_date )
@@ -211,7 +211,7 @@ if ( $active_tab === 'income_datatable' ) {
 										?>
 										<tr>
 											<td class="patient"><?php echo esc_html( get_user_meta( $result->supplier_name, 'roll_id', true ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Roll No.', 'mjschool' ); ?>"></i></td>
-											<td class="patient_name"><?php echo esc_html( mjschool_get_user_name_by_id( $result->supplier_name ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i></td>
+											<td class="patient_name"><?php echo esc_html( mjschool_get_display_name( $result->supplier_name ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i></td>
 											<td class="income_amount"><?php echo esc_html( mjschool_currency_symbol_position_language_wise( number_format( $total_amount, 2, '.', '' ) ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Amount', 'mjschool' ); ?>"></i></td>
 											<td class="status"><?php echo esc_html( mjschool_get_date_in_input_box( $result->income_create_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Create Date', 'mjschool' ); ?>"></i></td>
 										</tr>

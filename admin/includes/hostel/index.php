@@ -11,7 +11,7 @@
  * - Provides access control based on user roles and defined permissions.
  * - Integrates nonce verification and sanitization for secure form submission.
  * - Displays hostel records with sorting, searching, and pagination using DataTables.
- * - Supports custom fields dynamically retrieved via the `Mjschool_Custome_Field` class.
+ * - Supports custom fields dynamically retrieved via the `Mjschool_Custom_Field` class.
  * - Includes client-side validation using the jQuery Validation Engine.
  * - Offers bulk deletion functionality with confirmation prompts.
  * - Enables video tutorials (YouTube popup) and responsive table layouts.
@@ -22,7 +22,7 @@
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
-// Check Browser Javascript.
+// Check browser JavaScript.
 mjschool_browser_javascript_check();
 $mjschool_role       = mjschool_get_user_role( get_current_user_id() );
 $obj_hostel = new Mjschool_Hostel();
@@ -38,25 +38,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 	if ( isset( $_REQUEST ['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( 'hostel' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'hostel' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'hostel' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -64,12 +64,12 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'hostel';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 $obj_hostel = new Mjschool_Hostel();
 $tablename  = 'mjschool_hostel';
-// Data insert and update.
+// Data insertion and update.
 if ( isset( $_POST['save_hostel'] ) ) {
 	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	if ( wp_verify_nonce( $nonce, 'save_hostel_admin_nonce' ) ) {
@@ -78,7 +78,7 @@ if ( isset( $_POST['save_hostel'] ) ) {
 			if ( wp_verify_nonce( $nonce_action, 'edit_action' ) ) {
 				$book_id             = sanitize_text_field( wp_unslash( $_REQUEST['hostel_id'] ) );
 				$result              = $obj_hostel->mjschool_insert_hostel( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
-				$custom_field_obj    = new Mjschool_Custome_Field();
+				$custom_field_obj    = new Mjschool_Custom_Field();
 				$module              = 'hostel';
 				$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $book_id );
 				wp_safe_redirect( esc_url_raw( admin_url( 'admin.php?page=mjschool_hostel&tab=hostel_list&message=2' ) ) );
@@ -88,7 +88,7 @@ if ( isset( $_POST['save_hostel'] ) ) {
 			}
 		} else {
 			$result             = $obj_hostel->mjschool_insert_hostel( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
-			$custom_field_obj   = new Mjschool_Custome_Field();
+			$custom_field_obj   = new Mjschool_Custom_Field();
 			$module             = 'hostel';
 			$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
@@ -164,7 +164,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 							</div>
 						</div>
 						<?php
-						if ( get_option( 'mjschool_enable_video_popup_show' ) == 'yes' ) {
+							if ( get_option( 'mjschool_enable_video_popup_show' ) === 'yes' ) {
 							?>
 							<a href="#" class="mjschool-view-video-popup youtube-icon" link="<?php echo esc_url( 'https://www.youtube.com/embed/CZQzPhCPIr4?si=Hg16bHUL2gzi9xLA' ); ?>" title="Hostel Module">
 								<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/thumb-icon/mjschool-youtube-icon.png' ); ?>" alt="<?php esc_attr_e( 'YouTube', 'mjschool' ); ?>">
@@ -233,9 +233,10 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 														<td>
 															<?php
 															if ( ! empty( $retrieved_data->hostel_address ) ) {
-																$strlength = strlen( $retrieved_data->hostel_address );
-																if ( $strlength > 25 ) {
-																	echo esc_html( substr( $retrieved_data->hostel_address, 0, 25 ) ) . '...';
+													
+															$strlength = mb_strlen( $retrieved_data->hostel_address );
+															if ( $strlength > 25 ) {
+																echo esc_html( mb_substr( $retrieved_data->hostel_address, 0, 25 ) ) . '...';
 																} else {
 																	echo esc_html( $retrieved_data->hostel_address );
 																}
@@ -258,9 +259,10 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 														<td>
 															<?php
 															if ( ! empty( $retrieved_data->Description ) ) {
-																$strlength = strlen( $retrieved_data->Description );
-																if ( $strlength > 40 ) {
-																	echo esc_html( substr( $retrieved_data->Description, 0, 40 ) ) . '...';
+														
+															$strlength = mb_strlen( $retrieved_data->Description );
+															if ( $strlength > 40 ) {
+																echo esc_html( mb_substr( $retrieved_data->Description, 0, 40 ) ) . '...';
 																} else {
 																	echo esc_html( $retrieved_data->Description );
 																}
@@ -272,7 +274,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 														</td>
 														<?php
 														if ( $user_access_edit === '1' || $user_access_delete === '1' ) {
-															// Custom Field Values.
+															// Custom field values.
 															if ( ! empty( $user_custom_field ) ) {
 																foreach ( $user_custom_field as $custom_field ) {
 																	if ( $custom_field->show_in_table === '1' ) {

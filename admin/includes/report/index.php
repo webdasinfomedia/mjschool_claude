@@ -1,5 +1,4 @@
 <?php 
-
 /**
  * Reports Module Main View & Controller.
  *
@@ -30,7 +29,7 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access      = mjschool_get_user_role_wise_filter_access_right_array( 'report' );
 	$user_access_view = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
@@ -172,8 +171,9 @@ if ( $active_tab === 'report2' ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$report_2 = $wpdb->get_results( "SELECT  at.class_id, SUM(case when `status` ='Present' then 1 else 0 end) as Present, SUM(case when `status` ='Absent' then 1 else 0 end) as Absent from $table_attendance as at,$table_class as cl where `attendence_date` BETWEEN '$sdate' AND '$edate' AND at.class_id = cl.class_id AND at.role_name = 'student' GROUP BY at.class_id" );
 		if ( ! empty( $report_2 ) ) {
+			$mjschool_class = new Mjschool_Class();
 			foreach ( $report_2 as $result ) {
-				$class_id      = mjschool_get_class_name( $result->class_id );
+				$class_id      = $mjschool_class->mjschool_get_class_name( $result->class_id );
 				$chart_array[] = array( "$class_id", (int) $result->Present, (int) $result->Absent );
 			}
 		}

@@ -17,7 +17,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 	$active_tab1                = isset( $_REQUEST['tab1'] ) ? sanitize_text_field(wp_unslash($_REQUEST['tab1'])) : 'general';
 	$student_data               = get_userdata( $student_id );
 	$user_meta                  = get_user_meta( $student_id, 'parent_id', true );
-	$mjschool_custom_field_obj  = new Mjschool_Custome_Field();
+	$mjschool_custom_field_obj  = new Mjschool_Custom_Field();
 	$sibling_information_value  = str_replace( '"[', '[', $student_data->sibling_information );
 	$sibling_information_value1 = str_replace( ']"', ']', $sibling_information_value );
 	$sibling_information        = json_decode( $sibling_information_value1 );
@@ -31,7 +31,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 						<div class="col-xl-10 col-md-9 col-sm-10">
 							<div class="mjschool-user-profile-header-left mjschool-float-left-width-100px">
 								<?php
-								$umetadata = mjschool_get_user_image( $student_data->ID );
+								$mjschool_user = new Mjschool_User();
+								$umetadata = $mjschool_user->mjschool_get_user_image( $student_data->ID );
 								?>
 								<img class="mjschool-user-view-profile-image" src="<?php if ( ! empty( $userimage ) ) { echo esc_url($umetadata); } else { echo esc_url( get_option( 'mjschool_student_thumb_new' ) ); } ?>">
 								
@@ -230,7 +231,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 								</div>
 								<?php
 								$module = 'admission';
-								$mjschool_custom_field_obj->mjschool_show_inserted_customfield_data_in_datail_page( $module );
+								$mjschool_custom_field_obj->mjschool_show_inserted_custom_field_data_in_datail_page( $module );
 								?>
 								<!-- Sibling Information. -->
 								<?php if ( ! empty( $sibling_information[0]->siblingsstudent ) ) { ?>
@@ -463,6 +464,6 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field(wp_unsla
 	</div>
 	<?php
 } else {
-	wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+    wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 }
 ?>

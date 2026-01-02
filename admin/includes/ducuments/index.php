@@ -27,25 +27,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( 'document' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'document' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'document' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -53,7 +53,7 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'document';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 $active_tab                = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'])) : 'documentlist';
@@ -63,14 +63,14 @@ if ( isset( $_POST['save_document'] ) ) {
 	if ( wp_verify_nonce( $nonce, 'save_document_nonce' ) ) {
 		$upload_docs_array = array();
 		if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) {
-			$doc_id = intval( $_REQUEST['document_id'] );
+			$doc_id = intval( $_POST['document_id'] );
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
 				if ( isset( $_FILES['document_content'] ) && ! empty( $_FILES['document_content'] ) && $_FILES['document_content']['size'] != 0 ) {
 					if ( $_FILES['document_content']['size'] > 0 ) {
 						$upload_docs1 = mjschool_load_documets_new( $_FILES['document_content'], $_FILES['document_content'], $_POST['doc_title'] );
 					}
-				} elseif ( isset( $_REQUEST['old_hidden_document'] ) ) {
-					$upload_docs1 = sanitize_text_field( wp_unslash($_REQUEST['old_hidden_document']));
+				} elseif ( isset( $_POST['old_hidden_document'] ) ) {
+					$upload_docs1 = sanitize_text_field( wp_unslash($_POST['old_hidden_document']));
 				}
 				$document_data = array();
 				if ( ! empty( $upload_docs1 ) ) {
@@ -83,7 +83,7 @@ if ( isset( $_POST['save_document'] ) ) {
 				}
 				$result = $mjschool_obj_document->mjschool_add_document( wp_unslash($_POST), $document_data );
 				// Update custom field data.
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'document';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $doc_id );
 				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_document&tab=documentlist&message=2' ) );
@@ -109,7 +109,7 @@ if ( isset( $_POST['save_document'] ) ) {
 				$document_data[] = '';
 			}
 			$result                    = $mjschool_obj_document->mjschool_add_document( wp_unslash($_POST), $document_data );
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'document';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
@@ -131,14 +131,14 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 	}
 }
 if ( isset( $_POST['delete_selected'] ) ) {
-	// Verify nonce
+	// Verify nonce.
 	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bulk_delete_documents' ) ) {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
 	
-	if ( ! empty( $_POST['selected_id'] ) ) {
+	if ( ! empty( $_POST['selected_id'] ) && is_array( $_POST['selected_id'] ) ) {
 		foreach ( $_POST['selected_id'] as $id ) {
-			$delete = $mjschool_obj_document->mjschool_delete_document( intval( $id ) );
+			$delete = $mjschool_obj_document->mjschool_delete_document( intval( wp_unslash( $id ) ) );
 		}
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_document&tab=documentlist&message=3' ) );
 		exit;
@@ -171,9 +171,9 @@ if ( isset( $_POST['delete_selected'] ) ) {
 					<?php
 				}
 				?>
-				<div class="mjschool-main-list-page"><!-- mjschool-main-list-page. -->
+				<div class="mjschool-main-list-page"><!-- mjschool-main-list-page -->
 					<?php
-					// Document List Tab
+				// Document List Tab.
 					if ( $active_tab === 'documentlist' ) {
 						$documentdata = $mjschool_obj_document->mjschool_get_all_documents();
 						if ( ! empty( $documentdata ) ) {
@@ -190,7 +190,7 @@ if ( isset( $_POST['delete_selected'] ) ) {
 													<th><?php esc_html_e( 'Title', 'mjschool' ); ?></th>
 													<th><?php esc_html_e( 'Document For', 'mjschool' ); ?></th>
 													<th><?php esc_html_e( 'Class', 'mjschool' ); ?></th>
-													<?php if ( $school_type != 'university' ) {?>
+													<?php if ( $school_type !== 'university' ) {?>
 														<th><?php esc_html_e( 'Class Section', 'mjschool' ); ?></th>
 													<?php }?>
 													<th><?php esc_html_e( 'User Name', 'mjschool' ); ?></th>
@@ -223,15 +223,16 @@ if ( isset( $_POST['delete_selected'] ) ) {
 														</td>
 														<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
 															<p class="mjschool-prescription-tag mjschool-padding-15px mjschool-margin-bottom-0px <?php echo esc_attr( $color_class_css ); ?>">
-																
 																<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-homework.png"); ?>" class="mjschool-massage-image mjschool-image-icon-height-25px mjschool-margin-top-3px">
-																
 															</p>
 														</td>
 														<td class="title">
 															<?php
 															$doc_data = json_decode( $retrieved_data->document_content );
+														
+														if ( is_object( $doc_data ) && isset( $doc_data->{0} ) && isset( $doc_data->{0}->title ) ) {
 															echo esc_html( $doc_data[0]->title );
+														}
 															?>
 															<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Document Title', 'mjschool' ); ?>"></i>
 														</td>
@@ -246,12 +247,13 @@ if ( isset( $_POST['delete_selected'] ) ) {
 															if ( $retrieved_data->class_id === 'all class' ) {
 																esc_html_e( 'All Class', 'mjschool' );
 															} else {
-																echo esc_html( mjschool_get_class_name( $retrieved_data->class_id ) );
+																$mjschool_class = new Mjschool_Class();
+																echo esc_html( $mjschool_class->mjschool_get_class_name( $retrieved_data->class_id ) );
 															}
 															?>
 															<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class', 'mjschool' ); ?>"></i>
 														</td>
-														<?php if ( $school_type != 'university' ) {?>
+														<?php if ( $school_type !== 'university' ) {?>
 															<td>
 																<?php
 																if ( $retrieved_data->section_id === 'all section' ) {
@@ -259,7 +261,8 @@ if ( isset( $_POST['delete_selected'] ) ) {
 																} elseif ( $retrieved_data->section_id === '' ) {
 																	esc_html_e( 'N/A', 'mjschool' );
 																} else {
-																	echo esc_html( mjschool_get_section_name( $retrieved_data->section_id ) );
+																	$mjschool_class = new Mjschool_Class();
+																	echo esc_html( $mjschool_class->mjschool_get_section_name( $retrieved_data->section_id ) );
 																}
 																?>
 																<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Section', 'mjschool' ); ?>"></i>
@@ -350,14 +353,12 @@ if ( isset( $_POST['delete_selected'] ) ) {
 																<ul  class="mjschool_ul_style">
 																	<li >
 																		<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
-																			
 																			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-more.png"); ?>">
-																			
 																		</a>
 																		<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																			<?php
 																			$doc_data = json_decode( $retrieved_data->document_content );
-																			if ( ! empty( $doc_data[0]->value ) ) {
+																			if ( is_object( $doc_data ) && isset( $doc_data->{0} ) && ! empty( $doc_data[0]->value ) ) {
 																				?>
 																				<li class="mjschool-float-left-width-100px">
 																					<a target="blank" href="<?php print esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>" class="mjschool-float-left-width-100px" record_id="<?php echo esc_attr( $retrieved_data->document_id ); ?>"><i class="fa fa-eye">

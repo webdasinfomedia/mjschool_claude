@@ -90,7 +90,7 @@ class ClassListing {
 	public function mjschool_class_listing( $data ) {
 		$response  = array();
 		$tablename = 'mjschool_class';
-		if ( $data['teacher_id'] != '' && $data['teacher_id'] != 0 ) {
+		if ( $data['teacher_id'] !== '' && $data['teacher_id'] != 0 ) {
 			$school_obj = new MJSchool_Management( $data['teacher_id'] );
 			if ( $school_obj->role == 'teacher' ) {
 				$teacher_obj = new Mjschool_Teacher();
@@ -99,18 +99,21 @@ class ClassListing {
 					$i = 0;
 					foreach ( $classdata as $class ) {
 						$retrieved_data = get_class_by_id( $class['class_id'] );
-						$section_result = mjschool_get_class_sections( $retrieved_data->class_id, $data['teacher_id'] );
+						$mjschool_class = new Mjschool_Class();
+						$section_result = $mjschool_class->mjschool_get_class_sections( $retrieved_data->class_id, $data['teacher_id'] );
 						if ( ! empty( $section_result ) ) {
 							$section_array = array();
 							foreach ( $section_result as $retrieved_sectiondata ) {
 								if ( get_option( 'mjschool_students_access' ) == 'own' && mjschool_get_roles( $data['teacher_id'] ) == 'teacher' ) {
-									$retrieved_sectiondata = mjschool_get_section_name( $retrieved_sectiondata );
+									$mjschool_class = new Mjschool_Class();
+									$retrieved_sectiondata = $mjschool_class->mjschool_get_section_name( $retrieved_sectiondata );
 								}
 								$result['id']             = $retrieved_data->class_id;
 								$result['class_name']     = $retrieved_data->class_name;
 								$result['class_num_name'] = $retrieved_data->class_num_name;
 								$result['class_capacity'] = $retrieved_data->class_capacity;
-								$section_result           = mjschool_get_class_sections( $retrieved_data->class_id, $data['teacher_id'] );
+								$mjschool_class = new Mjschool_Class();
+								$section_result           = $mjschool_class->mjschool_get_class_sections( $retrieved_data->class_id, $data['teacher_id'] );
 								$result['section_id']     = $retrieved_sectiondata->id;
 								$result['section_name']   = $retrieved_sectiondata->section_name;
 								$result2[] = $result;
@@ -136,7 +139,8 @@ class ClassListing {
 					$result[ $i ]['class_name']     = $retrieved_data->class_name;
 					$result[ $i ]['class_num_name'] = $retrieved_data->class_num_name;
 					$result[ $i ]['class_capacity'] = $retrieved_data->class_capacity;
-					$section_result                 = mjschool_get_class_sections( $retrieved_data->class_id );
+					$mjschool_class = new Mjschool_Class();
+					$section_result                 = $mjschool_class->mjschool_get_class_sections( $retrieved_data->class_id );
 					if ( ! empty( $section_result ) ) {
 						$section_array = array();
 						foreach ( $section_result as $retrieved_sectiondata ) {
@@ -163,8 +167,8 @@ class ClassListing {
 		}
 	}
 	function mjschool_add_class( $data ) {
-		$created_date = date( 'Y-m-d H:i:s' );
-		if ( $data['class_name'] != '' && $data['class_num_name'] != '' ) {
+		$created_date = wp_date( 'Y-m-d H:i:s' );
+		if ( $data['class_name'] !== '' && $data['class_num_name'] !== '' ) {
 			$classdata = array(
 				'class_name'     => $data['class_name'],
 				'class_num_name' => $data['class_num_name'],
@@ -190,8 +194,8 @@ class ClassListing {
 		return $response;
 	}
 	function mjschool_edit_class( $data ) {
-		$created_date = date( 'Y-m-d H:i:s' );
-		if ( $data['class_name'] != '' && $data['class_num_name'] != '' && $data['class_id'] != '' && $data['class_id'] != 0 ) {
+		$created_date = wp_date( 'Y-m-d H:i:s' );
+		if ( $data['class_name'] !== '' && $data['class_num_name'] !== '' && $data['class_id'] !== '' && $data['class_id'] != 0 ) {
 			$classdata = array(
 				'class_name'     => $data['class_name'],
 				'class_num_name' => $data['class_num_name'],
@@ -255,8 +259,8 @@ class ClassListing {
 		return $response;
 	}
 	function mjschool_add_class_section( $data ) {
-		$created_date = date( 'Y-m-d H:i:s' );
-		if ( $data['section_name'] != '' && $data['class_id'] != '' ) {
+		$created_date = wp_date( 'Y-m-d H:i:s' );
+		if ( $data['section_name'] !== '' && $data['class_id'] !== '' ) {
 			$sectiondata = array(
 				'section_name' => $data['section_name'],
 				'class_id'     => $data['class_id'],
@@ -279,8 +283,8 @@ class ClassListing {
 		return $response;
 	}
 	function mjschool_edit_class_section( $data ) {
-		$created_date = date( 'Y-m-d H:i:s' );
-		if ( $data['section_name'] != '' && $data['class_id'] != '' ) {
+		$created_date = wp_date( 'Y-m-d H:i:s' );
+		if ( $data['section_name'] !== '' && $data['class_id'] !== '' ) {
 			$sectiondata = array(
 				'section_name' => $data['section_name'],
 				'class_id'     => $data['class_id'],

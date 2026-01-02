@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Teacher Attendance Report - Graph View
  *
@@ -47,8 +46,8 @@ if ( isset( $_GET['tab'] ) ) {
 			$sdate = sanitize_text_field( $_REQUEST['sdate'] );
 			$edate = sanitize_text_field( $_REQUEST['edate'] );
 		} else {
-			$sdate = date( 'Y-m-d', strtotime( 'first day of this month' ) );
-			$edate = date( 'Y-m-d', strtotime( 'last day of this month' ) );
+			$sdate = wp_date( 'Y-m-d', strtotime( 'first day of this month' ) );
+			$edate = wp_date( 'Y-m-d', strtotime( 'last day of this month' ) );
 		}
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 		$report_2      = $wpdb->get_results(
@@ -58,7 +57,7 @@ if ( isset( $_GET['tab'] ) ) {
 		$chart_array[] = array( esc_attr__( 'teacher', 'mjschool' ), esc_attr__( 'Present', 'mjschool' ), esc_attr__( 'Absent', 'mjschool' ) );
 		if ( ! empty( $report_2 ) ) {
 			foreach ( $report_2 as $result ) {
-				$class_id      = mjschool_get_user_name_by_id( $result->user_id );
+				$class_id      = mjschool_get_display_name( $result->user_id );
 				$chart_array[] = array( "$class_id", (int) $result->Present, (int) $result->Absent );
 			}
 		}

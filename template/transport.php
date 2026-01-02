@@ -44,7 +44,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 		}
 	}
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'transport';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 // ----------Add-update record.---------------------//
@@ -56,7 +56,7 @@ if ( isset( $_POST['save_transport'] ) ) {
 			if ( $_FILES['upload_user_avatar_image']['size'] > 0 ) {
 				$member_image = mjschool_load_documets( $_FILES['upload_user_avatar_image'], 'upload_user_avatar_image', 'pimg' );
 			}
-			$photo = esc_url(content_url( '/uploads/school_assets/' . $member_image));
+			$photo = esc_url(content_url( '/uploads/school_assets/' . basename( $member_image ) ));
 		} else {
 			if ( isset( $_REQUEST['hidden_upload_user_avatar_image'] ) ) {
 				$member_image = sanitize_text_field(wp_unslash($_REQUEST['hidden_upload_user_avatar_image']));
@@ -98,7 +98,8 @@ if ( isset( $_POST['save_transport'] ) ) {
 				$SearchArr['{{route_fare}}']                  = sanitize_text_field(wp_unslash($_POST['route_fare']));
 				$SearchArr['{{school_name}}']                 = get_option( 'mjschool_name' );
 				$MSG = mjschool_string_replacement( $SearchArr, get_option( 'mjschool_bus_alocation_mail_content' ) );
-				$AllUsr       = mjschool_get_all_user_in_plugin();
+				$mjschool_obj_user   = new Mjschool_User();
+				$AllUsr       = $mjschool_obj_user->mjschool_get_all_user_in_plugin();
 				$device_token = array();
 				$to           = array();
 				foreach ( $AllUsr as $key => $usr ) {
@@ -117,7 +118,7 @@ if ( isset( $_POST['save_transport'] ) ) {
 						'type'  => 'notification',
 					),
 				);
-				$json              = json_encode( $notification_data );
+				$json              = wp_json_encode( $notification_data );
 				$message           = mjschool_send_push_notification( $json );
 				/* Send Push Notification. */
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=transport&tab=transport_list&message=1') );
@@ -132,7 +133,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = mjschool_delete_transport( $tablename, $id );
+			$result = $mjschool_obj_transport->mjschool_delete_transport( $tablename, $id );
 		}
 	}
 	if ( $result ) {
@@ -144,7 +145,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 $tablename = 'mjschool_transport';
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
-		$result = mjschool_delete_transport( $tablename, intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['transport_id'])) ) ) );
+		$result = $mjschool_obj_transport->mjschool_delete_transport( $tablename, intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['transport_id'])) ) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=transport&tab=transport_list&message=3') );
 			die();
@@ -265,7 +266,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 											<a href="#" class="mjschool-view-details-popup" id="<?php echo esc_attr( $retrieved_data->transport_id ); ?>" type="transport_view">
 												<?php
 												$tid       = $retrieved_data->transport_id;
-												$umetadata = mjschool_get_user_driver_image( $tid );
+												$umetadata = $mjschool_transport->mjschool_get_user_driver_image( $tid );
 												
 												if (empty($umetadata) || $umetadata['mjschool_user_avatar'] === "") {
 													echo '<img src="' . esc_url( get_option( 'mjschool_driver_thumb_new' ) ) . '" height="50px" width="50px" class="img-circle" />';
@@ -322,7 +323,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 															<?php
 															if ( ! empty( $custom_field_value ) ) {
 																?>
-																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+																<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . basename( $custom_field_value ) )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																<?php
 															} else {
 																esc_html_e( 'N/A', 'mjschool' );
@@ -436,7 +437,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 			$edit = 0;
 			if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 				$edit           = 1;
-				$transport_data = mjschool_get_transport_by_id( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['transport_id'])) ) );
+				$mjschool_obj_transport      = new Mjschool_Transport();
+				$transport_data = $mjschool_obj_transport->mjschool_get_transport_by_id( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['transport_id'])) ) );
 			}
 			?>
 			<div class="mjschool-panel-body">
@@ -558,7 +560,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 					</div>
 					<?php
 					// --------- Get module-wise custom field data. --------------//
-					$custom_field_obj = new Mjschool_Custome_Field();
+					$custom_field_obj = new Mjschool_Custom_Field();
 					$module           = 'transport';
 					$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 					?>

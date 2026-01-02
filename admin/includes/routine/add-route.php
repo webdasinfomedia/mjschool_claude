@@ -31,17 +31,18 @@ $cust_class_room = get_option( 'mjschool_class_room' );
 	<?php
 	$edit       = 0;
 	$route_data = null;
-	if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) {
+	if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'edit' ) {
 		$edit = 1;
-		if ( isset( $_REQUEST['route_id'] ) ) {
-			$route_data = mjschool_get_route_by_id( intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['route_id'] ) ) ) ) );
+		if ( isset( $_GET['route_id'] ) ) {
+			$mjschool_class = new Mjschool_Class();
+			$route_data = $mjschool_class->mjschool_get_route_by_id( intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['route_id'] ) ) ) ) );
 		}
 	}
 	?>
 
 	<div class="mjschool-panel-body"> <!------- Panel Body. ------->
 		<form name="route_form" action="" method="post" class="mjschool-form-horizontal" id="rout_form">
-			<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; ?>
+			<?php $mjschool_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : 'insert'; ?>
 			<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 			<div class="form-body mjschool-user-form">
 				<div class="row">
@@ -59,7 +60,8 @@ $cust_class_room = get_option( 'mjschool_class_room' );
 						<select name="class_id" id="mjschool-class-list" class="form-control validate[required] mjschool-max-width-100px">
 							<option value=""><?php esc_html_e( 'Select class Name', 'mjschool' ); ?></option>
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php } ?>
@@ -82,7 +84,8 @@ $cust_class_room = get_option( 'mjschool_class_room' );
 								<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 								<?php
 								if ( $edit && $route_data ) {
-									foreach ( mjschool_get_class_sections( $route_data->class_id ) as $sectiondata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_class_sections( $route_data->class_id ) as $sectiondata ) {
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 										<?php
@@ -106,7 +109,8 @@ $cust_class_room = get_option( 'mjschool_class_room' );
 						<select name="subject_id" id="mjschool-subject-list" class="form-control mjschool-change-subject validate[required] mjschool-max-width-100px">
 							<?php
 							if ( $edit && $route_data ) {
-								$subject = mjschool_get_subject_by_class_id( $route_data->class_id );
+								$obj_subject = new Mjschool_Subject();
+								$subject = $obj_subject->mjschool_get_subject_by_class_id( $route_data->class_id );
 								if ( ! empty( $subject ) ) {
 									foreach ( $subject as $ubject_data ) {
 										?>
@@ -286,7 +290,7 @@ $cust_class_room = get_option( 'mjschool_class_room' );
 							<div class="col-md-6">
 								<div class="form-group input">
 									<div class="col-md-12 form-control">
-										<input id="start_date_new" class="form-control validate[required] text-input start_date" type="text" placeholder="<?php esc_html_e( 'Enter Start Date', 'mjschool' ); ?>" name="start_date" value="<?php echo esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+										<input id="start_date_new" class="form-control validate[required] text-input start_date" type="text" placeholder="<?php esc_html_e( 'Enter Start Date', 'mjschool' ); ?>" name="start_date" value="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 										<label for="userinput1"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 									</div>
 								</div>
@@ -294,7 +298,7 @@ $cust_class_room = get_option( 'mjschool_class_room' );
 							<div class="col-md-6">
 								<div class="form-group input">
 									<div class="col-md-12 form-control">
-										<input id="end_date_new" class="form-control validate[required] text-input end_date" type="text" placeholder="<?php esc_html_e( 'Enter End Date', 'mjschool' ); ?>" name="end_date" value="<?php echo esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+										<input id="end_date_new" class="form-control validate[required] text-input end_date" type="text" placeholder="<?php esc_html_e( 'Enter End Date', 'mjschool' ); ?>" name="end_date" value="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 										<label for="userinput1"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 									</div>
 								</div>

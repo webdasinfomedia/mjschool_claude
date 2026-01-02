@@ -1,26 +1,7 @@
 <?php
-
-/**
- * Attendance Management Page.
- *
- * This file serves as the main view/controller for the Attendance module within the Mjschool
- * dashboard environment. It is responsible for:
- *
- * 1. Performing necessary browser and JavaScript checks.
- * 2. Implementing robust **role-based access control** for 'view', 'edit', and 'delete'
- * permissions for the current user/page.
- * 3. Retrieving and setting the school type from options to conditionally render fields.
- * 4. Displaying the list of attendance records, including the **attendance date, day of the week, and status**
- * (as seen in the output table structure).
- * 5. Providing navigation or instruction for when no attendance data is found.
- *
- * @package    Mjschool
- * @subpackage Mjschool/templates
- * @since      1.0.0
- */
-
 defined( 'ABSPATH' ) || exit;
 mjschool_browser_javascript_check();
+$mjschool_obj_holiday      = new Mjschool_Holiday();
 $school_type = get_option( "mjschool_custom_class");
 $mjschool_role        = mjschool_get_user_role( get_current_user_id() );
 $user_access = mjschool_get_user_role_wise_access_right_array();
@@ -70,7 +51,7 @@ if ( $active_tab === 'teacher_attendance' ) {
 	}
 }
 $mjschool_obj_attend = new Mjschool_Attendence_Manage();
-$current_date        = date( 'y-m-d' );
+$current_date        = wp_date( 'y-m-d' );
 $class_id            = 0;
 $MailCon             = get_option( 'absent_mail_notification' );
 $Mailsub             = get_option( 'mjschool_absent_mail_notification_subject' );
@@ -112,8 +93,8 @@ if ( isset( $_REQUEST['save_attendence'] ) ) {
                 if ( isset( $_POST['mjschool_service_enable'] ) ) {
 
                     if ( $attendance_value === 'Absent' ) {
-
-                        $parent_list = mjschool_get_student_parent_id( $stud->ID );
+						$mjschool_obj_parent = new Mjschool_Parent();
+                        $parent_list = $mjschool_obj_parent->mjschool_get_student_parent_id( $stud->ID );
 
                         if ( ! empty( $parent_list ) ) {
 
@@ -143,8 +124,8 @@ if ( isset( $_REQUEST['save_attendence'] ) ) {
                 }
 
                 if ( $attendance_value === 'Absent' && isset( $_POST['mjschool_mail_service_enable'] ) ) {
-
-                    $parent_list = mjschool_get_student_parent_id( $stud->ID );
+					$mjschool_obj_parent = new Mjschool_Parent();
+                    $parent_list = $mjschool_obj_parent->mjschool_get_student_parent_id( $stud->ID );
 
                     if ( ! empty( $parent_list ) ) {
 
@@ -238,8 +219,8 @@ if ( isset( $_REQUEST['save_sub_attendence'] ) ) {
                 if ( isset( $_POST['mjschool_service_enable'] ) || isset( $_POST['mjschool_mail_service_enable'] ) ) {
 
                     if ( $attendance_value === 'Absent' ) {
-
-                        $parent_list = mjschool_get_student_parent_id( $stud->ID );
+						$mjschool_obj_parent = new Mjschool_Parent();
+                        $parent_list = $mjschool_obj_parent->mjschool_get_student_parent_id( $stud->ID );
 
                         if ( ! empty( $parent_list ) ) {
 
@@ -248,7 +229,7 @@ if ( isset( $_REQUEST['save_sub_attendence'] ) ) {
                                 foreach ( $parent_list as $user_id ) {
 
                                     $message_content =
-                                        'Your Child ' . mjschool_get_user_name_by_id( $stud->ID ) .
+                                        'Your Child ' . mjschool_get_display_name( $stud->ID ) .
                                         ' is absent on ' . $curr_date;
 
                                     mjschool_send_mjschool_notification( $user_id, 'Attendance', $message_content );
@@ -314,14 +295,14 @@ if ( isset( $_POST['export_attendance_in_csv'] ) ) {
 		} else {
 			$date_type               = '';
 			$class_id                = '';
-			$start_date              = date( 'Y-m-d', strtotime( 'first day of this month' ) );
-			$end_date                = date( 'Y-m-d', strtotime( 'last day of this month' ) );
-			$student_attendance_list = mjschool_get_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $class_id, $date_type );
+			$start_date              = wp_date( 'Y-m-d', strtotime( 'first day of this month' ) );
+			$end_date                = wp_date( 'Y-m-d', strtotime( 'last day of this month' ) );
+			$student_attendance_list = mjschool_get_student_attendence_beetween_satrt_date_to_endwp_date( $start_date, $end_date, $class_id, $date_type );
 		}
 	} else {
 		$date_type               = sanitize_text_field( wp_unslash( $_POST['filtered_date_type'] ) );
 		$class_id                = sanitize_text_field( wp_unslash( $_REQUEST['filtered_class_id'] ) );
-		$student_attendance_list = mjschool_get_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $class_id, $date_type );
+		$student_attendance_list = mjschool_get_student_attendence_beetween_satrt_date_to_endwp_date( $start_date, $end_date, $class_id, $date_type );
 	}
 	if ( ! empty( $student_attendance_list ) ) {
 		$header   = array();
@@ -337,7 +318,7 @@ if ( isset( $_POST['export_attendance_in_csv'] ) ) {
 		$header[] = 'Role_name';
 		$header[] = 'Comment';
 		$filename = 'export/mjschool-export-attendance.csv';
-		$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) or wp_die( "can't open file" );
+		$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) || wp_die( "can't open file" );
 		fputcsv( $fh, $header );
 		foreach ( $student_attendance_list as $retrive_data ) {
 			if ( $retrive_data->role_name === 'student' ) {
@@ -353,7 +334,8 @@ if ( isset( $_POST['export_attendance_in_csv'] ) ) {
 				$row[]     = $user_info->display_name;
 				$row[]     = $retrive_data->user_id;
 				$class_id  = $retrive_data->class_id;
-				$classname = mjschool_get_class_name( $class_id );
+				$mjschool_class = new Mjschool_Class();
+				$classname = $mjschool_class->mjschool_get_class_name( $class_id );
 				if ( ! empty( $classname ) ) {
 					$classname = $classname;
 				} else {
@@ -380,7 +362,7 @@ if ( isset( $_POST['export_attendance_in_csv'] ) ) {
 		header( 'Pragma: public' );       // Required.
 		header( 'Expires: 0' );           // No cache.
 		header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-		header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+		header( 'Last-Modified: ' . wp_date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 		header( 'Cache-Control: private', false );
 		header( 'Content-Type: ' . $mime );
 		header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
@@ -576,7 +558,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 											<i class="fa fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name', 'mjschool' ); ?>"></i> 
 										</td>
 										<?php $curremt_date = mjschool_get_date_in_input_box($retrieved_data->attendance_date);
-										$day = date( "D", strtotime($curremt_date ) ); ?>
+										$day = wp_date( "D", strtotime($curremt_date ) ); ?>
 										<td class="name">
 											<?php echo esc_html( mjschool_get_date_in_input_box($retrieved_data->attendance_date ) ); ?>
 											<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Attendance Date', 'mjschool' ); ?>"></i>
@@ -708,7 +690,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 											</p>
 										</td>
 										<td >
-											<?php echo esc_html( mjschool_get_user_name_by_id( $retrieved_data->user_id ) ); ?>
+											<?php echo esc_html( mjschool_get_display_name( $retrieved_data->user_id ) ); ?>
 											<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Teacher Name', 'mjschool' ); ?>"></i>
 										</td>
 										<td class="name">
@@ -718,7 +700,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 										<td >
 											<?php
 											$curremt_date = $retrieved_data->attendence_date;
-											$day          = date( 'D', strtotime( $curremt_date ) );
+											$day          = wp_date( 'D', strtotime( $curremt_date ) );
 											if ( $day === 'Mon' ) {
 												esc_html_e( 'Monday', 'mjschool' );
 											} elseif ( $day === 'Sun' ) {
@@ -815,7 +797,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 								<option value="all class"><?php esc_html_e( 'All Class', 'mjschool' ); ?></option>
 								<?php
 							}
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 								<?php
@@ -831,7 +814,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( wp_unslash( $_POST['start_date'] ) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( wp_unslash( $_POST['start_date'] ) ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -839,7 +822,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( wp_unslash($_POST['end_date'] ) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( wp_unslash($_POST['end_date'] ) ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -863,7 +846,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 			}
 			$date_type       = sanitize_text_field( wp_unslash( $_REQUEST['date_type'] ) );
 			$class_id        = sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) );
-			$attendence_data = mjschool_get_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $class_id, $date_type );
+			$attendence_data = mjschool_get_student_attendence_beetween_satrt_date_to_endwp_date( $start_date, $end_date, $class_id, $date_type );
 		} else {
 			$date_type = '';
 			if ( $school_obj->role === 'teacher' ) {
@@ -872,9 +855,9 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 				$class_id        = $cla_id[0]->class_id;
 				$attendence_data = mjschool_student_attendance_by_class_id( $start_date, $end_date, $class_id, $date_type );
 			} else {
-				$start_date      = date( 'Y-m-d', strtotime( 'first day of this month' ) );
-				$end_date        = date( 'Y-m-d', strtotime( 'last day of this month' ) );
-				$attendence_data = mjschool_get_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $class_id, $date_type );
+				$start_date      = wp_date( 'Y-m-d', strtotime( 'first day of this month' ) );
+				$end_date        = wp_date( 'Y-m-d', strtotime( 'last day of this month' ) );
+				$attendence_data = mjschool_get_student_attendence_beetween_satrt_date_to_endwp_date( $start_date, $end_date, $class_id, $date_type );
 			}
 		}
 		if ( $start_date > $end_date ) {
@@ -932,7 +915,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 											<td class="mjschool-user-image mjschool-width-50px-td">
 												<a href="<?php echo esc_url( '?dashboard=mjschool_user&page=student&tab=view_student&action=view_student&student_id=' . esc_attr( $member_data->ID ) ); ?>">
 													<?php
-													$umetadata = mjschool_get_user_image($member_data->ID);
+													$mjschool_user = new Mjschool_User();
+													$umetadata = $mjschool_user->mjschool_get_user_image($member_data->ID);
 													if (empty($umetadata ) ) {
 														echo '<img src=' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . ' class="img-circle" />';
 													} else {
@@ -961,7 +945,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 											</td>
 											<td class="name">
 												<?php
-												$day = date( 'l', strtotime( $retrieved_data->attendance_date ) );
+												$day = wp_date( 'l', strtotime( $retrieved_data->attendance_date ) );
 												echo esc_html( $day );
 												?>
 												<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Day', 'mjschool' ); ?>"></i>
@@ -1054,7 +1038,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 						<div class="col-sm-3 col-md-3 col-lg-3 col-xl-3">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="curr_date_sub" class="form-control" type="text" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_html( mjschool_get_date_in_input_box( wp_unslash($_POST['curr_date'] ) ) ); } else { echo esc_html( date( 'Y-m-d' ) ); } ?>" name="curr_date" readonly>
+									<input id="curr_date_sub" class="form-control" type="text" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_html( mjschool_get_date_in_input_box( wp_unslash($_POST['curr_date'] ) ) ); } else { echo esc_html( wp_date( 'Y-m-d' ) ); } ?>" name="curr_date" readonly>
 									<label class="control-label" for="curr_date_sub"><?php esc_html_e( 'Date', 'mjschool' ); ?></label>
 								</div>
 							</div>
@@ -1069,7 +1053,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 							<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control validate[required]">
 								<option value=""><?php esc_html_e( 'Select class', 'mjschool' ); ?></option>
 								<?php
-								foreach ( mjschool_get_all_class() as $classdata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 									?>
 									<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>> <?php echo esc_html( $classdata['class_name'] ); ?></option>
 									<?php
@@ -1091,7 +1076,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 									<?php
 									if ( isset( $_REQUEST['class_section'] ) ) {
 										$class_section = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) );
-										foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+										$mjschool_class = new Mjschool_Class();
+										foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 											?>
 											<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>> <?php echo esc_html( $sectiondata->section_name ); ?></option>
 											<?php
@@ -1117,7 +1103,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 					'meta_value' => $class_id
 				 ) ) );
 				$attendanace_date = sanitize_text_field( wp_unslash( $_REQUEST['curr_date'] ) );
-				$holiday_dates = mjschool_get_all_date_of_holidays();
+				$holiday_dates = $mjschool_obj_holiday->mjschool_get_all_date_of_holidays();
 				if (in_array($attendanace_date, $holiday_dates ) ) {
 					?>
 					<div id="mjschool-message" class="mjschool-message_class  alert alert-warning alert-dismissible mjschool-alert-attendence" role="alert">
@@ -1127,7 +1113,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 					<?php
 					 
 				} elseif ( 0 < $mjschool_user ) {
-					if ( isset( $_REQUEST['class_id'] ) && $_REQUEST['class_id'] != ' ' ) {
+					if ( isset( $_REQUEST['class_id'] ) && $_REQUEST['class_id'] !== ' ' ) {
 						$class_id = intval( wp_unslash( $_REQUEST['class_id'] ) );
 					} else {
 						$class_id = 0;
@@ -1160,10 +1146,10 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 						<form method="post" class="mjschool-form-horizontal">
 							<input type="hidden" name="class_id" value="<?php echo esc_attr( $class_id ); ?>" />
 							<input type="hidden" name="class_section" value="<?php echo $class_section = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) ); ?>" />
-							<input type="hidden" name="curr_date" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( wp_unslash( $_POST['curr_date'] ) ) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" />
+							<input type="hidden" name="curr_date" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( wp_unslash( $_POST['curr_date'] ) ) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" />
 							<div class="mjschool-panel-heading">
 								<h4 class="mjschool-panel-title"> <?php esc_html_e( 'Class', 'mjschool' ); ?> :
-									<?php echo esc_html( mjschool_get_class_name( $class_id ) ); ?> ,
+									<?php $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_class_name( $class_id ) ); ?> ,
 									<?php esc_html_e( 'Date', 'mjschool' ); ?> :
 									<?php echo esc_html( mjschool_get_date_in_input_box( wp_unslash($_POST['curr_date'] ) ) ); ?>
 								</h4>
@@ -1279,7 +1265,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 						<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="curr_date_sub" class="form-control" type="text" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['curr_date'] ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="curr_date" readonly>
+									<input id="curr_date_sub" class="form-control" type="text" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['curr_date'] ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>" name="curr_date" readonly>
 									<label  for="curr_date_sub"><?php esc_html_e( 'Date', 'mjschool' ); ?></label>
 								</div>
 							</div>
@@ -1294,7 +1280,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 							<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control validate[required]">
 								<option value=""><?php esc_html_e( 'Select class Name', 'mjschool' ); ?></option>
 								<?php
-								foreach ( mjschool_get_all_class() as $classdata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 									?>
 									<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>> <?php echo esc_html( $classdata['class_name'] ); ?></option>
 									<?php
@@ -1316,7 +1303,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 									<?php
 									if ( isset( $_REQUEST['class_section'] ) ) {
 										$class_section = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) );
-										foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+										$mjschool_class = new Mjschool_Class();
+										foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 											?>
 											<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>> <?php echo esc_html( $sectiondata->section_name ); ?></option>
 											<?php
@@ -1334,7 +1322,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 								$sub_id = 0;
 								if ( isset( $_POST['sub_id'] ) ) {
 									$sub_id = intval( wp_unslash( $_REQUEST['sub_id'] ) );
-									$allsubjects = mjschool_get_subject_by_class_id( $_POST['class_id'] );
+									$obj_subject = new Mjschool_Subject();
+									$allsubjects = $obj_subject->mjschool_get_subject_by_class_id( $_POST['class_id'] );
 									foreach ( $allsubjects as $subjectdata ) {
 										?>
 										<option value="<?php echo esc_attr( $subjectdata->subid ); ?>" <?php selected( $subjectdata->subid, $sub_id ); ?>> <?php echo esc_html( $subjectdata->sub_name ); ?></option>
@@ -1362,7 +1351,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 				wp_die(esc_html__('Security check failed.', 'mjschool'));
 			}
 			$attendanace_date = sanitize_text_field( wp_unslash( $_REQUEST['curr_date'] ) );
-			$holiday_dates    = mjschool_get_all_date_of_holidays();
+			$holiday_dates    = $mjschool_obj_holiday->mjschool_get_all_date_of_holidays();
 			if ( in_array( $attendanace_date, $holiday_dates ) ) {
 				?>
 				<div id="mjschool-message" class="mjschool-message_class  alert alert-warning alert-dismissible mjschool-alert-attendence" role="alert">
@@ -1371,7 +1360,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 				</div>
 				<?php
 			} else {
-				if ( isset( $_REQUEST['class_id'] ) && sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) != ' ' ) {
+				if ( isset( $_REQUEST['class_id'] ) && sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) !== ' ' ) {
 					$class_id = intval( wp_unslash( $_REQUEST['class_id'] ) );
 				} else {
 					$class_id = 0;
@@ -1416,11 +1405,11 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 								<input type="hidden" name="class_id" value="<?php echo esc_attr( $class_id ); ?>" />
 								<input type="hidden" name="sub_id" value="<?php echo esc_attr( $sub_id ); ?>" />
 								<input type="hidden" name="class_section" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_POST['class_section'] ) ) ); ?>" />
-								<input type="hidden" name="curr_date" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['curr_date'] ) ) ) ); } else { echo esc_attr( date( 'Y-m-d' ) ); } ?>" />
+								<input type="hidden" name="curr_date" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['curr_date'] ) ) ) ); } else { echo esc_attr( wp_date( 'Y-m-d' ) ); } ?>" />
 								<div class="mjschool-panel-heading">
 									<h4 class="mjschool-panel-title">
 										<?php esc_html_e( 'Class', 'mjschool' ); ?> :
-										<?php echo esc_html( mjschool_get_class_name( $class_id ) ); ?> ,
+										<?php $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_class_name( $class_id ) ); ?> ,
 										<?php esc_html_e( 'Date', 'mjschool' ); ?> :
 										<?php echo esc_html( mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['curr_date'] ) ) ) ); ?>
 									</h4>
@@ -1437,14 +1426,15 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 											<?php
 											$date = sanitize_text_field( wp_unslash( $_POST['curr_date'] ) );
 											$i    = 1;
+											$mjschool_user = new Mjschool_User();
 											foreach ( $student as $mjschool_user ) {
-												$umetadata = mjschool_get_user_image( $mjschool_user->ID );
+												$umetadata = $mjschool_user->mjschool_get_user_image( $mjschool_user->ID );
 												if ( empty( $umetadata ) ) {
 													$profile_path = get_option( 'mjschool_student_thumb_new' );
 												} else {
 													$profile_path = $umetadata;
 												}
-												$date             = date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['curr_date'] ) ) ) );
+												$date             = wp_date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['curr_date'] ) ) ) );
 												$check_attendance = $mjschool_obj_attend->mjschool_check_has_subject_attendace( $mjschool_user->ID, $class_id, $date, $_POST['sub_id'], $_POST['class_section'] );
 												$attendanc_status = 'Present';
 												if ( ! empty( $check_attendance ) ) {
@@ -1554,7 +1544,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 						<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="curr_date" class="form-control qr_date" type="text" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['curr_date'] ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="curr_date" readonly>
+									<input id="curr_date" class="form-control qr_date" type="text" value="<?php if ( isset( $_POST['curr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['curr_date'] ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>" name="curr_date" readonly>
 									<label  for="curr_date"><?php esc_html_e( 'Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 								</div>
 							</div>
@@ -1569,7 +1559,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 							<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control validate[required] mjschool_qr_class_id">
 								<option value=""><?php esc_html_e( 'Select class Name', 'mjschool' ); ?></option>
 								<?php
-								foreach ( mjschool_get_all_class() as $classdata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 									?>
 									<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>> <?php echo esc_html( $classdata['class_name'] ); ?></option>
 									<?php
@@ -1590,7 +1581,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 								<?php
 								if ( isset( $_REQUEST['class_section'] ) ) {
 									$class_section = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) );
-									foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>> <?php echo esc_html( $sectiondata->section_name ); ?></option>
 										<?php
@@ -1607,7 +1599,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 								$sub_id = 0;
 								if ( isset( $_POST['sub_id'] ) ) {
 									$sub_id = intval( wp_unslash( $_REQUEST['sub_id'] ) );
-									$allsubjects = mjschool_get_subject_by_class_id( wp_unslash( $_POST['class_id'] ) );
+									$obj_subject = new Mjschool_Subject();
+									$allsubjects = $obj_subject->mjschool_get_subject_by_class_id( wp_unslash( $_POST['class_id'] ) );
 									foreach ( $allsubjects as $subjectdata ) {
 										?>
 										<option value="<?php echo esc_attr( $subjectdata->subid ); ?>" <?php selected( $subjectdata->subid, $sub_id ); ?>> <?php echo esc_attr( $subjectdata->sub_name ); ?></option>
@@ -1653,7 +1646,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 					<div class="col-sm-5 col-md-5 col-lg-5 col-xl-5">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input id="curr_date_teacher_front" class="form-control" type="text" value="<?php if ( isset( $_POST['tcurr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( wp_unslash( $_POST['tcurr_date'] ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); }?>" name="tcurr_date" readonly>
+								<input id="curr_date_teacher_front" class="form-control" type="text" value="<?php if ( isset( $_POST['tcurr_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( wp_unslash( $_POST['tcurr_date'] ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); }?>" name="tcurr_date" readonly>
 								<label  for="curr_date_teacher_front"><?php esc_html_e( 'Date', 'mjschool' ); ?></label>
 							</div>
 						</div>
@@ -1672,7 +1665,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 			wp_die(esc_html__('Security check failed.', 'mjschool'));
 		}
 		$attendanace_date = sanitize_text_field( wp_unslash( $_REQUEST['tcurr_date'] ) );
-		$holiday_dates    = mjschool_get_all_date_of_holidays();
+		$holiday_dates    = $mjschool_obj_holiday->mjschool_get_all_date_of_holidays();
 		if ( in_array( $attendanace_date, $holiday_dates ) ) {
 			?>
 			<div id="mjschool-message" class="mjschool-message_class alert updated mjschool-below-h2 notice is-dismissible alert-dismissible">
@@ -1781,15 +1774,15 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 											</p>
 										</td>
 										<td class="department">
-											<?php echo esc_html( mjschool_get_user_name_by_id($retrieved_data->user_id ) ); ?>-<?php echo esc_html( get_user_meta($retrieved_data->user_id, 'roll_id', true ) ); ?>
+											<?php echo esc_html( mjschool_get_display_name($retrieved_data->user_id ) ); ?>-<?php echo esc_html( get_user_meta($retrieved_data->user_id, 'roll_id', true ) ); ?>
 											<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name & Roll No.', 'mjschool' ); ?>"></i>
 										</td>
 										<td >
-											<?php echo esc_html( mjschool_get_class_name($retrieved_data->class_id ) ); ?> 
+											<?php $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_class_name($retrieved_data->class_id ) ); ?> 
 											<i class="fa fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name', 'mjschool' ); ?>"></i>
 										</td>
 										<?php $curremt_date = mjschool_get_date_in_input_box($retrieved_data->attendence_date);
-										$day = date( "D", strtotime($curremt_date ) ); ?>
+										$day = wp_date( "D", strtotime($curremt_date ) ); ?>
 										<td class="name">
 											<?php echo esc_attr( mjschool_get_date_in_input_box($retrieved_data->attendence_date ) ); ?>
 											<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Attendance Date', 'mjschool' ); ?>"></i>
@@ -1898,7 +1891,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 						<select id="teacher_list" class="form-control user_select display-members" name="teacher_name">
 							<option value="all_teacher"><?php esc_html_e( 'All Teacher', 'mjschool' ); ?></option>
 							<?php
-							$teacherdata = mjschool_get_users_data( 'teacher' );
+							$mjschool_user = new Mjschool_User();
+							$teacherdata = $mjschool_user->mjschool_get_users_data( 'teacher' );
 							if ( ! empty( $teacherdata ) ) {
 								foreach ( $teacherdata as $teacher ) {
 									?>
@@ -1917,7 +1911,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( wp_unslash($_POST['start_date'] ) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( wp_unslash($_POST['start_date'] ) ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -1925,7 +1919,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( wp_unslash( $_POST['end_date'] ) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( wp_unslash( $_POST['end_date'] ) ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -1952,25 +1946,25 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 				$start_date      = sanitize_text_field( wp_unslash( $_REQUEST['start_date'] ) );
 				$end_date        = sanitize_text_field( wp_unslash( $_REQUEST['end_date'] ) );
 				$type            = 'teacher';
-				$attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $type );
+				$attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_endwp_date( $start_date, $end_date, $type );
 			} else {
 				$result     = mjschool_all_date_type_value( $date_type );
 				$response   = json_decode( $result );
 				$start_date = $response[0];
 				$end_date   = $response[1];
-				if ( ! empty( $_REQUEST['teacher_name'] ) && $_REQUEST['teacher_name'] != 'all_teacher' ) {
+				if ( ! empty( $_REQUEST['teacher_name'] ) && $_REQUEST['teacher_name'] !== 'all_teacher' ) {
 					$member_id       = sanitize_text_field( wp_unslash( $_REQUEST['teacher_name'] ) );
-					$attendence_data = mjschool_get_member_attendence_beetween_satrt_date_to_enddate_for_admin( $start_date, $end_date, $member_id );
+					$attendence_data = mjschool_get_member_attendence_beetween_start_date_to_end_date_for_admin( $start_date, $end_date, $member_id );
 				} else {
 					$type            = 'teacher';
-					$attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $type );
+					$attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_endwp_date( $start_date, $end_date, $type );
 				}
 			}
 		} else {
-			$start_date      = date( 'Y-m-d', strtotime( 'first day of this month' ) );
-			$end_date        = date( 'Y-m-d', strtotime( 'last day of this month' ) );
+			$start_date      = wp_date( 'Y-m-d', strtotime( 'first day of this month' ) );
+			$end_date        = wp_date( 'Y-m-d', strtotime( 'last day of this month' ) );
 			$type            = 'teacher';
-			$attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_enddate( $start_date, $end_date, $type );
+			$attendence_data = mjschool_get_all_student_attendence_beetween_satrt_date_to_endwp_date( $start_date, $end_date, $type );
 		}
 		if ( $start_date > $end_date ) {
 			?>
@@ -2008,7 +2002,8 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 									<td class="mjschool-user-image mjschool-width-50px-td">
 										<a href="#">
 											<?php $uid = $retrieved_data->ID;
-											$umetadata = mjschool_get_user_image($uid);
+											$mjschool_user = new Mjschool_User();
+											$umetadata = $mjschool_user->mjschool_get_user_image($uid);
 											if (empty($umetadata ) ) {
 												echo '<img src=' . esc_url( get_option( 'mjschool_teacher_thumb_new' ) ) . ' height="50px" width="50px" class="img-circle" />';
 											} else {
@@ -2028,7 +2023,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Teacher Name', 'mjschool' ); ?>"></i>
 									</td>
 									<td class="name">
-										<?php echo esc_html( mjschool_get_class_name( $class->class_id ) ); ?>
+										<?php $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_class_name( $class->class_id ) ); ?>
 										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class Name', 'mjschool' ); ?>"></i>
 									</td>
 									<td class="name">
@@ -2037,7 +2032,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 									</td>
 									<td class="name">
 										<?php
-										$day = date( 'D', strtotime( $retrieved_data->attendence_date ) );
+										$day = wp_date( 'D', strtotime( $retrieved_data->attendence_date ) );
 										if ( $day === 'Mon' ) {
 											esc_html_e( 'Monday', 'mjschool' );
 										} elseif ( $day === 'Sun' ) {
@@ -2158,7 +2153,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 											<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'No.', 'mjschool' ); ?>"></i>
 										</td>
 										<td >
-											<?php echo esc_html( mjschool_get_user_name_by_id($retrieved_data->user_id ) ); ?>
+											<?php echo esc_html( mjschool_get_display_name($retrieved_data->user_id ) ); ?>
 											<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Teacher Name', 'mjschool' ); ?>"></i>
 										</td>
 										<td class="name">
@@ -2168,7 +2163,7 @@ if ( isset( $_REQUEST['save_teach_attendence'] ) ) {
 										<td >
 											<?php
 											$curremt_date = $retrieved_data->attendence_date;
-											$day = date( "D", strtotime($curremt_date ) );
+											$day = wp_date( "D", strtotime($curremt_date ) );
 											echo esc_html( $day, "mjschool" );
 											?> 
 											<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Day', 'mjschool' ); ?>"></i>

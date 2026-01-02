@@ -26,7 +26,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 	$grade_data = $obj_manage_marks->mjschool_get_grade_by_id( intval( mjschool_decrypt_id( wp_unslash($_REQUEST['grade_id']) ) ) );
 }
 ?>
-<div class="mjschool-panel-body mt-5 mjschool-padding-top-25px-res"><!-------- Panel body. -------->
+<div class="mjschool-panel-body mt-5 mjschool-padding-top-25px-res"><!-- Panel body. -->
 	<form name="grade_form" action="" method="post" class="mjschool-form-horizontal" enctype="multipart/form-data" id="grade_form">
 		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash($_REQUEST['action'])) : 'insert'; ?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
@@ -78,8 +78,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 			</div>
 		</div>
 		<?php
-		// --------- Get Module-Wise Custom Field Data. --------------//
-		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+		// Get module-wise custom field data.
+		$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 		$module                    = 'grade';
 		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
@@ -91,4 +91,4 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 			</div>
 		</div>
 	</form>
-</div><!-------- Panel body. -------->
+</div><!-- Panel body. -->

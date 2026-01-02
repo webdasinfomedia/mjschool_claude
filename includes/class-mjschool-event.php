@@ -42,12 +42,12 @@ class Mjschool_Event_Manage
         $table_name                = $wpdb->prefix . 'mjschool_event';
         $eventdata['event_title']  = sanitize_text_field(wp_unslash($data['event_title']));
         $eventdata['description']  = sanitize_textarea_field(stripslashes($data['description']));
-        $eventdata['start_date']   = date('Y-m-d', strtotime($data['start_date']));
+        $eventdata['start_date']   = wp_date('Y-m-d', strtotime($data['start_date']));
         $eventdata['start_time']   = sanitize_text_field($data['start_time']);
-        $eventdata['end_date']     = date('Y-m-d', strtotime($data['end_date']));
+        $eventdata['end_date']     = wp_date('Y-m-d', strtotime($data['end_date']));
         $eventdata['end_time']     = sanitize_text_field($data['end_time']);
         $eventdata['event_doc'] = sanitize_file_name($file_name);
-        $eventdata['created_date'] = date('Y-m-d');
+        $eventdata['created_date'] = wp_date('Y-m-d');
         $eventdata['created_by']   = get_current_user_id();
         if ($data['action'] === 'edit' ) {
             $whereid['event_id'] = intval($data['event_id']);
@@ -77,7 +77,7 @@ class Mjschool_Event_Manage
                         if (isset($data['mjschool_enable_event_mail']) === '1' ) {
                             $Search['{{user_name}}']   = $user_info->display_name;
                             $Search['{{event_title}}'] = sanitize_text_field(stripslashes($data['event_title']));
-                            $Search['{{event_date}}']  = date('Y-m-d', strtotime($data['start_date'])) . ' To ' . date('Y-m-d', strtotime($data['end_date']));
+                            $Search['{{event_date}}']  = wp_date('Y-m-d', strtotime($data['start_date'])) . ' To ' . wp_date('Y-m-d', strtotime($data['end_date']));
                             $Search['{{event_time}}']  = $data['start_time'] . ' To ' . $data['end_time'];
                             $Search['{{description}}'] = sanitize_textarea_field(stripslashes($data['description']));
                             $Search['{{school_name}}'] = get_option('mjschool_name');

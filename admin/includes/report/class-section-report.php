@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Class & Section Report Page Template.
  *
@@ -49,7 +48,8 @@ $retrieve_class_data = mjschool_get_all_data( $tablename );
 						<?php
 						$i = 1;
 						foreach ( $retrieve_class_data as $retrieved_data ) {
-							$section_list = mjschool_get_class_sections( $retrieved_data->class_id );
+							$mjschool_class = new Mjschool_Class();
+							$section_list = $mjschool_class->mjschool_get_class_sections( $retrieved_data->class_id );
 							$class_name   = $retrieved_data->class_name;
 							$class_id     = $retrieved_data->class_id;
 							?>

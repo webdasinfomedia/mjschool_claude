@@ -118,12 +118,12 @@ class MJSchool_Attendance {
 		$user_id             = $data['student_id'];
 		$mjschool_qr_class_id         = $data['class_id'];
 		$qr_section_id       = $data['section_id'];
-		$curr_date           = date( 'Y-m-d' );
+		$curr_date           = wp_date( 'Y-m-d' );
 		$status              = 'Present';
 		$attend_by           = $data['attend_by'];
 		$attendanace_comment = '';
 		$attendence_type     = 'QR';
-		if ( $data['student_id'] != '' && $data['class_id'] != '' && $data['attend_by'] != '' ) {
+		if ( $data['student_id'] !== '' && $data['class_id'] !== '' && $data['attend_by'] !== '' ) {
 			if ( $student_class == $mjschool_qr_class_id ) {
 				$savedata = $obj_attend->mjschool_insert_subject_wise_attendance( $curr_date, $mjschool_qr_class_id, $user_id, $attend_by, $status, $sub_id, $attendanace_comment, $attendence_type, $qr_section_id );
 				if ( $savedata ) {
@@ -164,7 +164,7 @@ class MJSchool_Attendance {
 					$Variable1 = strtotime( $Date1 );
 					$Variable2 = strtotime( $Date2 );
 					for ( $currentDate = $Variable1; $currentDate <= $Variable2;$currentDate += ( 86400 ) ) {
-						$Store   = date( 'd-m-Y', $currentDate );
+						$Store   = wp_date( 'd-m-Y', $currentDate );
 						$array[] = $Store;
 					}
 				}
@@ -174,20 +174,21 @@ class MJSchool_Attendance {
 				if ( ! empty( $AttData ) ) {
 					$attendancedate     = array();
 					$response['status'] = 1;
+					$obj_attend          = new MJSchool_Attendence_Manage();
 					foreach ( $AttData as $key => $attendance ) {
-						$attendancedate[] = date( 'd-m-Y', strtotime( $attendance->attendance_date ) );
-						$status           = mjschool_get_attendace_status( $attendance->attendance_date );
+						$attendancedate[] = wp_date( 'd-m-Y', strtotime( $attendance->attendance_date ) );
+						$status           = $obj_attend->mjschool_get_attendace_status( $attendance->attendance_date );
 						if ( $status ) {
 							$status = 'Holiday';
 						} else {
 							$status = $attendance->status;
 						}
 						$result[] = array(
-							'attendance_date' => date( 'd-m-Y', strtotime( $attendance->attendence_date ) ),
+							'attendance_date' => wp_date( 'd-m-Y', strtotime( $attendance->attendence_date ) ),
 							'status'          => $attendance->status,
 							'subject'         => null,
 							'subject_id'      => null,
-							'day'             => date( 'l', strtotime( $attendance->attendence_date ) ),
+							'day'             => wp_date( 'l', strtotime( $attendance->attendence_date ) ),
 							'attendance_type' => $attendance->attendence_type,
 						);
 					}
@@ -198,7 +199,7 @@ class MJSchool_Attendance {
 								'status'          => 'Holiday',
 								'subject'         => null,
 								'subject_id'      => null,
-								'day'             => date( 'l', strtotime( $holiday ) ),
+								'day'             => wp_date( 'l', strtotime( $holiday ) ),
 							);
 						}
 					}
@@ -239,7 +240,7 @@ class MJSchool_Attendance {
 						$Variable1 = strtotime( $Date1 );
 						$Variable2 = strtotime( $Date2 );
 						for ( $currentDate = $Variable1; $currentDate <= $Variable2;$currentDate += ( 86400 ) ) {
-							$Store   = date( 'd-m-Y', $currentDate );
+							$Store   = wp_date( 'd-m-Y', $currentDate );
 							$array[] = $Store;
 						}
 					}
@@ -250,20 +251,22 @@ class MJSchool_Attendance {
 				if ( ! empty( $AttData ) ) {
 					$attendancedate     = array();
 					$response['status'] = 1;
+					$mjschool_subject = new Mjschool_Subject();
+					$obj_attend          = new MJSchool_Attendence_Manage();
 					foreach ( $AttData as $key => $attendance ) {
-						$attendancedate[] = date( 'd-m-Y', strtotime( $attendance->attendance_date ) );
-						$status           = mjschool_get_attendace_status( $attendance->attendance_date );
+						$attendancedate[] = wp_date( 'd-m-Y', strtotime( $attendance->attendance_date ) );
+						$status           = $obj_attend->mjschool_get_attendace_status( $attendance->attendance_date );
 						if ( $status ) {
 							$status = 'Holiday';
 						} else {
 							$status = $attendance->status;
 						}
 						$result[] = array(
-							'attendance_date' => date( 'd-m-Y', strtotime( $attendance->attendance_date ) ),
+							'attendance_date' => wp_date( 'd-m-Y', strtotime( $attendance->attendance_date ) ),
 							'status'          => $status,
-							'subject'         => mjschool_get_single_subject_name( $attendance->sub_id ),
+							'subject'         => $mjschool_subject->mjschool_get_single_subject_name( $attendance->sub_id ),
 							'subject_id'      => $attendance->sub_id,
-							'day'             => date( 'l', strtotime( $attendance->attendence_date ) ),
+							'day'             => wp_date( 'l', strtotime( $attendance->attendence_date ) ),
 						);
 					}
 					foreach ( $holidaydates as $holiday ) {
@@ -273,7 +276,7 @@ class MJSchool_Attendance {
 								'status'          => 'Holiday',
 								'subject'         => null,
 								'subject_id'      => null,
-								'day'             => date( 'l', strtotime( $holiday ) ),
+								'day'             => wp_date( 'l', strtotime( $holiday ) ),
 							);
 						}
 					}
@@ -299,10 +302,10 @@ class MJSchool_Attendance {
 		if ( $_REQUEST['current_user'] != 0 ) {
 			$school_obj = new MJSchool_Management( $data['current_user'] );
 		}
-		$attendance_date = date( 'Y-m-d' );
+		$attendance_date = wp_date( 'Y-m-d' );
 		$attendence_type = 'QR';
 		if ( $school_obj->role == 'teacher' || $school_obj->role == 'admin' ) {
-			if ( $data['student_id'] != '' && $data['class_id'] != '' && $data['attendance_status'] != '' && $data['current_user'] != '' ) {
+			if ( $data['student_id'] !== '' && $data['class_id'] !== '' && $data['attendance_status'] !== '' && $data['current_user'] !== '' ) {
 				$result = $obj_attend->mjschool_insert_subject_wise_attendance( $attendance_date, $data['class_id'], $data['student_id'], $data['current_user'], $data['attendance_status'], $data['subject_id'], '', $attendence_type, $data['section_id'] );
 				if ( $result != 0 ) {
 					$message['message']   = esc_html__( 'Record successfully Inserted', 'mjschool' );
@@ -326,7 +329,7 @@ class MJSchool_Attendance {
 		$attendance_type = 'web';
 		$attendance_date = date( 'Y-m-d' );
 		if ( $school_obj->role == 'teacher' || $school_obj->role == 'admin' ) {
-			if ( $data['student_id'] != '' && $data['class_id'] != '' && $data['attendance_status'] != '' && $data['current_user'] != '' ) {
+			if ( $data['student_id'] !== '' && $data['class_id'] !== '' && $data['attendance_status'] !== '' && $data['current_user'] !== '' ) {
 				$result = $obj_attend->mjschool_insert_student_attendance( $attendance_date, $data['class_id'], $data['student_id'], $data['current_user'], $data['attendance_status'], '', $attendance_type );
 				if ( $result != 0 ) {
 					$message['message']   = esc_html__( 'Record successfully Inserted', 'mjschool' );
@@ -348,7 +351,7 @@ class MJSchool_Attendance {
 			$school_obj = new MJSchool_Management( $_REQUEST['current_user'] );
 		}
 		if ( $school_obj->role == 'admin' ) {
-			if ( $data['attendance_date'] != '' && $data['teacher_id'] != '' && $data['attendance_status'] != '' && $data['current_user'] != '' ) {
+			if ( $data['attendance_date'] !== '' && $data['teacher_id'] !== '' && $data['attendance_status'] !== '' && $data['current_user'] !== '' ) {
 				$result = $obj_attend->insert_teacher_attendance( $data['attendance_date'], $data['teacher_id'], $data['current_user'], $data['attendance_status'], $data['attendance_comment'] );
 				if ( $result != 0 ) {
 					$message['message']   = esc_html__( 'Record successfully Inserted', 'mjschool' );
@@ -368,7 +371,7 @@ class MJSchool_Attendance {
 		$obj_attend    = new Attendence_Manage();
 		$class_id      = $data['class_id'];
 		$class_section = 0;
-		if ( $data['class_id'] != '' && $data['section_id'] != '' && $data['current_user'] != '' && $data['current_user'] != 0 ) {
+		if ( $data['class_id'] !== '' && $data['section_id'] !== '' && $data['current_user'] !== '' && $data['current_user'] != 0 ) {
 			
 			if( isset( $data['section_id']) && $data['section_id'] !=0)
 			{
@@ -385,9 +388,10 @@ class MJSchool_Attendance {
 			$response = array();
 			if ( ! empty( $student ) ) {
 				$result['date']  = $data['attendance_date'];
-				$result['class'] = mjschool_get_class_name( $class_id );
-				if ( $class_section != '' ) {
-					$section = mjschool_get_section_name( $class_section );
+				$mjschool_class = new Mjschool_Class();
+				$result['class'] = $mjschool_class->mjschool_get_class_name( $class_id );
+				if ( $class_section !== '' ) {
+					$section = $mjschool_class->mjschool_get_section_name( $class_section );
 				} else {
 					$section = esc_html__( 'No Section', 'mjschool' );
 				}
@@ -426,7 +430,7 @@ class MJSchool_Attendance {
 		$obj_attend    = new Attendence_Manage();
 		$class_id      = $data['class_id'];
 		$class_section = 0;
-		if ( $data['class_id'] != '' && $data['section_id'] != '' && $data['subject_id'] != '' && $data['current_user'] != '' && $data['current_user'] != 0 ) {
+		if ( $data['class_id'] !== '' && $data['section_id'] !== '' && $data['subject_id'] !== '' && $data['current_user'] !== '' && $data['current_user'] != 0 ) {
 			
 			if( isset( $data['section_id']) && $data['section_id'] !=0)
 			{
@@ -443,9 +447,10 @@ class MJSchool_Attendance {
 			$response = array();
 			if ( ! empty( $student ) ) {
 				$result['date']  = $data['attendance_date'];
-				$result['class'] = mjschool_get_class_name( $class_id );
-				if ( $class_section != '' ) {
-					$section = mjschool_get_section_name( $class_section );
+				$mjschool_class = new Mjschool_Class();
+				$result['class'] = $mjschool_class->mjschool_get_class_name( $class_id );
+				if ( $class_section !== '' ) {
+					$section = $mjschool_class->mjschool_get_section_name( $class_section );
 				} else {
 					$section = esc_html__( 'No Section', 'mjschool' );
 				}

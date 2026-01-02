@@ -71,7 +71,7 @@ abstract class InlineTag extends Tag
 			&& $this->mpdf->cell[$this->mpdf->row][$this->mpdf->col]['direction'] === 'rtl') {
 			$currdir = 'rtl';
 		}
-		if (isset($attr['DIR']) && $attr['DIR'] != '') {
+		if (isset($attr['DIR']) && $attr['DIR'] !== '') {
 			$currdir = strtolower($attr['DIR']);
 		}
 		if (isset($properties['DIRECTION'])) {

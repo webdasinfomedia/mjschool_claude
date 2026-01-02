@@ -57,7 +57,7 @@ abstract class BlockTag extends Tag
 			if (isset($attr['ALIGN'])) {
 				unset($attr['ALIGN']);
 			}
-			if ($cappos != $divpos) {
+			if ($cappos !== $divpos) {
 				$this->mpdf->blklvl++;
 				$this->mpdf->blk[$this->mpdf->blklvl]['hide'] = true;
 				$this->mpdf->blk[$this->mpdf->blklvl]['tag'] = $tag;  // mPDF 6
@@ -97,7 +97,7 @@ abstract class BlockTag extends Tag
 
 		$lastbottommargin = 0;
 		if ($this->mpdf->blockjustfinished && !count($this->mpdf->textbuffer)
-			&& $this->mpdf->y != $this->mpdf->tMargin
+			&& $this->mpdf->y !== $this->mpdf->tMargin
 			&& $this->mpdf->collapseBlockMargins) {
 			$lastbottommargin = $this->mpdf->lastblockbottommargin;
 		}
@@ -249,7 +249,7 @@ abstract class BlockTag extends Tag
 		// If page-box has changed AND/OR PAGE-BREAK-BEFORE
 		// mPDF 6 (uses $p - preview of properties so blklvl can be imcremented after page-break)
 		if (!$this->mpdf->tableLevel && (($pagesel && (!isset($this->mpdf->page_box['current'])
-						|| $pagesel != $this->mpdf->page_box['current']))
+						|| $pagesel !== $this->mpdf->page_box['current']))
 				|| (isset($p['PAGE-BREAK-BEFORE'])
 					&& $p['PAGE-BREAK-BEFORE']))) {
 			// mPDF 6 pagebreaktype
@@ -259,7 +259,7 @@ abstract class BlockTag extends Tag
 			if ($this->mpdf->ColActive) {
 				$pagebreaktype = 'cloneall';
 			}
-			if ($pagesel && (!isset($this->mpdf->page_box['current']) || $pagesel != $this->mpdf->page_box['current'])) {
+			if ($pagesel && (!isset($this->mpdf->page_box['current']) || $pagesel !== $this->mpdf->page_box['current'])) {
 				$pagebreaktype = 'cloneall';
 			}
 			$this->mpdf->_preForcedPagebreak($pagebreaktype);
@@ -313,12 +313,12 @@ abstract class BlockTag extends Tag
 					);
 				} elseif (strtoupper($p['PAGE-BREAK-BEFORE']) === 'ALWAYS') {
 					$this->mpdf->AddPage($this->mpdf->CurOrientation, '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, 0, 0, $pagesel);
-				} elseif ($this->mpdf->page_box['current'] != $pagesel) {
+				} elseif ($this->mpdf->page_box['current'] !== $pagesel) {
 					$this->mpdf->AddPage($this->mpdf->CurOrientation, '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, 0, 0, $pagesel);
 				} // *CSS-PAGE*
 			} /* -- CSS-PAGE -- */
 			// Must Add new page if changed page properties
-			elseif (!isset($this->mpdf->page_box['current']) || $pagesel != $this->mpdf->page_box['current']) {
+			elseif (!isset($this->mpdf->page_box['current']) || $pagesel !== $this->mpdf->page_box['current']) {
 				$this->mpdf->AddPage($this->mpdf->CurOrientation, '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, 0, 0, $pagesel);
 			}
 			/* -- END CSS-PAGE -- */
@@ -911,7 +911,7 @@ abstract class BlockTag extends Tag
 		if (isset($currblk['direction'])) {
 			$currdir = $currblk['direction'];
 		}
-		if (isset($attr['DIR']) && $attr['DIR'] != '') {
+		if (isset($attr['DIR']) && $attr['DIR'] !== '') {
 			$currdir = strtolower($attr['DIR']);
 		}
 		if (isset($properties['DIRECTION'])) {
@@ -1051,7 +1051,7 @@ abstract class BlockTag extends Tag
 		if (isset($this->mpdf->blk[$this->mpdf->blklvl]['float_endpos']) && $this->mpdf->blk[$this->mpdf->blklvl]['float_endpos'] > $currpos) {
 			$old_page = $this->mpdf->page;
 			$new_page = (int) ($this->mpdf->blk[$this->mpdf->blklvl]['float_endpos'] / 1000);
-			if ($old_page != $new_page) {
+			if ($old_page !== $new_page) {
 				$s = $this->mpdf->PrintPageBackgrounds();
 				// Writes after the marker so not overwritten later by page background etc.
 				$this->mpdf->pages[$this->mpdf->page] = preg_replace(

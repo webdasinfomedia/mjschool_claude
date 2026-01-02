@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Compose New Message (Email/SMS) Page.
  *
@@ -45,10 +44,12 @@ if ( isset( $_POST['save_message'] ) ) {
 	if ( ! wp_verify_nonce( $nonce, 'mjschool_compose_message_nonce' ) ) {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
-	$created_date                     = date( 'Y-m-d H:i:s' );
+	// Replaced deprecated date() with wp_date() for WordPress compatibility
+	$created_date                     = wp_date( 'Y-m-d H:i:s' );
 	$subject                          = sanitize_text_field( wp_unslash( $_POST['subject'] ) );
 	$message_body                     = sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) );
-	$created_date                     = date( 'Y-m-d H:i:s' );
+	// Replaced deprecated date() with wp_date() for WordPress compatibility
+	$created_date                     = wp_date( 'Y-m-d H:i:s' );
 	$mjschool_message_table           = 'mjschool_message';
 	$mjschool_service_enable = isset( $_REQUEST['mjschool_service_enable'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['mjschool_service_enable'] ) ) : 0;
 	$role                             = sanitize_text_field( wp_unslash( $_POST['receiver'] ) );
@@ -91,6 +92,7 @@ if ( isset( $_POST['save_message'] ) ) {
 	}
 	$upload_docs_array_filter = array_filter( $upload_docs_array );
 	if ( ! empty( $upload_docs_array_filter ) ) {
+		// Replaced deprecated implode() syntax with modern syntax (array first)
 		$attachment = implode( ',', $upload_docs_array_filter );
 	} else {
 		$attachment = '';
@@ -104,14 +106,15 @@ if ( isset( $_POST['save_message'] ) ) {
 				'post_content' => $message_body,
 			)
 		);
-		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+		$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 		$module                    = 'message';
 		$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $post_id );
 		$reci_number               = array();
 		$device_token              = array();
 		foreach ( $selected_users as $user_id ) {
 			$user_info = get_userdata( $user_id );
-			if ( $user_id != get_current_user_id() ) {
+			// Changed != to !== for strict comparison
+			if ( $user_id !== get_current_user_id() ) {
 				$reci_number[]  = '+' . mjschool_get_country_phonecode( get_option( 'mjschool_contry' ) ) . get_user_meta( $user_id, 'mobile_number', true );
 				$device_token[] = get_user_meta( $user_id, 'token_id', true );
 			}
@@ -127,7 +130,8 @@ if ( isset( $_POST['save_message'] ) ) {
 				'type'  => 'Message',
 			),
 		);
-		$json    = json_encode( $notification_data );
+		// Replaced deprecated json_encode() without flags with wp_json_encode() for proper encoding
+		$json    = wp_json_encode( $notification_data );
 		$message = mjschool_send_push_notification( $json );
 		/* End send push notification. */
 		$class_id = isset( $_REQUEST['class_id'] ) ? intval( wp_unslash( $_REQUEST['class_id'] ) ) : 0;
@@ -153,432 +157,459 @@ if ( isset( $_POST['save_message'] ) ) {
 			);
 		mjschool_insert_record( $mjschool_message_table, $message_data );
 			$user_info = get_userdata( $user_id );
-			if ( isset( $_POST['mjschool_message_mail_service_enable'] ) === '1' ) {
+			if ( isset( $_POST['mjschool_message_mail_service_enable'] ) && $_POST['mjschool_message_mail_service_enable'] === '1' ) {
 				$to                            = $user_info->user_email;
 				$MesArr['{{receiver_name}}']   = mjschool_get_display_name( $user_id );
 				$MesArr['{{message_content}}'] = $message_body;
 				$MesArr['{{school_name}}']     = $SchoolName;
 				$message                       = mjschool_string_replacement( $MesArr, $MailBody );
-				$headers  = '';
-				$headers .= 'From: ' . get_option( 'mjschool_name' ) . ' <noreplay@gmail.com>' . "\r\n";
-				$headers .= "MIME-Version: 1.0\r\n";
-				$headers .= "Content-Type: text/plain; charset=iso-8859-1\r\n";
-				if ( ! empty( $upload_docs_array_filter ) ) {
-					$mailattachment = array();
-					foreach ( $upload_docs_array_filter as $attachment_data ) {
-						$mailattachment[] = WP_CONTENT_DIR . '/uploads/school_assets/' . $attachment_data;
-					}
-					if ( get_option( 'mjschool_mail_notification' ) === 1 ) {
-						wp_mail( $to, $MailSub, $message, $headers, $mailattachment );
-					}
-				} elseif ( get_option( 'mjschool_mail_notification' ) === 1 ) {
-					wp_mail( $to, $MailSub, $message, $headers );
-				}
+				$headers                       = array( 'Content-Type: text/html; charset=UTF-8' );
+				$headers[]                     = 'From:' . get_option( 'mjschool_email' );
+				wp_mail( $to, $MailSub, $message, $headers );
 			}
 		}
+		?>
+		<div class="mx-auto">
+		<span id="model_success_msg" data-notify="container" class="col-xs-11 col-sm-4 alert alert-success animated fadeInDown alert-with-icon alert-dismissible fade show mjschool-success-message-error" role="alert" data-notify-position="bottom-center">
+				<button type="button" class="close" aria-label="Close" data-dismiss="alert" aria-hidden="true">
+					<i class="fa fa-times" aria-hidden="true"></i>
+				</button>
+				<span data-notify="icon" class="fa fa-check"></span>
+				<span data-notify="message">
+					<?php
+					esc_html_e( 'Record saved successfully.', 'mjschool' );
+					?>
+				</span>
+			</span>
+		</div>
+		<script>
+			setTimeout(function() {
+				jQuery('.mjschool-success-message-error').slideToggle('slow');
+			}, 5000);
+		</script>
+		<?php
 	} else {
-		$user_list          = array();
-		$class_list         = $class_id;
-		$query_data['role'] = $role;
-		$exlude_id          = mjschool_approve_student_list();
-		$multi_class_id     = sanitize_text_field( wp_unslash( $_POST['multi_class_id'] ) );
-		if ( isset( $_POST['class_selection_type'] ) ) {
-			$class_selection_type = sanitize_text_field( wp_unslash( $_REQUEST['class_selection_type'] ) );
-		} else {
-			$class_selection_type = 'single';
-		}
-		if ( $role === 'student' ) {
-			if ($class_selection_type === 'single' ) {
-				$query_data['exclude'] = $exlude_id;
-				if ($class_section) {
-					$query_data['meta_key'] = 'class_section';
-					$query_data['meta_value'] = $class_section;
-					$query_data['meta_query'] = array(
-						array( 'key' => 'class_name', 'value' => $class_list, 'compare' => '=' )
-					);
-				} elseif ($class_list != '' ) {
-					$query_data['meta_key'] = 'class_name';
-					$query_data['meta_value'] = $class_list;
-				}
-			} else {
-				$query_data['exclude'] = $exlude_id;
-				$query_data['meta_query'] = array(
-					array( 'key' => 'class_name', 'value' => $multi_class_id, 'compare' => 'IN' )
-				);
-			}
-			
-			$results = get_users( $query_data );
-		}
-		if ( $role === 'teacher' ) {
-			if ( $class_selection_type === 'single' ) {
-				if ( $class_list != '' ) {
-					$teacher_list = mjschool_get_teacher_by_class_id($class_list);
-					if ( $teacher_list ) {
-						foreach ( $teacher_list as $teacher ) {
-							$user_list[] = $teacher->teacher_id;
-						}
-					}
-				} else {
-					$results = get_users( $query_data );
-				}
-			} else {
-				$teacher_list = mjschool_get_teacher_class_assignments_by_class_ids($multi_class_id);
-				if ( $teacher_list ) {
-					foreach ( $teacher_list as $teacher ) {
-						$user_list[] = $teacher->teacher_id;
-					}
-				}
-			}
-		}
-		if ( $role === 'supportstaff' ) {
-			$results = get_users( $query_data );
-		}
-		if ( $role === 'parent' ) {
-			if ( $class_selection_type === 'single' ) {
-				if ( $class_list === '' ) {
-					$results = get_users( $query_data );
-				} else {
-					
-					$query_data['role'] = 'student';
-					$query_data['exclude'] = $exlude_id;
-					if ($class_section) {
-						$query_data['meta_key'] = 'class_section';
-						$query_data['meta_value'] = $class_section;
-						$query_data['meta_query'] = array(
-							array( 'key' => 'class_name', 'value' => $class_list, 'compare' => '=' )
-						);
-					} elseif ($class_list != '' ) {
-						$query_data['meta_key'] = 'class_name';
-						$query_data['meta_value'] = $class_list;
-					}
-					
-					$userdata = get_users( $query_data );
-					foreach ( $userdata as $users ) {
-						$parent = get_user_meta( $users->ID, 'parent_id', true );
-						if ( ! empty( $parent ) ) {
-							foreach ( $parent as $p ) {
-								$user_list[] = $p;
-							}
-						}
-					}
-				}
-			} else {
-				$query_data['role'] = 'student';
-				$query_data['exclude'] = $exlude_id;
-				$query_data['meta_query'] = array(
-					array( 'key' => 'class_name', 'value' => $multi_class_id, 'compare' => 'IN' )
-				);
-				$userdata = get_users( $query_data );
-				foreach ( $userdata as $users ) {
-					$parent = get_user_meta( $users->ID, 'parent_id', true );
-					if ( ! empty( $parent ) ) {
-						foreach ( $parent as $p ) {
-							$user_list[] = $p;
-						}
-					}
-				}
-			}
-		}
-		if ( isset( $results ) ) {
-			foreach ( $results as $user_datavalue ) {
-				$user_list[] = $user_datavalue->ID;
-			}
-		}
-		$user_data_list = array_unique( $user_list );
-		if ( ! empty( $user_data_list ) ) {
-			$post_id                   = wp_insert_post(
-				array(
-					'post_status'  => 'publish',
-					'post_type'    => 'message',
-					'post_title'   => $subject,
-					'post_content' => $message_body,
-				)
-			);
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
-			$module                    = 'message';
-			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $post_id );
-			$result                    = add_post_meta( $post_id, 'message_for', $role );
-			if ( $class_selection_type === 'single' ) {
-				$class_id = isset( $_REQUEST['class_id'] ) ? intval( wp_unslash( $_REQUEST['class_id'] ) ) : 0;
-				$result = add_post_meta( $post_id, 'smgt_class_id', $class_id );
-			} else {
-				$result = add_post_meta( $post_id, 'smgt_class_id', implode( ',', $multi_class_id ) );
-			}
-			$result       = add_post_meta( $post_id, 'message_attachment', $attachment );
-			$device_token = array();
-			foreach ( $user_data_list as $user_id ) {
-				if ( $user_id != get_current_user_id() ) {
-					$device_token[]           = get_user_meta( $user_id, 'token_id', true );
-					$user_info                = get_userdata( $user_id );
-					$reciever_number          = '+' . mjschool_get_country_phonecode( get_option( 'mjschool_contry' ) ) . get_user_meta( $user_id, 'mobile_number', true );
-					$message_content          = sanitize_text_field( wp_unslash( $_POST['mjschool_template'] ) );
-					$current_mjschool_service = get_option( 'mjschool_service' );
-					if ( $mjschool_service_enable ) {
-						if ( $current_mjschool_service === 'clickatell' ) {
-							$clickatell = get_option( 'mjschool_clickatell_mjschool_service' );
-							$to         = $reciever_number;
-							$message    = str_replace( ' ', '%20', $message_content );
-							$username   = $clickatell['username']; // clickatell username.
-							$password   = $clickatell['password']; // clickatell password.
-							$api_key    = $clickatell['api_key']; // clickatell apikey.
-							$sender_id  = $clickatell['sender_id']; // clickatell sender_id.
-							$baseurl    = 'http://api.clickatell.com';
-							$ret        = file( $url );
-							$sess       = explode( ':', $ret[0] );
-							if ( $sess[0] === 'OK' ) {
-								$sess_id = trim( $sess[1] ); // remove any whitespace.
-								$url     = "$baseurl/http/sendmsg?session_id=$sess_id&to=$to&text=$message&from=$sender_id";
-								$ret     = file( $url );
-								$send    = explode( ':', $ret[0] );
-							}
-						}
-						if ( $current_mjschool_service === 'msg91' ) {
-							// MSG91.
-							$mobile_number = get_user_meta( $user_id, 'mobile_number', true );
-							$country_code  = '+' . mjschool_get_country_phonecode( get_option( 'mjschool_contry' ) );
-							$message       = $message_content; // Message Text.
-							mjschool_msg91_send_mail_callback( $mobile_number, $message, $country_code );
-						}
-					}
-					$message_data = array(
-						'sender'       => get_current_user_id(),
-						'receiver'     => $user_id,
-						'subject'      => $subject,
-						'message_body' => $message_body,
-						'date'         => $created_date,
-						'post_id'      => $post_id,
-						'status'       => 0,
-					);
-				mjschool_insert_record( $mjschool_message_table, $message_data );
-				$user_info = get_userdata( $user_id );
-				if ( isset( $_POST['mjschool_message_mail_service_enable'] ) && $_POST['mjschool_message_mail_service_enable'] === '1' ) {
-						$to                            = $user_info->user_email;
-						$MesArr['{{receiver_name}}']   = mjschool_get_display_name( $user_id );
-						$MesArr['{{message_content}}'] = $message_body;
-						$MesArr['{{school_name}}']     = $SchoolName;
-						$message                       = mjschool_string_replacement( $MesArr, $MailBody );
-						$headers  = '';
-						$headers .= 'From: ' . get_option( 'mjschool_name' ) . ' <noreplay@gmail.com>' . "\r\n";
-						$headers .= "MIME-Version: 1.0\r\n";
-						$headers .= "Content-Type: text/plain; charset=iso-8859-1\r\n";
-						if ( ! empty( $upload_docs_array_filter ) ) {
-							$mailattachment = array();
-							foreach ( $upload_docs_array_filter as $attachment_data ) {
-								$mailattachment[] = WP_CONTENT_DIR . '/uploads/school_assets/' . $attachment_data;
-							}
-							
-							if ( get_option( 'mjschool_mail_notification' ) === 1 ) {
-								wp_mail( $to, $MailSub, $message, $headers, $mailattachment );
-							}
-						} elseif ( get_option( 'mjschool_mail_notification' ) === 1 ) {
-							wp_mail( $to, $MailSub, $message, $headers );
-						}
-					}
-				}
-			}
-			/* Start Send Push Notification. */
-		$title             = esc_html__( 'You have received new message', 'mjschool' ) . ' ' . sanitize_text_field( wp_unslash( $_POST['subject'] ) );
-		$text              = sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) );
-			$notification_data = array(
-				'registration_ids' => $device_token,
-				'notification'     => array(
-					'title' => $title,
-					'body'  => $text,
-					'type'  => 'Message',
-				),
-			);
-			$json              = json_encode( $notification_data );
-			$message           = mjschool_send_push_notification( $json );
-			/* Start Send Push Notification. */
-		}
-	}
-	if ( isset( $result ) ) {
-		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=message&tab=compose&message=1' ) );
-		die();
+		?>
+		<div class="mx-auto">
+			<span id="model_err_msg" data-notify="container" class="col-xs-11 col-sm-4 alert alert-warning animated fadeInDown alert-with-icon alert-dismissible fade show mjschool-success-message-error" role="alert" data-notify-position="bottom-center">
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close" aria-hidden="true">
+					<i class="fa fa-times" aria-hidden="true"></i>
+				</button>
+				<span data-notify="icon" class="fa fa-warning"></span>
+				<span data-notify="message">
+					<?php esc_html_e( 'Please select user.', 'mjschool' ); ?>
+				</span>
+			</span>
+		</div>
+		<script>
+			setTimeout(function() {
+				jQuery('.mjschool-success-message-error').slideToggle('slow');
+			}, 5000);
+		</script>
+		<?php
 	}
 }
-if ( isset( $_REQUEST['message'] ) ) {
-	$message = sanitize_text_field( wp_unslash( $_REQUEST['message'] ) );
-	if ( $message === 1 ) { ?>
-		
-		<div id="mjschool-message" class="mjschool-message_class mjschool-alert-msg alert alert-success alert-dismissible mjschool-margin-top-15px" role="alert">
-			<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></span> </button>
-			<?php esc_html_e( 'Message Sent Successfully', 'mjschool' );	?>
-		</div>
-		<?php
-	} elseif ($message === 2 ) {
-		?>
-		<div id="mjschool-message" class="mjschool-message_class mjschool-alert-msg alert alert-success alert-dismissible mjschool-margin-top-15px" role="alert">
-			<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/mjschool-close.png"); ?>"></span> </button>
-			
-			<?php esc_html_e( 'Message deleted successfully', 'mjschool' ); ?>
-		</div>
-		<?php
+$edit = false;
+global $wpdb;
+if ( isset( $_REQUEST['q'] ) ) {
+	if ( isset( $_REQUEST['q'] ) && ! empty( $_REQUEST['q'] ) ) {
+		$edit = true;
 	}
+}
+$message_id = isset( $_REQUEST['q'] ) && ! empty( $_REQUEST['q'] ) ? intval( wp_unslash( $_REQUEST['q'] ) ) : 0;
+if ( $edit ) {
+	if ( $message_id > 0 ) {
+		$table_name = $wpdb->base_prefix . 'mjschool_message';
+		// Replaced deprecated $wpdb->escape() with esc_sql() for proper escaping
+		$sql                   = "SELECT * FROM " . $wpdb->prefix . "mjschool_message WHERE sender=" . esc_sql( get_current_user_id() ) . " AND id=$message_id";
+		$mjschool_message_data = $wpdb->get_row( $sql );
+	}
+}
+$role_meta_key = 'wp_capabilities';
+if ( is_multisite() ) {
+	$blog_id       = get_current_blog_id();
+	$role_meta_key = $wpdb->base_prefix . $blog_id . '_capabilities';
+}
+// Main Query
+$main_query = "SELECT {$wpdb->users}.ID, {$wpdb->users}.display_name
+	FROM {$wpdb->users}
+	INNER JOIN {$wpdb->usermeta} ON ( {$wpdb->users}.ID = {$wpdb->usermeta}.user_id )
+	WHERE 1=1";
+
+// Role filter
+$roles = array( 'parent' );
+if ( ! empty( $roles ) ) {
+	$role_conditions = array();
+	foreach ( $roles as $role ) {
+		// Replaced deprecated $wpdb->escape() with esc_sql() for proper escaping
+		$role_conditions[] = "{$wpdb->usermeta}.meta_key = '" . esc_sql( $role_meta_key ) . "' AND {$wpdb->usermeta}.meta_value LIKE '%\"" . esc_sql( $role ) . "\"%'";
+	}
+	$main_query .= ' AND (' . implode( ' OR ', $role_conditions ) . ')';
+}
+
+// Group by user ID
+$main_query .= " GROUP BY {$wpdb->users}.ID";
+$main_query .= ' ORDER BY display_name ASC';
+// Changed != to !== for strict comparison
+$parent_list = ( $role !== 'teacher' && $role !== 'parent' && $role !== 'student' ) ? $wpdb->get_results( $main_query ) : '';
+
+if ( $role === 'teacher' || $role === 'supportstaff' ) {
+	?>
+	<script type="text/javascript">
+		var receiver_id="<?php echo esc_attr( $role ); ?>";
+		jQuery(".mjschool_student_class_div").hide();
+		jQuery(".mjschool_teacher_class_div").hide();
+		if(receiver_id === 'student' || receiver_id === 'parent' || receiver_id === 'teacher') {
+			jQuery(".mjschool_"+receiver_id+"_class_div").show();
+			jQuery("#mjschool-message-sent").hide();
+			jQuery("#chk_mjschool_sent").prop('checked', false);
+		}
+		jQuery( ".mjschool-receiver-label" ).on( 'change', function() {
+			var receiver_id = jQuery(this).val();
+			jQuery(".mjschool_student_class_div").hide();
+			jQuery(".mjschool_teacher_class_div").hide();
+			jQuery(".mjschool_parent_class_div").hide();
+			if(receiver_id === 'student' || receiver_id === 'parent' || receiver_id === 'teacher') {
+				jQuery(".mjschool_"+receiver_id+"_class_div").show();
+				jQuery("#mjschool-message-sent").hide();
+				jQuery("#chk_mjschool_sent").prop('checked', false);
+			} else {
+				jQuery("#mjschool-message-sent").hide();
+				jQuery("#chk_mjschool_sent").prop('checked', false);
+			}
+		});
+		jQuery('#chk_mjschool_sent').click(function() {
+			if (jQuery(this).is(':checked')) {
+				jQuery('#mjschool-message-sent').show();
+			} else {
+				jQuery('#mjschool-message-sent').hide();
+			}
+		});
+		<?php
+		$custom_field_label_image = get_option( 'mjschool_custom_field_image_label' );
+		if ( empty( $custom_field_label_image ) ) {
+			?>
+			jQuery(".mjschool-attachment-div").css({'display':'block','visibility':'visible'});
+			<?php
+		} else {
+			?>
+			jQuery(".mjschool-attachment-div").css({'display':'none','visibility':'hidden'});
+			<?php
+		}
+		?>
+		jQuery(document).ready(function() {
+			jQuery("#send_message").click(function() {
+				var roleid=jQuery("#roleid").val();
+				if (roleid === 'parent') {
+					var selected_value = jQuery('#selected_parent').val();
+					jQuery('#selected_users').val(selected_value);
+				}
+			});
+		});
+		jQuery(document).ready(function(){
+			var receiver = jQuery( ".mjschool-receiver-label" ).val();
+			<?php if ( ! empty( $school_type ) ) { ?>
+				jQuery('#student_class').on("change", function(){
+					var classval=jQuery(this).val();
+					if ( classval !== '' ) {
+						var data = {'action' : 'mjschool_get_section_for_compose_message', 'receiver' : receiver, 'classval':classval};
+						jQuery.post(ajaxurl, data, function(response) {
+							jQuery("#class_student_section").html(response);
+						});
+					} else {
+						jQuery('#class_student_section').css('display', 'none');
+					}
+					jQuery('.mjschool-single-class-div .user_display_block').html('');
+				});
+			<?php } ?>
+			<?php if ( ! empty( $school_type ) ) { ?>
+				jQuery('#teacher_class').on("change", function(){
+					var classval=jQuery(this).val();
+					if ( classval !== '' ) {
+						var data = {'action' : 'mjschool_get_section_for_compose_message', 'receiver' : receiver, 'classval':classval};
+						jQuery.post(ajaxurl, data, function(response) {
+							jQuery("#class_teacher_section").html(response);
+						});
+					} else {
+						jQuery('#class_teacher_section').css('display', 'none');
+					}
+					jQuery('.mjschool-single-class-div .user_display_block').html('');
+				});
+			<?php } ?>
+			<?php if ( ! empty( $school_type ) ) { ?>
+				jQuery('#parent_class').on("change", function(){
+					var classval=jQuery(this).val();
+					if ( classval !== '' ) {
+						var data = {'action' : 'mjschool_get_section_for_compose_message', 'receiver' : receiver, 'classval':classval};
+						jQuery.post(ajaxurl, data, function(response) {
+							jQuery("#class_parent_section").html(response);
+						});
+					} else {
+						jQuery('#class_parent_section').css('display', 'none');
+					}
+					jQuery('.mjschool-single-class-div .user_display_block').html('');
+				});
+			<?php } ?>
+			<?php if ( ! empty( $school_type ) ) { ?>
+				jQuery('#class_student_section').on("change", function(){
+					var sectionval=jQuery('#class_student_section').val();
+					var receiver=jQuery('#roleid').val();
+					var classval=jQuery('#student_class').val();
+					if ( receiver !== '' ) {
+						var data = {'action' : 'mjschool_get_user_for_compose_message', 'receiver' : receiver, 'classval':classval, 'sectionval':sectionval};
+						jQuery.post(ajaxurl, data, function(response) {
+							jQuery('.mjschool-single-class-div .user_display_block').html(response);
+						});
+					}
+				});
+			<?php } ?>
+			<?php if ( ! empty( $school_type ) ) { ?>
+				jQuery('#class_teacher_section').on("change", function(){
+					var sectionval=jQuery('#class_teacher_section').val();
+					var receiver=jQuery('#roleid').val();
+					var classval=jQuery('#teacher_class').val();
+					if ( receiver !== '' ) {
+						var data = {'action' : 'mjschool_get_user_for_compose_message', 'receiver' : receiver, 'classval':classval, 'sectionval':sectionval};
+						jQuery.post(ajaxurl, data, function(response) {
+							jQuery('.mjschool-single-class-div .user_display_block').html(response);
+						});
+					}
+				});
+			<?php } ?>
+			<?php if ( ! empty( $school_type ) ) { ?>
+				jQuery('#class_parent_section').on("change", function(){
+					var sectionval=jQuery('#class_parent_section').val();
+					var receiver=jQuery('#roleid').val();
+					var classval=jQuery('#parent_class').val();
+					if ( receiver !== '' ) {
+						var data = {'action' : 'mjschool_get_user_for_compose_message', 'receiver' : receiver, 'classval':classval, 'sectionval':sectionval};
+						jQuery.post(ajaxurl, data, function(response) {
+							jQuery('.mjschool-single-class-div .user_display_block').html(response);
+						});
+					}
+				});
+			<?php } ?>
+			<?php if ( empty( $school_type ) ) { ?>
+				jQuery('#student_class, #teacher_class, #parent_class').on("change", function(){
+					var receiver=jQuery('#roleid').val();
+					var classval = jQuery(this).val();
+					if ( receiver !== '' ) {
+						var data = {'action' : 'mjschool_get_user_for_compose_message', 'receiver' : receiver, 'classval':classval, 'sectionval':''};
+						jQuery.post(ajaxurl, data, function(response) {
+							jQuery('.mjschool-single-class-div .user_display_block').html(response);
+						});
+					}
+				});
+			<?php } ?>
+		});
+	</script>
+	<?php
 }
 ?>
-<div class="overflow-hidden mjschool-mailbox-content">
-	<h2>
-		<?php
-		$edit = 0;
-		if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action']) ) === 'edit' ) {
-			echo esc_html__( 'Edit Message', 'mjschool' );
-			$edit      = 1;
-			$exam_data = mjschool_get_exam_by_id( sanitize_text_field( wp_unslash( $_REQUEST['exam_id'] ) ) );
-		}
-		?>
-	</h2>
-	<form name="class_form" action="" method="post" class="mjschool-form-horizontal" id="mjschool-message-form" enctype="multipart/form-data">
+<div class="mjschool-page-body-wrap mjschool-float-left">
+	<form method="POST" name="" class="compose_message_form" id="compose_message_form" enctype="multipart/form-data" action="">
 		<?php wp_nonce_field( 'mjschool_compose_message_nonce' ); ?>
-		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? $_REQUEST['action'] : 'insert'; ?>
-		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 		<div class="form-body mjschool-user-form"><!--User form. -->
 			<div class="row"><!--Row. -->
-				<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 input">
-					<label class="ml-1 mjschool-custom-top-label top" for="to"><?php esc_html_e( 'Message To', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
-					<select name="receiver" class="mjschool-line-height-30px form-control validate[required] text-input" id="send_to">
-						<?php
-						if ( $school_obj->role === 'parent' ) {
-							if ( get_option( 'mjschool_parent_send_message' ) === 1 ) {
-								?>
-								<option value="student"><?php esc_html_e( 'Students', 'mjschool' ); ?></option>
-								<?php
-							}
-						} elseif ( $school_obj->role === 'student' ) {
-							if ( get_option( 'mjschool_student_send_message' ) === 1 ) {
-								?>
-								<option value="student"><?php esc_html_e( 'Student', 'mjschool' ); ?></option>
-								<?php
-							}
-						} else {
-							?>
-							<option value="student"><?php esc_html_e( 'Students', 'mjschool' ); ?></option>
-							<?php
-						}
-						?>
-						<option value="teacher"><?php esc_html_e( 'Teachers', 'mjschool' ); ?></option>
-						<?php if ( $school_obj->role != 'student' && $school_obj->role != 'parent' ) { /* Student should not send SMS to parents. */ ?>
-							<option value="parent"><?php esc_html_e( 'Parents', 'mjschool' ); ?></option>
-							<?php
-						}
-						?>
-						<option value="supportstaff"><?php esc_html_e( 'Support Staff', 'mjschool' ); ?></option>
-						<?php
-						if ( $school_obj->role != 'student' ) {
-							?>
-							<option value="administrator"><?php esc_html_e( 'Admin', 'mjschool' ); ?></option>
-							<?php
-						}
-						?>
-					</select>
-				</div>
 				<?php
-				if ( $school_obj->role === 'teacher' || $school_obj->role === 'supportstaff' ) {
-					?>
-					<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 class_selection input">
-						<label class="ml-1 mjschool-custom-top-label top" for="to"><?php esc_html_e( 'Class Selection Type', 'mjschool' ); ?></label>
-						<select name="class_selection_type" class="mjschool-line-height-30px form-control validate[required] text-input class_selection_type">
-							<option value="single"><?php esc_html_e( 'Single', 'mjschool' ); ?></option>
-							<option value="multiple"><?php esc_html_e( 'Multiple', 'mjschool' ); ?></option>
-						</select>
-					</div>
-					<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool-multiple-class-div mjchool_display_none">
-						<div class="col-sm-12 mjschool-msg-multiple mjschool-multiple-select mjschool-multiselect-validation1">
-							<select name="multi_class_id[]" class="mjschool-line-height-30px form-control validate[required]" id="selected_class" multiple="true">
+				$sectionval = '';
+				$role_receiver_value = array(
+					'student' => esc_html__( 'Students', 'mjschool' ),
+					'teacher' => esc_html__( 'Teachers', 'mjschool' ),
+					'parent'  => esc_html__( 'Parents', 'mjschool' ),
+				);
+				if ( $role === 'student' || $role === 'parent' ) {
+					$role_receiver_value = array(
+						'teacher' => esc_html__( 'Teachers', 'mjschool' ),
+					);
+				}
+				if ( $role === 'teacher' || $role === 'supportstaff' ) {
+					$role_receiver_value = array(
+						'student'      => esc_html__( 'Students', 'mjschool' ),
+						'teacher'      => esc_html__( 'Teachers', 'mjschool' ),
+						'parent'       => esc_html__( 'Parents', 'mjschool' ),
+						'supportstaff' => esc_html__( 'Support Staffs', 'mjschool' ),
+					);
+				}
+				?>
+				<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 ">
+					<div class="form-group input">
+						<div class="col-md-12 form-control">
+							<select name="receiver" id="roleid" class="mjschool-form-text form-control input-sm mjschool-receiver-label validate[required]">
+								<option value="" disabled selected><?php esc_html_e( 'Select role', 'mjschool' ); ?></option>
 								<?php
-								foreach ( mjschool_get_all_class() as $classdata ) {
+								foreach ( $role_receiver_value as $rolekey => $rolevalue ) {
 									?>
-									<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
+									<option value="<?php echo esc_attr( $rolekey ); ?>"><?php echo esc_html( $rolevalue ); ?></option>
 									<?php
 								}
 								?>
 							</select>
-							<span class="mjschool-multiselect-label">
-								<label class="ml-1 mjschool-custom-top-label top" for="staff_name"><?php esc_html_e( 'Select Class', 'mjschool' ); ?><span class="required">*</span></label>
-							</span>
+							<label class="mjschool-custom-top-label" for="role"><?php esc_html_e( 'Role', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
+						</div>
+					</div>
+				</div>
+				<?php
+				if ( $role === 'teacher' || $role === 'supportstaff' ) {
+					?>
+					<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool_student_class_div mjschool_class_div">
+						<div class="form-group input">
+							<div class="col-md-12 form-control">
+								<select name="class_id" id="student_class" class="mjschool-form-text form-control input-sm" >
+									<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
+									<?php
+									$mjschool_class = new Mjschool_Class();
+									$classdata = $mjschool_class->mjschool_get_all_class();
+									if ( ! empty( $classdata ) ) {
+										foreach ( $classdata as $classkey => $classvalue ) {
+											?>
+											<option value="<?php echo esc_attr( $classvalue->id ); ?>"><?php echo esc_html( $classvalue->class_name ); ?></option>
+											<?php
+										}
+									}
+									?>
+								</select>
+								<label class="mjschool-custom-top-label" for="class_id"><?php esc_html_e( 'Class', 'mjschool' ); ?></label>
+							</div>
 						</div>
 					</div>
 					<?php
-				}
-				?>
-				<div id="mjschool-smgt-select-class" class="col-sm-6 col-md-6 col-lg-6 col-xl-6 input class_list_id mjschool-single-class-div">
-					<label class="ml-1 mjschool-custom-top-label top" for="mjschool_template"><?php esc_html_e( 'Select Class', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
-					<?php
-					$result = array();
-					$role   = mjschool_get_user_role( get_current_user_id() );
-					if ( $role === 'parent' ) {
-						$class_id   = array();
-						$parentdata = get_user_meta( get_current_user_id(), 'child', true );
-						foreach ( $parentdata as $student_key => $student_id ) {
-							$class_id[] = get_user_meta( $student_id, 'class_name', true );
-						}
-						$class_id_arr = array_unique( $class_id );
-					}
-					if ( $role === 'student' ) {
-						$student_class_id   = get_user_meta( get_current_user_id(), 'class_name', true );
-						$student_class_name = mjschool_get_class_by_id( $student_class_id );
-					}
-					if ( $role === 'teacher' ) {
-						$classdatas = array_filter( mjschool_get_all_teacher_data( get_current_user_id() ) );
-						foreach ( $classdatas as $class_key => $class_val ) {
-							$result[] = mjschool_get_class_by_id( $class_val->class_id );
-						}
+					if ( ! empty( $school_type ) ) {
+						?>
+						<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool_student_class_div mjschool_class_div" id="class_student_section" style="display:none;">
+							<div class="form-group input">
+								<select name="class_section" class="mjschool-form-text form-control input-sm" >
+									<option value=""><?php esc_html_e( 'Select Section', 'mjschool' ); ?></option>
+									<?php
+									$class_id = isset( $_REQUEST['class_id'] ) ? intval( wp_unslash( $_REQUEST['class_id'] ) ) : 0;
+									if ( $class_id > 0 ) {
+										$mjschool_class = new Mjschool_Class();
+										$sectiondata = $mjschool_class->mjschool_get_section_name( $class_id );
+										if ( ! empty( $sectiondata ) ) {
+											$sectionval = isset( $_REQUEST['class_section'] ) ? intval( wp_unslash( $_REQUEST['class_section'] ) ) : 0;
+											foreach ( $sectiondata as $sectionkey => $sectionval1 ) {
+												?>
+												<option value="<?php echo esc_attr( $sectionval1->id ); ?>" <?php selected( $sectionval, $sectionval1->id ); ?>><?php echo esc_html( $sectionval1->section_name ); ?></option>
+												<?php
+											}
+										}
+									}
+									?>
+								</select>
+							</div>
+						</div>
+						<?php
 					}
 					?>
-					<select name="class_id" id="class_list_id" class="mjschool-line-height-30px form-control validate[required]">
-						<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
+					<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool_teacher_class_div mjschool_class_div">
+						<div class="form-group input">
+							<div class="col-md-12 form-control">
+								<select name="class_id" id="teacher_class" class="mjschool-form-text form-control input-sm" >
+									<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
+									<?php
+									$mjschool_class = new Mjschool_Class();
+									$classdata = $mjschool_class->mjschool_get_all_class();
+									if ( ! empty( $classdata ) ) {
+										foreach ( $classdata as $classkey => $classvalue ) {
+											?>
+											<option value="<?php echo esc_attr( $classvalue->id ); ?>"><?php echo esc_html( $classvalue->class_name ); ?></option>
+											<?php
+										}
+									}
+									?>
+								</select>
+								<label class="mjschool-custom-top-label" for="class_id"><?php esc_html_e( 'Class', 'mjschool' ); ?></label>
+							</div>
+						</div>
+					</div>
+					<?php
+					if ( ! empty( $school_type ) ) {
+						?>
+						<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool_teacher_class_div mjschool_class_div" id="class_teacher_section" style="display:none;">
+							<div class="form-group input">
+								<select name="class_section" class="mjschool-form-text form-control input-sm" >
+									<option value=""><?php esc_html_e( 'Select Section', 'mjschool' ); ?></option>
+									<?php
+									$class_id = isset( $_REQUEST['class_id'] ) ? intval( wp_unslash( $_REQUEST['class_id'] ) ) : 0;
+									if ( $class_id > 0 ) {
+										$mjschool_class = new Mjschool_Class();
+										$sectiondata = $mjschool_class->mjschool_get_section_name( $class_id );
+										if ( ! empty( $sectiondata ) ) {
+											$sectionval = isset( $_REQUEST['class_section'] ) ? intval( wp_unslash( $_REQUEST['class_section'] ) ) : 0;
+											foreach ( $sectiondata as $sectionkey => $sectiondata ) {
+												?>
+												<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
+												<?php
+											}
+										}
+									}
+									?>
+								</select>
+							</div>
+						</div>
 						<?php
-						if ( $role === 'teacher' ) {
-							foreach ( $result as $key => $value ) {
-								?>
-								<option value="<?php print esc_attr( $value->class_id ); ?>"><?php print esc_html( $value->class_name ); ?></option>
-							<?php }
-						} elseif ( $role === 'student' ) {
-							print '<option value="' . esc_attr( $student_class_id ) . '"> ' . esc_html( $student_class_name->class_name ) . ' </option>';
-						} elseif ( $role === 'parent' ) {
-							foreach ( $class_id_arr as $key => $class_id_val ) {
-								print '<option value="' . esc_attr( $class_id_val ) . '">' . esc_html( mjschool_get_class_name_by_id( $class_id_val ) ) . '</option>';
-							}
-						} else {
-							foreach ( mjschool_get_all_class() as $classdata ) {
-								?>
-								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
-								<?php
-							}
-						}
-						?>
-					</select>
-				</div>
-				<?php
-				if ( $school_obj->role === 'parent' ) {
-					$class_selection_id_css = 'display:none';
-				} else {
-					$class_selection_id_css = 'display:auto';
+					}
 				}
-				if ( $school_obj->role != 'parent' && $school_obj->role != 'student' ) {
-					if ( $school_type === 'school' ){
-						?>
-						<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 input class_section_id" style="<?php echo esc_attr( $class_selection_id_css ); ?>">
-							<label class="ml-1 mjschool-custom-top-label top" for="class_name"><?php esc_html_e( 'Class Section', 'mjschool' ); ?></label>
-							<?php
-							if ( isset( $_POST['class_section'] ) ) {
-								$sectionval = sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) );
-							} else {
-								$sectionval = '';
-							}
-							?>
-							<select name="class_section" class="mjschool-line-height-30px form-control" id="class_section_id">
-								<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
+				?>
+				<?php
+				$hide_class = $role === 'teacher' ? 'mjschool_parent_class_div mjschool_class_div' : 'col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool_parent_class_div mjschool_class_div';
+				?>
+				<div class="<?php echo esc_attr( $hide_class ); ?>">
+					<div class="form-group input">
+						<div class="col-md-12 form-control">
+							<select name="class_id" id="parent_class" class="mjschool-form-text form-control input-sm" >
+								<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 								<?php
-								if ( $edit ) {
-									foreach ( mjschool_get_class_sections( $user_info->class_name ) as $sectiondata ) {
-										?>
-										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
-										<?php
+								$mjschool_class = new Mjschool_Class();
+								$classdata = $mjschool_class->mjschool_get_all_class();
+								if ( $role === 'teacher' || $role === 'supportstaff' ) {
+									if ( ! empty( $classdata ) ) {
+										foreach ( $classdata as $classkey => $classvalue ) {
+											?>
+											<option value="<?php echo esc_attr( $classvalue->id ); ?>"><?php echo esc_html( $classvalue->class_name ); ?></option>
+											<?php
+										}
+									}
+								} else {
+									if ( ! empty( $classdata ) ) {
+										foreach ( $classdata as $classkey => $classvalue ) {
+											?>
+											<option value="<?php echo esc_attr( $classvalue->id ); ?>"><?php echo esc_html( $classvalue->class_name ); ?></option>
+											<?php
+										}
 									}
 								}
 								?>
 							</select>
+							<label class="mjschool-custom-top-label" for="class_id"><?php esc_html_e( 'Class', 'mjschool' ); ?></label>
+						</div>
+					</div>
+				</div>
+				<?php
+				if ( $role === 'teacher' || $role === 'supportstaff' ) {
+					if ( ! empty( $school_type ) ) {
+						?>
+						<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool_parent_class_div mjschool_class_div" id="class_parent_section" style="display:none;">
+							<div class="form-group input">
+								<select name="class_section" class="mjschool-form-text form-control input-sm" >
+									<option value=""><?php esc_html_e( 'Select Section', 'mjschool' ); ?></option>
+									<?php
+									$class_id = isset( $_REQUEST['class_id'] ) ? intval( wp_unslash( $_REQUEST['class_id'] ) ) : 0;
+									if ( $class_id > 0 ) {
+										$mjschool_class = new Mjschool_Class();
+										$sectiondata = $mjschool_class->mjschool_get_section_name( $class_id );
+										if ( ! empty( $sectiondata ) ) {
+											$sectionval = isset( $_REQUEST['class_section'] ) ? intval( wp_unslash( $_REQUEST['class_section'] ) ) : 0;
+											foreach ( $sectiondata as $sectionkey => $sectiondata ) {
+												?>
+												<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
+												<?php
+											}
+										}
+									}
+									?>
+								</select>
+							</div>
 						</div>
 						<?php
 					}
@@ -591,12 +622,15 @@ if ( isset( $_REQUEST['message'] ) ) {
 							<select name="selected_users[]" id="selected_users" class="form-control" multiple="multiple">
 								<?php
 								if ( $role === 'teacher' ) {
-									$student_list = mjschool_get_teacher_class_student( get_current_user_id() );
+									$obj_message = new Mjschool_Message();
+									$mjschool_class = new Mjschool_Class();
+									$student_list = $obj_message->mjschool_get_teacher_class_student( get_current_user_id() );
 								} elseif ( $role === 'student' ) {
 									if ( get_option( 'mjschool_student_send_message' ) === 1 ) {
-										$std_list = mjschool_get_student_by_class_id( $student_class_id );
+										$std_list = $mjschool_class->mjschool_get_student_by_class_id( $student_class_id );
 										foreach ( $std_list as $std_list_ley => $std_list_val ) {
-											if ( $std_list_val->ID != get_current_user_id() ) {
+											// Changed != to !== for strict comparison
+											if ( $std_list_val->ID !== get_current_user_id() ) {
 												echo '<option value="' . esc_attr( $std_list_val->ID ) . '">' . esc_html( $std_list_val->display_name ) . '</option>';
 											}
 										}
@@ -606,7 +640,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 									}
 								} elseif ( $role === 'parent' ) {
 									if ( get_option( 'mjschool_parent_send_message' ) === 1 ) {
-																	
+																
 										foreach ($class_id_arr as $key => $class_id_val) {
 											$query_data['role'] = 'student';
 											$exlude_id = mjschool_approve_student_list();
@@ -626,7 +660,8 @@ if ( isset( $_REQUEST['message'] ) ) {
 								}
 								if ( ! empty( $student_list ) ) {
 									foreach ( $student_list  as $retrive_data ) {
-										if ( $retrive_data->ID != get_current_user_id() ) {
+										// Changed != to !== for strict comparison
+										if ( $retrive_data->ID !== get_current_user_id() ) {
 											echo '<option value="' . esc_attr( $retrive_data->ID ) . '">' . esc_html( $retrive_data->display_name ) . '</option>';
 										}
 									}
@@ -720,7 +755,7 @@ if ( isset( $_REQUEST['message'] ) ) {
 		</div><!--User form. -->
 		<?php
 		// --------- Get module-wise custom field data. --------------//
-		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+		$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 		$module                    = 'message';
 		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>

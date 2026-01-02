@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Hostel Report Template
  *
@@ -53,7 +52,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 							?>
 							<option value=""><?php esc_html_e( 'Select class Name', 'mjschool' ); ?></option>
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 								<?php
@@ -74,7 +74,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 								<?php
 								if ( isset( $_REQUEST['class_section'] ) ) {
 									$class_section = $_REQUEST['class_section'];
-									foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+									$mjschool_class = new Mjschool_Class();
+									foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 										?>
 										<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 										<?php
@@ -220,10 +221,12 @@ $school_type = get_option( 'mjschool_custom_class' );
 										<tr>
 											<td>
 												<?php
-												$class_name = mjschool_get_class_name( $student_data->class_name );
+												$mjschool_class = new Mjschool_Class();
+												$class_name = $mjschool_class->mjschool_get_class_name( $student_data->class_name );
 												echo esc_html( $class_name );
 												if ( ! empty( $student_data->class_section ) ) {
-													echo ' ( ' . esc_html( mjschool_get_section_name( $student_data->class_section ) ) . ' )';
+													$mjschool_class = new Mjschool_Class();
+													echo ' ( ' . esc_html( $mjschool_class->mjschool_get_section_name( $student_data->class_section ) ) . ' )';
 												}
 												?>
 												<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name', 'mjschool' ); ?>"></i>
@@ -254,7 +257,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 											<td>
 												<?php
 												if ( ! empty( $retrieved_data->hostel_id ) ) {
-													echo esc_html( mjschool_get_hostel_name_by_id( $retrieved_data->hostel_id ) ); 
+													$obj_hostel       = new Mjschool_Hostel();
+													echo esc_html( $obj_hostel->mjschool_get_hostel_name_by_id( $retrieved_data->hostel_id ) ); 
 												}
 												?>
 												<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Hostel Name', 'mjschool' ); ?>"></i>

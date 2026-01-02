@@ -50,20 +50,23 @@ if ( isset( $_GET['tab'] ) ) {
 							<?php
 							if ( ! empty( $attendance ) ) {
 								$i = 0;
+								$mjschool_class = new Mjschool_Class();
 								foreach ( $attendance as $attendance_data ) {
 									$class_name   = 'N/A';
 									$section_name = 'N/A';
 									if ( ! empty( $attendance_data->class_id ) ) {
-										$class_name = mjschool_get_class_name_by_id( $attendance_data->class_id );
+										$class_name = $mjschool_class->mjschool_get_class_name_by_id( $attendance_data->class_id );
 									}
 									if ( ! empty( $attendance_data->section_id ) ) {
-										$section_name = mjschool_get_section_name( $attendance_data->section_id );
+										
+										$section_name = $mjschool_class->mjschool_get_section_name( $attendance_data->section_id );
 									}
 									?>
 									<td class="mjschool-user-image mjschool-width-50px-td">
 										<a href="?smgt_student&tab=view_student&action=view_student&student_id=<?php echo esc_attr( mjschool_encrypt_id( $attendance_data->user_id ) ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>">
 											<?php
-											$umetadata = mjschool_get_user_image( $attendance_data->user_id );
+											$mjschool_user = new Mjschool_User();
+											$umetadata = $mjschool_user->mjschool_get_user_image( $attendance_data->user_id );
                                             
                                             if (empty($umetadata ) ) {
                                                 echo '<img src=' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . ' class="img-circle" />';

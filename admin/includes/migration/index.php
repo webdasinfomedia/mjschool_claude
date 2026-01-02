@@ -18,7 +18,7 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access      = mjschool_get_user_role_wise_filter_access_right_array( 'report' );
 	$user_access_view = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
@@ -34,13 +34,13 @@ if ( isset( $_REQUEST['migration'] ) ) {
 	
 	$current_class = isset( $_REQUEST['current_class'] ) ? intval( wp_unslash( $_REQUEST['current_class'] ) ) : 0;
 	$next_class    = isset( $_REQUEST['next_class'] ) ? intval( wp_unslash( $_REQUEST['next_class'] ) ) : 0;
-	
+	$mjschool_obj_marks = new Mjschool_Marks_Manage();
 	if ( ! empty( $_REQUEST['exam_id'] ) ) {
 		if ( $current_class !== $next_class ) {
 			$exam_id       = intval( wp_unslash( $_REQUEST['exam_id'] ) );
 			$passing_marks = isset( $_REQUEST['passing_marks'] ) ? intval( wp_unslash( $_REQUEST['passing_marks'] ) ) : 0;
-			$student_fail  = mjschool_fail_student_list( $current_class, $next_class, $exam_id, $passing_marks );
-			$update        = mjschool_migration( $current_class, $next_class, $exam_id, $student_fail, $passing_marks );
+			$student_fail  = $mjschool_obj_marks->mjschool_fail_student_list( $current_class, $next_class, $exam_id, $passing_marks );
+			$update        = $mjschool_obj_marks->mjschool_migration( $current_class, $next_class, $exam_id, $student_fail, $passing_marks );
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_Migration&message=1' ) );
 			exit;
 		} else {
@@ -49,7 +49,7 @@ if ( isset( $_REQUEST['migration'] ) ) {
 		}
 	} else {
 		if ( $current_class !== $next_class ) {
-			$update = mjschool_migration_without_exam( $current_class, $next_class );
+			$update = $mjschool_obj_marks->mjschool_migration_without_exam( $current_class, $next_class );
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_Migration&message=1' ) );
 			exit;
 		} else {
@@ -114,7 +114,8 @@ if ( isset( $_REQUEST['migration'] ) ) {
 									<select name="current_class" id="current_class" class="form-control validate[required] text-input">
 										<option value=""><?php esc_html_e( 'Select Current Class', 'mjschool' ); ?></option>
 										<?php
-										foreach ( mjschool_get_all_class() as $classdata ) {
+										$mjschool_class = new Mjschool_Class();
+										foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 											?>
 											<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
 										<?php } ?>
@@ -125,7 +126,8 @@ if ( isset( $_REQUEST['migration'] ) ) {
 									<select name="next_class" id="next_class" class="form-control validate[required] text-input">
 										<option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
 										<?php
-										foreach ( mjschool_get_all_class() as $classdata ) {
+										$mjschool_class = new Mjschool_Class();
+										foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 											?>
 											<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
 										<?php } ?>

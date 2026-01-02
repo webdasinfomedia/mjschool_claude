@@ -276,7 +276,7 @@ class Svg
 
 		$srcpath = $attribs['xlink:href'];
 		$orig_srcpath = '';
-		if (trim($srcpath) != '' && substr($srcpath, 0, 4) == 'var:') {
+		if (trim($srcpath) !== '' && substr($srcpath, 0, 4) == 'var:') {
 			$orig_srcpath = $srcpath;
 			$srcpath = $this->mpdf->GetFullPath($srcpath);
 		}
@@ -297,7 +297,7 @@ class Svg
 
 		// preserveAspectRatio
 		$ar = preg_split('/\s+/', strtolower($par));
-		if ($ar[0] != 'none') { // If "none" need to do nothing
+		if ($ar[0] !== 'none') { // If "none" need to do nothing
 			//  Force uniform scaling
 			if (isset($ar[1]) && $ar[1] == 'slice') {
 				$meetOrSlice = 'slice';
@@ -1219,25 +1219,25 @@ class Svg
 				$current_style['fill'] = '#' . str_pad(dechex($m[1]), 2, "0", STR_PAD_LEFT) . str_pad(dechex($m[2]), 2, "0", STR_PAD_LEFT) . str_pad(dechex($m[3]), 2, "0", STR_PAD_LEFT);
 			} else {
 				$tmp = preg_replace("/(.*)fill:\s*([a-z0-9#_()]*|none)(.*)/i", "$2", $critere_style['style']);
-				if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+				if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 					$current_style['fill'] = $tmp;
 				}
 			}
 
 			// mPDF 5.7.2
 			if ((preg_match("/[^-]opacity:\s*([a-z0-9.]*|none)/i", $critere_style['style'], $m) ||
-				preg_match("/^opacity:\s*([a-z0-9.]*|none)/i", $critere_style['style'], $m)) && $m[1] != 'inherit') {
+				preg_match("/^opacity:\s*([a-z0-9.]*|none)/i", $critere_style['style'], $m)) && $m[1] !== 'inherit') {
 				$current_style['fill-opacity'] = $m[1];
 				$current_style['stroke-opacity'] = $m[1];
 			}
 
 			$tmp = preg_replace("/(.*)fill-opacity:\s*([a-z0-9.]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['fill-opacity'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)fill-rule:\s*([a-z0-9#]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['fill-rule'] = $tmp;
 			}
 
@@ -1245,98 +1245,98 @@ class Svg
 				$current_style['stroke'] = '#' . str_pad(dechex($m[1]), 2, "0", STR_PAD_LEFT) . str_pad(dechex($m[2]), 2, "0", STR_PAD_LEFT) . str_pad(dechex($m[3]), 2, "0", STR_PAD_LEFT);
 			} else {
 				$tmp = preg_replace("/(.*)stroke:\s*([a-z0-9#]*|none)(.*)/i", "$2", $critere_style['style']);
-				if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+				if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 					$current_style['stroke'] = $tmp;
 				}
 			}
 
 			$tmp = preg_replace("/(.*)stroke-linecap:\s*([a-z0-9#]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-linecap'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-linejoin:\s*([a-z0-9#]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-linejoin'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-miterlimit:\s*([a-z0-9#]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-miterlimit'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-opacity:\s*([a-z0-9.]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-opacity'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-width:\s*([a-z0-9.]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-width'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-dasharray:\s*([a-z0-9., ]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-dasharray'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-dashoffset:\s*([a-z0-9.]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-dashoffset'] = $tmp;
 			}
 		}
 
 		// mPDF 5.7.2
-		if (isset($critere_style['opacity']) && $critere_style['opacity'] != 'inherit') {
+		if (isset($critere_style['opacity']) && $critere_style['opacity'] !== 'inherit') {
 			$current_style['fill-opacity'] = $critere_style['opacity'];
 			$current_style['stroke-opacity'] = $critere_style['opacity'];
 		}
 
-		if (isset($critere_style['fill']) && $critere_style['fill'] != 'inherit') {
+		if (isset($critere_style['fill']) && $critere_style['fill'] !== 'inherit') {
 			$current_style['fill'] = $critere_style['fill'];
 		}
 
-		if (isset($critere_style['fill-opacity']) && $critere_style['fill-opacity'] != 'inherit') {
+		if (isset($critere_style['fill-opacity']) && $critere_style['fill-opacity'] !== 'inherit') {
 			$current_style['fill-opacity'] = $critere_style['fill-opacity'];
 		}
 
-		if (isset($critere_style['fill-rule']) && $critere_style['fill-rule'] != 'inherit') {
+		if (isset($critere_style['fill-rule']) && $critere_style['fill-rule'] !== 'inherit') {
 			$current_style['fill-rule'] = $critere_style['fill-rule'];
 		}
 
-		if (isset($critere_style['stroke']) && $critere_style['stroke'] != 'inherit') {
+		if (isset($critere_style['stroke']) && $critere_style['stroke'] !== 'inherit') {
 			$current_style['stroke'] = $critere_style['stroke'];
 		}
 
-		if (isset($critere_style['stroke-linecap']) && $critere_style['stroke-linecap'] != 'inherit') {
+		if (isset($critere_style['stroke-linecap']) && $critere_style['stroke-linecap'] !== 'inherit') {
 			$current_style['stroke-linecap'] = $critere_style['stroke-linecap'];
 		}
 
-		if (isset($critere_style['stroke-linejoin']) && $critere_style['stroke-linejoin'] != 'inherit') {
+		if (isset($critere_style['stroke-linejoin']) && $critere_style['stroke-linejoin'] !== 'inherit') {
 			$current_style['stroke-linejoin'] = $critere_style['stroke-linejoin'];
 		}
 
-		if (isset($critere_style['stroke-miterlimit']) && $critere_style['stroke-miterlimit'] != 'inherit') {
+		if (isset($critere_style['stroke-miterlimit']) && $critere_style['stroke-miterlimit'] !== 'inherit') {
 			$current_style['stroke-miterlimit'] = $critere_style['stroke-miterlimit'];
 		}
 
-		if (isset($critere_style['stroke-opacity']) && $critere_style['stroke-opacity'] != 'inherit') {
+		if (isset($critere_style['stroke-opacity']) && $critere_style['stroke-opacity'] !== 'inherit') {
 			$current_style['stroke-opacity'] = $critere_style['stroke-opacity'];
 		}
 
-		if (isset($critere_style['stroke-width']) && $critere_style['stroke-width'] != 'inherit') {
+		if (isset($critere_style['stroke-width']) && $critere_style['stroke-width'] !== 'inherit') {
 			$current_style['stroke-width'] = $critere_style['stroke-width'];
 		}
 
-		if (isset($critere_style['stroke-dasharray']) && $critere_style['stroke-dasharray'] != 'inherit') {
+		if (isset($critere_style['stroke-dasharray']) && $critere_style['stroke-dasharray'] !== 'inherit') {
 			$current_style['stroke-dasharray'] = $critere_style['stroke-dasharray'];
 		}
-		if (isset($critere_style['stroke-dashoffset']) && $critere_style['stroke-dashoffset'] != 'inherit') {
+		if (isset($critere_style['stroke-dashoffset']) && $critere_style['stroke-dashoffset'] !== 'inherit') {
 			$current_style['stroke-dashoffset'] = $critere_style['stroke-dashoffset'];
 		}
 
 		// Used as indirect setting for currentColor
-		if (isset($critere_style['color']) && $critere_style['color'] != 'inherit') {
+		if (isset($critere_style['color']) && $critere_style['color'] !== 'inherit') {
 			$current_style['color'] = $critere_style['color'];
 		}
 
@@ -1351,11 +1351,11 @@ class Svg
 		$fill_gradient = '';
 		$w = '';
 		$style = '';
-		if (substr_count($critere_style['fill'], 'url') > 0 && $element != 'line') {
+		if (substr_count($critere_style['fill'], 'url') > 0 && $element !== 'line') {
 			//
 			// couleur degradé
 			$id_gradient = preg_replace("/url\(#([\w_]*)\)/i", "$1", $critere_style['fill']);
-			if ($id_gradient != $critere_style['fill']) {
+			if ($id_gradient !== $critere_style['fill']) {
 				if (isset($this->svg_gradient[$id_gradient])) {
 					$fill_gradient = $this->svgGradient($this->svg_gradient[$id_gradient], $attribs, $element);
 					if ($fill_gradient) {
@@ -1366,7 +1366,7 @@ class Svg
 				}
 			}
 		} // Used as indirect setting for currentColor
-		elseif (strtolower($critere_style['fill']) == 'currentcolor' && $element != 'line') {
+		elseif (strtolower($critere_style['fill']) == 'currentcolor' && $element !== 'line') {
 			$col = $this->colorConverter->convert($critere_style['color'], $this->mpdf->PDFAXwarnings);
 			if ($col) {
 				if ($col[0] == 5 && is_numeric($col[4])) {
@@ -1378,7 +1378,7 @@ class Svg
 				$path_style .= $this->mpdf->SetFColor($col, true) . ' ';
 				$style .= 'F';
 			}
-		} elseif ($critere_style['fill'] != 'none' && $element != 'line') {
+		} elseif ($critere_style['fill'] !== 'none' && $element !== 'line') {
 			$col = $this->colorConverter->convert($critere_style['fill'], $this->mpdf->PDFAXwarnings);
 			if ($col) {
 				if ($col[0] == 5 && is_numeric($col[4])) {
@@ -1395,7 +1395,7 @@ class Svg
 			/*
 			  // Cannot put a gradient on a "stroke" in PDF?
 			  $id_gradient = preg_replace("/url\(#([\w_]*)\)/i","$1",$critere_style['stroke']);
-			  if ($id_gradient != $critere_style['stroke']) {
+			  if ($id_gradient !== $critere_style['stroke']) {
 			  if (isset($this->svg_gradient[$id_gradient])) {
 			  $fill_gradient = $this->svgGradient($this->svg_gradient[$id_gradient], $attribs, $element);
 			  if ($fill_gradient) {
@@ -1421,7 +1421,7 @@ class Svg
 				$lw = $this->ConvertSVGSizePixels($critere_style['stroke-width']);
 				$path_style .= sprintf('%.3F w ', $lw * $this->kp);
 			}
-		} elseif ($critere_style['stroke'] != 'none') {
+		} elseif ($critere_style['stroke'] !== 'none') {
 			$col = $this->colorConverter->convert($critere_style['stroke'], $this->mpdf->PDFAXwarnings);
 			if ($col) {
 				// mPDF 5.0.051
@@ -1440,7 +1440,7 @@ class Svg
 		}
 
 
-		if ($critere_style['stroke'] != 'none') {
+		if ($critere_style['stroke'] !== 'none') {
 			if ($critere_style['stroke-linejoin'] == 'miter') {
 				$path_style .= ' 0 j ';
 			} elseif ($critere_style['stroke-linejoin'] == 'round') {
@@ -1779,7 +1779,7 @@ class Svg
 					$mint = min($mint, $bx[1]);
 					$maxb = max($maxb, $bx[3]);
 
-					if (($pdf_pt['x'] != $pdfx) || ($pdf_pt['y'] != $pdfy)) {
+					if (($pdf_pt['x'] !== $pdfx) || ($pdf_pt['y'] !== $pdfy)) {
 						$path_cmd .= sprintf('%.3F %.3F l ', $pdf_pt['x'] * $this->kp, $pdf_pt['y'] * $this->kp);
 					} else {
 						$path_cmd .= sprintf('%.3F %.3F %.3F %.3F %.3F %.3F c ', $pdfx1 * $this->kp, $pdfy1 * $this->kp, $pdfx2 * $this->kp, $pdfy2 * $this->kp, $pdfx * $this->kp, $pdfy * $this->kp);
@@ -1835,7 +1835,7 @@ class Svg
 					$mint = min($mint, $bx[1]);
 					$maxb = max($maxb, $bx[3]);
 
-					if (($pdf_pt['x'] != $pdfx) || ($pdf_pt['y'] != $pdfy)) {
+					if (($pdf_pt['x'] !== $pdfx) || ($pdf_pt['y'] !== $pdfy)) {
 						$path_cmd .= sprintf('%.3F %.3F l ', $pdf_pt['x'] * $this->kp, $pdf_pt['y'] * $this->kp);
 					} else {
 						$path_cmd .= sprintf('%.3F %.3F %.3F %.3F %.3F %.3F c ', $pdfx1 * $this->kp, $pdfy1 * $this->kp, $pdfx2 * $this->kp, $pdfy2 * $this->kp, $pdfx * $this->kp, $pdfy * $this->kp);
@@ -1898,7 +1898,7 @@ class Svg
 					$mint = min($mint, $bx[1]);
 					$maxb = max($maxb, $bx[3]);
 
-					if (($pdf_pt['x'] != $pdfx) || ($pdf_pt['y'] != $pdfy)) {
+					if (($pdf_pt['x'] !== $pdfx) || ($pdf_pt['y'] !== $pdfy)) {
 						$path_cmd .= sprintf('%.3F %.3F l ', $pdf_pt['x'] * $this->kp, $pdf_pt['y'] * $this->kp);
 					} else {
 						$path_cmd .= sprintf('%.3F %.3F %.3F %.3F %.3F %.3F c ', $pdfx1 * $this->kp, $pdfy1 * $this->kp, $pdfx2 * $this->kp, $pdfy2 * $this->kp, $pdfx * $this->kp, $pdfy * $this->kp);
@@ -2430,7 +2430,7 @@ class Svg
 				$opacitystr = sprintf(' /GS%d gs ', $gs);
 
 				$fillstr = '';
-				if (isset($current_style['fill']) && $current_style['fill'] != 'none') {
+				if (isset($current_style['fill']) && $current_style['fill'] !== 'none') {
 					$col = $this->colorConverter->convert($current_style['fill'], $this->mpdf->PDFAXwarnings);
 					$fillstr = $this->mpdf->SetFColor($col, true);
 					$render = "0"; // Fill (only)
@@ -2438,7 +2438,7 @@ class Svg
 				}
 
 				$strokestr = '';
-				if ($stroke_width > 0 && $current_style['stroke'] != 'none') {
+				if ($stroke_width > 0 && $current_style['stroke'] !== 'none') {
 					$scol = $this->colorConverter->convert($current_style['stroke'], $this->mpdf->PDFAXwarnings);
 					if ($scol) {
 						$strokestr .= $this->mpdf->SetDColor($scol, true) . ' ';
@@ -2607,7 +2607,7 @@ class Svg
 
 			$fillstr = '';
 
-			if (isset($current_style['fill']) && $current_style['fill'] != 'none') {
+			if (isset($current_style['fill']) && $current_style['fill'] !== 'none') {
 				$col = $this->colorConverter->convert($current_style['fill'], $this->mpdf->PDFAXwarnings);
 				$fillstr = $this->mpdf->SetFColor($col, true);
 				$render = "0"; // Fill (only)
@@ -2615,7 +2615,7 @@ class Svg
 
 			$strokestr = '';
 
-			if (isset($current_style['stroke-width']) && $current_style['stroke-width'] > 0 && $current_style['stroke'] != 'none') {
+			if (isset($current_style['stroke-width']) && $current_style['stroke-width'] > 0 && $current_style['stroke'] !== 'none') {
 				$scol = $this->colorConverter->convert($current_style['stroke'], $this->mpdf->PDFAXwarnings);
 
 				if ($scol) {
@@ -2748,7 +2748,7 @@ class Svg
 				$current_style['fill'] = '#' . str_pad(dechex($m[1]), 2, "0", STR_PAD_LEFT) . str_pad(dechex($m[2]), 2, "0", STR_PAD_LEFT) . str_pad(dechex($m[3]), 2, "0", STR_PAD_LEFT);
 			} else {
 				$tmp = preg_replace("/(.*)fill:\s*([a-z0-9#_()]*|none)(.*)/i", "$2", $critere_style['style']);
-				if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+				if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 					$current_style['fill'] = $tmp;
 				}
 			}
@@ -2761,12 +2761,12 @@ class Svg
 			}
 
 			$tmp = preg_replace("/(.*)fill-opacity:\s*([a-z0-9.]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['fill-opacity'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)fill-rule:\s*([a-z0-9#]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp != $critere_style['style'] && $tmp != $critere_style['style']) {
+			if ($tmp !== $critere_style['style'] && $tmp !== $critere_style['style']) {
 				$current_style['fill-rule'] = $tmp;
 			}
 
@@ -2774,73 +2774,73 @@ class Svg
 				$current_style['stroke'] = '#' . str_pad(dechex($m[1]), 2, "0", STR_PAD_LEFT) . str_pad(dechex($m[2]), 2, "0", STR_PAD_LEFT) . str_pad(dechex($m[3]), 2, "0", STR_PAD_LEFT);
 			} else {
 				$tmp = preg_replace("/(.*)stroke:\s*([a-z0-9#]*|none)(.*)/i", "$2", $critere_style['style']);
-				if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+				if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 					$current_style['stroke'] = $tmp;
 				}
 			}
 
 			$tmp = preg_replace("/(.*)stroke-linecap:\s*([a-z0-9#]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-linecap'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-linejoin:\s*([a-z0-9#]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-linejoin'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-miterlimit:\s*([a-z0-9#]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-miterlimit'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-opacity:\s*([a-z0-9.]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-opacity'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-width:\s*([a-z0-9.]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-width'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-dasharray:\s*([a-z0-9., ]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-dasharray'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)stroke-dashoffset:\s*([a-z0-9.]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$current_style['stroke-dashoffset'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)font-family:\s*([a-z0-9.\"' ,\-]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$critere_style['font-family'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)font-size:\s*([a-z0-9.]*|none)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$critere_style['font-size'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)font-weight:\s*([a-z0-9.]*|normal)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$critere_style['font-weight'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)font-style:\s*([a-z0-9.]*|normal)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$critere_style['font-style'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)font-variant:\s*([a-z0-9.]*|normal)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$critere_style['font-variant'] = $tmp;
 			}
 
 			$tmp = preg_replace("/(.*)text-anchor:\s*(start|middle|end)(.*)/i", "$2", $critere_style['style']);
-			if ($tmp && $tmp != 'inherit' && $tmp != $critere_style['style']) {
+			if ($tmp && $tmp !== 'inherit' && $tmp !== $critere_style['style']) {
 				$critere_style['text-anchor'] = $tmp;
 			}
 		}
@@ -2849,7 +2849,7 @@ class Svg
 			// [ [ <'font-style'> || <'font-variant'> || <'font-weight'> ]?<'font-size'> [ / <'line-height'> ]? <'font-family'> ]
 
 			$tmp = preg_replace("/(.*)(italic|oblique)(.*)/i", "$2", $critere_style['font']);
-			if ($tmp != $critere_style['font']) {
+			if ($tmp !== $critere_style['font']) {
 				if ($tmp == 'oblique') {
 					$tmp = 'italic';
 				}
@@ -2857,7 +2857,7 @@ class Svg
 			}
 
 			$tmp = preg_replace("/(.*)(bold|bolder)(.*)/i", "$2", $critere_style['font']);
-			if ($tmp != $critere_style['font']) {
+			if ($tmp !== $critere_style['font']) {
 				if ($tmp == 'bolder') {
 					$tmp = 'bold';
 				}
@@ -2865,65 +2865,65 @@ class Svg
 			}
 
 			$tmp = preg_replace("/(.*)(small\-caps)(.*)/i", "$2", $critere_style['font']);
-			if ($tmp != $critere_style['font']) {
+			if ($tmp !== $critere_style['font']) {
 				$current_style['font-variant'] = $tmp;
 			}
 
 			// select digits not followed by percent sign nor preceeded by forward slash
 			$tmp = preg_replace("/(.*)\b(\d+)[\b|\/](.*)/i", "$2", $critere_style['font']);
-			if ($tmp != $critere_style['font']) {
+			if ($tmp !== $critere_style['font']) {
 				$current_style['font-size'] = $this->ConvertSVGSizePts($tmp);
 				$this->mpdf->SetFont('', '', $current_style['font-size'], false);
 			}
 		}
 
 		// mPDF 6
-		if (isset($critere_style['opacity']) && $critere_style['opacity'] != 'inherit') {
+		if (isset($critere_style['opacity']) && $critere_style['opacity'] !== 'inherit') {
 			$current_style['fill-opacity'] = $critere_style['opacity'];
 			$current_style['stroke-opacity'] = $critere_style['opacity'];
 		}
 
 		// mPDF 6
-		if (isset($critere_style['stroke-opacity']) && $critere_style['stroke-opacity'] != 'inherit') {
+		if (isset($critere_style['stroke-opacity']) && $critere_style['stroke-opacity'] !== 'inherit') {
 			$current_style['stroke-opacity'] = $critere_style['stroke-opacity'];
 		}
 
 		// mPDF 6
-		if (isset($critere_style['fill-opacity']) && $critere_style['fill-opacity'] != 'inherit') {
+		if (isset($critere_style['fill-opacity']) && $critere_style['fill-opacity'] !== 'inherit') {
 			$current_style['fill-opacity'] = $critere_style['fill-opacity'];
 		}
 
-		if (isset($critere_style['fill']) && $critere_style['fill'] != 'inherit') {
+		if (isset($critere_style['fill']) && $critere_style['fill'] !== 'inherit') {
 			$current_style['fill'] = $critere_style['fill'];
 		}
 
-		if (isset($critere_style['stroke']) && $critere_style['stroke'] != 'inherit') {
+		if (isset($critere_style['stroke']) && $critere_style['stroke'] !== 'inherit') {
 			$current_style['stroke'] = $critere_style['stroke'];
 		}
 
-		if (isset($critere_style['stroke-width']) && $critere_style['stroke-width'] != 'inherit') {
+		if (isset($critere_style['stroke-width']) && $critere_style['stroke-width'] !== 'inherit') {
 			$current_style['stroke-width'] = $critere_style['stroke-width'];
 		}
 
-		if (isset($critere_style['font-style']) && $critere_style['font-style'] != 'inherit') {
+		if (isset($critere_style['font-style']) && $critere_style['font-style'] !== 'inherit') {
 			if (strtolower($critere_style['font-style']) == 'oblique') {
 				$critere_style['font-style'] = 'italic';
 			}
 			$current_style['font-style'] = $critere_style['font-style'];
 		}
 
-		if (isset($critere_style['font-weight']) && $critere_style['font-weight'] != 'inherit') {
+		if (isset($critere_style['font-weight']) && $critere_style['font-weight'] !== 'inherit') {
 			if (strtolower($critere_style['font-weight']) == 'bolder') {
 				$critere_style['font-weight'] = 'bold';
 			}
 			$current_style['font-weight'] = $critere_style['font-weight'];
 		}
 
-		if (isset($critere_style['font-variant']) && $critere_style['font-variant'] != 'inherit') {
+		if (isset($critere_style['font-variant']) && $critere_style['font-variant'] !== 'inherit') {
 			$current_style['font-variant'] = $critere_style['font-variant'];
 		}
 
-		if (isset($critere_style['font-size']) && $critere_style['font-size'] != 'inherit') {
+		if (isset($critere_style['font-size']) && $critere_style['font-size'] !== 'inherit') {
 			if (strpos($critere_style['font-size'], '%') !== false) {
 				$current_style['font-size-parent'] = $current_style['font-size'];
 			}
@@ -2931,7 +2931,7 @@ class Svg
 			$this->mpdf->SetFont('', '', $current_style['font-size'], false);
 		}
 
-		if (isset($critere_style['font-family']) && $critere_style['font-family'] != 'inherit') {
+		if (isset($critere_style['font-family']) && $critere_style['font-family'] !== 'inherit') {
 			$v = $critere_style['font-family'];
 			$aux_fontlist = explode(",", $v);
 			$found = 0;
@@ -2975,7 +2975,7 @@ class Svg
 			}
 		}
 
-		if (isset($critere_style['text-anchor']) && $critere_style['text-anchor'] != 'inherit') {
+		if (isset($critere_style['text-anchor']) && $critere_style['text-anchor'] !== 'inherit') {
 			$current_style['text-anchor'] = $critere_style['text-anchor'];
 		}
 
@@ -3343,7 +3343,7 @@ class Svg
 						if ($scriptblock == 0) {
 							$scriptblock = $sbl;
 							$scriptblocks[$subchunk] = $scriptblock;
-						} elseif ($scriptblock > 0 && $scriptblock != $sbl) {
+						} elseif ($scriptblock > 0 && $scriptblock !== $sbl) {
 							// NEW (non-common) Script encountered in this chunk.
 							// Start a new subchunk
 							$subchunk++;
@@ -3362,7 +3362,7 @@ class Svg
 				// and scriptblock[x+1] = baseScript
 				// Move common script from end of x to start of x+1
 				for ($sch = 0; $sch < $subchunk; $sch++) {
-					if ($scriptblocks[$sch] > 0 && $scriptblocks[$sch] != $this->mpdf->baseScript && $scriptblocks[$sch + 1] == $this->mpdf->baseScript) {
+					if ($scriptblocks[$sch] > 0 && $scriptblocks[$sch] !== $this->mpdf->baseScript && $scriptblocks[$sch + 1] == $this->mpdf->baseScript) {
 						$end = count($chardata[$sch]) - 1;
 						while ($chardata[$sch][$end]['script'] == 0 && $end > 1) { // common script
 							$tmp = array_pop($chardata[$sch]);
@@ -3384,7 +3384,7 @@ class Svg
 						$s = str_replace("<", "&lt;", $s);
 						$s = str_replace(">", "&gt;", $s);
 
-						if (substr($a[$i - 1], 0, 5) != '<text' && substr($a[$i - 1], 0, 5) != '<tspa') {
+						if (substr($a[$i - 1], 0, 5) !== '<text' && substr($a[$i - 1], 0, 5) !== '<tspa') {
 							continue;
 						} // <tspan> or <text> only
 
@@ -3406,7 +3406,7 @@ class Svg
 								$lang = "'." . $this->scriptToLanguage->getLanguageByScript($scriptblocks[$sch]) . "'";
 							}
 						} // Identify Script block if not Basescript, and mark up as language
-						elseif ($scriptblocks[$sch] > 0 && $scriptblocks[$sch] != $this->mpdf->baseScript && $this->scriptToLanguage->getLanguageByScript($scriptblocks[$sch])) {
+						elseif ($scriptblocks[$sch] > 0 && $scriptblocks[$sch] !== $this->mpdf->baseScript && $this->scriptToLanguage->getLanguageByScript($scriptblocks[$sch])) {
 							$lang = $this->scriptToLanguage->getLanguageByScript($scriptblocks[$sch]);
 						}
 						if ($lang) {
@@ -3801,7 +3801,7 @@ class Svg
 				$arguments = [];
 
 				for ($i = 0; $i < count($tmp); $i++) {
-					if ($tmp[$i][0] != '') {
+					if ($tmp[$i][0] !== '') {
 						array_push($arguments, $tmp[$i][0]);
 					}
 				}
@@ -3820,7 +3820,7 @@ class Svg
 				$arguments = [];
 
 				for ($i = 0; $i < count($tmp[0]); $i++) {
-					if ($tmp[0][$i] != '') {
+					if ($tmp[0][$i] !== '') {
 						array_push($arguments, $tmp[0][$i]);
 					}
 				}
@@ -3897,7 +3897,7 @@ class Svg
 
 				if ($this->mpdf->svgAutoFont && isset($attribs['lang']) && $attribs['lang']) {
 					if (!$this->mpdf->usingCoreFont) {
-						if ($attribs['lang'] != $this->mpdf->default_lang) {
+						if ($attribs['lang'] !== $this->mpdf->default_lang) {
 							list ($coreSuitable, $mpdf_unifont) = $this->languageToFont->getLanguageOptions($attribs['lang'], $this->mpdf->useAdobeCJK);
 							if ($mpdf_unifont) {
 								$styl .= 'font-family:' . $mpdf_unifont . ';';
@@ -3963,7 +3963,7 @@ class Svg
 
 				if ($this->mpdf->svgAutoFont && isset($attribs['lang']) && $attribs['lang']) {
 					if (!$this->mpdf->usingCoreFont) {
-						if ($attribs['lang'] != $this->mpdf->default_lang) {
+						if ($attribs['lang'] !== $this->mpdf->default_lang) {
 							list ($coreSuitable, $mpdf_unifont) = $this->languageToFont->getLanguageOptions($attribs['lang'], $this->mpdf->useAdobeCJK);
 							if ($mpdf_unifont) {
 								$styl .= 'font-family:' . $mpdf_unifont . ';';

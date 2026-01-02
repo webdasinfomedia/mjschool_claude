@@ -180,9 +180,9 @@ class CookieJar implements CookieJarInterface {
 
 			// Two cookies are identical, when their path, and domain are
 			// identical.
-			if ( $c->getPath() != $cookie->getPath() ||
-				$c->getDomain() != $cookie->getDomain() ||
-				$c->getName() != $cookie->getName()
+			if ( $c->getPath() !== $cookie->getPath() ||
+				$c->getDomain() !== $cookie->getDomain() ||
+				$c->getName() !== $cookie->getName()
 			) {
 				continue;
 			}

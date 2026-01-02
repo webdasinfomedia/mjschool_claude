@@ -25,11 +25,12 @@
 defined( 'ABSPATH' ) || exit;
 // -------- Check Browser Javascript. ----------//
 mjschool_browser_javascript_check();
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
+$mjschool_subject = new Mjschool_Subject();
 $module            = 'homework';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 $mjschool_role              = mjschool_get_user_role( get_current_user_id() );
-$action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+$action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 if ( $mjschool_role === 'administrator') {
 	$user_access_add    = '1';
 	$user_access_edit   = '1';
@@ -41,26 +42,26 @@ if ( $mjschool_role === 'administrator') {
 	$user_access_edit   = $user_access['edit'];
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
-	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+	if ( isset( $_GET['page'] ) ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
-		if ( ! empty( $_REQUEST['action'] ) ) {
+		if ( ! empty( $_GET['action'] ) ) {
 			if ( 'homework' === $user_access['page_link'] && ( $action === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'homework' === $user_access['page_link'] && ( $action === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'homework' === $user_access['page_link'] && ( $action === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -85,8 +86,8 @@ if ( isset( $_POST['Save_Homework'] ) ) {
 						$document_name = isset( $_POST['document_name'] ) ? sanitize_text_field( wp_unslash( $_POST['document_name'] ) ) : '';
 						$upload_docs1 = mjschool_load_documets_new( $_FILES['homework_document'], $_FILES['homework_document'], $document_name );
 					}
-				} elseif ( isset( $_REQUEST['old_hidden_homework_document'] ) ) {
-					$upload_docs1 = sanitize_text_field(wp_unslash($_REQUEST['old_hidden_homework_document']));
+				} elseif ( isset( $_POST['old_hidden_homework_document'] ) ) {
+					$upload_docs1 = sanitize_text_field(wp_unslash($_POST['old_hidden_homework_document']));
 				}
 				$document_data = array();
 				if ( ! empty( $upload_docs1 ) ) {
@@ -97,10 +98,10 @@ if ( isset( $_POST['Save_Homework'] ) ) {
 				} else {
 					$document_data[] = '';
 				}
-				$homework_id = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['homework_id'])) ) );
+				$homework_id = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_POST['homework_id'])) ) );
 				$update_data = $insert->mjschool_add_homework( wp_unslash($_POST), $document_data );
 				// Update custom field data.
-				$custom_field_obj    = new Mjschool_Custome_Field();
+				$custom_field_obj    = new Mjschool_Custom_Field();
 				$module              = 'homework';
 				$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $homework_id );
 				if ( $update_data ) {
@@ -138,7 +139,7 @@ if ( isset( $_POST['Save_Homework'] ) ) {
 					$document_data[] = '';
 				}
 				$insert_data        = $insert->mjschool_add_homework( wp_unslash($_POST), $document_data );
-				$custom_field_obj   = new Mjschool_Custome_Field();
+				$custom_field_obj   = new Mjschool_Custom_Field();
 				$module             = 'homework';
 				$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $insert_data );
 				if ( $insert_data ) {
@@ -151,11 +152,11 @@ if ( isset( $_POST['Save_Homework'] ) ) {
 }
 $tablename = 'mjschool_homework';
 /* Delete selected Subject. */
-if ( isset( $_REQUEST['delete_selected'] ) ) {
+if ( isset( $_POST['delete_selected'] ) ) {
 	$ojc = new Mjschool_Homework();
 	$nonce = wp_create_nonce( 'mjschool_homework_tab' );
-	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
-		foreach ( $_REQUEST['id'] as $id ) {
+	if ( ! empty( $_POST['id'] ) && is_array( $_POST['id'] ) ) {
+		foreach ( $_POST['id'] as $id ) {
 			$delete = $ojc->mjschool_get_delete_records( $tablename, intval( $id ) );
 		}
 		if ( $delete ) {
@@ -168,7 +169,7 @@ if ( $action === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'delete_action' ) ) {
 		$delete = new Mjschool_Homework();
 		$nonce = wp_create_nonce( 'mjschool_homework_tab' );
-		$homework_id_raw = isset( $_REQUEST['homework_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['homework_id'] ) ) : '';
+		$homework_id_raw = isset( $_GET['homework_id'] ) ? sanitize_text_field( wp_unslash( $_GET['homework_id'] ) ) : '';
 		$dele   = $delete->mjschool_get_delete_record( mjschool_decrypt_id( $homework_id_raw ) );
 		if ( $dele ) {
 			wp_safe_redirect( esc_url_raw( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.rawurlencode( $nonce ).'&message=3' ) ) );
@@ -194,7 +195,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 	<div class="mjschool-main-list-margin-15px"><!-- Mjschool-main-list-margin-15px. -->
 		<div class="row"><!-- Row. -->
 			<?php
-			$message = isset( $_REQUEST['message'] ) ? sanitize_text_field(wp_unslash($_REQUEST['message'])) : '0';
+			$message = isset( $_GET['message'] ) ? sanitize_text_field(wp_unslash($_GET['message'])) : '0';
 			switch ( $message ) {
 				case '1':
 					$message_string = esc_html__( 'Homework Added Successfully.', 'mjschool' );
@@ -222,20 +223,20 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 				<!-- Nav-tabs start. -->
 				<?php
 				$mjschool_action = '';
-				if ( ! empty( $_REQUEST['action'] ) ) {
+				if ( ! empty( $_GET['action'] ) ) {
 					$mjschool_action = $action;
 				}
-				if ( $active_tab != 'view_homework' ) {
+				if ( $active_tab !== 'view_homework' ) {
 					?>
 					<?php $nonce = wp_create_nonce( 'mjschool_homework_tab' ); ?>
 					<ul class="nav nav-tabs mjschool-panel-tabs mjschool-flex-nowrap mjschool-margin-left-1per" role="tablist">
 						<li class="<?php if ( $active_tab === 'homeworklist' ) { ?> active<?php } ?>">
-							<a href="?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'homeworklist' ? 'nav-tab-active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'homeworklist' ? 'nav-tab-active' : ''; ?>">
 								<?php esc_html_e( 'Upcoming Homework', 'mjschool' ); ?>
 							</a>
 						</li>
 						<li class="<?php if ( $active_tab === 'closed_homework' ) { ?> active<?php } ?>">
-							<a href="?page=mjschool_student_homewrok&tab=closed_homework&_wpnonce=<?php echo esc_attr( $nonce ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'closed_homework' ? 'nav-tab-active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=closed_homework&_wpnonce='.rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab  ) === 'closed_homework' ? 'nav-tab-active' : ''; ?>">
 								<?php esc_html_e( 'Closed Homework', 'mjschool' ); ?>
 							</a>
 						</li>
@@ -313,7 +314,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 													</td>
 													<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
 														
-														<a  href="?page=mjschool_student_homewrok&tab=view_homework&id=<?php echo esc_attr($homework_id); ?>">
+														<a  href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=view_homework&id='.rawurlencode($homework_id) ) ); ?>">
 															<p class="mjschool-prescription-tag mjschool-padding-15px mjschool-margin-bottom-0px <?php echo esc_attr($color_class_css); ?>">
 																<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/icons/white-icons/mjschool-homework.png'); ?>" class="mjschool-massage-image mjschool-image-icon-height-25px mjschool-margin-top-3px">
 															</p>
@@ -321,7 +322,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 														
 													</td>
 													<td >
-														<a class="mjschool-color-black" href="?page=mjschool_student_homewrok&tab=view_homework&id=<?php echo esc_attr( $homework_id ); ?>" type="Homework_view">
+														<a class="mjschool-color-black" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=view_homework&id='.rawurlencode( $homework_id ) ) ); ?>" type="Homework_view">
 															<?php echo esc_html( $retrieved_data->title ); ?>
 														</a> 
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Title', 'mjschool' ); ?>"></i>
@@ -330,7 +331,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 														<?php echo esc_html( mjschool_get_class_section_name_wise( $retrieved_data->class_name, $retrieved_data->section_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class', 'mjschool' ); ?>"></i>
 													</td>
 													<td>
-														<?php echo esc_html( mjschool_get_subject_by_id( $retrieved_data->subject ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Subject', 'mjschool' ); ?>"></i>
+														<?php echo esc_html( $mjschool_subject->mjschool_get_subject_by_id( $retrieved_data->subject ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Subject', 'mjschool' ); ?>"></i>
 													</td>
 													<td>
 														<?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->created_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Homework Date', 'mjschool' ); ?>"></i>
@@ -414,7 +415,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																		$doc_data = json_decode($retrieved_data->homework_document);
 																		?>
 																		<li class="mjschool-float-left-width-100px">
-																			<a href="?page=mjschool_student_homewrok&tab=view_homework&id=<?php echo esc_attr($homework_id);?>" class="mjschool-float-left-width-100px"	 type="Homework_view"><i class="fas fa-eye" aria-hidden="true"></i><?php esc_html_e( 'View','mjschool' );?></a>
+																			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=view_homework&id='.rawurlencode($homework_id) ) );?>" class="mjschool-float-left-width-100px"	 type="Homework_view"><i class="fas fa-eye" aria-hidden="true"></i><?php esc_html_e( 'View','mjschool' );?></a>
 																		</li>
 																		<?php
 																		if ( ! empty( $doc_data[0]->value ) ) {
@@ -423,14 +424,14 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																		if ($user_access_edit === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
-																				<a href="?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=<?php echo esc_attr($homework_id);?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) );?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit','mjschool' );?></a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id='.rawurlencode($homework_id) ) );?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) );?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit','mjschool' );?></a>
 																			</li>
 																			<?php
 																		}
 																		if ($user_access_delete === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a href="?page=mjschool_student_homewrok&tab=homeworklist&action=delete&homework_id=<?php echo esc_attr($homework_id);?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) );?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?','mjschool' );?>' );"><i class="fas fa-trash"> </i> <?php esc_html_e( 'Delete','mjschool' );?></a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&action=delete&homework_id='.rawurlencode($homework_id) ) );?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) );?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?','mjschool' );?>' );"><i class="fas fa-trash"> </i> <?php esc_html_e( 'Delete','mjschool' );?></a>
 																			</li>
 																			<?php
 																		} ?>
@@ -527,14 +528,14 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 														<input type="checkbox" class="mjschool-sub-chk select-checkbox" name="id[]" value="<?php echo esc_attr( $retrieved_data->homework_id ); ?>">
 													</td>
 													<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
-														<a  href="?page=mjschool_student_homewrok&tab=view_homework&id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->homework_id ) ); ?>">
+														<a  href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=view_homework&id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->homework_id ) ) ) ); ?>">
 															<p class="mjschool-prescription-tag mjschool-padding-15px mjschool-margin-bottom-0px <?php echo esc_attr($color_class_css); ?>">
 																<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . '/assets/images/dashboard-icon/icons/white-icons/mjschool-homework.png'); ?>" class="mjschool-massage-image mjschool-image-icon-height-25px mjschool-margin-top-3px">
 															</p>
 														</a>
 													</td>
 													<td >
-														<a class="mjschool-color-black" href="?page=mjschool_student_homewrok&tab=view_homework&id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->homework_id ) ); ?>" type="Homework_view">
+														<a class="mjschool-color-black" href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=view_homework&id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->homework_id ) ) ) ); ?>" type="Homework_view">
 															<?php echo esc_html( $retrieved_data->title ); ?>
 														</a> 
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Title', 'mjschool' ); ?>"></i>
@@ -543,7 +544,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 														<?php echo esc_html( mjschool_get_class_section_name_wise( $retrieved_data->class_name, $retrieved_data->section_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class', 'mjschool' ); ?>"></i>
 													</td>
 													<td>
-														<?php echo esc_html( mjschool_get_subject_by_id( $retrieved_data->subject ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Subject', 'mjschool' ); ?>"></i>
+														<?php echo esc_html( $mjschool_subject->mjschool_get_subject_by_id( $retrieved_data->subject ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Subject', 'mjschool' ); ?>"></i>
 													</td>
 													<td>
 														<?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->created_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Homework Date', 'mjschool' ); ?>"></i>
@@ -626,13 +627,13 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																		$doc_data = json_decode($retrieved_data->homework_document);
 																		?>
 																		<li class="mjschool-float-left-width-100px">
-																			<a href="?page=mjschool_student_homewrok&tab=view_homework&id=<?php echo esc_attr( mjschool_encrypt_id($retrieved_data->homework_id ) );?>" class="mjschool-float-left-width-100px" type="Homework_view"><i class="fas fa-eye" aria-hidden="true"></i><?php esc_html_e( 'View','mjschool' );?></a>
+																			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=view_homework&id='.rawurlencode( mjschool_encrypt_id($retrieved_data->homework_id ) ) ) );?>" class="mjschool-float-left-width-100px" type="Homework_view"><i class="fas fa-eye" aria-hidden="true"></i><?php esc_html_e( 'View','mjschool' );?></a>
 																		</li>
 																		<?php
 																		if ($user_access_edit === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
-																				<a href="?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id=<?php echo esc_attr( mjschool_encrypt_id($retrieved_data->homework_id ) );?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'edit_action' ) );?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit','mjschool' );?></a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=addhomework&action=edit&homework_id='.rawurlencode( mjschool_encrypt_id($retrieved_data->homework_id ) ).'&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ) );?>" class="mjschool-float-left-width-100px"><i class="fas fa-edit"> </i><?php esc_html_e( 'Edit','mjschool' );?></a>
 																			</li>
 																			<?php
 																		} ?>
@@ -640,7 +641,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																		if ($user_access_delete === '1' ) {
 																			?>
 																			<li class="mjschool-float-left-width-100px">
-																				<a href="?page=mjschool_student_homewrok&tab=homeworklist&action=delete&homework_id=<?php echo esc_attr( mjschool_encrypt_id($retrieved_data->homework_id ) );?>&_wpnonce_action=<?php echo esc_attr( mjschool_get_nonce( 'delete_action' ) );?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?','mjschool' );?>' );"><i class="fas fa-trash"> </i> <?php esc_html_e( 'Delete','mjschool' );?></a>
+																				<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student_homewrok&tab=homeworklist&action=delete&homework_id='.rawurlencode( mjschool_encrypt_id($retrieved_data->homework_id ) ).'&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'delete_action' ) ) ) );?>" class="mjschool-float-left-width-100px mjschool_orange_color" onclick="return confirm( '<?php esc_html_e( 'Are you sure you want to delete this record?','mjschool' );?>' );"><i class="fas fa-trash"> </i> <?php esc_html_e( 'Delete','mjschool' );?></a>
 																			</li>
 																			<?php
 																		} ?>

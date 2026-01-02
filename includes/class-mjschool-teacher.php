@@ -36,7 +36,7 @@ class Mjschool_Teacher
         $table        = $wpdb->prefix . 'mjschool_teacher_class';
         $teacher      = get_user_by('email', sanitize_email($name));
         $created_by   = get_current_user_id();
-        $created_date = date('Y-m-d H:i:s');
+        $created_date = current_time( 'mysql' );
         if (! empty($classes) && ! empty($teacher) ) {
             foreach ( $classes as $class ) {
                 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
@@ -73,10 +73,11 @@ class Mjschool_Teacher
         $table        = $wpdb->prefix . 'mjschool_teacher_class';
         $teacher      = get_user_by('login', sanitize_user($name));
         $created_by   = get_current_user_id();
-        $created_date = date('Y-m-d H:i:s');
+        $created_date = current_time( 'mysql' );
+        
         if (! empty($classes) && ! empty($teacher) ) {
             foreach ( $classes as $class ) {
-                $class_id = mjschool_get_class_id_by_name(sanitize_text_field($class));
+                $class_id = $this->mjschool_get_class_id_by_name(sanitize_text_field($class));
                 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
                 $success = $wpdb->insert(
                     $table,
@@ -164,7 +165,7 @@ class Mjschool_Teacher
         global $wpdb;
         $table        = $wpdb->prefix . 'mjschool_teacher_class';
         $created_by   = get_current_user_id();
-        $created_date = date('Y-m-d H:i:s');
+        $created_date = current_time( 'mysql' );
         $post_classes = array_map('intval', $classes);
         $old_class    = $this->mjschool_get_teacher_class($teacher_id);
         $new_insert   = array_diff($post_classes, $old_class);
@@ -249,7 +250,7 @@ class Mjschool_Teacher
      * @return bool True if the needle is found, false otherwise.
      * @since  1.0.0
      */
-    function mjschool_in_array_r( $needle, $haystack, $strict = false )
+    public function mjschool_in_array_r( $needle, $haystack, $strict = false )
     {
         foreach ( $haystack as $item ) {
             if (( $strict ? $item === $needle : $item == $needle ) || ( is_array($item) && $this->mjschool_in_array_r($needle, $item, $strict) ) ) {
@@ -266,7 +267,7 @@ class Mjschool_Teacher
      * @return array|false An array of teacher IDs as associative arrays, or false if $class_id is null.
      * @since  1.0.0
      */
-    function mjschool_get_teacher_by_class( $class_id = null )
+    public function mjschool_get_teacher_by_class( $class_id = null )
     {
         global $wpdb;
         $table = $wpdb->prefix . 'mjschool_teacher_class';
@@ -278,4 +279,160 @@ class Mjschool_Teacher
             return false;
         }
     }
+
+    /**
+     * Checks which teachers have the given class assigned to them.
+     *
+     * @since 1.0.0
+     *
+     * @param int $id Class ID.
+     *
+     * @return array List of teacher IDs.
+     */
+    public function mjschool_check_class_exits_in_teacher_class( $id ) {
+        $id          = absint( $id );
+        $TeacherData = get_users( array( 'role' => 'teacher' ) );
+        $Teacher     = array();
+        
+        if ( ! empty( $TeacherData ) ) {
+            foreach ( $TeacherData as $teacher ) {
+                $TeacherClass = get_user_meta( $teacher->ID, 'class_name', true );
+                if ( is_array( $TeacherClass ) ) {
+                    if ( in_array( $id, array_map( 'absint', $TeacherClass ), true ) ) {
+                        $Teacher[] = $teacher->ID;
+                    }
+                }
+            }
+        }
+        
+        return $Teacher;
+    }
+
+    /**
+     * Get full name of teacher (first + middle + last).
+     *
+     * @since 1.0.0
+     * @param int $id Teacher ID.
+     * @return string Full name.
+     */
+    public function mjschool_get_teacher( $id ) {
+        $id        = absint( $id );
+        $user_info = get_userdata( $id );	
+        if ( $user_info ) {
+            $first  = isset( $user_info->first_name ) ? $user_info->first_name : '';
+            $middle = isset( $user_info->middle_name ) ? $user_info->middle_name : '';
+            $last   = isset( $user_info->last_name ) ? $user_info->last_name : '';
+            
+            return trim( $first . ' ' . $middle . ' ' . $last );
+        }
+        
+        return '';
+    }
+
+    /**
+     * Retrieves all class records assigned to a teacher.
+     *
+     * @param int $id Teacher ID.
+     * @return array Class list.
+     * @since 1.0.0
+     */
+    public function mjschool_get_all_teacher_data( $id ) {
+        global $wpdb;
+        $table_mjschool_teacher_class = $wpdb->prefix . 'mjschool_teacher_class';
+        $teacher_id = absint( $id );
+        
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+        $result = $wpdb->get_results(
+            $wpdb->prepare( "SELECT * FROM {$table_mjschool_teacher_class} WHERE teacher_id = %d", $teacher_id )
+        );
+        return $result;
+    }
+
+    /**
+     * Uploads a teacher signature image to the school assets directory.
+     *
+     * @since 1.0.0
+     *
+     * @param array $file Uploaded signature file array from $_FILES.
+     *
+     * @return string|false Relative path to the uploaded signature image or false on failure.
+     */
+    public function mjschool_upload_teacher_signature( $file ) {
+        // Validate array structure
+        if ( ! is_array( $file ) || ! isset( $file['tmp_name'] ) || ! isset( $file['name'] ) ) {
+            return false;
+        }
+        // Validate upload error
+        if ( isset( $file['error'] ) && $file['error'] !== UPLOAD_ERR_OK ) {
+            return false;
+        }
+        $file_name = sanitize_file_name( $file['name'] );
+        $file_tmp  = $file['tmp_name'];
+        $file_size = isset( $file['size'] ) ? absint( $file['size'] ) : 0;
+        // Validate file type
+        $check_document = wp_check_filetype_and_ext( $file_tmp, $file_name );
+        if ( ! $check_document || ! $check_document['ext'] ) {
+            wp_die( esc_html__( 'File type is not allowed.', 'mjschool' ) );
+        }
+        // Get file info
+        $file_info = wp_check_filetype( $file_name );
+        if ( ! $file_info['ext'] || ! $file_info['type'] ) {
+            wp_die( esc_html__( 'Invalid file type.', 'mjschool' ) );
+        }
+        // Generate secure filename
+        $inventoryimagename = time() . '-signature.' . $file_info['ext'];
+        // Validate file size (5MB max)
+        $max_size = 5 * 1024 * 1024;
+        if ( $file_size > $max_size ) {
+            wp_die( esc_html__( 'File size exceeds maximum allowed (5MB).', 'mjschool' ) );
+        }
+        $document_dir = WP_CONTENT_DIR . '/uploads/school_assets/';
+        $imagepath    = $document_dir . $inventoryimagename;
+        if ( ! file_exists( $document_dir ) ) {
+            wp_mkdir_p( $document_dir );
+        }
+        if ( is_uploaded_file( $file_tmp ) ) {
+            if ( move_uploaded_file( $file_tmp, $imagepath ) ) {
+                chmod( $imagepath, 0644 );
+                return 'uploads/school_assets/' . $inventoryimagename;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Fetches all teachers assigned to a given class ID.
+     *
+     * @since 1.0.0
+     *
+     * @param int $class_id Class ID.
+     *
+     * @return array List of WP_User objects for assigned teachers.
+     */
+    public function mjschool_get_teacher_by_class_id( $class_id ) {
+        $class_id = absint( $class_id );
+        if ( empty( $class_id ) ) {
+            return array();
+        }
+        $teacher_data = array();
+        global $wpdb;
+        $tbl_name = $wpdb->prefix . 'mjschool_teacher_class';
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $teachers = $wpdb->get_results(
+            $wpdb->prepare( "SELECT * FROM {$tbl_name} WHERE class_id = %d", $class_id )
+        );
+        if ( ! empty( $teachers ) ) {
+            foreach ( $teachers as $teacher ) {
+                if ( ! isset( $teacher->teacher_id ) ) {
+                    continue;
+                }
+                $teachersdata = get_userdata( absint( $teacher->teacher_id ) );
+                if ( ! empty( $teachersdata ) ) {
+                    $teacher_data[] = $teachersdata;
+                }
+            }
+        }
+        return $teacher_data;
+    }
+
 }

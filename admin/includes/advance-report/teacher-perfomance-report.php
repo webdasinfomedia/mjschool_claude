@@ -65,8 +65,9 @@ if ( isset( $_GET['tab'] ) ) {
 									<td class="mjschool-user-image mjschool-width-50px-td">
 										<a href="?smgt_teacher&tab=view_teacher&action=view_teacher&teacher_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data['teacher_id'] ) ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>">
 											<?php
+											$mjschool_user = new Mjschool_User();
 											$uid       = $retrieved_data['teacher_id'];
-											$umetadata = mjschool_get_user_image( $uid );
+											$umetadata = $mjschool_user->mjschool_get_user_image( $uid );
 											if ( empty( $umetadata ) ) {
                                                 
                                                 echo '<img src=' . esc_url( get_option( 'mjschool_teacher_thumb_new' ) ) . ' height="50px" width="50px" class="img-circle" />';

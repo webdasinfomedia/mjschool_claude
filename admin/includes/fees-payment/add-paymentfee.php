@@ -20,32 +20,35 @@
  * @subpackage MJSchool/admin/includes/feespayment
  */
 defined( 'ABSPATH' ) || exit;
+
 $school_type = get_option( 'mjschool_custom_class' );
-if ($active_tab === 'addpaymentfee' ) {
+if ( $active_tab === 'addpaymentfee' ) {
     $fees_pay_id = 0;
-    if ( isset( $_REQUEST['fees_pay_id'] ) ) {
-        $fees_pay_id = intval(mjschool_decrypt_id(wp_unslash($_REQUEST['fees_pay_id']) ) );
+    if ( isset( $_GET['fees_pay_id'] ) ) {
+        $fees_pay_id = intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['fees_pay_id'] ) ) ) );
     }
     $edit = 0;
-    if ( isset( $_REQUEST['action']) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) {
+    if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'edit' ) {
         $edit   = 1;
-        $result = $mjschool_obj_feespayment->mjschool_get_single_fee_mjschool_payment($fees_pay_id);
+        $result = $mjschool_obj_feespayment->mjschool_get_single_fee_mjschool_payment( $fees_pay_id );
     }
 	?>
     <div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res">
-        <!----- Panel Body. --------->
+        <!-- Panel Body. -->
         <form name="expense_form" action="" method="post" class="mjschool-form-horizontal" id="expense_form" enctype="multipart/form-data">
-            <?php $mjschool_action = isset($_REQUEST['action']) ? sanitize_text_field( wp_unslash($_REQUEST['action'])) : 'insert'; ?>
-            <input type="hidden" name="action" value="<?php echo esc_attr($mjschool_action); ?>">
-            <input type="hidden" name="fees_pay_id" value="<?php echo esc_attr($fees_pay_id); ?>">
+            <?php
+            $mjschool_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : 'insert';
+            ?>
+            <input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
+            <input type="hidden" name="fees_pay_id" value="<?php echo esc_attr( $fees_pay_id ); ?>">
             <input type="hidden" name="invoice_type" value="expense">
             <input type="hidden" name="recurrence_type" value="one_time">
             <div class="form-body mjschool-user-form">
                 <div class="row">
                     <?php
-                    if (!$edit) {
+                    if ( ! $edit ) {
                         $recurring_option = get_option( 'mjschool_enable_recurring_invoices' );
-                        if ($recurring_option === 'yes' ) {
+                        if ( $recurring_option === 'yes' ) {
                     		?>
                             <div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool-recurring-option-checkbox">
                                 <div class="form-group">
@@ -56,10 +59,10 @@ if ($active_tab === 'addpaymentfee' ) {
                                                 <div class="d-inline-block mjschool-gender-line-height-24px">
                                                     <?php
                                                     $recurrence_type = 'one_time';
-                                                    if ($edit) {
+                                                    if ( $edit ) {
                                                         $recurrence_type = $result->recurrence_type;
                                                     } elseif ( isset( $_POST['recurrence_type'] ) ) {
-                                                        $recurrence_type = sanitize_text_field(sanitize_text_field( wp_unslash($_POST['recurrence_type'])));
+                                                        $recurrence_type = sanitize_text_field( wp_unslash( $_POST['recurrence_type'] ) );
                                                     }
                                                     ?>
                                                     <label class="radio-inline">
@@ -88,14 +91,14 @@ if ($active_tab === 'addpaymentfee' ) {
                         	<?php
                         }
                     }
-                    if ($edit) {
+                    if ( $edit ) {
                         $feestype = $result->description;
-                        if ($feestype !== 'Admission Fees' ) {
+                        if ( $feestype !== 'Admission Fees' ) {
                         	?>
                             <div class="col-md-6 input">
                                 <label class="ml-1 mjschool-custom-top-label top" for="mjschool_contry"><?php esc_html_e( 'Class', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
                                 <?php
-                                if ($edit) {
+                                if ( $edit ) {
                                     $classval = $result->class_id;
                                 } else {
                                     $classval = '';
@@ -103,32 +106,33 @@ if ($active_tab === 'addpaymentfee' ) {
                                 ?>
                                 <select name="class_id" id="mjschool-class-list" class="form-control validate[required] load_fees_drop mjschool-max-width-100px">
                                     <?php
-                                    if ($addparent) {
-                                        $classdata = mjschool_get_class_by_id($student->class_name);
+                                     $mjschool_class = new Mjschool_Class();
+                                    if ( $addparent ) {
+                                        $classdata = $mjschool_class->mjschool_get_class_by_id( $student->class_name );
                                     	?>
-                                        <option value="<?php echo esc_attr($student->class_name); ?>"><?php echo esc_html( $classdata->class_name); ?></option>
+                                        <option value="<?php echo esc_attr( $student->class_name ); ?>"><?php echo esc_html( $classdata->class_name ); ?></option>
                                    		<?php
                                     }
                                     ?>
                                     <option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
                                     <?php
-                                    foreach (mjschool_get_all_class() as $classdata) {
+                                    foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
                                     	?>
-                                        <option value="<?php echo esc_attr($classdata['class_id']); ?>" <?php selected($classval, $classdata['class_id']); ?>><?php echo esc_html( $classdata['class_name']); ?>
+                                        <option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?>
                                         </option>
                                     	<?php
                                     }
                                     ?>
                                 </select>
                             </div>
-                            <?php if ( $school_type === 'school' ) {?>
+                            <?php if ( $school_type === 'school' ) { ?>
                                 <div class="col-md-6 input mjschool-class-section-hide">
                                     <label class="ml-1 mjschool-custom-top-label top" for="mjschool_contry"><?php esc_html_e( 'Class Section', 'mjschool' ); ?></label>
                                     <?php
-                                    if ($edit) {
+                                    if ( $edit ) {
                                         $sectionval = $result->section_id;
                                     } elseif ( isset( $_POST['class_section'] ) ) {
-                                        $sectionval = sanitize_text_field( wp_unslash($_POST['class_section']));
+                                        $sectionval = sanitize_text_field( wp_unslash( $_POST['class_section'] ) );
                                     } else {
                                         $sectionval = '';
                                     }
@@ -136,10 +140,11 @@ if ($active_tab === 'addpaymentfee' ) {
                                     <select name="class_section" class="form-control mjschool-max-width-100px" id="class_section">
                                         <option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
                                         <?php
-                                        if ($edit) {
-                                            foreach (mjschool_get_class_sections($result->class_id) as $sectiondata) {
+                                        if ( $edit ) {
+                                            $mjschool_class = new Mjschool_Class();
+                                            foreach ( $mjschool_class->mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
                                                 ?>
-                                                <option value="<?php echo esc_attr($sectiondata->id); ?>" <?php selected($sectionval, $sectiondata->id); ?>> <?php echo esc_html( $sectiondata->section_name); ?></option>
+                                                <option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>> <?php echo esc_html( $sectiondata->section_name ); ?></option>
                                                 <?php
                                             }
                                         }
@@ -153,7 +158,7 @@ if ($active_tab === 'addpaymentfee' ) {
                         <div class="col-md-6 input mjschool-class-section-hide">
                             <label class="ml-1 mjschool-custom-top-label top" for="mjschool_contry"><?php esc_html_e( 'Student', 'mjschool' ); ?></label>
                             <?php
-                            if ($edit) {
+                            if ( $edit ) {
                                 $classval = $result->class_id;
                             } else {
                                 $classval = '';
@@ -162,8 +167,8 @@ if ($active_tab === 'addpaymentfee' ) {
                             <select name="student_id" id="student_list" class="form-control validate[required] mjschool-max-width-100px">
                                 <option value=""><?php esc_html_e( 'Select student', 'mjschool' ); ?></option>
                                 <?php
-                                if ($edit) {
-                                    echo '<option value="' . esc_attr($result->student_id) . '" ' . selected($result->student_id, $result->student_id) . '>' . esc_attr( mjschool_student_display_name_with_roll($result->student_id ) ) . '</option>';
+                                if ( $edit ) {
+                                    echo '<option value="' . esc_attr( $result->student_id ) . '" ' . selected( $result->student_id, $result->student_id ) . '>' . esc_attr( mjschool_student_display_name_with_roll( $result->student_id ) ) . '</option>';
                                 }
                                 ?>
                             </select>
@@ -177,24 +182,26 @@ if ($active_tab === 'addpaymentfee' ) {
                                 <option value=""><?php esc_html_e( 'Select Class', 'mjschool' ); ?></option>
                                 <option value="all_class"><?php esc_html_e( 'All Class', 'mjschool' ); ?></option>
                                 <?php
-                                foreach (mjschool_get_all_class() as $classdata) {
+                                $mjschool_class = new Mjschool_Class();
+                                foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
                                 	?>
-                                    <option value="<?php echo esc_attr($classdata['class_id']); ?>"><?php echo esc_html( $classdata['class_name']); ?></option>
+                                    <option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
                                 	<?php 
 								} ?>
                             </select>
                         </div>
-                        <?php if ( $school_type === 'school' ) {?>
+                        <?php if ( $school_type === 'school' ) { ?>
                             <div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 input class_section_id mjschool-rtl-margin-0px">
                                 <label class="ml-1 mjschool-custom-top-label top" for="fees_class_section_id"><?php esc_html_e( 'Class Section', 'mjschool' ); ?></label>
-                                <?php if ( isset( $_POST['class_section'] ) ) { $sectionval = sanitize_text_field( wp_unslash($_POST['class_section'])); } else { $sectionval = ''; } ?>
+                                <?php if ( isset( $_POST['class_section'] ) ) { $sectionval = sanitize_text_field( wp_unslash( $_POST['class_section'] ) ); } else { $sectionval = ''; } ?>
                                 <select name="class_section" class="form-control mjschool-min-width-100px" id="fees_class_section_id">
                                     <option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
                                     <?php
-                                    if ($edit) {
-                                        foreach (mjschool_get_class_sections($user_info->class_name) as $sectiondata) {
+                                    if ( $edit ) {
+                                        $mjschool_class = new Mjschool_Class();
+                                        foreach ( $mjschool_class->mjschool_get_class_sections( $user_info->class_name ) as $sectiondata ) {
                                             ?>
-                                            <option value="<?php echo esc_attr($sectiondata->id); ?>" <?php selected($sectionval, $sectiondata->id); ?>><?php echo esc_html( $sectiondata->section_name); ?></option>
+                                            <option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
                                             <?php
                                         }
                                     }
@@ -222,17 +229,19 @@ if ($active_tab === 'addpaymentfee' ) {
                         <div class="col-sm-12 mjschool-multiple-select mjschool-rtl-padding-left-right-0px">
                             <select name="fees_id[]" multiple="multiple" id="fees_data" class="form-control validate[required] mjschool-max-width-100px">
                                 <?php
-                                if ($edit) {
+                                if ( $edit ) {
                                     global $wpdb;
                                     $table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
-                                    $fees_data = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees WHERE class_id = %s", $result->class_id ) ); //phpcs:ignore
-                                    $fees_id = explode( ',', $result->fees_id);
+                                    $fees_data = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees WHERE class_id = %s", $result->class_id ) ); // phpcs:ignore
+                                    $fees_id = explode( ',', $result->fees_id );
                                     if ( ! empty( $fees_data ) ) {
                                         foreach ( $fees_data as $retrive_data ) {
-                                            $selected = "";
-                                            if (in_array((int)$retrive_data->fees_id, array_map('intval', $fees_id), true ) )
-                                                $selected = "selected";
-                                            echo '<option value="' . esc_attr( $retrive_data->fees_id ) . '"'.esc_attr( $selected).'>' . esc_html( get_the_title( $retrive_data->fees_title_id ) ) . '</option>';
+                                            $selected = '';
+                                            // Added strict comparison (true parameter) for in_array
+                                            if ( in_array( (int) $retrive_data->fees_id, array_map( 'intval', $fees_id ), true ) ) {
+                                                $selected = 'selected';
+                                            }
+                                            echo '<option value="' . esc_attr( $retrive_data->fees_id ) . '" ' . esc_attr( $selected ) . '>' . esc_html( get_the_title( $retrive_data->fees_title_id ) ) . '</option>';
                                         }
                                     }
                                 }
@@ -246,17 +255,17 @@ if ($active_tab === 'addpaymentfee' ) {
                     <div class="col-md-6">
                         <div class="form-group input">
                             <div class="col-md-12 form-control">
-                                <input id="fees_amount" class="form-control validate[required,min[0],maxSize[8]] text-input" type="text" value="<?php if ($edit) { echo esc_attr($result->fees_amount); } elseif ( isset( $_POST['fees_amount'] ) ) { echo esc_attr(sanitize_text_field( wp_unslash($_POST['fees_amount']))); } else { echo '0'; } ?>" name="fees_amount" readonly>
-                                <label for="fees_amount"><?php esc_html_e( 'Amount', 'mjschool' ); ?>(<?php echo esc_html( mjschool_get_currency_symbol( ) ); ?>)<span class="required">*</span></label>
+                                <input id="fees_amount" class="form-control validate[required,min[0],maxSize[8]] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( $result->fees_amount ); } elseif ( isset( $_POST['fees_amount'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_POST['fees_amount'] ) ) ); } else { echo '0'; } ?>" name="fees_amount" readonly>
+                                <label for="fees_amount"><?php esc_html_e( 'Amount', 'mjschool' ); ?>(<?php echo esc_html( mjschool_get_currency_symbol() ); ?>)<span class="required">*</span></label>
                             </div>
                         </div>
                     </div>
                     <div class="mjschool-rtl-margin-top-15px col-sm-6 col-md-6 col-lg-6 col-xl-6 mb-3 mjschool-multiselect-validation-member mjschool-multiple-select">
                         <select class="form-control tax_charge" id="tax_id" name="tax[]" multiple="multiple">
                             <?php
-                            if ($edit) {
-                                if ($result->tax !== null) {
-                                    $tax_id = explode( ',', $result->tax);
+                            if ( $edit ) {
+                                if ( $result->tax !== null ) {
+                                    $tax_id = explode( ',', $result->tax );
                                 } else {
                                     $tax_id[] = '';
                                 }
@@ -266,14 +275,15 @@ if ($active_tab === 'addpaymentfee' ) {
                             $obj_tax   = new Mjschool_Tax_Manage();
                             $smgt_taxs = $obj_tax->mjschool_get_all_tax();
                             if ( ! empty( $smgt_taxs ) ) {
-                                foreach ($smgt_taxs as $data) {
+                                foreach ( $smgt_taxs as $data ) {
                                     $selected = '';
-                                    if (in_array($data->tax_id, $tax_id ) ) {
+                                    // Added strict comparison (true parameter) for in_array
+                                    if ( in_array( $data->tax_id, $tax_id, true ) ) {
                                         $selected = 'selected';
                                     }
                             		?>
-                                    <option value="<?php echo esc_attr($data->tax_id); ?>" <?php echo esc_attr( $selected); ?>>
-                                        <?php echo esc_html( $data->tax_title); ?> - <?php echo esc_html( $data->tax_value); ?>
+                                    <option value="<?php echo esc_attr( $data->tax_id ); ?>" <?php echo esc_attr( $selected ); ?>>
+                                        <?php echo esc_html( $data->tax_title ); ?> - <?php echo esc_html( $data->tax_value ); ?>
 									</option>
                             		<?php
                                 }
@@ -287,21 +297,30 @@ if ($active_tab === 'addpaymentfee' ) {
                     <div class="col-sm-12 col-md-3 col-lg-3 col-xl-3">
                         <div class="form-group input">
                             <div class="col-md-12 form-control">
-                                <input id="discount" class="form-control text-input" type="number" min="0" onkeypress="if(this.value.length==8) return false;" step="0.01" value="<?php if ($edit) { echo esc_attr($result->discount); } ?>" name="discount" placeholder="">
+                                <input id="discount" class="form-control text-input" type="number" min="0" onkeypress="if(this.value.length==8) return false;" step="0.01" value="<?php if ( $edit ) { echo esc_attr( $result->discount ); } ?>" name="discount" placeholder="">
                                 <label  for="discount"><?php esc_html_e( 'Discount', 'mjschool' ); ?></label>
                             </div>
                         </div>
                     </div>
                     <div class="col-sm-12 col-md-3 col-lg-3 col-xl-3 mjschool-res-margin-bottom-20px mjschool-rtl-margin-top-15px">
                         <select class="form-control mjschool-max-width-100px" name="discount_type" id="discount_type">
-                            <option value="%" <?php if ($edit) { if ( isset( $result->discount_type ) ) { selected(esc_attr($result->discount_type), '%' ); } } ?>>%</option>
-                            <option value="amount" <?php if ($edit) { if ( isset( $result->discount_type ) ) { selected(esc_html( $result->discount_type), 'amount' ); } } ?>><?php echo esc_html__( 'Amount', 'mjschool' ) . '( ' . esc_html( mjschool_get_currency_symbol(get_option( 'mjschool_currency_code' ) ) ) . ' )'; ?></option>
+                            <option value="%" <?php if ( $edit ) { if ( isset( $result->discount_type ) ) { selected( esc_attr( $result->discount_type ), '%' ); } } ?>>%</option>
+                            <option value="amount" <?php if ( $edit ) { if ( isset( $result->discount_type ) ) { selected( esc_html( $result->discount_type ), 'amount' ); } } ?>><?php echo esc_html__( 'Amount', 'mjschool' ) . ' ( ' . esc_html( mjschool_get_currency_symbol( get_option( 'mjschool_currency_code' ) ) ) . ' )'; ?></option>
                         </select>
                     </div>
                     <div class="col-md-3 input mjschool-rtl-margin-0px mjschool-para-margin">
                         <div class="form-group input mjschool-rtl-margin-0px">
                             <div class="col-md-12 form-control">
-                                <input id="start_date_event" class="form-control date_picker validate[required] start_date datepicker1" autocomplete="off" type="text" name="start_year" value="<?php if ($edit) { echo esc_attr( mjschool_get_date_in_input_box(date( 'Y-m-d', strtotime($result->start_year ) ) ) ); } elseif ( isset( $_POST['start_year'] ) ) { echo esc_attr( mjschool_get_date_in_input_box(sanitize_text_field( wp_unslash($_POST['start_year'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box(date( 'Y-m-d' ) ) ); } ?>">
+                                <?php
+                                if ( $edit ) {
+                                    $start_date = mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $result->start_year ) ) );
+                                } elseif ( isset( $_POST['start_year'] ) ) {
+                                    $start_date = mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['start_year'] ) ) );
+                                } else {
+                                    $start_date = mjschool_get_date_in_input_box( current_time( 'Y-m-d' ) );
+                                }
+                                ?>
+                                <input id="start_date_event" class="form-control date_picker validate[required] start_date datepicker1" autocomplete="off" type="text" name="start_year" value="<?php echo esc_attr( $start_date ); ?>">
                                 <label class="active date_label" for="start_date_event"><?php esc_html_e( 'Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
                             </div>
                         </div>
@@ -309,7 +328,16 @@ if ($active_tab === 'addpaymentfee' ) {
                     <div class="col-md-3 input mjschool-rtl-margin-0px mjschool-para-margin" >
                         <div class="form-group input">
                             <div class="col-md-12 form-control">
-                                <input id="end_date_event" class="form-control date_picker validate[required] start_date datepicker2" type="text" name="end_year" autocomplete="off" value="<?php if ($edit) { echo esc_attr( mjschool_get_date_in_input_box(date( 'Y-m-d', strtotime($result->end_year ) ) ) ); } elseif ( isset( $_POST['end_year'] ) ) { echo esc_attr( mjschool_get_date_in_input_boxsanitize_text_field( wp_unslash(($_POST['end_year'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box(date( 'Y-m-d' ) ) ); } ?>">
+                                <?php
+                                if ( $edit ) {
+                                    $end_date = mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $result->end_year ) ) );
+                                } elseif ( isset( $_POST['end_year'] ) ) {
+                                    $end_date = mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['end_year'] ) ) );
+                                } else {
+                                    $end_date = mjschool_get_date_in_input_box( current_time( 'Y-m-d' ) );
+                                }
+                                ?>
+                                <input id="end_date_event" class="form-control date_picker validate[required] start_date datepicker2" type="text" name="end_year" autocomplete="off" value="<?php echo esc_attr( $end_date ); ?>">
                                 <label class="date_label" for="end_date_event"><?php esc_html_e( 'End Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
                             </div>
                         </div>
@@ -318,7 +346,7 @@ if ($active_tab === 'addpaymentfee' ) {
                         <div class="form-group input mjschool-rtl-margin-0px">
                             <div class="col-md-12 mjschool-note-border mjschool-margin-bottom-15px-res">
                                 <div class="form-field">
-                                    <textarea id="mjschool-description" name="description" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150"><?php if ($edit) { echo esc_textarea($result->description); } elseif ( isset( $_POST['description'] ) ) { echo esc_textarea(sanitize_text_field( wp_unslash($_POST['description']))); } ?></textarea>
+                                    <textarea id="mjschool-description" name="description" class="mjschool-textarea-height-47px form-control validate[custom[address_description_validation]]" maxlength="150"><?php if ( $edit ) { echo esc_textarea( $result->description ); } elseif ( isset( $_POST['description'] ) ) { echo esc_textarea( sanitize_text_field( wp_unslash( $_POST['description'] ) ) ); } ?></textarea>
                                     <span class="mjschool-txt-title-label"></span>
                                     <label class="text-area address active" for="mjschool-description"><?php esc_html_e( 'Description', 'mjschool' ); ?></label>
                                 </div>
@@ -333,7 +361,7 @@ if ($active_tab === 'addpaymentfee' ) {
                                         <label for="mjschool_enable_feesalert_mail" class="mjschool-custom-top-label label_right_position"><?php esc_html_e( 'Send Email To Students & Parents', 'mjschool' ); ?></label>
                                         <div class="checkbox mjschool-checkbox-label-padding-8px">
                                             <label>
-                                                <input id="mjschool_enable_feesalert_mail" type="checkbox" class="margin_right_checkbox mjschool-margin-right-5px_checkbox mjschool-margin-right-checkbox-css" name="smgt_enable_feesalert_mail" value="1" <?php echo checked(get_option( 'mjschool_enable_feesalert_mail' ), 'yes' ); ?> />&nbsp;&nbsp;<?php esc_html_e( 'Enable', 'mjschool' ); ?>
+                                                <input id="mjschool_enable_feesalert_mail" type="checkbox" class="margin_right_checkbox mjschool-margin-right-5px_checkbox mjschool-margin-right-checkbox-css" name="smgt_enable_feesalert_mail" value="1" <?php echo checked( get_option( 'mjschool_enable_feesalert_mail' ), 'yes' ); ?> />&nbsp;&nbsp;<?php esc_html_e( 'Enable', 'mjschool' ); ?>
                                             </label>
                                         </div>
                                     </div>
@@ -349,7 +377,7 @@ if ($active_tab === 'addpaymentfee' ) {
                                         <label for="mjschool_enable_feesalert_mjschool_student" class="mjschool-custom-top-label label_right_position"><?php esc_html_e( 'Send SMS To Student', 'mjschool' ); ?></label>
                                         <div class="checkbox mjschool-checkbox-label-padding-8px">
                                             <label>
-                                                <input id="mjschool_enable_feesalert_mjschool_student" type="checkbox" class="margin_right_checkbox mjschool-margin-right-5px_checkbox mjschool-margin-right-checkbox-css" name="smgt_enable_feesalert_mjschool_student" value="1" <?php echo checked(get_option( 'mjschool_enable_feesalert_sms' ), 'yes' ); ?> />&nbsp;&nbsp;<?php esc_html_e( 'Enable', 'mjschool' ); ?>
+                                                <input id="mjschool_enable_feesalert_mjschool_student" type="checkbox" class="margin_right_checkbox mjschool-margin-right-5px_checkbox mjschool-margin-right-checkbox-css" name="smgt_enable_feesalert_mjschool_student" value="1" <?php echo checked( get_option( 'mjschool_enable_feesalert_sms' ), 'yes' ); ?> />&nbsp;&nbsp;<?php esc_html_e( 'Enable', 'mjschool' ); ?>
                                             </label>
                                         </div>
                                     </div>
@@ -365,7 +393,7 @@ if ($active_tab === 'addpaymentfee' ) {
                                         <label for="mjschool_enable_feesalert_mjschool_parent" class="mjschool-custom-top-label label_right_position"><?php esc_html_e( 'Send SMS To Parents', 'mjschool' ); ?></label>
                                         <div class="checkbox mjschool-checkbox-label-padding-8px">
                                             <label>
-                                                <input id="mjschool_enable_feesalert_mjschool_parent" type="checkbox" class="margin_right_checkbox mjschool-margin-right-5px_checkbox mjschool-margin-right-checkbox-css" name="smgt_enable_feesalert_mjschool_parent" value="1" <?php echo checked(get_option( 'mjschool_enable_feesalert_sms' ), 'yes' ); ?> />&nbsp;&nbsp;<?php esc_html_e( 'Enable', 'mjschool' ); ?>
+                                                <input id="mjschool_enable_feesalert_mjschool_parent" type="checkbox" class="margin_right_checkbox mjschool-margin-right-5px_checkbox mjschool-margin-right-checkbox-css" name="smgt_enable_feesalert_mjschool_parent" value="1" <?php echo checked( get_option( 'mjschool_enable_feesalert_sms' ), 'yes' ); ?> />&nbsp;&nbsp;<?php esc_html_e( 'Enable', 'mjschool' ); ?>
                                             </label>
                                         </div>
                                     </div>
@@ -376,21 +404,21 @@ if ($active_tab === 'addpaymentfee' ) {
                 </div>
             </div>
             <?php
-            // --------- Get Module Wise Custom Field Data. --------------//
-            $mjschool_custom_field_obj = new Mjschool_Custome_Field();
+            // Get Module Wise Custom Field Data.
+            $mjschool_custom_field_obj = new Mjschool_Custom_Field();
             $module                    = 'fee_list';
-            $custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback($module);
+            $custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
             ?>
             <div class="form-body mjschool-user-form mjschool-padding-top-15px-res">
                 <div class="row">
                     <div class="col-sm-6">
-                        <input type="submit" value="<?php if ($edit) { esc_attr_e( 'Save Invoice', 'mjschool' ); } else { esc_attr_e( 'Create Invoice', 'mjschool' ); } ?>" name="save_feetype_payment" class="btn btn-success mjschool-rtl-margin-0px mjschool-save-btn" />
+                        <input type="submit" value="<?php if ( $edit ) { esc_attr_e( 'Save Invoice', 'mjschool' ); } else { esc_attr_e( 'Create Invoice', 'mjschool' ); } ?>" name="save_feetype_payment" class="btn btn-success mjschool-rtl-margin-0px mjschool-save-btn" />
                     </div>
                 </div>
             </div>
         </form>
     </div>
-    <!----- Panel Body. --------->
+    <!-- Panel Body. -->
     <?php
 }
 ?>

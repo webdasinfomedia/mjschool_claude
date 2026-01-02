@@ -71,19 +71,19 @@ class Mjschool_admission
         'user_url'      => null,
         'display_name'  => $firstname . ' ' . $middlename . ' ' . $lastname,
         );
-        if ($data['password'] != '' ) {
+        if (!empty($data['password'])) {
             $userdata['user_pass'] = mjschool_password_validation(sanitize_text_field($data['password']));
         } else {
             $userdata['user_pass'] = wp_generate_password();
         }
-        if (isset($data['mjschool_user_avatar']) && $data['mjschool_user_avatar'] != '' ) {
+        if (!empty($data['mjschool_user_avatar'])) {
             $photo = sanitize_text_field($data['mjschool_user_avatar']);
         } else {
             $photo = '';
         }
         // Add Sibling details.
         $sibling_value = array();
-        if (! empty($data['siblingsclass']) && is_array($data['siblingsclass']) ) {
+        if (!empty($data['siblingsclass']) && is_array($data['siblingsclass']) ) {
             foreach ( $data['siblingsclass'] as $key => $value ) {
                 $sibling_value[] = array(
                 'siblingsclass'   => sanitize_text_field($value),
@@ -99,7 +99,7 @@ class Mjschool_admission
             $admission_fees_id     = isset($data['admission_fees_id']) ? intval($data['admission_fees_id']) : 0;
         }
         $parent_status = null;
-        if(! empty($data['father_email']) || ! empty($data['mother_email']) ) {
+        if(!empty($data['father_email']) || !empty($data['mother_email']) ) {
             $parent_status = sanitize_text_field($data['pstatus']);
         }
         // Add user meta.
@@ -122,7 +122,7 @@ class Mjschool_admission
         'phone_code'             => sanitize_textarea_field($data['phone_code']),
         'mobile_number'          => isset($_POST['mobile_number']) ? sanitize_text_field(wp_unslash($_POST['mobile_number'])) : '',
         'alternet_mobile_number' => sanitize_text_field($data['alternet_mobile_number']),
-        'sibling_information'    => json_encode($sibling_value),
+        'sibling_information'    => wp_json_encode($sibling_value),
         'parent_status'          => $parent_status,
         'mjschool_user_avatar'   => $photo,
         'created_by'             => get_current_user_id(),
@@ -131,7 +131,7 @@ class Mjschool_admission
         $father_metadata = array();
         $mother_metadata = array();
         // Add father metadata if father_email is not empty.
-        if (! empty($data['father_email']) ) {
+        if (!empty($data['father_email']) ) {
             $father_metadata = array(
             'fathersalutation'   => sanitize_text_field($data['fathersalutation']),
             'father_first_name'  => sanitize_text_field($data['father_first_name']),
@@ -150,11 +150,11 @@ class Mjschool_admission
             'father_education'   => sanitize_text_field($data['father_education']),
             'fathe_income'       => sanitize_textarea_field($data['fathe_income']),
             'father_occuption'   => sanitize_text_field($data['father_occuption']),
-            'father_doc'         => json_encode($father_document_data),
+            'father_doc'         => wp_json_encode($father_document_data),
             );
         }
         // Add mother metadata if mother_email is not empty.
-        if (! empty($data['mother_email']) ) {
+        if (!empty($data['mother_email']) ) {
             $mother_metadata = array(
             'mothersalutation'   => sanitize_text_field($data['mothersalutation']),
             'mother_first_name'  => sanitize_text_field($data['mother_first_name']),
@@ -173,7 +173,7 @@ class Mjschool_admission
             'mother_education'   => sanitize_text_field($data['mother_education']),
             'mother_income'      => sanitize_text_field($data['mother_income']),
             'mother_occuption'   => sanitize_text_field($data['mother_occuption']),
-            'mother_doc'         => json_encode($mother_document_data),
+            'mother_doc'         => wp_json_encode($mother_document_data),
             );
         }
         // Merge metadata arrays.
@@ -239,7 +239,7 @@ class Mjschool_admission
         $role_parents = sanitize_text_field($role_parents);
         $student_data = get_user_meta($student_id);
         if (isset($student_data['parent_status'][0]) && $student_data['parent_status'][0] === 'Both' ) {
-            if (( ! empty($student_data['father_first_name'][0]) ) || ( ! empty($student_data['mother_first_name'][0]) ) ) {
+            if (( !empty($student_data['father_first_name'][0]) ) || ( !empty($student_data['mother_first_name'][0]) ) ) {
                 // ------------------ Father data insert. ------------------//
                 $fatherdata = array(
                  'user_login'    => sanitize_email($student_data['father_email'][0]),
@@ -274,7 +274,7 @@ class Mjschool_admission
                     $string['{{user_name}}']   = sanitize_text_field($student_data['father_first_name'][0]) . ' ' . sanitize_text_field($student_data['father_middle_name'][0]) . ' ' . sanitize_text_field($student_data['father_last_name'][0]);
                     $string['{{school_name}}'] = get_option('mjschool_name');
                     $string['{{role}}']        = $role_parents;
-                    $string['{{login_link}}']  = esc_url(site_url() . '/index.php/mjschool-login-page');
+                    $string['{{login_link}}']  = esc_url(site_url('/mjschool-login-page'));
                     $string['{{username}}']    = $fatherdata['user_login'];
                     $string['{{Password}}']    = $fatherdata['user_pass'];
                     $MsgContent                = get_option('mjschool_add_user_mail_content');
@@ -320,7 +320,7 @@ class Mjschool_admission
                     $string['{{user_name}}']   = sanitize_text_field($student_data['mother_first_name'][0]) . ' ' . sanitize_text_field($student_data['mother_middle_name'][0]) . ' ' . sanitize_text_field($student_data['mother_last_name'][0]);
                     $string['{{school_name}}'] = get_option('mjschool_name');
                     $string['{{role}}']        = $role_parents;
-                    $string['{{login_link}}']  = esc_url(site_url() . '/index.php/mjschool-login-page');
+                    $string['{{login_link}}']  = esc_url(site_url('/mjschool-login-page'));
                     $string['{{username}}']    = $motherdata['user_login'];
                     $string['{{Password}}']    = $motherdata['user_pass'];
                     $MsgContent                = get_option('mjschool_add_user_mail_content');
@@ -340,7 +340,7 @@ class Mjschool_admission
                 return $returnval;
             }
         } elseif (isset($student_data['parent_status'][0]) && $student_data['parent_status'][0] === 'Father' ) {
-            if (( ! empty($student_data['father_email'][0]) ) and ( ! empty($student_data['father_first_name'][0]) ) ) {
+            if (( !empty($student_data['father_email'][0]) ) and ( !empty($student_data['father_first_name'][0]) ) ) {
                 if (email_exists($student_data['father_email'][0]) ) {
                     $user      = get_user_by('email', sanitize_email($student_data['father_email'][0]));
                     $user_id   = $user->ID;
@@ -348,6 +348,9 @@ class Mjschool_admission
                     $returnval = add_user_meta($student_id, 'parent_id', $parant_id);
                     $child_id  = array( $student_id );
                     $returnval = update_user_meta($user_id, 'child', $child_id);
+                    if (false === $returnval) {
+                        error_log('Failed to update child meta for user: ' . $user_id);
+                    }
                 } else {
                     // ------------ Father data insert. ------------------//
                     $userdata = array(
@@ -383,7 +386,7 @@ class Mjschool_admission
                         $string['{{user_name}}']   = sanitize_text_field($student_data['father_first_name'][0]) . ' ' . sanitize_text_field($student_data['father_middle_name'][0]) . ' ' . sanitize_text_field($student_data['father_last_name'][0]);
                         $string['{{school_name}}'] = get_option('mjschool_name');
                         $string['{{role}}']        = $role_parents;
-                        $string['{{login_link}}']  = esc_url(site_url() . '/index.php/mjschool-login-page');
+                        $string['{{login_link}}']  = esc_url(site_url('/mjschool-login-page'));
                         $string['{{username}}']    = $userdata['user_login'];
                         $string['{{Password}}']    = $userdata['user_pass'];
                         $MsgContent                = get_option('mjschool_add_user_mail_content');
@@ -403,7 +406,7 @@ class Mjschool_admission
                 return $returnval;
             }
         } elseif (isset($student_data['parent_status'][0]) && $student_data['parent_status'][0] === 'Mother' ) {
-            if (( ! empty($student_data['mother_email'][0]) ) and ( ! empty($student_data['mother_first_name'][0]) ) ) {
+            if (( !empty($student_data['mother_email'][0]) ) and ( !empty($student_data['mother_first_name'][0]) ) ) {
                 if (email_exists($student_data['mother_email'][0]) ) {
                     $user      = get_user_by('email', sanitize_email($student_data['mother_email'][0]));
                     $user_id   = $user->ID;
@@ -411,6 +414,9 @@ class Mjschool_admission
                     $returnval = add_user_meta($student_id, 'parent_id', $parant_id);
                     $child_id  = array( $student_id );
                     $returnval = update_user_meta($user_id, 'child', $child_id);
+                    if (false === $returnval) {
+                        error_log('Failed to update child meta for user: ' . $user_id);
+                    }
                 } else {
                     // ------------ Mother data insert. ------------------//
                     $userdata = array(
@@ -446,7 +452,7 @@ class Mjschool_admission
                         $string['{{user_name}}']   = sanitize_text_field($student_data['mother_first_name'][0]) . ' ' . sanitize_text_field($student_data['mother_middle_name'][0]) . ' ' . sanitize_text_field($student_data['mother_last_name'][0]);
                         $string['{{school_name}}'] = get_option('mjschool_name');
                         $string['{{role}}']        = $role_parents;
-                        $string['{{login_link}}']  = esc_url(site_url() . '/index.php/mjschool-login-page');
+                        $string['{{login_link}}']  = esc_url(site_url('/mjschool-login-page'));
                         $string['{{username}}']    = $userdata['user_login'];
                         $string['{{Password}}']    = $userdata['user_pass'];
                         $MsgContent                = get_option('mjschool_add_user_mail_content');
@@ -466,5 +472,24 @@ class Mjschool_admission
                 return $returnval;
             }
         }
+    }
+
+    /**
+     * Generates a new admission number using the configured prefix.
+     *
+     * @since 1.0.0
+     *
+     * @return string Generated admission number.
+     */
+    public function mjschool_generate_admission_number() {
+        global $wpdb;
+        $prefix = get_option( 'mjschool_prefix', 'SMGT' ); // e.g., 'ST'.
+        $userdata = get_users();
+        if ( empty( $userdata ) ) {
+            $admission_no = 1;
+        } else {
+            $admission_no = count( $userdata ) + 1;
+        }
+        return $prefix . $admission_no; // e.g., ST6.
     }
 }

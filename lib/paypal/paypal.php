@@ -1,6 +1,10 @@
 <?php
-define( 'MJSCHOOL_EMAIL_ADD', 'maks.ashvin03@gmail.com' ); // define any notification email
-define( 'MJSCHOOL_PAYPAL_EMAIL_ADD', 'a.makvana-facilitator@dasinfomedia.com' ); // facilitator email which will receive payments change this email to a live paypal account id when the site goes live
+if ( ! defined( 'MJSCHOOL_EMAIL_ADD' ) ) {
+	define( 'MJSCHOOL_EMAIL_ADD', 'maks.ashvin03@gmail.com' ); // define any notification email
+}
+if ( ! defined( 'MJSCHOOL_PAYPAL_EMAIL_ADD' ) ) {
+	define( 'MJSCHOOL_PAYPAL_EMAIL_ADD', 'a.makvana-facilitator@dasinfomedia.com' ); // facilitator email which will receive payments change this email to a live paypal account id when the site goes live
+}
 require_once GMS_PLUGIN_DIR . '/lib/paypal/paypal_class.php';
 $p             = new GYM_paypal_class(); // paypal class
 $p->admin_mail = MJSCHOOL_EMAIL_ADD; // set notification email

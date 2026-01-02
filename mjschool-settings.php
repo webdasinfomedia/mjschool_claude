@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  */
 /**
  * Load required class files with error handling
- * 
+ *
  * @since 1.0.0
  */
 function mjschool_load_required_files() {
@@ -33,13 +33,21 @@ function mjschool_load_required_files() {
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-admissioin.php',
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-hostel.php',
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-subject.php',
-        MJSCHOOL_INCLUDES_DIR . '/class-mjschool-custome-field.php',
+        MJSCHOOL_INCLUDES_DIR . '/class-mjschool-custom-field.php',
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-virtual-classroom.php',
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-event.php',
+        MJSCHOOL_INCLUDES_DIR . '/class-mjschool-grade.php',
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-leave.php',
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-document.php',
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-notification.php',
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-tax.php',
+        MJSCHOOL_INCLUDES_DIR . '/class-mjschool-class.php',
+        MJSCHOOL_INCLUDES_DIR . '/class-mjschool-user.php',
+        MJSCHOOL_INCLUDES_DIR . '/class-mjschool-hall.php',
+        MJSCHOOL_INCLUDES_DIR . '/class-mjschool-holiday.php',
+        MJSCHOOL_INCLUDES_DIR . '/class-mjschool-transport.php',
+        MJSCHOOL_INCLUDES_DIR . '/class-mjschool-certificate.php',
+        MJSCHOOL_INCLUDES_DIR . '/class-mjschool-parent.php',
         MJSCHOOL_INCLUDES_DIR . '/class-mjschool-message.php',
         MJSCHOOL_INCLUDES_DIR . '/mjschool-function.php',
         MJSCHOOL_INCLUDES_DIR . '/mjschool-print-pdf-functions.php',
@@ -141,7 +149,7 @@ function mjschool_add_role_caps() {
     if ( ! mjschool_role_exists( 'supportstaff' ) ) {
         add_role(
             'supportstaff',
-            esc_attr__( 'Support Staff', 'mjschool' ),
+            esc_html__( 'Support Staff', 'mjschool' ),
             array(
                 'read'    => true,
                 'level_0' => true,
@@ -153,7 +161,7 @@ function mjschool_add_role_caps() {
     if ( ! mjschool_role_exists( 'student_temp' ) ) {
         add_role(
             'student_temp',
-            esc_attr__( 'Student (Pending)', 'mjschool' ),
+            esc_html__( 'Student (Pending)', 'mjschool' ),
             array(
                 'read'    => true,
                 'level_0' => true,
@@ -165,7 +173,7 @@ function mjschool_add_role_caps() {
     if ( ! mjschool_role_exists( 'management' ) ) {
         add_role(
             'management',
-            esc_attr__( 'Management', 'mjschool' ),
+            esc_html__( 'Management', 'mjschool' ),
             array(
                 'read'    => true,
                 'level_1' => true,
@@ -192,10 +200,10 @@ function mjschool_dashboard_link( $wp_admin_bar ) {
     $args = array(
         'id'    => 'school-dashboard',
         'title' => esc_html__( 'School Dashboard', 'mjschool' ),
-        'href'  => admin_url( 'admin.php?page=mjschool' ),
+        'href'  => esc_url( admin_url( 'admin.php?page=mjschool' ) ),
         'meta'  => array( 
             'class' => 'mjschool-school-dashboard',
-            'title' => esc_attr__( 'Go to School Dashboard', 'mjschool' ),
+            'title' => esc_html__( 'Go to School Dashboard', 'mjschool' ),
         ),
     );
     $wp_admin_bar->add_node( $args );
@@ -269,7 +277,7 @@ function mjschool_verify_license() {
 		
 		if ( empty( $_SESSION['mjschool_verify'] ) ) {
 			if ( get_option( 'mjschool_licence_key' ) && get_option( 'mjschool_setup_email' ) ) {
-				$domain_name       =sanitize_text_field( wp_unslash($_SERVER['SERVER_NAME']));
+				$domain_name       = sanitize_text_field( wp_unslash($_SERVER['SERVER_NAME']));
 				$licence_key       = get_option( 'mjschool_licence_key' );
 				$email             = get_option( 'mjschool_setup_email' );
 				$result            = mjschool_check_product_key( $domain_name, $licence_key, $email );
@@ -290,7 +298,7 @@ function mjschool_verify_license() {
 		if ( ! $is_verify ) {
 			
 			$_SESSION['mjschool_verify'] = '';
-			if ( $_REQUEST['page'] != 'mjschool_setup' ) {
+			if ( $_REQUEST['page'] !== 'mjschool_setup' ) {
 				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_setup' ) );
 				die();
 			}
@@ -329,7 +337,7 @@ function mjschool_activate() {
 	if ( ! mjschool_role_exists( 'teacher' ) ) {
 		add_role(
 			'teacher',
-			esc_attr__( 'Teacher', 'mjschool' ),
+			esc_html__( 'Teacher', 'mjschool' ),
 			array(
 				'read'    => true,
 				'level_0' => true,
@@ -341,7 +349,7 @@ function mjschool_activate() {
 	if ( ! mjschool_role_exists( 'student' ) ) {
 		add_role(
 			'student',
-			esc_attr__( 'Student', 'mjschool' ),
+			esc_html__( 'Student', 'mjschool' ),
 			array(
 				'read'    => true,
 				'level_0' => true,
@@ -353,7 +361,7 @@ function mjschool_activate() {
 	if ( ! mjschool_role_exists( 'parent' ) ) {
 		add_role(
 			'parent',
-			esc_attr__( 'Parent', 'mjschool' ),
+			esc_html__( 'Parent', 'mjschool' ),
 			array(
 				'read'    => true,
 				'level_0' => true,
@@ -365,7 +373,7 @@ function mjschool_activate() {
 	if ( ! mjschool_role_exists( 'supportstaff' ) ) {
 		add_role(
 			'supportstaff',
-			esc_attr__( 'Support Staff', 'mjschool' ),
+			esc_html__( 'Support Staff', 'mjschool' ),
 			array(
 				'read'    => true,
 				'level_0' => true,
@@ -377,7 +385,7 @@ function mjschool_activate() {
 	if ( ! mjschool_role_exists( 'management' ) ) {
 		add_role(
 			'management',
-			esc_attr__( 'Management', 'mjschool' ),
+			esc_html__( 'Management', 'mjschool' ),
 			array(
 				'read'    => true,
 				'level_1' => true,
@@ -1027,7 +1035,7 @@ function mjschool_option() {
 	$options = array(
 		// Basic Settings
 		'mjschool_name'                    => esc_attr__( 'School Management System', 'mjschool' ),
-		'mjschool_staring_year'            => date( 'Y' ),
+		'mjschool_staring_year'            => gmdate( 'Y' ),
 		'mjschool_address'                 => '',
 		'mjschool_contact_number'          => '',
 		'mjschool_combine'                 => 0,
@@ -1060,7 +1068,7 @@ function mjschool_option() {
 		'mjschool_driver_thumb_new'        => $plugin_url . 'assets/images/thumb-icon/mjschool-transport.png',
 
 		// Footer
-		'mjschool_footer_description'      => 'Copyright ©' . date( 'Y' ) . ' Mojoomla. All rights reserved.',
+		'mjschool_footer_description'      => 'Copyright ©' . gmdate( 'Y' ) . ' Mojoomla. All rights reserved.',
 
 		// Access Rights
 		'mjschool_access_right_student'    => $role_access_right_student,
@@ -1558,13 +1566,6 @@ function mjschool_settings_nonce_field() {
 }
 
 /**
- * Define plugin constants for script versions
- */
-if ( ! defined( 'MJSCHOOL_SCRIPT_VERSION' ) ) {
-    define( 'MJSCHOOL_SCRIPT_VERSION', '1.0.0' );
-}
-
-/**
  * Get all MJSchool admin page slugs
  *
  * @since 1.0.0
@@ -1888,8 +1889,8 @@ function mjschool_get_localized_data( $current_page ) {
     
     // Get custom field columns
     $custom_columns = array();
-    if ( class_exists( 'Mjschool_Custome_Field' ) && function_exists( 'mjschool_get_module_name_for_custom_field' ) ) {
-        $mjschool_custom_field_obj = new Mjschool_Custome_Field();
+    if ( class_exists( 'Mjschool_Custom_Field' ) && function_exists( 'mjschool_get_module_name_for_custom_field' ) ) {
+        $mjschool_custom_field_obj = new Mjschool_Custom_Field();
         $module = mjschool_get_module_name_for_custom_field( $current_page );
         $user_custom_field = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
         
@@ -1996,12 +1997,13 @@ function mjschool_get_localized_data( $current_page ) {
     );
     
     // Add exam data if available - with proper validation
-    if ( isset( $_REQUEST['exam_id'] ) && function_exists( 'mjschool_decrypt_id' ) && function_exists( 'mjschool_get_exam_by_id' ) ) {
+    if ( isset( $_REQUEST['exam_id'] ) && function_exists( 'mjschool_decrypt_id' )) {
         $exam_id = sanitize_text_field( wp_unslash( $_REQUEST['exam_id'] ) );
         $decrypted_id = mjschool_decrypt_id( $exam_id );
         
         if ( $decrypted_id ) {
-            $exam_data = mjschool_get_exam_by_id( absint( $decrypted_id ) );
+            $obj_exam = new Mjschool_Exam();
+            $exam_data = $obj_exam->mjschool_get_exam_by_id( absint( $decrypted_id ) );
             if ( $exam_data && isset( $exam_data->exam_id ) ) {
                 $data['exam_data_id'] = absint( $exam_data->exam_id );
             }
@@ -2032,44 +2034,44 @@ function mjschool_get_localized_data( $current_page ) {
  */
 function mjschool_get_alert_messages() {
     return array(
-        'edit_record_alert'              => esc_attr__( 'Are you sure want to edit this record?', 'mjschool' ),
-        'category_alert'                 => esc_attr__( 'You must fill out the field', 'mjschool' ),
-        'class_limit_alert'              => esc_attr__( 'Class Limit Is Full.', 'mjschool' ),
-        'enter_room_alert'               => esc_attr__( 'Please Enter Room Category Name.', 'mjschool' ),
-        'enter_value_alert'              => esc_attr__( 'Please Enter Value.', 'mjschool' ),
-        'delete_record_alert'            => esc_attr__( 'Are you sure you want to delete this record?', 'mjschool' ),
-        'select_hall_alert'              => esc_attr__( 'Please Select Exam Hall', 'mjschool' ),
-        'one_record_alert'               => esc_attr__( 'Please Select Atleast One Student', 'mjschool' ),
-        'select_member_alert'            => esc_attr__( 'Please select Student', 'mjschool' ),
-        'one_record_select_alert'        => esc_attr__( 'Please select atleast one record', 'mjschool' ),
-        'one_class_select_alert'         => esc_attr__( 'Please select atleast one class', 'mjschool' ),
-        'one_select_Validation_alert'    => esc_attr__( 'Please select atleast one Validation', 'mjschool' ),
-        'lower_starting_year_alert'      => esc_attr__( 'You can not select year lower then starting year', 'mjschool' ),
-        'do_delete_record'               => esc_attr__( 'Do you really want to delete this ?', 'mjschool' ),
-        'select_one_book_alert'          => esc_attr__( 'Please select atleast one book', 'mjschool' ),
-        'select_different_student_alert' => esc_attr__( 'Please Select Different Student', 'mjschool' ),
-        'select_user_label'              => esc_attr__( 'Select Users', 'mjschool' ),
-        'select_all_label'               => esc_attr__( 'Select all', 'mjschool' ),
-        'same_email_alert'               => esc_attr__( 'you have used the same email', 'mjschool' ),
-        'image_forame_alert'             => esc_attr__( "Only '.jpeg','.jpg', '.png', '.bmp' formats are allowed.", 'mjschool' ),
-        'more_then_exam_date_time'       => esc_attr__( 'Fail! More than one subject exam date & time same.', 'mjschool' ),
-        'single_entry_alert'             => esc_attr__( 'There is only single entry,You can not remove it.', 'mjschool' ),
-        'one_teacher_alert'              => esc_attr__( 'Please select atleast one teacher', 'mjschool' ),
-        'one_assign_room_alert'          => esc_attr__( 'Please select Student', 'mjschool' ),
-        'one_message_alert'              => esc_attr__( 'Please select atleast one message', 'mjschool' ),
-        'large_file_size_alert'          => esc_attr__( 'Too large file Size. Only file smaller than 10MB can be uploaded.', 'mjschool' ),
-        'pdf_alert'                      => esc_attr__( 'Only pdf formate are allowed.', 'mjschool' ),
-        'starting_year_alert'            => esc_attr__( 'You Can Not Select Ending Year Lower Than Starting Year', 'mjschool' ),
-        'one_user_replys_alert'          => esc_attr__( 'Please select atleast one users to replys', 'mjschool' ),
-        'csv_alert'                      => esc_attr__( 'Problems with user: we are going to skip', 'mjschool' ),
-        'select_user'                    => esc_attr__( 'Select Users', 'mjschool' ),
-        'select_all'                     => esc_attr__( 'Select all', 'mjschool' ),
-        'mail_reminder'                  => esc_attr__( 'Are you sure you want to send a mail reminder?', 'mjschool' ),
-        'account_alert_1'                => esc_attr__( 'Only jpeg,jpg,png and bmp formate are allowed.', 'mjschool' ),
-        'account_alert_2'                => esc_attr__( 'formate are not allowed.', 'mjschool' ),
-        'exam_hallCapacity_1'            => esc_attr__( 'Exam Hall Capacity', 'mjschool' ),
-        'exam_hallCapacity_2'            => esc_attr__( 'Out Of', 'mjschool' ),
-        'exam_hallCapacity_3'            => esc_attr__( 'Students.', 'mjschool' ),
+        'edit_record_alert'              => esc_html__( 'Are you sure want to edit this record?', 'mjschool' ),
+        'category_alert'                 => esc_html__( 'You must fill out the field', 'mjschool' ),
+        'class_limit_alert'              => esc_html__( 'Class Limit Is Full.', 'mjschool' ),
+        'enter_room_alert'               => esc_html__( 'Please Enter Room Category Name.', 'mjschool' ),
+        'enter_value_alert'              => esc_html__( 'Please Enter Value.', 'mjschool' ),
+        'delete_record_alert'            => esc_html__( 'Are you sure you want to delete this record?', 'mjschool' ),
+        'select_hall_alert'              => esc_html__( 'Please Select Exam Hall', 'mjschool' ),
+        'one_record_alert'               => esc_html__( 'Please Select Atleast One Student', 'mjschool' ),
+        'select_member_alert'            => esc_html__( 'Please select Student', 'mjschool' ),
+        'one_record_select_alert'        => esc_html__( 'Please select atleast one record', 'mjschool' ),
+        'one_class_select_alert'         => esc_html__( 'Please select atleast one class', 'mjschool' ),
+        'one_select_Validation_alert'    => esc_html__( 'Please select atleast one Validation', 'mjschool' ),
+        'lower_starting_year_alert'      => esc_html__( 'You can not select year lower then starting year', 'mjschool' ),
+        'do_delete_record'               => esc_html__( 'Do you really want to delete this ?', 'mjschool' ),
+        'select_one_book_alert'          => esc_html__( 'Please select atleast one book', 'mjschool' ),
+        'select_different_student_alert' => esc_html__( 'Please Select Different Student', 'mjschool' ),
+        'select_user_label'              => esc_html__( 'Select Users', 'mjschool' ),
+        'select_all_label'               => esc_html__( 'Select all', 'mjschool' ),
+        'same_email_alert'               => esc_html__( 'you have used the same email', 'mjschool' ),
+        'image_forame_alert'             => esc_html__( "Only '.jpeg','.jpg', '.png', '.bmp' formats are allowed.", 'mjschool' ),
+        'more_then_exam_date_time'       => esc_html__( 'Fail! More than one subject exam date & time same.', 'mjschool' ),
+        'single_entry_alert'             => esc_html__( 'There is only single entry,You can not remove it.', 'mjschool' ),
+        'one_teacher_alert'              => esc_html__( 'Please select atleast one teacher', 'mjschool' ),
+        'one_assign_room_alert'          => esc_html__( 'Please select Student', 'mjschool' ),
+        'one_message_alert'              => esc_html__( 'Please select atleast one message', 'mjschool' ),
+        'large_file_size_alert'          => esc_html__( 'Too large file Size. Only file smaller than 10MB can be uploaded.', 'mjschool' ),
+        'pdf_alert'                      => esc_html__( 'Only pdf formate are allowed.', 'mjschool' ),
+        'starting_year_alert'            => esc_html__( 'You Can Not Select Ending Year Lower Than Starting Year', 'mjschool' ),
+        'one_user_replys_alert'          => esc_html__( 'Please select atleast one users to replys', 'mjschool' ),
+        'csv_alert'                      => esc_html__( 'Problems with user: we are going to skip', 'mjschool' ),
+        'select_user'                    => esc_html__( 'Select Users', 'mjschool' ),
+        'select_all'                     => esc_html__( 'Select all', 'mjschool' ),
+        'mail_reminder'                  => esc_html__( 'Are you sure you want to send a mail reminder?', 'mjschool' ),
+        'account_alert_1'                => esc_html__( 'Only jpeg,jpg,png and bmp formate are allowed.', 'mjschool' ),
+        'account_alert_2'                => esc_html__( 'formate are not allowed.', 'mjschool' ),
+        'exam_hallCapacity_1'            => esc_html__( 'Exam Hall Capacity', 'mjschool' ),
+        'exam_hallCapacity_2'            => esc_html__( 'Out Of', 'mjschool' ),
+        'exam_hallCapacity_3'            => esc_html__( 'Students.', 'mjschool' ),
         
     );
 }
@@ -2136,9 +2138,9 @@ function mjschool_enqueue_page_specific_js( $current_page, $localized_data ) {
     }
     
     // Special case for marks page
-    if ( 'mjschool_result' === $current_page ) {
-        wp_enqueue_script( 'mjschool-marks', mjschool_asset_url( '/assets/js/pages/marks.js' ), array( 'jquery' ), $version, true );
-    }
+    // if ( 'mjschool_result' === $current_page ) {
+    //     wp_enqueue_script( 'mjschool-marks', mjschool_asset_url( '/assets/js/pages/marks.js' ), array( 'jquery' ), $version, true );
+    // }
 }
 
 /**
@@ -2178,6 +2180,14 @@ function mjschool_enqueue_common_js( $localized_data ) {
     wp_localize_script( 'mjschool-image-upload', 'language_translate1', array(
         'allow_file_alert' => esc_attr__( 'Only jpg,jpeg,png File allowed', 'mjschool' ),
     ) );
+    // html2canvas
+    wp_enqueue_script( 'html2canvas', 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', array(), '1.4.1', true );
+
+    // jsPDF
+    wp_enqueue_script( 'jspdf', 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', array(), '2.5.1', true );
+
+    // Your custom JS
+    wp_enqueue_script( 'mjschool-pdf', MJSCHOOL_PLUGIN_URL . '/assets/js/mjschool-pdf.js', array('jquery', 'html2canvas', 'jspdf'), '1.0', true );
     
     // Conflict resolution
     wp_enqueue_script( 'mjschool-custom-obj', mjschool_asset_url( '/assets/js/mjschool-custom-confilict-obj.js' ), array( 'jquery' ), $version, false );
@@ -2213,6 +2223,33 @@ function mjschool_change_adminbar_css( $hook ) {
     $localized_data = mjschool_get_localized_data( $current_page );
     mjschool_enqueue_page_specific_js( $current_page, $localized_data );
     mjschool_enqueue_common_js( $localized_data );
+
+    // // html2canvas
+    // wp_enqueue_script(
+    //     'html2canvas',
+    //     'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+    //     array(),
+    //     '1.4.1',
+    //     true
+    // );
+
+    // // jsPDF
+    // wp_enqueue_script(
+    //     'jspdf',
+    //     'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+    //     array(),
+    //     '2.5.1',
+    //     true
+    // );
+
+    // // Your custom JS
+    // wp_enqueue_script(
+    //     'mjschool-pdf',
+    //     MJSCHOOL_PLUGIN_URL . '/assets/js/mjschool-pdf.js',
+    //     array('jquery', 'html2canvas', 'jspdf'),
+    //     '1.0',
+    //     true
+    // );
 }
 
 // Hook the main enqueue function - only if page parameter is set
@@ -2274,7 +2311,7 @@ function mjschool_install_login_page() {
     }
     
     $page_data = array(
-        'post_title'     => esc_attr__( 'School Management Login Page', 'mjschool' ),
+        'post_title'     => esc_html__( 'School Management Login Page', 'mjschool' ),
         'post_content'   => '[smgt_login]',
         'post_status'    => 'publish',
         'post_type'      => 'page',
@@ -2302,7 +2339,7 @@ function mjschool_install_student_registration_page() {
     }
     
     $page_data = array(
-        'post_title'     => esc_attr__( 'Student Registration', 'mjschool' ),
+        'post_title'     => esc_html__( 'Student Registration', 'mjschool' ),
         'post_content'   => '[smgt_student_registration]',
         'post_status'    => 'publish',
         'post_type'      => 'page',
@@ -2437,7 +2474,7 @@ function mjschool_get_frontend_localized_data( $current_page ) {
 }
 
 /**
- * Enqueue frontend page-specific scripts
+ * Enqueue frontend page-specific scripts.
  *
  * @since 2.0.0
  * @param string $current_page   Current page slug.
@@ -2679,16 +2716,16 @@ class MJSchool_Student_Registration {
 
         // Required fields validation
         $required_fields = array(
-            'class_name'    => __( 'Class Name', 'mjschool' ),
-            'first_name'    => __( 'First Name', 'mjschool' ),
-            'last_name'     => __( 'Last Name', 'mjschool' ),
-            'birth_date'    => __( 'Date of Birth', 'mjschool' ),
-            'address'       => __( 'Address', 'mjschool' ),
-            'city_name'     => __( 'City', 'mjschool' ),
-            'zip_code'      => __( 'Zip Code', 'mjschool' ),
-            'mobile_number' => __( 'Mobile Number', 'mjschool' ),
-            'email'         => __( 'Email', 'mjschool' ),
-            'password'      => __( 'Password', 'mjschool' ),
+            'class_name'    => esc_html__( 'Class Name', 'mjschool' ),
+            'first_name'    => esc_html__( 'First Name', 'mjschool' ),
+            'last_name'     => esc_html__( 'Last Name', 'mjschool' ),
+            'birth_date'    => esc_html__( 'Date of Birth', 'mjschool' ),
+            'address'       => esc_html__( 'Address', 'mjschool' ),
+            'city_name'     => esc_html__( 'City', 'mjschool' ),
+            'zip_code'      => esc_html__( 'Zip Code', 'mjschool' ),
+            'mobile_number' => esc_html__( 'Mobile Number', 'mjschool' ),
+            'email'         => esc_html__( 'Email', 'mjschool' ),
+            'password'      => esc_html__( 'Password', 'mjschool' ),
         );
 
         foreach ( $required_fields as $field => $label ) {
@@ -2696,7 +2733,7 @@ class MJSchool_Student_Registration {
                 $this->errors->add(
                     'required_' . $field,
                     /* translators: %s: field label */
-                    sprintf( __( '%s is required.', 'mjschool' ), $label )
+                    sprintf( esc_html__( '%s is required.', 'mjschool' ), $label )
                 );
             }
         }
@@ -2704,35 +2741,35 @@ class MJSchool_Student_Registration {
         // Email validation
         if ( ! empty( $this->form_data['email'] ) ) {
             if ( ! is_email( $this->form_data['email'] ) ) {
-                $this->errors->add( 'email_invalid', __( 'Please enter a valid email address.', 'mjschool' ) );
+                $this->errors->add( 'email_invalid', esc_html__( 'Please enter a valid email address.', 'mjschool' ) );
             } elseif ( email_exists( $this->form_data['email'] ) ) {
-                $this->errors->add( 'email_exists', __( 'This email address is already registered.', 'mjschool' ) );
+                $this->errors->add( 'email_exists', esc_html__( 'This email address is already registered.', 'mjschool' ) );
             }
 
             // Username (email) validation
             if ( username_exists( $this->form_data['email'] ) ) {
-                $this->errors->add( 'username_exists', __( 'This username is already taken.', 'mjschool' ) );
+                $this->errors->add( 'username_exists', esc_html__( 'This username is already taken.', 'mjschool' ) );
             }
 
             if ( strlen( $this->form_data['email'] ) < 4 ) {
-                $this->errors->add( 'username_short', __( 'Username must be at least 4 characters.', 'mjschool' ) );
+                $this->errors->add( 'username_short', esc_html__( 'Username must be at least 4 characters.', 'mjschool' ) );
             }
         }
 
         // Password validation
         if ( ! empty( $this->form_data['password'] ) ) {
             if ( strlen( $this->form_data['password'] ) < 8 ) {
-                $this->errors->add( 'password_short', __( 'Password must be at least 8 characters.', 'mjschool' ) );
+                $this->errors->add( 'password_short', esc_html__( 'Password must be at least 8 characters.', 'mjschool' ) );
             }
             if ( strlen( $this->form_data['password'] ) > 12 ) {
-                $this->errors->add( 'password_long', __( 'Password must not exceed 12 characters.', 'mjschool' ) );
+                $this->errors->add( 'password_long', esc_html__( 'Password must not exceed 12 characters.', 'mjschool' ) );
             }
         }
 
         // Mobile number validation
         if ( ! empty( $this->form_data['mobile_number'] ) ) {
             if ( ! preg_match( '/^[0-9]{6,15}$/', $this->form_data['mobile_number'] ) ) {
-                $this->errors->add( 'mobile_invalid', __( 'Please enter a valid mobile number (6-15 digits).', 'mjschool' ) );
+                $this->errors->add( 'mobile_invalid', esc_html__( 'Please enter a valid mobile number (6-15 digits).', 'mjschool' ) );
             }
         }
 
@@ -2868,7 +2905,7 @@ class MJSchool_Student_Registration {
         if ( false === $timestamp ) {
             return '';
         }
-        return date( 'Y-m-d', $timestamp );
+        return gmdate( 'Y-m-d', $timestamp );
     }
 
     /**
@@ -2947,14 +2984,14 @@ class MJSchool_Student_Registration {
 
         // Check file size
         if ( $file['size'] > $this->max_avatar_size ) {
-            $this->errors->add( 'avatar_size', __( 'Avatar file is too large. Maximum size is 10MB.', 'mjschool' ) );
+            $this->errors->add( 'avatar_size', esc_html__( 'Avatar file is too large. Maximum size is 10MB.', 'mjschool' ) );
             return false;
         }
 
         // Check file extension
         $ext = strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) );
         if ( ! in_array( $ext, $this->allowed_avatar_extensions, true ) ) {
-            $this->errors->add( 'avatar_type', __( 'Invalid avatar file type. Allowed types: jpg, jpeg, png, gif, webp.', 'mjschool' ) );
+            $this->errors->add( 'avatar_type', esc_html__( 'Invalid avatar file type. Allowed types: jpg, jpeg, png, gif, webp.', 'mjschool' ) );
             return false;
         }
 
@@ -2965,7 +3002,7 @@ class MJSchool_Student_Registration {
 
         $allowed_mimes = array( 'image/jpeg', 'image/png', 'image/gif', 'image/webp' );
         if ( ! in_array( $mime, $allowed_mimes, true ) ) {
-            $this->errors->add( 'avatar_mime', __( 'Invalid avatar file type.', 'mjschool' ) );
+            $this->errors->add( 'avatar_mime', esc_html__( 'Invalid avatar file type.', 'mjschool' ) );
             return false;
         }
 
@@ -3082,11 +3119,11 @@ class MJSchool_Student_Registration {
      * @param int $user_id User ID.
      */
     private function process_custom_fields( $user_id ) {
-        if ( ! class_exists( 'Mjschool_Custome_Field' ) ) {
+        if ( ! class_exists( 'Mjschool_Custom_Field' ) ) {
             return;
         }
 
-        $custom_field_obj = new Mjschool_Custome_Field();
+        $custom_field_obj = new Mjschool_Custom_Field();
         $custom_field_obj->mjschool_insert_custom_field_data_module_wise( 'student', $user_id );
     }
 
@@ -3161,7 +3198,8 @@ class MJSchool_Student_Registration {
         $school  = get_option( 'mjschool_name', 'School Management System' );
 
         // Get class name display
-        $class_display = function_exists( 'mjschool_get_class_name' ) ? mjschool_get_class_name( $class_name ) : $class_name;
+        $mjschool_class = new Mjschool_Class();
+        $class_display = method_exists( $mjschool_class, 'mjschool_get_class_name' ) ? $mjschool_class->mjschool_get_class_name( $class_name ) : $class_name;
 
         // Build message
         $search  = array( '{{student_name}}', '{{email_id}}', '{{class_name}}', '{{password}}', '{{school_name}}' );
@@ -3189,11 +3227,8 @@ class MJSchool_Student_Registration {
      * @param string  $class_name Class name.
      */
     private function send_teacher_notifications( $user_info, $class_name ) {
-        if ( ! function_exists( 'mjschool_check_class_exits_in_teacher_class' ) ) {
-            return;
-        }
-
-        $teacher_ids = mjschool_check_class_exits_in_teacher_class( $class_name );
+        $teacher_obj = new Mjschool_Teacher();
+        $teacher_ids = $teacher_obj->mjschool_check_class_exits_in_teacher_class( $class_name );
         if ( empty( $teacher_ids ) ) {
             return;
         }
@@ -3377,17 +3412,17 @@ class MJSchool_Student_Registration {
     private function render_name_fields() {
         $fields = array(
             'first_name'  => array(
-                'label'    => __( 'First Name', 'mjschool' ),
+                'label'    => esc_html__( 'First Name', 'mjschool' ),
                 'required' => true,
                 'validate' => 'validate[required,custom[onlyLetter_specialcharacter]]',
             ),
             'middle_name' => array(
-                'label'    => __( 'Middle Name', 'mjschool' ),
+                'label'    => esc_html__( 'Middle Name', 'mjschool' ),
                 'required' => false,
                 'validate' => 'validate[custom[onlyLetter_specialcharacter]]',
             ),
             'last_name'   => array(
-                'label'    => __( 'Last Name', 'mjschool' ),
+                'label'    => esc_html__( 'Last Name', 'mjschool' ),
                 'required' => true,
                 'validate' => 'validate[required,custom[onlyLetter_specialcharacter]]',
             ),
@@ -3438,9 +3473,9 @@ class MJSchool_Student_Registration {
                             <div class="d-inline-block mb-1">
                                 <?php
                                 $genders = array(
-                                    'male'   => __( 'Male', 'mjschool' ),
-                                    'female' => __( 'Female', 'mjschool' ),
-                                    'other'  => __( 'Other', 'mjschool' ),
+                                    'male'   => esc_html__( 'Male', 'mjschool' ),
+                                    'female' => esc_html__( 'Female', 'mjschool' ),
+                                    'other'  => esc_html__( 'Other', 'mjschool' ),
                                 );
                                 foreach ( $genders as $value => $label ) :
                                     ?>
@@ -3467,7 +3502,7 @@ class MJSchool_Student_Registration {
     private function render_date_field() {
         $birth_date = $this->form_data['birth_date'];
         if ( empty( $birth_date ) && function_exists( 'mjschool_get_date_in_input_box' ) ) {
-            $birth_date = mjschool_get_date_in_input_box( date( 'Y-m-d' ) );
+            $birth_date = mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) );
         }
         ?>
         <div class="col-md-6">
@@ -3498,25 +3533,25 @@ class MJSchool_Student_Registration {
     private function render_address_fields() {
         $fields = array(
             'address'    => array(
-                'label'    => __( 'Address', 'mjschool' ),
+                'label'    => esc_html__( 'Address', 'mjschool' ),
                 'required' => true,
                 'validate' => 'validate[required,custom[address_description_validation]]',
                 'maxlen'   => 120,
             ),
             'city_name'  => array(
-                'label'    => __( 'City', 'mjschool' ),
+                'label'    => esc_html__( 'City', 'mjschool' ),
                 'required' => true,
                 'validate' => 'validate[required,custom[city_state_country_validation]]',
                 'maxlen'   => 50,
             ),
             'state_name' => array(
-                'label'    => __( 'State', 'mjschool' ),
+                'label'    => esc_html__( 'State', 'mjschool' ),
                 'required' => false,
                 'validate' => 'validate[custom[city_state_country_validation]]',
                 'maxlen'   => 50,
             ),
             'zip_code'   => array(
-                'label'    => __( 'Zip Code', 'mjschool' ),
+                'label'    => esc_html__( 'Zip Code', 'mjschool' ),
                 'required' => true,
                 'validate' => 'validate[required,custom[zipcode]]',
                 'maxlen'   => 15,
@@ -3562,12 +3597,12 @@ class MJSchool_Student_Registration {
 
         $phone_fields = array(
             'mobile_number'          => array(
-                'label'    => __( 'Mobile Number', 'mjschool' ),
+                'label'    => esc_html__( 'Mobile Number', 'mjschool' ),
                 'required' => true,
                 'validate' => 'validate[required,custom[phone_number],minSize[6],maxSize[15]]',
             ),
             'alternet_mobile_number' => array(
-                'label'    => __( 'Alternate Mobile Number', 'mjschool' ),
+                'label'    => esc_html__( 'Alternate Mobile Number', 'mjschool' ),
                 'required' => false,
                 'validate' => 'validate[custom[phone_number],minSize[6],maxSize[15]]',
             ),
@@ -3715,11 +3750,11 @@ class MJSchool_Student_Registration {
      * @since 2.0.0
      */
     private function render_custom_fields() {
-        if ( ! class_exists( 'Mjschool_Custome_Field' ) ) {
+        if ( ! class_exists( 'Mjschool_Custom_Field' ) ) {
             return;
         }
 
-        $custom_field_obj = new Mjschool_Custome_Field();
+        $custom_field_obj = new Mjschool_Custom_Field();
         $custom_fields    = $custom_field_obj->mjschool_get_custom_field_by_module( 'student' );
 
         if ( empty( $custom_fields ) ) {
@@ -3866,23 +3901,23 @@ function mjschool_registration_validation( $class_name, $first_name, $middle_nam
 
     // Basic validation for backward compatibility
     if ( empty( $class_name ) || empty( $first_name ) || empty( $last_name ) || empty( $birth_date ) || empty( $address ) || empty( $city_name ) || empty( $zip_code ) || empty( $mobile_number ) || empty( $email ) || empty( $username ) || empty( $password ) ) {
-        $mjschool_reg_errors->add( 'field', __( 'Required form field is missing', 'mjschool' ) );
+        $mjschool_reg_errors->add( 'field', esc_html__( 'Required form field is missing', 'mjschool' ) );
     }
 
     if ( strlen( $username ) < 4 ) {
-        $mjschool_reg_errors->add( 'username_length', __( 'Username too short. At least 4 characters is required', 'mjschool' ) );
+        $mjschool_reg_errors->add( 'username_length', esc_html__( 'Username too short. At least 4 characters is required', 'mjschool' ) );
     }
 
     if ( username_exists( $username ) ) {
-        $mjschool_reg_errors->add( 'user_name', __( 'Sorry, that username already exists!', 'mjschool' ) );
+        $mjschool_reg_errors->add( 'user_name', esc_html__( 'Sorry, that username already exists!', 'mjschool' ) );
     }
 
     if ( ! is_email( $email ) ) {
-        $mjschool_reg_errors->add( 'email_invalid', __( 'Email is not valid', 'mjschool' ) );
+        $mjschool_reg_errors->add( 'email_invalid', esc_html__( 'Email is not valid', 'mjschool' ) );
     }
 
     if ( email_exists( $email ) ) {
-        $mjschool_reg_errors->add( 'email', __( 'Email Already in use', 'mjschool' ) );
+        $mjschool_reg_errors->add( 'email', esc_html__( 'Email Already in use', 'mjschool' ) );
     }
 
     // Display errors
@@ -4030,11 +4065,11 @@ function mjschool_wp_authenticate_username_password_new( $user, $username, $pass
         $error = new WP_Error();
 
         if ( empty( $username ) ) {
-            $error->add( 'empty_username', __( '<strong>ERROR</strong>: The username field is empty.', 'mjschool' ) );
+            $error->add( 'empty_username', esc_html__( '<strong>ERROR</strong>: The username field is empty.', 'mjschool' ) );
         }
 
         if ( empty( $password ) ) {
-            $error->add( 'empty_password', __( '<strong>ERROR</strong>: The password field is empty.', 'mjschool' ) );
+            $error->add( 'empty_password', esc_html__( '<strong>ERROR</strong>: The password field is empty.', 'mjschool' ) );
         }
 
         return $error;
@@ -4045,7 +4080,7 @@ function mjschool_wp_authenticate_username_password_new( $user, $username, $pass
     if ( ! $user ) {
         return new WP_Error(
             'invalid_username',
-            __( '<strong>ERROR</strong>: Invalid username.', 'mjschool' )
+            esc_html__( '<strong>ERROR</strong>: Invalid username.', 'mjschool' )
         );
     }
 
@@ -4062,7 +4097,7 @@ function mjschool_wp_authenticate_username_password_new( $user, $username, $pass
             'incorrect_password',
             sprintf(
                 /* translators: %s: User name. */
-                __( '<strong>ERROR</strong>: The password you entered for the username %s is incorrect.', 'mjschool' ),
+                esc_html__( '<strong>ERROR</strong>: The password you entered for the username %s is incorrect.', 'mjschool' ),
                 '<strong>' . esc_html( $username ) . '</strong>'
             )
         );
@@ -4341,22 +4376,22 @@ class MJSchool_Admission_Handler {
 
         // Username length check.
         if ( strlen( $username ) < 4 ) {
-            $this->errors->add( 'username_length', __( 'Username too short. At least 4 characters required.', 'mjschool' ) );
+            $this->errors->add( 'username_length', esc_html__( 'Username too short. At least 4 characters required.', 'mjschool' ) );
         }
 
         // Username exists check.
         if ( username_exists( $username ) ) {
-            $this->errors->add( 'user_name', __( 'Sorry, that username already exists!', 'mjschool' ) );
+            $this->errors->add( 'user_name', esc_html__( 'Sorry, that username already exists!', 'mjschool' ) );
         }
 
         // Email validation.
         if ( ! is_email( $email ) ) {
-            $this->errors->add( 'email_invalid', __( 'Email is not valid.', 'mjschool' ) );
+            $this->errors->add( 'email_invalid', esc_html__( 'Email is not valid.', 'mjschool' ) );
         }
 
         // Email exists check.
         if ( email_exists( $email ) ) {
-            $this->errors->add( 'email', __( 'Email already in use.', 'mjschool' ) );
+            $this->errors->add( 'email', esc_html__( 'Email already in use.', 'mjschool' ) );
         }
 
         // Display errors if any.
@@ -4562,8 +4597,8 @@ class MJSchool_Admission_Handler {
         }
 
         // Save custom fields.
-        if ( class_exists( 'Mjschool_Custome_Field' ) ) {
-            $custom_field_obj = new Mjschool_Custome_Field();
+        if ( class_exists( 'Mjschool_Custom_Field' ) ) {
+            $custom_field_obj = new Mjschool_Custom_Field();
             $custom_field_obj->mjschool_insert_custom_field_data_module_wise( 'admission', $user_id );
         }
     }
@@ -4819,9 +4854,10 @@ class MJSchool_Admission_Handler {
      */
     private function output_admission_form() {
         $this->enqueue_form_assets();
-
+        
         $theme_name = get_template();
         $role       = 'student_temp';
+        $mjschool_obj_admission    = new Mjschool_admission();
         $form_action = esc_url( remove_query_arg( array( 'doing_wp_cron' ) ) );
 
         // Get phone code.
@@ -4831,15 +4867,14 @@ class MJSchool_Admission_Handler {
         }
 
         // Get admission number.
-        $admission_no = '';
-        if ( function_exists( 'mjschool_generate_admission_number' ) ) {
-            $admission_no = mjschool_generate_admission_number();
-        }
+        
+        $admission_no = $mjschool_obj_admission->mjschool_generate_admission_number();
+        
 
         // Get current date formatted.
         $current_date = '';
         if ( function_exists( 'mjschool_get_date_in_input_box' ) ) {
-            $current_date = mjschool_get_date_in_input_box( date( 'Y-m-d' ) );
+            $current_date = mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) );
         }
 
         // Get currency symbol.
@@ -4872,7 +4907,7 @@ function mjschool_install_student_admission_page() {
     }
 
     $page_data = array(
-        'post_title'     => __( 'Student Admission', 'mjschool' ),
+        'post_title'     => esc_html__( 'Student Admission', 'mjschool' ),
         'post_content'   => '[smgt_student_admission]',
         'post_status'    => 'publish',
         'post_type'      => 'page',
@@ -4900,7 +4935,7 @@ function mjschool_install_combine_admission_page() {
     }
 
     $page_data = array(
-        'post_title'     => __( 'Student Registration Form', 'mjschool' ),
+        'post_title'     => esc_html__( 'Student Registration Form', 'mjschool' ),
         'post_content'   => '[smgt_student_combine_admission]',
         'post_name'      => 'student-registration-form',
         'post_status'    => 'publish',
@@ -5075,7 +5110,7 @@ class MJSchool_Recurring_Invoice_Handler {
         $obj_feespayment = new Mjschool_Feespayment();
         $table_fees_payment = $wpdb->prefix . 'mjschool_fees_payment';
         $table_recurring = $wpdb->prefix . 'mjschool_fees_payment_recurring';
-        $current_date = date( 'Y-m-d' );
+        $current_date = gmdate( 'Y-m-d' );
 
         $all_recurring = $obj_feespayment->mjschool_get_all_recurring_fees_active( $current_date );
 
@@ -5133,7 +5168,7 @@ class MJSchool_Recurring_Invoice_Handler {
         );
 
         $interval = $intervals[ $recurring_type ] ?? '+0 days';
-        return date( 'Y-m-d', strtotime( $interval ) );
+        return gmdate( 'Y-m-d', strtotime( $interval ) );
     }
 
     /**
@@ -5189,9 +5224,9 @@ class MJSchool_Recurring_Invoice_Handler {
             'tax_amount'     => $tax_amount,
             'total_amount'   => $total_fees + $tax_amount,
             'description'    => $recurring->description,
-            'start_year'     => date( 'Y-m-d' ),
+            'start_year'     => gmdate( 'Y-m-d' ),
             'end_year'       => $end_date,
-            'paid_by_date'   => date( 'Y-m-d' ),
+            'paid_by_date'   => gmdate( 'Y-m-d' ),
             'created_date'   => current_time( 'mysql' ),
             'created_by'     => get_current_user_id(),
         );
@@ -5220,8 +5255,8 @@ class MJSchool_Recurring_Invoice_Handler {
 
         $currency = function_exists( 'mjschool_get_currency_symbol' ) ? mjschool_get_currency_symbol() : '';
         $date_formatted = function_exists( 'mjschool_get_date_in_input_box' ) 
-            ? mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) 
-            : date( 'Y-m-d' );
+            ? mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) 
+            : gmdate( 'Y-m-d' );
 
         $replacements = array(
             '{{student_name}}' => $student_info->display_name,
@@ -5269,7 +5304,7 @@ class MJSchool_Recurring_Invoice_Handler {
         }
 
         $reminder_day = absint( get_option( 'mjschool_system_payment_reminder_day', 0 ) );
-        $reminder_date = date( 'Y-m-d', strtotime( "+{$reminder_day} days" ) );
+        $reminder_date = gmdate( 'Y-m-d', strtotime( "+{$reminder_day} days" ) );
 
         $obj_feespayment = new Mjschool_Feespayment();
         $fees_payment_data = $obj_feespayment->mjschool_get_all_student_fees_data_for_reminder( $reminder_date );
@@ -5303,7 +5338,7 @@ class MJSchool_Recurring_Invoice_Handler {
                     array(
                         'student_id'  => $student_id,
                         'fees_pay_id' => $fees_id,
-                        'date_time'   => date( 'Y-m-d' ),
+                        'date_time'   => gmdate( 'Y-m-d' ),
                     ),
                     array( '%d', '%d', '%s' )
                 );
@@ -5341,9 +5376,9 @@ class MJSchool_Recurring_Invoice_Handler {
         $total_formatted = function_exists( 'mjschool_currency_symbol_position_language_wise' )
             ? mjschool_currency_symbol_position_language_wise( number_format( $payment->total_amount, 2, '.', '' ) )
             : number_format( $payment->total_amount, 2, '.', '' );
-
-        $class_name = function_exists( 'mjschool_get_class_name' ) 
-            ? mjschool_get_class_name( $payment->class_id ) 
+        $mjschool_class = new Mjschool_Class();
+        $class_name = method_exists( $mjschool_class, 'mjschool_get_class_name' ) 
+            ? $mjschool_class->mjschool_get_class_name( $payment->class_id ) 
             : '';
 
         $replacements = array(
@@ -5398,7 +5433,7 @@ if ( ! wp_next_scheduled( 'recurring_invoice_event' ) ) {
 function mjschool_add_cron_interval( $schedules ) {
     $schedules['thirty_minutes'] = array(
         'interval' => 1800,
-        'display'  => __( 'Every 30 Minutes', 'mjschool' ),
+        'display'  => esc_html__( 'Every 30 Minutes', 'mjschool' ),
     );
     return $schedules;
 }
@@ -5423,7 +5458,7 @@ add_action( 'login_form', 'mjschool_add_login_nonce' );
 function mjschool_verify_login_nonce( $user, $username, $password ) {
     if ( isset( $_POST['mjschool_login_nonce_field'] ) ) {
         if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['mjschool_login_nonce_field'] ) ), 'mjschool_login_nonce' ) ) {
-            return new WP_Error( 'nonce_failed', __( 'Security verification failed. Please try again.', 'mjschool' ) );
+            return new WP_Error( 'nonce_failed', esc_html__( 'Security verification failed. Please try again.', 'mjschool' ) );
         }
     }
     return $user;

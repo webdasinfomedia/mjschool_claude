@@ -170,7 +170,7 @@ final class PageWriter
 					}
 				}
 
-			} else { // elseif($wPt != $defwPt || $hPt != $defhPt) {
+			} else { // elseif($wPt !== $defwPt || $hPt !== $defhPt) {
 
 				$this->writer->write(sprintf('/MediaBox [0 0 %.3F %.3F]', $wPt, $hPt));
 				$bleedMargin = $this->mpdf->pageDim[$n]['bleedMargin'] * Mpdf::SCALE;

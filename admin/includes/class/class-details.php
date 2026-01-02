@@ -17,14 +17,15 @@
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/class
  * @since      1.0.0
- * @since      2.0.1 Code quality improvements - Fixed array access with isset() checks
  */
 defined( 'ABSPATH' ) || exit;
 $school_type = get_option( 'mjschool_custom_class' );
 if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'view_action' ) ) {
 	$class_id                  = intval( mjschool_decrypt_id( $_REQUEST['class_id'] ) );
-	$classdata                 = mjschool_get_class_by_id( $class_id );
-	$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+	$mjschool_class = new Mjschool_Class();
+	$teacher_obj = new Mjschool_Teacher();
+	$classdata                 = $mjschool_class->mjschool_get_class_by_id( $class_id );
+	$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 	$active_tab1               = isset( $_REQUEST['tab1'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['tab1'] ) ) : 'general';
 	?>
 	<div class="mjschool-panel-body mjschool-view-page-main"><!-- START PANEL BODY DIV.-->
@@ -158,10 +159,14 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 												<?php
 												$class_id = $classdata->class_id;
 												
-												$mjschool_user = count(get_users(array(
-													'meta_key' => 'class_name',
-													'meta_value' => $class_id
-												 ) ) );
+												// Optimized user count query using WP_User_Query.
+												$user_query = new WP_User_Query( array(
+													'meta_key'   => 'class_name',
+													'meta_value' => $class_id,
+													'count_total' => true,
+													'fields'     => 'ID',
+												) );
+												$mjschool_user = $user_query->get_total();
 												
 												?>
 												<div class="col-xl-4 col-md-4 col-sm-12 mjschool-margin-bottom-10-res">
@@ -175,7 +180,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 														<label class="mjschool-view-page-content-labels">
 															<?php
 															echo esc_html( $mjschool_user ) . ' ';
-															esc_attr_e( 'Out Of', 'mjschool' );
+															esc_html_e( 'Out Of', 'mjschool' );
 															echo ' ' . esc_html( $classdata->class_capacity );
 															?>
 														</label>
@@ -191,6 +196,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 															foreach ( $section_id as $section ) {
 																$section_name .= $section->section_name . ', ';
 															}
+															// Intentionally using rtrim then ltrim to remove only trailing/leading ', '.
 															$section_name_rtrim = rtrim( $section_name, ', ' );
 															$section_name_ltrim = ltrim( $section_name_rtrim, ', ' );
 															if ( ! empty( $section_name_ltrim ) ) {
@@ -211,7 +217,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 															if ( ! empty( $classdata->academic_year ) ) {
 																echo esc_html( $classdata->academic_year);
 															} else {
-																esc_html_e( 'Not Selected', 'mjschool' );;
+																esc_html_e( 'Not Selected', 'mjschool' );
 															}
 															?>
 														</label>
@@ -223,17 +229,18 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 													<label class="mjschool-view-page-header-labels"> <?php esc_html_e( 'Class Teachers', 'mjschool' ); ?> </label><br />
 													<label class="mjschool-view-page-content-labels">
 														<?php
-														$teachers     = mjschool_get_teacher_by_class_id( $class_id );
+														$teachers     = $teacher_obj->mjschool_get_teacher_by_class_id( $class_id );
 														$teacher_name = '';
 														foreach ( $teachers as $teacher_data ) {
 															$teacher_name .= ucfirst( $teacher_data->display_name ) . ', ';
 														}
+														// Intentionally using rtrim then ltrim to remove only trailing/leading ', '.
 														$teacher_name_rtrim = rtrim( $teacher_name, ', ' );
 														$teacher_name_ltrim = ltrim( $teacher_name_rtrim, ', ' );
 														if ( ! empty( $teacher_name_ltrim ) ) {
 															echo esc_html( $teacher_name_ltrim );
 														} else {
-															esc_attr_e( 'No Teachers', 'mjschool' );
+															esc_html_e( 'No Teachers', 'mjschool' );
 														}
 														?>
 													</label>
@@ -244,7 +251,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 								</div>
 								<?php
 								$module = 'class';
-								$mjschool_custom_field_obj->mjschool_show_inserted_customfield_data_in_datail_page( $module );
+								$mjschool_custom_field_obj->mjschool_show_inserted_custom_field_data_in_datail_page( $module );
 								?>
 							</div>
 						</div>
@@ -283,12 +290,10 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 										if ( empty( $existing_section ) || $existing_section->id === $section_id ) {
 											// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 											$result = $wpdb->update( $class_section_table, $sectiondata, array( 'id' => $section_id ) );
-											// SECURITY FIX: Safe array access
 											$class_id_param = isset($_REQUEST['class_id']) ? sanitize_text_field( wp_unslash($_REQUEST['class_id'])) : '';
 											wp_safe_redirect( admin_url( 'admin.php?page=mjschool_class&tab=class_details&tab1=section_list&class_id=' . $class_id_param . '&section_success=edit_success&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ) );
 											exit;
 										} else {
-											// SECURITY FIX: Safe array access
 											$class_id_param = isset($_REQUEST['class_id']) ? sanitize_text_field( wp_unslash($_REQUEST['class_id'])) : '';
 											$section_id_param = isset($_POST['section_id']) ? sanitize_text_field( wp_unslash($_POST['section_id'])) : '';
 											wp_safe_redirect( admin_url( 'admin.php?page=mjschool_class&tab=class_details&tab1=section_list&action=edit_section&class_id=' . $class_id_param . '&section_id=' . $section_id_param . '&section_success=exist&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ) );
@@ -300,13 +305,11 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 											// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 											$result = $wpdb->insert( $class_section_table, $sectiondata );
 											if ( $result ) {
-												// SECURITY FIX: Safe array access
 												$class_id_param = isset($_REQUEST['class_id']) ? sanitize_text_field( wp_unslash($_REQUEST['class_id'])) : '';
 												wp_safe_redirect( admin_url( 'admin.php?page=mjschool_class&tab=class_details&tab1=section_list&class_id=' . $class_id_param . '&section_success=insert_success&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ) );
 											exit;
 											}
 										} else {
-											// SECURITY FIX: Safe array access
 											$class_id_param = isset($_REQUEST['class_id']) ? sanitize_text_field( wp_unslash($_REQUEST['class_id'])) : '';
 											wp_safe_redirect( admin_url( 'admin.php?page=mjschool_class&tab=class_details&tab1=section_list&class_id=' . $class_id_param . '&section_success=exist&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ) );
 											exit;
@@ -316,9 +319,9 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 								// CLASS SECTION DELETE CODE.
 								if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'delete_section' ) {
 									$section_id = intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['section_id'] ) ) ) );
-									$result     = mjschool_delete_class_section( $section_id );
+									$mjschool_class = new Mjschool_Class();
+									$result     = $mjschool_class->mjschool_delete_class_section( $section_id );
 									if ( $result ) {
-										// SECURITY FIX: Safe array access
 										$class_id_param = isset($_REQUEST['class_id']) ? sanitize_text_field( wp_unslash($_REQUEST['class_id'])) : '';
 										wp_safe_redirect( admin_url( 'admin.php?page=mjschool_class&tab=class_details&tab1=section_list&class_id=' . $class_id_param . '&section_success=delete_success&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ) );
 										exit;
@@ -332,7 +335,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 										if ( isset( $_REQUEST['action'] ) && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit_section' ) ) {
 											$edit    = 1;
 											$id      = intval( sanitize_text_field( wp_unslash($_REQUEST['section_id'])) );
-											$section = mjschool_single_section( $id );
+											
+											$section = $mjschool_class->mjschool_single_section( $id );
 										}
 										?>
 										<form name="class_Section_form" action="" method="post" class="mjschool-form-horizontal" id="class_Section_form"><!------- form Start --------->
@@ -386,6 +390,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 													</thead>
 													<tbody>
 														<?php
+														$mjschool_class = new Mjschool_Class();
 														foreach ( $retrieve_class_data as $retrieved_data ) {
 															?>
 															<tr>
@@ -393,7 +398,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 																<td>
 																	<?php
 																	if ( ! empty( $retrieved_data->class_id ) ) {
-																		echo esc_html( mjschool_get_class_name_by_id( $retrieved_data->class_id ) );
+																		echo esc_html( $mjschool_class->mjschool_get_class_name_by_id( $retrieved_data->class_id ) );
 																	} else {
 																		esc_html_e( 'Not Provided', 'mjschool' ); }
 																	?>
@@ -411,7 +416,6 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 																				<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																					<?php
 																					if ( $user_access_edit === '1' ) {
-																						// SECURITY FIX: Safe array access
 																						$class_id_param = isset($_REQUEST['class_id']) ? sanitize_text_field( wp_unslash($_REQUEST['class_id'])) : '';
 																						?>
 																						<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
@@ -420,7 +424,6 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 																						<?php
 																					}
 																					if ( $user_access_delete === '1' ) {
-																						// SECURITY FIX: Safe array access
 																						$class_id_param = isset($_REQUEST['class_id']) ? sanitize_text_field( wp_unslash($_REQUEST['class_id'])) : '';
 																						?>
 																						<li class="mjschool-float-left-width-100px">
@@ -447,7 +450,7 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 													</button>
 													<?php
 													if ( $user_access_delete === '1' ) {
-														 ?>
+														?>
 														<button id="mjschool-delete-selected-room" data-toggle="tooltip" title="<?php esc_attr_e( 'Delete Selected','mjschool' );?>" name="mjschool-delete-selected-room" class="delete_selected"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/listpage-icon/mjschool-delete.png"); ?>"></button>
 														<?php 
 													}
@@ -483,7 +486,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 											<select id="filter_section_id" name="filter_section_id" class="mjschool-line-height-30px form-control class_id_exam validate[required]">
 												<option value="all_section"><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 												<?php
-												$section    = mjschool_get_class_sections( $class_id );
+												$mjschool_class = new Mjschool_Class();
+												$section    = $mjschool_class->mjschool_get_class_sections( $class_id );
 												$section_id = '';
 												if ( isset( $_REQUEST['filter_section_id'] ) ) {
 													$section_id = sanitize_text_field( wp_unslash($_REQUEST['filter_section_id']));
@@ -507,10 +511,10 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 						
 						if( isset( $_POST['view_student_list'] ) )
 						{
-							if (! isset($_POST['security']) || ! wp_verify_nonce($_POST['security'], 'mjschool_student_list_nonce')) {
+							if (! isset($_POST['security']) || ! wp_verify_nonce(sanitize_text_field( wp_unslash($_POST['security'])), 'mjschool_student_list_nonce')) {
 								wp_die(esc_html__('Security check failed.', 'mjschool'));
 							}
-							$class_id = intval(mjschool_decrypt_id(wp_unslash($_REQUEST['class_id'] ) ) );
+							$class_id = intval(mjschool_decrypt_id(sanitize_text_field( wp_unslash($_REQUEST['class_id'] ) ) ) );
 							if ( sanitize_text_field( wp_unslash($_POST['filter_section_id'])) === "all_section")
 							{
 								$student_list = mjschool_get_student_name_with_class($class_id);
@@ -553,7 +557,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 															<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_student&tab=view_student&action=view_student&student_id=' . mjschool_encrypt_id( $retrieved_data->ID ) . '&_wpnonce=' . mjschool_get_nonce( 'view_action' ) ) ); ?>">
 																<?php
 																$uid       = $retrieved_data->ID;
-																$umetadata = mjschool_get_user_image( $uid );
+																$mjschool_user = new Mjschool_User();
+																$umetadata = $mjschool_user->mjschool_get_user_image( $uid );
 																
 																if (empty($umetadata ) ) {
 																	echo '<img src=' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . ' class="img-circle" />';
@@ -583,7 +588,8 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 														</td>
 														<td class="name">
 															<?php $class_id  = get_user_meta( $retrieved_data->ID, 'class_name', true );
-															$classname = mjschool_get_class_name( $class_id );
+															$mjschool_class = new Mjschool_Class();
+															$classname = $mjschool_class->mjschool_get_class_name( $class_id );
 															if ( $classname === ' ' ) {
 																esc_html_e( 'Not Provided', 'mjschool' );
 															} else {
@@ -595,9 +601,10 @@ if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unsl
 															<td class="name">
 																<?php $section_name = get_user_meta( $retrieved_data->ID, 'class_section', true );
 																if ( $section_name !== '' ) {
-																	echo esc_attr( mjschool_get_section_name( $section_name ) );
+																	$mjschool_class = new Mjschool_Class();
+																	echo esc_html( $mjschool_class->mjschool_get_section_name( $section_name ) );
 																} else {
-																	esc_attr_e( 'No Section', 'mjschool' );
+																	esc_html_e( 'No Section', 'mjschool' );
 																}
 																?>
 																<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Section', 'mjschool' ); ?>"></i>

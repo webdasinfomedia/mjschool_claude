@@ -23,7 +23,8 @@ $payment_date = isset( $_REQUEST['payment_date'] ) ? sanitize_text_field( $_REQU
 $p->add_field( 'notify_url', home_url() . '/?dashboard=mjschool_user&page=feepayment&action=ipn' ); // Notify URL which received IPN (Instant Payment Notification)
 $p->add_field( 'currency_code', get_option( 'mjschool_currency_code' ) );
 $p->add_field( 'invoice', date( 'His' ) . rand( 1234, 9632 ) );
-$p->add_field( 'item_name_1', mjschool_get_fees_term_name( $feepaydata->fees_id ) );
+$obj_fees = new Mjschool_Fees();
+$p->add_field( 'item_name_1', $obj_fees->mjschool_get_fees_term_name( $feepaydata->fees_id ) );
 $p->add_field( 'item_number_1', 4 );
 $p->add_field( 'quantity_1', 1 );
 // $p->add_field( 'amount_1', get_membership_price(get_user_meta($user_id,'membership_id',true ) ) );

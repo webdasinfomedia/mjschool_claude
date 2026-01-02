@@ -86,8 +86,8 @@ jQuery(document).ready(function () {
         language: mjschool_general_setting_data.datatable_language
     });
     // DataTable initialization.
-    if(jQuery( '#frontend_custome_field_list' ).length > 0) {
-        jQuery( '#frontend_custome_field_list' ).DataTable({
+    if(jQuery( '#frontend_custom_field_list' ).length > 0) {
+        jQuery( '#frontend_custom_field_list' ).DataTable({
             initComplete: function(settings, json) {
                 jQuery( ".mjschool-print-button" ).css({"margin-top": "-5%"});
             },

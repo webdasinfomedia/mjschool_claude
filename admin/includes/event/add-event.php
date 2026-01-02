@@ -32,7 +32,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 }
 ?>
 <div class="mjschool-panel-body mjschool-custom-padding-0"><!--PANEL BODY.-->
-    <form name="event_form" action="" method="post" class="mjschool-form-horizontal" enctype="multipart/form-data" id="event_form"><!--ADD EVENT FORM-->
+    <form name="event_form" action="" method="post" class="mjschool-form-horizontal" enctype="multipart/form-data" id="event_form"><!--ADD EVENT FORM.-->
         <?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; ?>
         <input id="action" type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
         <input type="hidden" name="event_id" value="<?php echo esc_attr( $event_id ); ?>" />
@@ -64,7 +64,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
                 <div class="col-sm-12 col-md-3 col-lg-3 col-xl-3">
                     <div class="form-group input">
                         <div class="col-md-12 form-control">
-                            <input id="start_date_event" class="form-control date_picker validate[required] start_date datepicker1" autocomplete="off" type="text" name="start_date" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $result->start_date ) ) ) ); } elseif ( isset( $_POST['start_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>">
+                            <input id="start_date_event" class="form-control date_picker validate[required] start_date datepicker1" autocomplete="off" type="text" name="start_date" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $result->start_date ) ) ) ); } elseif ( isset( $_POST['start_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>">
                             <label class="active date_label" for="start_date_event"><?php esc_html_e( 'Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
                         </div>
                     </div>
@@ -79,7 +79,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
                 <div class="col-sm-12 col-md-3 col-lg-3 col-xl-3">
                     <div class="form-group input">
                         <div class="col-md-12 form-control">
-                            <input id="end_date_event" class="form-control date_picker validate[required] start_date datepicker2" type="text" name="end_date" autocomplete="off" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $result->end_date ) ) ) ); } elseif ( isset( $_POST['end_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>">
+                            <input id="end_date_event" class="form-control date_picker validate[required] start_date datepicker2" type="text" name="end_date" autocomplete="off" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $result->end_date ) ) ) ); } elseif ( isset( $_POST['end_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>">
                             <label class="date_label" for="end_date_event"><?php esc_html_e( 'End Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
                         </div>
                     </div>
@@ -132,11 +132,11 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
         </div>
         <?php
         // --------- Get Module-Wise Custom Field Data. --------------//
-        $mjschool_custom_field_obj = new Mjschool_Custome_Field();
+        $mjschool_custom_field_obj = new Mjschool_Custom_Field();
         $module                    = 'event';
         $custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
         ?>
-        <!----------  save btn. 	-------------->
+        <!----------  save btn. -------------->
         <div class="form-body mjschool-user-form"> <!-- mjschool-user-form start.-->
             <div class="row"><!--Row Div start.-->
                 <div class="col-md-6 col-sm-6 col-xs-12">

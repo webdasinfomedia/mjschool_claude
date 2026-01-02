@@ -22,8 +22,8 @@
  */
 defined( 'ABSPATH' ) || exit;
 $school_type = get_option( 'mjschool_custom_class' );
-// -------- Check browser javascript.. ----------//
-// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+// -------- Check browser javascript. ----------//
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
 mjschool_browser_javascript_check();
 $mjschool_role = mjschool_get_user_role( get_current_user_id() );
 if ( $mjschool_role === 'administrator' ) {
@@ -38,25 +38,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( 'class' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'class' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'class' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -64,7 +64,7 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'class';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
@@ -74,7 +74,7 @@ if ( isset( $_POST['save_class'] ) ) {
 	$nonce = sanitize_text_field( wp_unslash($_POST['_wpnonce']));
 	if ( wp_verify_nonce( $nonce, 'save_class_admin_nonce' ) ) {
 		$academic_year = isset($_POST['academic_year']) ? sanitize_text_field( wp_unslash($_POST['academic_year'])) : '';
-		$created_date = date( 'Y-m-d H:i:s' );
+		$created_date = current_time( 'mysql' );
 		$classdata    = array(
 			'class_name'     => sanitize_text_field( stripslashes( $_POST['class_name'] ) ),
 			'class_num_name' => sanitize_text_field( wp_unslash( $_POST['class_num_name'] )),
@@ -103,7 +103,7 @@ if ( isset( $_POST['save_class'] ) ) {
 				}
 				$result = mjschool_update_record( $tablename, $classdata, $classid );
 				// UPDATE CUSTOM FIELD DATA.
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'class';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $class_id );
 				if ( $result ) {
@@ -130,7 +130,7 @@ if ( isset( $_POST['save_class'] ) ) {
 			}
 			$result                    = mjschool_insert_record( $tablename, $classdata );
 			$last_insert_id            = $wpdb->insert_id;
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'class';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $last_insert_id );
 			if ( $result ) {
@@ -144,18 +144,15 @@ $tablename = 'mjschool_class';
 
 /*Delete selected Subject.*/
 if ( isset( $_REQUEST['delete_selected'] ) ) {
-	// SECURITY FIX: Verify nonce before bulk delete
-	if ( ! isset( $_POST['_wpnonce'] ) || 
-	     ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 
-	                       'mjschool_bulk_delete_class_nonce' ) ) {
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'mjschool_bulk_delete_class_nonce' ) ) {
 		wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
 	}
 	
-	// SECURITY FIX: Validate array before iteration
 	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
 		$deleted_count = 0;
+		$mjschool_class = new Mjschool_Class();
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = mjschool_delete_class( $tablename, intval( $id ) );
+			$result = $mjschool_class->mjschool_delete_class( $tablename, intval( $id ) );
 			if ( $result ) {
 				$deleted_count++;
 			}
@@ -170,7 +167,8 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_GET['_wpnonce'])), 'delete_action' ) ) {
-		$result = mjschool_delete_class( $tablename, mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) ) );
+		$mjschool_class = new Mjschool_Class();
+		$result = $mjschool_class->mjschool_delete_class( $tablename, mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) ) );
 		if ( $result ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_class&tab=classlist&message=3' ) );
 			die();
@@ -229,8 +227,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 						<div class="mjschool-panel-body">
 							<div class="table-responsive">
 								<form id="mjschool-common-form" name="mjschool-common-form" method="post">
-									<?php 
-									// SECURITY FIX: Add nonce field for bulk delete
+									<?php
 									wp_nonce_field( 'mjschool_bulk_delete_class_nonce' ); 
 									?>
 									<table id="mjschool-class-list" class="display" cellspacing="0" width="100%">
@@ -300,12 +297,13 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 															foreach ( $section_id as $section ) {
 																$section_name .= $section->section_name . ', ';
 															}
+															
 															$section_name_rtrim = rtrim( $section_name, ', ' );
 															$section_name_ltrim = ltrim( $section_name_rtrim, ', ' );
 															if ( ! empty( $section_name_ltrim ) ) {
 																echo esc_html( $section_name_ltrim );
 															} else {
-																esc_attr_e( 'No Section', 'mjschool' );
+																esc_html_e( 'No Section', 'mjschool' );
 															}
 															?>
 															<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Section', 'mjschool' ); ?>"></i>
@@ -333,15 +331,19 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class Numeric Value', 'mjschool' ); ?>"></i>
 													</td>
 													<?php 
-													$mjschool_user = count(get_users(array(
-														'meta_key' => 'class_name',
-														'meta_value' => $class_id
-													 ) ) );
+										
+													$user_query = new WP_User_Query( array(
+														'meta_key'   => 'class_name',
+														'meta_value' => $class_id,
+														'count_total' => true,
+														'fields'     => 'ID',
+													) );
+													$mjschool_user = $user_query->get_total();
 													 ?>
 													<td>
 														<?php
 														echo esc_html( $mjschool_user ) . ' ';
-														esc_attr_e( 'Out Of', 'mjschool' );
+														esc_html_e( 'Out Of', 'mjschool' );
 														echo ' ' . esc_html( $retrieved_data->class_capacity );
 														?>
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Student Capacity', 'mjschool' ); ?>"></i>

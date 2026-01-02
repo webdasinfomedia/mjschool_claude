@@ -41,7 +41,9 @@ $school_type = get_option( 'mjschool_custom_class' );
 					<label class="ml-1 mjschool-custom-top-label top" for="mjschool-class-list"><?php esc_html_e( 'Select Class', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 					<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control class_id_exam validate[required]">
 						<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
-						<?php foreach ( mjschool_get_all_class() as $classdata ) : ?>
+						<?php 
+						$mjschool_class = new Mjschool_Class();
+						foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) : ?>
 							<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_attr( $classdata['class_name'] ); ?></option>
 						<?php endforeach; ?>
 					</select>
@@ -56,7 +58,8 @@ $school_type = get_option( 'mjschool_custom_class' );
 							<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 							<?php
 							if ( ! empty( $class_id ) ) :
-								foreach ( mjschool_get_class_sections( $class_id ) as $sectiondata ) :
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_class_sections( $class_id ) as $sectiondata ) :
 									?>
 									<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $section_id, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 									<?php
@@ -117,7 +120,7 @@ if (isset( $_POST['report_5']))
 		<script type="text/javascript">
 			(function(jQuery) {
 				"use strict";
-				var subjects = <?php echo json_encode( $subject_name_list ); ?>;
+				var subjects = <?php echo wp_json_encode( $subject_name_list ); ?>;
 				function mjschool_build_subject_percentage_and_result_filter(subject, result = 'F', percentageCondition = '<', percentageValue = 50) {
 					return {
 						logic: 'AND',
@@ -237,7 +240,7 @@ if (isset( $_POST['report_5']))
 							?>
 							<tr>
 								<td><?php echo esc_html( $mjschool_user->roll_id ); ?></td>
-								<td><?php echo esc_html( mjschool_get_user_name_by_id( $mjschool_user->ID ) ); ?></td>
+								<td><?php echo esc_html( mjschool_get_display_name( $mjschool_user->ID ) ); ?></td>
 								<?php
 								foreach ( $subject_list as $sub ) :
 									$mark_detail = $mjschool_obj_marks->mjschool_subject_makrs_detail_byuser( $exam_id, $class_id, $sub->subid, $mjschool_user->ID );

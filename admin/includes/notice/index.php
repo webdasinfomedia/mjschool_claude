@@ -24,27 +24,27 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_edit   = $user_access['edit'];
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
-	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+	if ( isset( $_GET['page'] ) ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
-		if ( ! empty( $_REQUEST['action'] ) ) {
-			$action_value = sanitize_text_field( wp_unslash( $_REQUEST['action'] ) );
+		if ( ! empty( $_GET['action'] ) ) {
+			$action_value = sanitize_text_field( wp_unslash( $_GET['action'] ) );
 			if ( 'notice' === $user_access['page_link'] && ( $action_value === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'notice' === $user_access['page_link'] && ( $action_value === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'notice' === $user_access['page_link'] && ( $action_value === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -52,7 +52,7 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'notice';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
@@ -61,10 +61,10 @@ $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $mo
 if ( isset( $_POST['save_notice'] ) ) {
 	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	if ( wp_verify_nonce( $nonce, 'save_notice_admin_nonce' ) ) {
-		$start_date_raw = isset( $_REQUEST['start_date'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['start_date'] ) ) : '';
-		$end_date_raw   = isset( $_REQUEST['end_date'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['end_date'] ) ) : '';
-		$start_date     = date( 'Y-m-d', strtotime( $start_date_raw ) );
-		$end_date       = date( 'Y-m-d', strtotime( $end_date_raw ) );
+		$start_date_raw = isset( $_POST['start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) : '';
+		$end_date_raw   = isset( $_POST['end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) : '';
+		$start_date     = gmdate( 'Y-m-d', strtotime( $start_date_raw ) );
+		$end_date       = gmdate( 'Y-m-d', strtotime( $end_date_raw ) );
 
 		if ( $start_date > $end_date ) {
 			?>
@@ -73,35 +73,35 @@ if ( isset( $_POST['save_notice'] ) ) {
 		} else {
 			$class_id = '';
 			if ( isset( $_POST['class_id'] ) ) {
-				$class_id = sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) );
+				$class_id = sanitize_text_field( wp_unslash( $_POST['class_id'] ) );
 			}
-			$action_value = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+			$action_value = isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '';
 			if ( $action_value === 'edit' ) {
 				$nonce_action = isset( $_GET['_wpnonce_action'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ) : '';
 				if ( wp_verify_nonce( $nonce_action, 'edit_action' ) ) {
-					$notice_id = isset( $_REQUEST['notice_id'] ) ? intval( wp_unslash( $_REQUEST['notice_id'] ) ) : 0;
+					$notice_id = isset( $_POST['notice_id'] ) ? intval( wp_unslash( $_POST['notice_id'] ) ) : 0;
 					$args      = array(
 						'ID'           => $notice_id,
-						'post_title'   => isset( $_REQUEST['notice_title'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notice_title'] ) ) : '',
-						'post_content' => isset( $_REQUEST['notice_content'] ) ? sanitize_textarea_field( wp_unslash( $_REQUEST['notice_content'] ) ) : '',
+						'post_title'   => isset( $_POST['notice_title'] ) ? sanitize_text_field( wp_unslash( $_POST['notice_title'] ) ) : '',
+						'post_content' => isset( $_POST['notice_content'] ) ? sanitize_textarea_field( wp_unslash( $_POST['notice_content'] ) ) : '',
 					);
 					$result1 = wp_update_post( $args );
 					// Update Custom Field Data.
-					$custom_field_obj    = new Mjschool_Custome_Field();
+					$custom_field_obj    = new Mjschool_Custom_Field();
 					$module              = 'notice';
 					$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $notice_id );
 					$notivce             = $args['post_title'];
-					$page_name           = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+					$page_name           = isset( $_POST['page'] ) ? sanitize_text_field( wp_unslash( $_POST['page'] ) ) : '';
 					mjschool_append_audit_log( '' . esc_html__( 'Notice Updated', 'mjschool' ) . '( ' . $notivce . ' )' . '', get_current_user_id(), get_current_user_id(), 'edit', $page_name );
-					$notice_for = isset( $_REQUEST['notice_for'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notice_for'] ) ) : '';
+					$notice_for = isset( $_POST['notice_for'] ) ? sanitize_text_field( wp_unslash( $_POST['notice_for'] ) ) : '';
 					$result2 = update_post_meta( $notice_id, 'notice_for', $notice_for );
 					$result3 = update_post_meta( $notice_id, 'start_date', $start_date_raw );
 					$result4 = update_post_meta( $notice_id, 'end_date', $end_date_raw );
 					if ( isset( $_POST['class_id'] ) ) {
-						$result5 = update_post_meta( $notice_id, 'smgt_class_id', sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) );
+						$result5 = update_post_meta( $notice_id, 'smgt_class_id', sanitize_text_field( wp_unslash( $_POST['class_id'] ) ) );
 					}
 					if ( isset( $_POST['class_section'] ) ) {
-						$result6 = update_post_meta( $notice_id, 'smgt_section_id', sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) ) );
+						$result6 = update_post_meta( $notice_id, 'smgt_section_id', sanitize_text_field( wp_unslash( $_POST['class_section'] ) ) );
 					}
 					$mjschool_role               = isset( $_POST['notice_for'] ) ? sanitize_text_field( wp_unslash( $_POST['notice_for'] ) ) : '';
 					$mjschool_sms_service_enable = 0;
@@ -113,7 +113,7 @@ if ( isset( $_POST['save_notice'] ) ) {
 					if ( $mjschool_sms_service_enable ) {
 						$current_sms_service = get_option( 'mjschool_sms_service' );
 						if ( ! empty( $current_sms_service ) ) {
-							$class_section = isset( $_REQUEST['class_section'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) ) : '';
+							$class_section = isset( $_POST['class_section'] ) ? sanitize_text_field( wp_unslash( $_POST['class_section'] ) ) : '';
 							$userdata      = mjschool_get_user_notice( $mjschool_role, $class_id, $class_section );
 							if ( ! empty( $userdata ) ) {
 								$mail_id = array();
@@ -144,8 +144,8 @@ if ( isset( $_POST['save_notice'] ) ) {
 				}
 			} else {
 				$current_sms_service = get_option( 'mjschool_sms_service' );
-				$notice_title        = isset( $_REQUEST['notice_title'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notice_title'] ) ) : '';
-				$notice_content      = isset( $_REQUEST['notice_content'] ) ? sanitize_textarea_field( wp_unslash( $_REQUEST['notice_content'] ) ) : '';
+				$notice_title        = isset( $_POST['notice_title'] ) ? sanitize_text_field( wp_unslash( $_POST['notice_title'] ) ) : '';
+				$notice_content      = isset( $_POST['notice_content'] ) ? sanitize_textarea_field( wp_unslash( $_POST['notice_content'] ) ) : '';
 				$post_id             = wp_insert_post(
 					array(
 						'post_status'  => 'publish',
@@ -154,10 +154,10 @@ if ( isset( $_POST['save_notice'] ) ) {
 						'post_content' => $notice_content,
 					)
 				);
-				$custom_field_obj   = new Mjschool_Custome_Field();
+				$custom_field_obj   = new Mjschool_Custom_Field();
 				$module             = 'notice';
 				$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $post_id );
-				$page_name          = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+				$page_name          = isset( $_POST['page'] ) ? sanitize_text_field( wp_unslash( $_POST['page'] ) ) : '';
 				mjschool_append_audit_log( '' . esc_html__( 'Notice Added', 'mjschool' ) . '( ' . $notice_title . ' )' . '', get_current_user_id(), get_current_user_id(), 'insert', $page_name );
 				if ( ! empty( $_POST['notice_for'] ) ) {
 					// Send Push Notification.
@@ -205,7 +205,7 @@ if ( isset( $_POST['save_notice'] ) ) {
 						$class_list                = isset( $_POST['class_id'] ) ? sanitize_text_field( wp_unslash( $_POST['class_id'] ) ) : '0';
 						$query_data['role']        = $notice_for_value;
 						$query_data['fields']      = array( 'ID' );
-						$class_section             = isset( $_REQUEST['class_section'] ) ? intval( wp_unslash( $_REQUEST['class_section'] ) ) : 0;
+						$class_section             = isset( $_POST['class_section'] ) ? intval( wp_unslash( $_POST['class_section'] ) ) : 0;
 						if ( $class_section ) {
 							$query_data['meta_key']   = 'class_section';
 							$query_data['meta_value'] = $class_section;
@@ -253,9 +253,9 @@ if ( isset( $_POST['save_notice'] ) ) {
 						$result = add_post_meta( $post_id, 'smgt_class_id', sanitize_text_field( wp_unslash( $_POST['class_id'] ) ) );
 					}
 					if ( isset( $_POST['class_section'] ) ) {
-						$result6 = add_post_meta( $post_id, 'smgt_section_id', sanitize_text_field( wp_unslash( $_REQUEST['class_section'] ) ) );
+						$result6 = add_post_meta( $post_id, 'smgt_section_id', sanitize_text_field( wp_unslash( $_POST['class_section'] ) ) );
 					}
-					$custom_field_obj            = new Mjschool_Custome_Field();
+					$custom_field_obj            = new Mjschool_Custom_Field();
 					$module                      = 'notice';
 					$insert_custom_data          = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $post_id );
 					$mjschool_role               = isset( $_POST['notice_for'] ) ? sanitize_text_field( wp_unslash( $_POST['notice_for'] ) ) : '';
@@ -322,11 +322,11 @@ if ( isset( $_POST['save_notice'] ) ) {
 		}
 	}
 }
-if ( isset( $_REQUEST['delete_selected'] ) ) {
-	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
-		$page_name = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+if ( isset( $_POST['delete_selected'] ) ) {
+	if ( ! empty( $_POST['id'] ) && is_array( $_POST['id'] ) ) {
+		$page_name = isset( $_POST['page'] ) ? sanitize_text_field( wp_unslash( $_POST['page'] ) ) : '';
 		mjschool_append_audit_log( '' . esc_html__( 'Notice Deleted', 'mjschool' ) . '', get_current_user_id(), get_current_user_id(), 'delete', $page_name );
-		$ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+		$ids = array_map( 'intval', wp_unslash( $_POST['id'] ) );
 		foreach ( $ids as $id ) {
 			$result = wp_delete_post( $id );
 			if ( $result ) {
@@ -336,12 +336,12 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 		}
 	}
 }
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'delete' ) {
+if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'delete' ) {
 	$nonce_action = isset( $_GET['_wpnonce_action'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ) : '';
 	if ( wp_verify_nonce( $nonce_action, 'delete_action' ) ) {
-		$notice_id = isset( $_REQUEST['notice_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['notice_id'] ) ) ) ) : 0;
+		$notice_id = isset( $_GET['notice_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['notice_id'] ) ) ) ) : 0;
 		$notice    = get_post( $notice_id );
-		$page_name = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+		$page_name = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 		mjschool_append_audit_log( '' . esc_html__( 'Notice Deleted', 'mjschool' ) . '( ' . $notice->post_title . ' )' . '', get_current_user_id(), get_current_user_id(), 'delete', $page_name );
 		$result = wp_delete_post( $notice_id );
 		if ( $result ) {
@@ -363,7 +363,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 <div class="mjschool-page-inner"><!-- Mjschool-page-inner. -->
 	<div class="mjschool-main-list-margin-15px"><!-- Mjschool-main-list-margin-15px. -->
 		<?php
-		$message = isset( $_REQUEST['message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message'] ) ) : '0';
+		$message = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '0';
 		switch ( $message ) {
 			case '1':
 				$message_string = esc_html__( 'Notice Added successfully.', 'mjschool' );
@@ -476,7 +476,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 															} elseif ( get_post_meta( $retrieved_data->ID, 'smgt_class_id', true ) !== '' && get_post_meta( $retrieved_data->ID, 'smgt_class_id', true ) === 'all' ) {
 																esc_html_e( 'All', 'mjschool' );
 															} elseif ( get_post_meta( $retrieved_data->ID, 'smgt_class_id', true ) !== '' ) {
-																echo esc_html( mjschool_get_class_name( get_post_meta( $retrieved_data->ID, 'smgt_class_id', true ) ) );
+																$mjschool_class = new Mjschool_Class();
+																echo esc_html( $mjschool_class->mjschool_get_class_name( get_post_meta( $retrieved_data->ID, 'smgt_class_id', true ) ) );
 															}
 															?>
 															<i class="fa fa-info-circle mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class', 'mjschool' ); ?>"></i>

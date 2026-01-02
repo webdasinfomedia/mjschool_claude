@@ -11,16 +11,17 @@
  */
 defined( 'ABSPATH' ) || exit;
 // Initialize the Custom Field class.
-$mjschool_obj_custome_field = new Mjschool_Custome_Field();
+$mjschool_obj_custom_field = new Mjschool_Custom_Field();
 $file_type_find             = '';
 $file_type_value            = '';
 $edit                       = 0;
 $document_option            = get_option('mjschool_upload_document_type');
-$document_type_array        = explode( ', ', $document_option ); // Convert to array.
+// Check if option exists before exploding.
+$document_type_array        = ! empty( $document_option ) ? explode( ', ', $document_option ) : [];
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) {
 	$edit = 1;
 	$custom_field_id   = intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['id']) ) ) );
-	$custom_field_data = $mjschool_obj_custome_field->mjschool_get_single_custom_field_data( $custom_field_id );
+	$custom_field_data = $mjschool_obj_custom_field->mjschool_get_single_custom_field_data( $custom_field_id );
 }
 ?>
 <div class="mjschool-panel-body">
@@ -188,7 +189,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 				</div>
 				<?php
 				if ( $edit ) {
-					$custom_meta = $mjschool_obj_custome_field->mjschool_get_single_custom_field_dropdown_meta_data( $custom_field_id );
+					$custom_meta = $mjschool_obj_custom_field->mjschool_get_single_custom_field_dropdown_meta_data( $custom_field_id );
 					if ( $custom_field_data->field_type === 'dropdown' ) {
 						?>
 						<div class="sub_cat">

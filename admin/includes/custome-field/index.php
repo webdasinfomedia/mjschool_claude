@@ -26,25 +26,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( 'custom_field' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'custom_field' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'custom_field' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -52,19 +52,19 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$mjschool_obj_custome_field = new Mjschool_Custome_Field();
+$mjschool_obj_custom_field = new Mjschool_Custom_Field();
 // Save custom field data.
 if ( isset( $_POST['add_custom_field'] ) ) {
 	if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'insert' ) {
 		// Add Custom Field data.
-		$result = $mjschool_obj_custome_field->mjschool_add_custom_field( wp_unslash($_POST) );
+		$result = $mjschool_obj_custom_field->mjschool_add_custom_field( wp_unslash($_POST) );
 		if ( $result ) {
 			wp_safe_redirect( admin_url( 'admin.php?&page=mjschool_custom_field&tab=custome_field_list&message=1' ) );
 			die();
 		}
-	} elseif ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
-		// Update Custom Field data.
-		$result = $mjschool_obj_custome_field->mjschool_add_custom_field( wp_unslash($_POST) );
+	} elseif ( isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_POST['_wpnonce'])), 'save_custom_field_admin_nonce' ) ) {
+		// Update Custom Field data via nonce verification.
+		$result = $mjschool_obj_custom_field->mjschool_add_custom_field( wp_unslash($_POST) );
 		if ( $result ) {
 			wp_safe_redirect( admin_url( 'admin.php?&page=mjschool_custom_field&tab=custome_field_list&message=2' ) );
 			die();
@@ -74,8 +74,16 @@ if ( isset( $_POST['add_custom_field'] ) ) {
 	}
 }
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'delete' ) {
-	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
-		$result = $mjschool_obj_custome_field->mjschool_delete_custome_field( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ) );
+	// Verify nonce from POST or GET with proper sanitization.
+	$nonce_verified = false;
+	if ( isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_POST['_wpnonce'])), 'delete_action' ) ) {
+		$nonce_verified = true;
+	} elseif ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
+		$nonce_verified = true;
+	}
+	
+	if ( $nonce_verified && isset( $_REQUEST['id'] ) ) {
+		$result = $mjschool_obj_custom_field->mjschool_delete_custom_field( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ) );
 		if ( $result ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_custom_field&tab=custome_field_list&message=3' ) );
 			die();
@@ -90,10 +98,11 @@ if ( isset( $_POST['custome_delete_selected'] ) ) {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
 	
-	if ( isset( $_POST['selected_id'] ) ) {
+	if ( isset( $_POST['selected_id'] ) && is_array( $_POST['selected_id'] ) ) {
 		foreach ( $_POST['selected_id'] as $custome_id ) {
-			$record_id = intval( $custome_id );
-			$result    = $mjschool_obj_custome_field->mjschool_delete_selected_custome_field( $record_id );
+			// Properly sanitize loop variable.
+			$record_id = intval( wp_unslash( $custome_id ) );
+			$result    = $mjschool_obj_custom_field->mjschool_delete_selected_custom_field( $record_id );
 		}
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_custom_field&tab=custome_field_list&message=3' ) );
 		exit;
@@ -137,7 +146,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 				<div class="mjschool-main-list-page"><!-- mjschool-main-list-page. -->
 					<?php
 					if ( $active_tab === 'custome_field_list' ) {
-						$retrieve_class_data = $mjschool_obj_custome_field->mjschool_get_all_custom_field_data();
+						$retrieve_class_data = $mjschool_obj_custom_field->mjschool_get_all_custom_field_data();
 						if ( ! empty( $retrieve_class_data ) ) {
 							?>
 							<div class="mjschool-panel-body"><!-- mjschool-panel-body. -->
@@ -169,9 +178,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 														</td>
 														<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription mjschool-padding-left-0">
 															<p class="mjschool-prescription-tag mjschool-padding-15px mjschool-margin-bottom-0px <?php echo esc_attr( $color_class_css ); ?>">
-																
 																<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-custome-field.png"); ?>" height="30px" width="30px" class="mjschool-massage-image">
-																
 															</p>
 														</td>
 														<td class="added">
@@ -199,16 +206,14 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 																<ul  class="mjschool_ul_style">
 																	<li >
 																		<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
-																			
 																			<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-more.png"); ?>">
-																			
 																		</a>
 																		<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																			<?php
 																			if ( $user_access_edit === '1' ) {
 																				?>
 																				<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
-																					<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_custom_field&tab=add_custome_field&action=edit&id='. mjschool_encrypt_id( $retrieved_data->id ) .'&_wpnonce_action='. mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px">
+																					<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_custom_field&tab=add_custom_field&action=edit&id='. mjschool_encrypt_id( $retrieved_data->id ) .'&_wpnonce_action='. mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px">
 																						<i class="fa fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?>
 																					</a>
 																				</li>
@@ -252,10 +257,10 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 							<?php
 						} else {
 							
-							if ($user_access_add === '1' ) {
+							if ( $user_access_add === '1' ) {
 								?>
 								<div class="mjschool-no-data-list-div">
-									<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_custom_field&tab=add_custome_field' ) ); ?>">
+									<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_custom_field&tab=add_custom_field' ) ); ?>">
 										<img class="col-md-12 mjschool-no-img-width-100px" src="<?php echo esc_url( get_option( 'mjschool_mjschool-no-data-img' ) ) ?>">
 									</a>
 									<div class="col-md-12 mjschool-dashboard-btn mjschool-margin-top-20px">
@@ -273,7 +278,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 							
 						}
 					}
-					if ( $active_tab === 'add_custome_field' ) {
+					if ( $active_tab === 'add_custom_field' ) {
 						require_once MJSCHOOL_ADMIN_DIR . '/custome-field/add-custome-field.php';
 					}
 					?>

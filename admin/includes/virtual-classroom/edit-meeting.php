@@ -11,8 +11,10 @@
  * @since      1.0.0
  */
 defined('ABSPATH') || exit;
+$mjschool_subject = new Mjschool_Subject();
+$mjschool_class = new Mjschool_Class();
 $meeting_data    = $obj_virtual_classroom->mjschool_get_single_meeting_data_in_zoom(sanitize_text_field(wp_unslash($_REQUEST['meeting_id'])));
-$route_data      = mjschool_get_route_by_id($meeting_data->route_id);
+$route_data      = $mjschool_class->mjschool_get_route_by_id($meeting_data->route_id);
 $start_time_data = explode(':', $route_data->start_time);
 $end_time_data   = explode(':', $route_data->end_time);
 if ($start_time_data[1] === 0 || $end_time_data[1] === 0 ) {
@@ -59,7 +61,7 @@ if (isset($end_time_data[2]) ) {
                 <div class="col-md-6">
                     <div class="form-group input">
                         <div class="col-md-12 form-control">
-                            <input id="class_name" class="form-control" maxlength="50" type="text" value="<?php echo esc_attr(mjschool_get_class_name($route_data->class_id)); ?>" name="class_name" disabled>
+                            <input id="class_name" class="form-control" maxlength="50" type="text" value="<?php $mjschool_class = new Mjschool_Class(); echo esc_attr($mjschool_class->mjschool_get_class_name($route_data->class_id)); ?>" name="class_name" disabled>
                             <label for="userinput1"><?php esc_html_e('Class Name', 'mjschool'); ?></label>
                         </div>
                     </div>
@@ -67,7 +69,7 @@ if (isset($end_time_data[2]) ) {
                 <div class="col-md-6">
                     <div class="form-group input">
                         <div class="col-md-12 form-control">
-                            <input id="class_section" class="form-control" maxlength="50" type="text" value="<?php echo esc_attr(mjschool_get_section_name($route_data->section_name)); ?>" name="class_section" disabled>
+                            <input id="class_section" class="form-control" maxlength="50" type="text" value="<?php $mjschool_class = new Mjschool_Class(); echo esc_attr($mjschool_class->mjschool_get_section_name($route_data->section_name)); ?>" name="class_section" disabled>
                             <label for="userinput1"><?php esc_html_e('Class Section', 'mjschool'); ?></label>
                         </div>
                     </div>
@@ -75,7 +77,7 @@ if (isset($end_time_data[2]) ) {
                 <div class="col-md-6">
                     <div class="form-group input">
                         <div class="col-md-12 form-control">
-                            <input id="subject" class="form-control" type="text" value="<?php echo esc_attr(mjschool_get_single_subject_name($route_data->subject_id)); ?>" name="class_section" disabled>
+                            <input id="subject" class="form-control" type="text" value="<?php echo esc_attr($mjschool_subject->mjschool_get_single_subject_name($route_data->subject_id)); ?>" name="class_section" disabled>
                             <label for="userinput1"><?php esc_html_e('Subject', 'mjschool'); ?></label>
                         </div>
                     </div>
@@ -99,7 +101,7 @@ if (isset($end_time_data[2]) ) {
                 <div class="col-md-6">
                     <div class="form-group input">
                         <div class="col-md-12 form-control">
-                            <input id="start_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_attr_e('Enter Start Date', 'mjschool'); ?>" name="start_date" value="<?php echo esc_attr(date('Y-m-d', strtotime($meeting_data->start_date))); ?>" readonly>
+                            <input id="start_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_attr_e('Enter Start Date', 'mjschool'); ?>" name="start_date" value="<?php echo esc_attr(wp_date('Y-m-d', strtotime($meeting_data->start_date))); ?>" readonly>
                             <label for="userinput1"><?php esc_html_e('Start Date', 'mjschool'); ?></label>
                         </div>
                     </div>
@@ -107,7 +109,7 @@ if (isset($end_time_data[2]) ) {
                 <div class="col-md-6">
                     <div class="form-group input">
                         <div class="col-md-12 form-control">
-                            <input id="end_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_attr_e('Enter Exam Date', 'mjschool'); ?>" name="end_date" value="<?php echo esc_attr(date('Y-m-d', strtotime($meeting_data->end_date))); ?>" readonly>
+                            <input id="end_date" class="form-control validate[required] text-input" type="text" placeholder="<?php esc_attr_e('Enter Exam Date', 'mjschool'); ?>" name="end_date" value="<?php echo esc_attr(wp_date('Y-m-d', strtotime($meeting_data->end_date))); ?>" readonly>
                             <label for="userinput1"><?php esc_html_e('End Date', 'mjschool'); ?></label>
                         </div>
                     </div>

@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 $role_name         = mjschool_get_user_role( get_current_user_id() );
 $user_access       = mjschool_get_user_role_wise_access_right_array();
 $obj_tax           = new Mjschool_Tax_Manage();
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'tax';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
@@ -26,25 +26,25 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 if ( isset( $_REQUEST ['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST ['page'] ) && sanitize_text_field(wp_unslash($_REQUEST ['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST ['page'] ) && sanitize_text_field(wp_unslash($_REQUEST ['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
 			if ( $user_access['delete'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST ['page'] ) && sanitize_text_field(wp_unslash($_REQUEST ['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
@@ -57,24 +57,24 @@ if ( isset( $_POST['save_tax'] ) ) {
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
 				$tax_id                  = wp_unslash($_REQUEST['tax_id']);
 				$result                  = $obj_tax->mjschool_insert_tax( wp_unslash($_POST) );
-				$custom_field_obj        = new Mjschool_Custome_Field();
+				$custom_field_obj        = new Mjschool_Custom_Field();
 				$module              = 'tax';
 				$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $tax_id );
 				if ( $result ) {
 					wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=tax&tab=tax&message=2' ));
-					die();
+					exit;
 				}
 			} else {
 				wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 			}
 		} else {
 			$result                     = $obj_tax->mjschool_insert_tax( wp_unslash($_POST) );
-			$custom_field_obj           = new Mjschool_Custome_Field();
+			$custom_field_obj           = new Mjschool_Custom_Field();
 			$module             = 'tax';
 			$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
 				wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=tax&tab=tax&message=1' ));
-				die();
+				exit;
 			}
 		}
 	}
@@ -85,7 +85,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 		$result = $obj_tax->mjschool_delete_tax( mjschool_decrypt_id( wp_unslash($_REQUEST['tax_id']) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=tax&tab=tax&message=3' ));
-			die();
+			exit;
 		}
 	} else {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -356,7 +356,7 @@ if( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message'])
 				</div>
 				<?php
 				// --------- Get module-wise custom field data. --------------//
-				$custom_field_obj = new Mjschool_Custome_Field();
+				$custom_field_obj = new Mjschool_Custom_Field();
 				$module           = 'tax';
 				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>

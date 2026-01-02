@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Teacher Performance Report Template.
  *

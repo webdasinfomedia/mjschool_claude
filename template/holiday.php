@@ -20,37 +20,37 @@ $user_access = mjschool_get_userrole_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
 			if ( $user_access['delete'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'holiday';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 $table_mjschool_holiday         = 'mjschool_holiday';
 // --------------------- Delete holiday. --------------//
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
-		$result = mjschool_delete_holiday( $table_mjschool_holiday, intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['holiday_id'] ) ) ) ) );
+		$result = $mjschool_obj_holiday->mjschool_delete_holiday( $table_mjschool_holiday, intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['holiday_id'] ) ) ) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=holiday&tab=holidaylist&message=3' ) );
 			exit;
@@ -65,7 +65,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 	}
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = mjschool_delete_holiday( $table_mjschool_holiday, intval( $id ) );
+			$result = $mjschool_obj_holiday->mjschool_delete_holiday( $table_mjschool_holiday, intval( $id ) );
 		}
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=holiday&tab=holidaylist&message=3' ) );
 		exit;
@@ -75,8 +75,8 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 if ( isset( $_POST['save_holiday'] ) ) {
 	$nonce = sanitize_text_field(wp_unslash($_POST['_wpnonce']));
 	if ( wp_verify_nonce( $nonce, 'save_holiday_admin_nonce' ) ) {
-		$start_date = date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_REQUEST['date'])) ) );
-		$end_date   = date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_REQUEST['end_date'])) ) );
+		$start_date = wp_date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_REQUEST['date'])) ) );
+		$end_date   = wp_date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_REQUEST['end_date'])) ) );
 		$exlude_id  = mjschool_approve_student_list();
 		if ( $start_date > $end_date ) { ?>
 			<div class="mjschool-date-error-trigger" data-error="1"></div>
@@ -89,10 +89,10 @@ if ( isset( $_POST['save_holiday'] ) ) {
 			$haliday_data = array(
 				'holiday_title' => sanitize_text_field( wp_unslash( $_POST['holiday_title'] ) ),
 				'description'   => sanitize_textarea_field( wp_unslash( $_POST['description'] ) ),
-				'date'          => date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_POST['date'])) ) ),
-				'end_date'      => date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_POST['end_date'])) ) ),
+				'date'          => wp_date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_POST['date'])) ) ),
+				'end_date'      => wp_date( 'Y-m-d', strtotime( sanitize_text_field(wp_unslash($_POST['end_date'])) ) ),
 				'created_by'    => get_current_user_id(),
-				'created_date'  => date( 'Y-m-d H:i:s' ),
+				'created_date'  => wp_date( 'Y-m-d H:i:s' ),
 				'status'        => 1,
 			);
 			// Table name without prefix.
@@ -102,7 +102,7 @@ if ( isset( $_POST['save_holiday'] ) ) {
 					$holiday_ids = array( 'holiday_id' => intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['holiday_id'] ) ) ) ) );
 					$holiday_id  = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['holiday_id'])) ) );
 					$result              = mjschool_update_record( $table_mjschool_holiday, $haliday_data, $holiday_ids );
-					$custom_field_obj    = new Mjschool_Custome_Field();
+					$custom_field_obj    = new Mjschool_Custom_Field();
 					$module              = 'holiday';
 					$custom_field_update = $custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $holiday_id );
 					if ( $result ) {
@@ -120,7 +120,8 @@ if ( isset( $_POST['save_holiday'] ) ) {
 				} else {
 					$date = sanitize_text_field( wp_unslash( $_POST['date'] ) ) . ' To ' . sanitize_text_field( wp_unslash( $_POST['end_date'] ) );
 				}
-				$AllUsr       = mjschool_get_all_user_in_plugin();
+				$mjschool_obj_user   = new Mjschool_User();
+				$AllUsr       = $mjschool_obj_user->mjschool_get_all_user_in_plugin();
 				$device_token = array();
 				$to           = array();
 				foreach ( $AllUsr as $key => $usr ) {
@@ -128,7 +129,7 @@ if ( isset( $_POST['save_holiday'] ) ) {
 					$to[] = $usr->user_email;
 				}
 				$result                 = mjschool_insert_record( $table_mjschool_holiday, $haliday_data );
-				$custom_field_obj       = new Mjschool_Custome_Field();
+				$custom_field_obj       = new Mjschool_Custom_Field();
 				$module             = 'holiday';
 				$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
@@ -166,7 +167,7 @@ if ( isset( $_POST['save_holiday'] ) ) {
 					mjschool_send_push_notification( $json );
 					// End Send Push Notification.//
 					wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=holiday&tab=holidaylist&message=1') );
-					die();
+					exit;
 				}
 			}
 		}
@@ -454,8 +455,9 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 		$edit = 0;
 		if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 			$edit         = 1;
+			$mjschool_obj_holiday      = new Mjschool_Holiday();
 			$holiday_id   = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['holiday_id'])) ) );
-			$holiday_data = mjschool_get_holiday_by_id( $holiday_id );
+			$holiday_data = $mjschool_obj_holiday->mjschool_get_holiday_by_id( $holiday_id );
 		}
 		?>
 		<div class="mjschool-panel-body">
@@ -487,7 +489,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 						<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="s_date" class="datepicker form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $holiday_data->date ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="date" readonly>
+									<input id="s_date" class="datepicker form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $holiday_data->date ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>" name="date" readonly>
 									<label  for="s_date"><?php esc_html_e( 'Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 								</div>
 							</div>
@@ -496,7 +498,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 						<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool-error-msg-left-margin">
 							<div class="form-group input">
 								<div class="col-md-12 form-control">
-									<input id="end_date" class="datepicker form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $holiday_data->end_date ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="end_date" readonly>
+									<input id="end_date" class="datepicker form-control validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d', strtotime( $holiday_data->end_date ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>" name="end_date" readonly>
 									<label  for="end_date"><?php esc_html_e( 'End Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 								</div>
 							</div>
@@ -535,7 +537,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 				</div>
 				<?php
 				// --------- Get module-wise custom field data. --------------//
-				$custom_field_obj = new Mjschool_Custome_Field();
+				$custom_field_obj = new Mjschool_Custom_Field();
 				$module           = 'holiday';
 				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>

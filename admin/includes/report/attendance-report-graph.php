@@ -46,7 +46,7 @@ if ( isset( $_POST['date_type'] ) ) {
 					<div class="col-md-6 mb-2">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+								<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 								<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 							</div>
 						</div>
@@ -54,7 +54,7 @@ if ( isset( $_POST['date_type'] ) ) {
 					<div class="col-md-6 mb-2">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+								<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 								<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 							</div>
 						</div>
@@ -103,8 +103,8 @@ if ( isset( $_POST['date_type'] ) ) {
 			$sdate = $_REQUEST['sdate'];
 			$edate = $_REQUEST['edate'];
 		} else {
-			$sdate = date( 'Y-m-d', strtotime( 'first day of this month' ) );
-			$edate = date( 'Y-m-d', strtotime( 'last day of this month' ) );
+			$sdate = wp_date( 'Y-m-d', strtotime( 'first day of this month' ) );
+			$edate = wp_date( 'Y-m-d', strtotime( 'last day of this month' ) );
 		}
 		if ( $school_obj->role === 'teacher' ) {
 			$teacher_id   = get_current_user_id();
@@ -126,8 +126,9 @@ if ( isset( $_POST['date_type'] ) ) {
 		$chart_array   = array();
 		$chart_array[] = array( esc_attr__( 'Class', 'mjschool' ), esc_attr__( 'Present', 'mjschool' ), esc_attr__( 'Absent', 'mjschool' ) );
 		if ( ! empty( $report_2 ) ) {
+			$mjschool_class = new Mjschool_Class();
 			foreach ( $report_2 as $result ) {
-				$class_id      = mjschool_get_class_name( $result->class_id );
+				$class_id      = $mjschool_class->mjschool_get_class_name( $result->class_id );
 				$chart_array[] = array( "$class_id", (int) $result->Present, (int) $result->Absent );
 			}
 		}

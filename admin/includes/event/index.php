@@ -37,25 +37,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 	if ( isset( $_REQUEST ['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( 'event' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'event' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'event' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -63,7 +63,7 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'event';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'eventlist';
@@ -71,19 +71,19 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 if ( isset( $_POST['save_event'] ) ) {
 	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	if ( wp_verify_nonce( $nonce, 'save_event_nonce' ) ) {
-		if ( $_FILES['upload_file']['name'] != '' && $_FILES['upload_file']['size'] > 0 ) {
+		if ( isset( $_FILES['upload_file']['name'] ) && ! empty( $_FILES['upload_file']['name'] ) && isset( $_FILES['upload_file']['size'] ) && $_FILES['upload_file']['size'] > 0 ) {
 			if ( $_FILES['upload_file']['size'] > 0 ) {
-				$file_name = mjschool_load_documets_new( $_FILES['upload_file'], $_FILES['upload_file'], sanitize_text_field( wp_unslash( $_POST['upload_file'] ) ) );
+				$file_name = mjschool_load_documets_new( $_FILES['upload_file'], $_FILES['upload_file'], sanitize_text_field( wp_unslash( $_POST['upload_file'] ?? '' ) ) );
 			}
-		} elseif ( isset( $_REQUEST['hidden_upload_file'] ) ) {
-			$file_name = sanitize_text_field( wp_unslash($_REQUEST['hidden_upload_file']));
+		} elseif ( isset( $_POST['hidden_upload_file'] ) ) {
+			$file_name = sanitize_text_field( wp_unslash( $_POST['hidden_upload_file'] ) );
 		}
 		if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) {
 			if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_GET['_wpnonce_action'])), 'edit_action' ) ) {
-				$event_id = intval( wp_unslash($_REQUEST['event_id']) );
+				$event_id = intval( sanitize_text_field( wp_unslash($_REQUEST['event_id'] ?? 0 ) ) );
 				$result   = $mjschool_obj_event->mjschool_insert_event(  wp_unslash($_POST), $file_name );
 				// Update Custom Field Data.
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'event';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $event_id );
 				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_event&tab=eventlist&message=2' ) );
@@ -99,23 +99,24 @@ if ( isset( $_POST['save_event'] ) ) {
 			$start_time_1    = sanitize_text_field( wp_unslash($_POST['start_time']) );
 			$end_time_1      = sanitize_text_field( wp_unslash($_POST['end_time']) );
 			$start_time_data = explode( ':', $start_time_1 );
-			$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
-			$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
-			$start_am_pm     = $start_time_data[2];
+			$start_hour      = str_pad( $start_time_data[0] ?? '0', 2, '0', STR_PAD_LEFT );
+			$start_min       = str_pad( $start_time_data[1] ?? '0', 2, '0', STR_PAD_LEFT );
+			$start_am_pm     = $start_time_data[2] ?? 'AM';
 			$start_time_new  = $start_hour . ':' . $start_min . ' ' . $start_am_pm;
-			$start_time_in_24_hour_format = date( 'H:i', strtotime( $start_time_new ) );
+			$start_time_in_24_hour_format = wp_date( 'H:i', strtotime( $start_time_new ) );
 			$end_time_data                = explode( ':', $end_time_1 );
-			$end_hour                     = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
-			$end_min                      = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
-			$end_am_pm                    = $end_time_data[2];
+			$end_hour                     = str_pad( $end_time_data[0] ?? '0', 2, '0', STR_PAD_LEFT );
+			$end_min                      = str_pad( $end_time_data[1] ?? '0', 2, '0', STR_PAD_LEFT );
+			$end_am_pm                    = $end_time_data[2] ?? 'AM';
 			$end_time_new                 = $end_hour . ':' . $end_min . ' ' . $end_am_pm;
-			$end_time_in_24_hour_format   = date( 'H:i', strtotime( $end_time_new ) );
+			
+			$end_time_in_24_hour_format   = wp_date( 'H:i', strtotime( $end_time_new ) );
 			if ( $start_date === $end_date && $start_time_in_24_hour_format >= $end_time_in_24_hour_format ) {
 				wp_safe_redirect( admin_url( 'admin.php?page=mjschool_event&tab=eventlist&message=4' ) );
 				die();
 			} else {
 				$result                    = $mjschool_obj_event->mjschool_insert_event(  wp_unslash($_POST) , $file_name );
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'event';
 				$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 				if ( $result ) {
@@ -138,9 +139,9 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 	}
 }
 // --------------- Delete Multiple Events. -----------------//
-if ( isset( $_REQUEST['delete_selected'] ) ) {
-	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
-		$ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+if ( isset( $_POST['delete_selected'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'bulk_delete_events' ) ) {
+	if ( ! empty( $_POST['id'] ) && is_array( $_POST['id'] ) ) {
+		$ids = array_map( 'intval', wp_unslash( $_POST['id'] ) );
 		foreach ( $ids as $id ) {
 			$result = $mjschool_obj_event->mjschool_delete_event( $id );
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_event&tab=eventlist&message=3' ) );
@@ -234,9 +235,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 														<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription mjschool-padding-left-0">
 															<a href="#" class="mjschool-view-details-popup" id="<?php echo esc_attr( $retrieved_data->event_id ); ?>" type="event_view">
 																<p class="mjschool-prescription-tag mjschool-padding-15px mjschool-margin-bottom-0px <?php echo esc_attr( $color_class_css ); ?>">	
-                                                                    
                                                                     <img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/dashboard-icon/icons/white-icons/mjschool-notice.png")?>" height= "30px" width ="30px" class="mjschool-massage-image">
-                                                                    
 																</p>
 															</a>
 														</td>
@@ -309,7 +308,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 																		<td> 
 																			<?php
 																			if ( ! empty( $custom_field_value ) ) {
-																					echo esc_html( $custom_field_value );
+																				echo esc_html( $custom_field_value );
 																			} else {
 																				esc_html_e( 'N/A', 'mjschool' );
 																			}
@@ -331,9 +330,7 @@ if ( isset( $_REQUEST['delete_selected'] ) ) {
 																	?>
 																	<li >
 																		<a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                            
                                                                             <img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL."/assets/images/listpage-icon/mjschool-more.png")?>">
-                                                                            
 																		</a>
 																		<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																			<li class="mjschool-float-left-width-100px">

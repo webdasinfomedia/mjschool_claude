@@ -7,7 +7,7 @@
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
-
+$mjschool_obj_user   = new Mjschool_User();
 // Sanitize and decrypt message ID.
 $message_id_raw     = isset( $_REQUEST['id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) : '';
 $message_id_decrypt = intval( mjschool_decrypt_id( $message_id_raw ) );
@@ -31,7 +31,8 @@ if ( $message_from === 'sendbox' ) {
 }
 
 if ( $message_from === 'inbox' ) {
-	$message  = mjschool_get_message_by_id( $message_id_decrypt );
+	$obj_message = new Mjschool_Message();
+	$message  = $obj_message->mjschool_get_message_by_id( $message_id_decrypt );
 	$message1 = get_post( $message->post_id );
 	$author   = $message1->post_author;
 	mjschool_change_read_status( intval( $message_id_decrypt ) );
@@ -42,7 +43,8 @@ if ( $message_from === 'inbox' ) {
 		if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'mjschool_delete_message' ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
 		}
-		mjschool_delete_message( 'mjschool_message', $message_id_decrypt );
+		$obj_message  = new Mjschool_Message();
+		$obj_message->mjschool_delete_message( 'mjschool_message', $message_id_decrypt );
 		$nonce = wp_create_nonce( 'mjschool_message_tab' );
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_message&tab=inbox&_wpnonce=' . $nonce ) );
 		exit;
@@ -63,8 +65,8 @@ if ( isset( $_POST['replay_message'] ) ) {
 	$sanitized_post['user_id']             = isset( $_POST['user_id'] ) ? intval( wp_unslash( $_POST['user_id'] ) ) : 0;
 	$sanitized_post['receiver_id']         = isset( $_POST['receiver_id'] ) && is_array( $_POST['receiver_id'] ) ? array_map( 'intval', wp_unslash( $_POST['receiver_id'] ) ) : array();
 	$sanitized_post['replay_message_body'] = isset( $_POST['replay_message_body'] ) ? sanitize_textarea_field( wp_unslash( $_POST['replay_message_body'] ) ) : '';
-	
-	$result = mjschool_send_replay_message( $sanitized_post );
+	$obj_message  = new Mjschool_Message();
+	$result = $obj_message->mjschool_send_replay_message( $sanitized_post );
 	if ( $result ) {
 		$nonce = wp_create_nonce( 'mjschool_message_tab' );
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_message&tab=view_message&from=' . $message_from . '&id=' . rawurlencode( $message_id ) . '&_wpnonce=' . $nonce . '&message=1' ) );
@@ -119,7 +121,7 @@ $delete_nonce = wp_create_nonce( 'mjschool_delete_message' );
 				$message_for = get_post_meta( $message_id_decrypt, 'message_for', true );
 				$author      = $message->post_author;
 				$author_name = mjschool_get_display_name( $message->post_author );
-				echo esc_html__( 'From', 'mjschool' ) . ' : ' . esc_html( $author_name ) . '<span>&lt;' . esc_html( mjschool_get_email_id_by_user_id( $message->post_author ) ) . '&gt;</span><br>';
+				echo esc_html__( 'From', 'mjschool' ) . ' : ' . esc_html( $author_name ) . '<span>&lt;' . esc_html( $mjschool_obj_user->mjschool_get_email_id_by_user_id( $message->post_author ) ) . '&gt;</span><br>';
 				$check_message_single_or_multiple = mjschool_send_message_check_single_user_or_multiple( $message_id_decrypt );
 				if ( $check_message_single_or_multiple === 1 ) {
 					global $wpdb;
@@ -127,7 +129,7 @@ $delete_nonce = wp_create_nonce( 'mjschool_delete_message' );
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$get_single_user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $tbl_name WHERE post_id = %d", $message_id_decrypt ) );
 					$mjschool_role   = mjschool_get_display_name( $get_single_user->receiver );
-					echo esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( $mjschool_role ) . '<span>&lt;' . esc_html( mjschool_get_email_id_by_user_id( $get_single_user->receiver ) ) . '&gt;</span><br>';
+					echo esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( $mjschool_role ) . '<span>&lt;' . esc_html( $mjschool_obj_user->mjschool_get_email_id_by_user_id( $get_single_user->receiver ) ) . '&gt;</span><br>';
 				} else {
 					$mjschool_role = get_post_meta( $message_id_decrypt, 'message_for', true );
 					echo esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( $mjschool_role );
@@ -135,7 +137,7 @@ $delete_nonce = wp_create_nonce( 'mjschool_delete_message' );
 			} else {
 				$author      = $message->sender;
 				$author_name = mjschool_get_display_name( $message->sender );
-				echo esc_html__( 'From', 'mjschool' ) . ' : ' . esc_html( $author_name ) . '<span>&lt;' . esc_html( mjschool_get_email_id_by_user_id( $message->sender ) ) . '&gt;</span><br>';
+				echo esc_html__( 'From', 'mjschool' ) . ' : ' . esc_html( $author_name ) . '<span>&lt;' . esc_html( $mjschool_obj_user->mjschool_get_email_id_by_user_id( $message->sender ) ) . '&gt;</span><br>';
 				$check_message_single_or_multiple = mjschool_send_message_check_single_user_or_multiple( $message->post_id );
 				if ( $check_message_single_or_multiple === 1 ) {
 					global $wpdb;
@@ -143,7 +145,7 @@ $delete_nonce = wp_create_nonce( 'mjschool_delete_message' );
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$get_single_user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $tbl_name WHERE post_id = %d", $message->post_id ) );
 					$mjschool_role   = mjschool_get_display_name( $get_single_user->receiver );
-					echo esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( $mjschool_role ) . '<span>&lt;' . esc_html( mjschool_get_email_id_by_user_id( $get_single_user->receiver ) ) . '&gt;</span><br>';
+					echo esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( $mjschool_role ) . '<span>&lt;' . esc_html( $mjschool_obj_user->mjschool_get_email_id_by_user_id( $get_single_user->receiver ) ) . '&gt;</span><br>';
 				} else {
 					$mjschool_role = get_post_meta( $message->post_id, 'message_for', true );
 					echo esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( $mjschool_role );

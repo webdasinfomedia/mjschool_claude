@@ -24,15 +24,15 @@ $school_type  = get_option( 'mjschool_custom_class' );
 ?>
 <?php
 $edit = 0;
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) {
+if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'edit' ) {
 	$edit      = 1;
-	$notice_id = isset( $_REQUEST['notice_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['notice_id'] ) ) ) ) : 0;
+	$notice_id = isset( $_GET['notice_id'] ) ? intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['notice_id'] ) ) ) ) : 0;
 	$post      = get_post( $notice_id );
 }
 ?>
 <div class="mjschool-panel-body"> <!-- Mjschool-panel-body. -->
 	<form name="class_form" action="" method="post" class="mjschool-form-horizontal" id="notice_form" enctype="multipart/form-data"><!-- Notice form. -->
-		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; ?>
+		<?php $mjschool_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : 'insert'; ?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 		<input type="hidden" name="notice_id" value="<?php if ( $edit ) { echo esc_attr( intval( $notice_id ) ); } ?>" />
 		<div class="header">
@@ -62,7 +62,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 				<div class="col-md-6">
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
-							<input id="notice_Start_date" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'start_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="start_date" readonly>
+							<input id="notice_Start_date" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'start_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( current_time( 'Y-m-d' ) ) ); } ?>" name="start_date" readonly>
 							<label class="date_label" for="notice_content"><?php esc_html_e( 'Notice Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						</div>
 					</div>
@@ -71,7 +71,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 				<div class="col-md-6 mjschool-error-msg-left-margin">
 					<div class="form-group input">
 						<div class="col-md-12 form-control">
-							<input id="notice_end_date" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'end_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" name="end_date" readonly>
+							<input id="notice_end_date" class="form-control date_picker validate[required] text-input" type="text" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( get_post_meta( $post->ID, 'end_date', true ) ) ) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( current_time( 'Y-m-d' ) ) ); } ?>" name="end_date" readonly>
 							<label class="date_label" for="notice_content"><?php esc_html_e( 'Notice End Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 						</div>
 					</div>
@@ -106,7 +106,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 					<select name="class_id" id="mjschool-class-list" class="form-control mjschool-max-width-100px">
 						<option value="all"><?php esc_html_e( 'All', 'mjschool' ); ?></option>
 						<?php
-						foreach ( mjschool_get_all_class() as $classdata ) {
+						$mjschool_class = new Mjschool_Class();
+						foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 							?>
 							<option value="<?php echo esc_attr( intval( $classdata['class_id'] ) ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php
@@ -130,7 +131,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 							<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 							<?php
 							if ( $edit ) {
-								foreach ( mjschool_get_class_sections( $classval ) as $sectiondata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_class_sections( $classval ) as $sectiondata ) {
 									?>
 									<option value="<?php echo esc_attr( intval( $sectiondata->id ) ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 									<?php
@@ -184,7 +186,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 			</div>
 			<?php
 			// --------- Get Module-Wise Custom Field Data. --------------//
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'notice';
 			$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 			?>

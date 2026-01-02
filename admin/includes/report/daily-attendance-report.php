@@ -34,7 +34,7 @@ if ( isset( $_GET['tab'] ) ) {
 					<div class="col-md-4">
 						<div class="form-group input">
 							<div class="col-md-12 form-control">
-								<input type="text" id="sdate" class="form-control" name="date" value="<?php if ( isset( $_REQUEST['date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( $_REQUEST['date'] ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>" readonly>
+								<input type="text" id="sdate" class="form-control" name="date" value="<?php if ( isset( $_REQUEST['date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( $_REQUEST['date'] ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( wp_date( 'Y-m-d' ) ) ); } ?>" readonly>
 								<label for="sdate"><?php esc_html_e( 'Date', 'mjschool' ); ?></label>
 							</div>
 						</div>
@@ -58,12 +58,13 @@ if ( isset( $_GET['tab'] ) ) {
 		$header[]   = 'Absent %';
 		$header[]   = 'Total Student';
 		$filename   = 'export/mjschool-export-attendance.csv';
-		$fh         = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) or wp_die( "can't open file" );
+		$fh         = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) || wp_die( "can't open file" );
 		fputcsv( $fh, $header );
-		foreach ( mjschool_get_all_class() as $classdata ) {
+		$mjschool_class = new Mjschool_Class();
+		foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 			$row           = array();
 			$class_id      = $classdata['class_id'];
-			$classname     = mjschool_get_class_name( $class_id );
+			$classname     = $mjschool_class->mjschool_get_class_name( $class_id );
 			$total         = mjschool_view_attendance_report_for_start_date_enddate_total( $class_id );
 			$total_present = mjschool_daily_attendance_report_for_date_total_present( $daily_date, $class_id );
 			$total_absent  = mjschool_daily_attendance_report_for_date_total_absent( $daily_date, $class_id );
@@ -92,7 +93,7 @@ if ( isset( $_GET['tab'] ) ) {
 		header( 'Pragma: public' );       // Required.
 		header( 'Expires: 0' );           // No cache.
 		header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-		header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+		header( 'Last-Modified: ' . wp_date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 		header( 'Cache-Control: private', false );
 		header( 'Content-Type: ' . $mime );
 		header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );
@@ -106,7 +107,7 @@ if ( isset( $_GET['tab'] ) ) {
 	if ( isset( $_REQUEST['daily_attendance'] ) ) {
 		$daily_date = $_POST['date'];
 	} else {
-		$daily_date = date( 'Y-m-d' );
+		$daily_date = wp_date( 'Y-m-d' );
 	}
 	?>
 	<script type="text/javascript">
@@ -176,7 +177,8 @@ if ( isset( $_GET['tab'] ) ) {
 					</thead>
 					<tbody>
 						<?php
-						foreach ( mjschool_get_all_class() as $classdata ) {
+						$mjschool_class = new Mjschool_Class();
+						foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 							$class_id      = $classdata['class_id'];
 							$total         = mjschool_view_attendance_report_for_start_date_enddate_total( $class_id );
 							$total_present = mjschool_daily_attendance_report_for_date_total_present( $daily_date, $class_id );
@@ -191,7 +193,7 @@ if ( isset( $_GET['tab'] ) ) {
 							}
 							?>
 							<tr>
-								<td><?php echo esc_html( mjschool_get_class_name( $class_id ) ); ?> </td>
+								<td><?php $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_class_name( $class_id ) ); ?> </td>
 								<td><?php echo esc_html( round( $total_present ) ); ?></td>
 								<td><?php echo esc_html( round( $total_absent ) ); ?></td>
 								<td><?php echo esc_html( round( $present_per ) ); ?>%</td>

@@ -81,10 +81,10 @@ if ( isset( $_POST['save_dashboard_setting'] ) ) {
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 	if ( $school_obj->role === 'supportstaff' ) {
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=general-settings&tab=dashboard_card_settings&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
-		die();
+		exit;
 	} else {
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=dashboard_card_settings&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
-		die();
+		exit;
 	}
 }
 if ( isset( $_POST['save_mobile_app_settings'] ) ) {
@@ -100,10 +100,10 @@ if ( isset( $_POST['save_mobile_app_settings'] ) ) {
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 	if ( $school_obj->role === 'supportstaff' ) {
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=general-settings&tab=mobile_app_settings&tab1=icon_setting&_wpnonce='.rawurlencode( $nonce ).'&message=3' ) );
-		die();
+		exit;
 	} else {
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=mobile_app_settings&tab1=icon_setting&_wpnonce='.rawurlencode( $nonce ).'&message=3' ) );
-		die();
+		exit;
 	}
 }
 if ( isset( $_POST['varify_app_key'] ) ) {
@@ -111,7 +111,7 @@ if ( isset( $_POST['varify_app_key'] ) ) {
 		wp_die(esc_html__('Security check failed.', 'mjschool'));
 	}
 	$verify_result = mjschool_submit_setup_form_mobileapp( wp_unslash($_POST) );
-	if ( $verify_result['mjschool_app_verify'] != '0' ) {
+	if ( $verify_result['mjschool_app_verify'] !== '0' ) {
 		?>
 		<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
 			<p><?php echo esc_html( $verify_result['message'] ); ?></p>
@@ -154,7 +154,7 @@ if ( isset( $_POST['save_student_onboard'] ) ) {
 	}
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 	wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=student_onboarding&_wpnonce='.rawurlencode( $nonce ).'&message=7' ) );
-	die();
+	exit;
 }
 if ( isset( $_POST['save_class_room'] ) )
 {
@@ -176,7 +176,7 @@ if ( isset( $_POST['save_class_room'] ) )
 	}
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 	wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=class_settings&_wpnonce='.rawurlencode( $nonce ).'&message=8' ) );
-	die();
+	exit;
 }
 if ( isset( $_POST['save_setting'] ) ) {
 	if (! isset($_POST['security']) || ! wp_verify_nonce($_POST['security'], 'mjschool_general_setting_nonce')) {
@@ -296,10 +296,10 @@ if ( isset( $_POST['save_setting'] ) ) {
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 	if ( $school_obj->role === 'supportstaff' ) {
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=general-settings&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
-		die();
+		exit;
 	} else {
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&_wpnonce='.rawurlencode( $nonce ).'&message=1' ) );
-		die();
+		exit;
 	}
 }
 if ( isset( $_REQUEST['save_document_setting'] ) ) {
@@ -318,10 +318,10 @@ if ( isset( $_REQUEST['save_document_setting'] ) ) {
 	$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 	if ( $school_obj->role === 'supportstaff' ) {
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=general-settings&tab=document_settings&_wpnonce='.rawurlencode( $nonce ).'&message=2' ) );
-		die();
+		exit;
 	} else {
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=document_settings&_wpnonce='.rawurlencode( $nonce ).'&message=2' ) );
-		die();
+		exit;
 	}
 	?>
 	<div id="mjschool-message" class="mjschool-message_class alert mjschool-message-disabled mjschool-below-h2 notice is-dismissible alert-dismissible">
@@ -500,7 +500,7 @@ if ( $school_obj->role === 'administrator' ) {
 												$result = $exam_obj->mjschool_save_merge_exam_setting( wp_unslash($_POST) );
 												if ( $result ) {
 													wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.rawurlencode( $nonce ).'&message=5' ) );
-													die();
+													exit;
 												}
 											} else {
 												wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -509,7 +509,7 @@ if ( $school_obj->role === 'administrator' ) {
 											$result = $exam_obj->mjschool_save_merge_exam_setting( wp_unslash($_POST) );
 											if ( $result ) {
 												wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.rawurlencode( $nonce ).'&message=4' ) );
-												die();
+												exit;
 											}
 										}
 									} else {
@@ -522,7 +522,7 @@ if ( $school_obj->role === 'administrator' ) {
 										if ( $result ) {
 											$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 											wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.rawurlencode( $nonce ).'&message=6' ) );
-											die();
+											exit;
 										}
 									} else {
 										wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -539,7 +539,7 @@ if ( $school_obj->role === 'administrator' ) {
 										}
 										$nonce = wp_create_nonce( 'mjschool_general_setting_tab' );
 										wp_safe_redirect( admin_url( 'admin.php?page=mjschool_general_settings&tab=exam_merge_settings&_wpnonce='.rawurlencode( $nonce ).'&message=6' ) );
-										die();
+										exit;
 									}
 								}
 								$edit = 0;
@@ -576,7 +576,9 @@ if ( $school_obj->role === 'administrator' ) {
 												?>
 												<select name="class_id" id="mjschool-class-list" class="mjschool-line-height-30px form-control class_id_exam validate[required] text-input">
 													<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
-													<?php foreach ( mjschool_get_all_class() as $classdata ) { ?>
+													<?php 
+													$mjschool_class = new Mjschool_Class();
+													foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) { ?>
 														<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 													<?php } ?>
 												</select>
@@ -596,7 +598,8 @@ if ( $school_obj->role === 'administrator' ) {
 													<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 													<?php
 													if ( $edit ) {
-														foreach ( mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
+														$mjschool_class = new Mjschool_Class();
+														foreach ( $mjschool_class->mjschool_get_class_sections( $result->class_id ) as $sectiondata ) {
 															?>
 															<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 															<?php
@@ -621,7 +624,8 @@ if ( $school_obj->role === 'administrator' ) {
 																		<option value=""><?php esc_html_e( 'Select Exam', 'mjschool' ); ?></option>
 																		<?php
 																		if ( isset( $value->exam_id ) ) {
-																			$exam_data = mjschool_get_all_exam_by_class_id_all( $class_id );
+																			$obj_exam = new Mjschool_Exam();
+																			$exam_data = $obj_exam->mjschool_get_all_exam_by_class_id_all( $class_id );
 																			if ( ! empty( $exam_data ) ) {
 																				foreach ( $exam_data as $retrieved_data ) {
 																					?>
@@ -759,7 +763,7 @@ if ( $school_obj->role === 'administrator' ) {
 																		</a>
 																		<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
 																			<?php
-																			if ( $user_access_edit === 1 ) {
+																			if ( $user_access_edit === '1' ) {
 																				?>
 																				<li class="mjschool-float-left-width-100px mjschool-border-bottom-item">
 																					<a href="<?php echo esc_url('?&page=mjschool_general_settings&tab=exam_merge_settings&merge_id='.rawurlencode( mjschool_encrypt_id( $retrieved_data->id ) ).'&action=edit_merge&_wpnonce_action='.rawurlencode( mjschool_get_nonce( 'edit_action' ) ) ); ?>" class="mjschool-float-left-width-100px"><i class="fa fa-edit"></i><?php esc_html_e( 'Edit', 'mjschool' ); ?></a>
@@ -1105,7 +1109,7 @@ if ( $school_obj->role === 'administrator' ) {
 																	</div>
 																	<div class="clearfix"></div>
 																	<div id="upload_mjschool_app_logo_preview" class="mjschool-min-height-100px mt-3 mjschool-margin-top-5">
-																		<img class="mjschool-other-data-logo mjschool-other-data-logo-with-back" src="<?php echo esc_attr( get_option( 'mjschool_app_logo' ) ); ?>" />
+																		<img class="mjschool-other-data-logo mjschool-other-data-logo-with-back" src="<?php echo esc_url( get_option( 'mjschool_app_logo' ) ); ?>" />
 																	</div>
 																</div>
 															</div>
@@ -1131,8 +1135,10 @@ if ( $school_obj->role === 'administrator' ) {
 					}
 					if ( $active_tab === 'general_setting' ) {
 						// Check nonce for general setting tab.
+						// Sanitized $_GET access for security compliance
 						if ( isset( $_GET['tab'] ) ) {
-							if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'mjschool_general_setting_tab' ) ) {
+							$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+							if ( ! wp_verify_nonce( $nonce, 'mjschool_general_setting_tab' ) ) {
 								wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 							}
 						}
@@ -1179,15 +1185,20 @@ if ( $school_obj->role === 'administrator' ) {
 									<div class="col-md-6 input">
 										<label class="ml-1 mjschool-custom-top-label top" ><?php esc_html_e( 'Country', 'mjschool' ); ?></label>
 										<?php
-										$url = MJSCHOOL_PLUGIN_URL . "/assets/xml/mjschool-country-list.xml";
-										$xml = simplexml_load_file( $url ) or wp_die( 'Error: Cannot create object' );
+										$url = MJSCHOOL_PLUGIN_URL . '/assets/xml/mjschool-country-list.xml';
+										// Improved error handling with translatable message
+										$xml = simplexml_load_file( $url );
+										if ( false === $xml ) {
+											wp_die( esc_html__( 'Error: Cannot load country list file.', 'mjschool' ) );
+										}
 										?>
 										<select name="mjschool_contry" class="form-control validate[required] mjschool-max-width-100px" id="mjschool_contry">
 											<option value=""><?php esc_html_e( 'Select Country', 'mjschool' ); ?></option>
 											<?php
 											foreach ( $xml as $country ) {
+												$country_name = (string) $country->name;
 												?>
-												<option value="<?php echo esc_attr( $country->name ); ?>" <?php selected( get_option( 'mjschool_contry' ), $country->name ); ?>><?php echo esc_attr( $country->name ); ?></option>
+												<option value="<?php echo esc_attr( $country_name ); ?>" <?php selected( get_option( 'mjschool_contry' ), $country_name ); ?>><?php echo esc_html( $country_name ); ?></option>
 												<?php
 											}
 											?>
@@ -1213,7 +1224,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="clearfix"></div>
 											<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 p-0 mjschool-margin-top-15px">
 												<div id="upload_system_logo_preview" class="mjschool-general-setting-image-background">
-													<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_system_logo' ) ); ?>" />
+													<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_system_logo' ) ); ?>" alt="<?php esc_attr_e( 'System Logo', 'mjschool' ); ?>" />
 												</div>
 											</div>
 										</div>
@@ -1231,7 +1242,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="clearfix"></div>
 											<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12 p-0 mt-3">
 												<div id="upload_school_cover_preview min-h-100-px mt-5-px">
-													<img class="mjschool-other-data-logo" src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>" />
+													<img class="mjschool-other-data-logo" src="<?php echo esc_url( get_option( 'mjschool_logo' ) ); ?>" alt="<?php esc_attr_e( 'School Logo', 'mjschool' ); ?>" />
 												</div>
 											</div>
 										</div>
@@ -1257,7 +1268,7 @@ if ( $school_obj->role === 'administrator' ) {
 										<select id="mjschool_datepicker_format" class="form-control mjschool-max-width-100px" name="mjschool_datepicker_format">
 											<?php
 											foreach ( $date_format_array as $key => $value ) {
-												echo '<option value="' . esc_attr( $value ) . '" ' . selected( $selected_format, $value ) . '>' . esc_attr( $value ) . '</option>';
+												echo '<option value="' . esc_attr( $value ) . '" ' . selected( $selected_format, $value, false ) . '>' . esc_html( $value ) . '</option>';
 											}
 											?>
 										</select>
@@ -1266,9 +1277,9 @@ if ( $school_obj->role === 'administrator' ) {
 										<div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 p-0">
 											<div class="form-group input">
 												<div class="col-md-12 form-control mjschool-color-picker-div-height">
-													<label class="ml-1 mjschool-custom-top-label top mjschool-label-position-rtl" for="mjschool_datepicker_format"><?php esc_html_e( 'System Color', 'mjschool' ); ?></label>
+													<label class="ml-1 mjschool-custom-top-label top mjschool-label-position-rtl" for="mjschool_notification_fcm_key"><?php esc_html_e( 'System Color', 'mjschool' ); ?></label>
 													<input id="mjschool_notification_fcm_key" class="form-control text-input mjschool-color-picker-input" type="color" value="<?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?>" name="mjschool_system_color_code">
-													&nbsp;<label class="mjschool-color-picker-label" for="mjschool_notification_fcm_key"><?php esc_html_e( 'System Color Code : ', 'mjschool' ); ?><?php echo esc_attr( get_option( 'mjschool_system_color_code' ) ); ?></label>
+													&nbsp;<label class="mjschool-color-picker-label" for="mjschool_notification_fcm_key"><?php esc_html_e( 'System Color Code : ', 'mjschool' ); ?><?php echo esc_html( get_option( 'mjschool_system_color_code' ) ); ?></label>
 												</div>
 											</div>
 										</div>
@@ -1296,7 +1307,7 @@ if ( $school_obj->role === 'administrator' ) {
 														<label class="mjschool-custom-top-label mjschool-margin-left-0" for="mjschool_return_option"><?php esc_html_e( 'Enable Return Option', 'mjschool' ); ?></label>
 														<div class="checkbox mjschool-checkbox-label-padding-8px">
 															<label class="control-label form-label">
-																<input id="mjschool_return_option" type="checkbox" class="mjschool_return_option" name="mjschool_return_option" value="1" <?php echo checked( get_option( 'mjschool_return_option' ), 'yes' ); ?> />
+																<input id="mjschool_return_option" type="checkbox" class="mjschool_return_option" name="mjschool_return_option" value="1" <?php checked( get_option( 'mjschool_return_option' ), 'yes' ); ?> />
 																<span><?php esc_html_e( 'Yes', 'mjschool' ); ?></span>
 															</label>
 														</div>
@@ -1316,7 +1327,7 @@ if ( $school_obj->role === 'administrator' ) {
 												$category_data = $obj_lib->mjschool_get_period_list();
 												if ( ! empty( $category_data ) ) {
 													foreach ( $category_data as $retrieved_data ) {
-														echo '<option value="' . esc_attr( $retrieved_data->ID ) . '" ' . selected( $period_id, $retrieved_data->ID ) . '>' . esc_html( $retrieved_data->post_title ) . ' ' . esc_html__( 'Days', 'mjschool' ) . '</option>';
+														echo '<option value="' . esc_attr( $retrieved_data->ID ) . '" ' . selected( $period_id, $retrieved_data->ID, false ) . '>' . esc_html( $retrieved_data->post_title ) . ' ' . esc_html__( 'Days', 'mjschool' ) . '</option>';
 													}
 												}
 												?>
@@ -1336,7 +1347,7 @@ if ( $school_obj->role === 'administrator' ) {
 												<div class="row mjschool-padding-radio">
 													<div>
 														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for="mjschool_enable_recurring_invoices"><?php esc_html_e( 'Enable Recurring Invoices', 'mjschool' ); ?></label>
-														<input id="mjschool_enable_recurring_invoices" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_enable_recurring_invoices" value="yes" <?php echo checked( get_option( 'mjschool_enable_recurring_invoices' ), 'yes' ); ?> />
+														<input id="mjschool_enable_recurring_invoices" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_enable_recurring_invoices" value="yes" <?php checked( get_option( 'mjschool_enable_recurring_invoices' ), 'yes' ); ?> />
 														<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 													</div>
 												</div>
@@ -1346,7 +1357,7 @@ if ( $school_obj->role === 'administrator' ) {
 									<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 										<div class="form-group input mjschool_system_payment_reminder_day">
 											<div class="col-md-12 form-control">
-												<input id="mjschool_system_payment_reminder_day_more" class="form-control" min="0" type="number" onKeyPress="if(this.value.length==2 ) return false;" placeholder="<?php esc_html_e( '03 Days', 'mjschool' ); ?>" value="<?php echo esc_attr( get_option( 'mjschool_system_payment_reminder_day' ) ); ?>" name="mjschool_system_payment_reminder_day">
+												<input id="mjschool_system_payment_reminder_day_more" class="form-control" min="0" type="number" onKeyPress="if(this.value.length==2 ) return false;" placeholder="<?php esc_attr_e( '03 Days', 'mjschool' ); ?>" value="<?php echo esc_attr( get_option( 'mjschool_system_payment_reminder_day' ) ); ?>" name="mjschool_system_payment_reminder_day">
 												<label  for="mjschool_system_payment_reminder_day_more"><?php esc_html_e( 'Reminder Before Day', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -1364,7 +1375,7 @@ if ( $school_obj->role === 'administrator' ) {
 												<div class="row mjschool-padding-radio">
 													<div>
 														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for="mjschool_system_payment_reminder_enable"><?php esc_html_e( 'Fees Payment Reminder', 'mjschool' ); ?></label>
-														<input id="mjschool_system_payment_reminder_enable" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_system_payment_reminder_enable" value="yes" <?php echo checked( get_option( 'mjschool_system_payment_reminder_enable' ), 'yes' ); ?> />
+														<input id="mjschool_system_payment_reminder_enable" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_system_payment_reminder_enable" value="yes" <?php checked( get_option( 'mjschool_system_payment_reminder_enable' ), 'yes' ); ?> />
 														<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 													</div>
 												</div>
@@ -1377,7 +1388,7 @@ if ( $school_obj->role === 'administrator' ) {
 												<div class="row mjschool-padding-radio">
 													<div>
 														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for="mjschool_invoice_option"><?php esc_html_e( 'Invoice in Tabuler format', 'mjschool' ); ?></label>
-														<input id="mjschool_invoice_option" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_invoice_option" value="1" <?php echo checked( get_option( 'mjschool_invoice_option' ), '1' ); ?> />
+														<input id="mjschool_invoice_option" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_invoice_option" value="1" <?php checked( get_option( 'mjschool_invoice_option' ), '1' ); ?> />
 														<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 													</div>
 												</div>
@@ -1387,7 +1398,7 @@ if ( $school_obj->role === 'administrator' ) {
 									<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 										<div class="form-group input mjschool_system_payment_reminder_day">
 											<div class="col-md-12 form-control">
-												<input id="mjschool_system_payment_reminder_day" class="form-control" min="0" type="number" onKeyPress="if(this.value.length==2 ) return false;" placeholder="<?php esc_html_e( '03 Days', 'mjschool' ); ?>" value="<?php echo esc_attr( get_option( 'mjschool_system_payment_reminder_day' ) ); ?>" name="mjschool_system_payment_reminder_day">
+												<input id="mjschool_system_payment_reminder_day" class="form-control" min="0" type="number" onKeyPress="if(this.value.length==2 ) return false;" placeholder="<?php esc_attr_e( '03 Days', 'mjschool' ); ?>" value="<?php echo esc_attr( get_option( 'mjschool_system_payment_reminder_day' ) ); ?>" name="mjschool_system_payment_reminder_day">
 												<label  for="mjschool_system_payment_reminder_day"><?php esc_html_e( 'Reminder Before Day', 'mjschool' ); ?></label>
 											</div>
 										</div>
@@ -1411,7 +1422,7 @@ if ( $school_obj->role === 'administrator' ) {
 														<div class="row mjschool-padding-radio">
 															<div>
 																<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for="mjschool_enable_sandbox"><?php esc_html_e( 'Enable Sandbox', 'mjschool' ); ?></label>
-																<input id="mjschool_enable_sandbox" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_enable_sandbox" value="1" <?php echo checked( get_option( 'mjschool_enable_sandbox' ), 'yes' ); ?> />
+																<input id="mjschool_enable_sandbox" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_enable_sandbox" value="1" <?php checked( get_option( 'mjschool_enable_sandbox' ), 'yes' ); ?> />
 																<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 															</div>
 														</div>
@@ -1422,17 +1433,24 @@ if ( $school_obj->role === 'administrator' ) {
 												<div class="row">
 													<div class="col-md-11">
 														<?php
-														$url = MJSCHOOL_PLUGIN_URL . "/assets/xml/mjschool-currencies.xml";
-														$xml = simplexml_load_file( $url ) or wp_die( 'Error: Cannot create object' );
+														$url = MJSCHOOL_PLUGIN_URL . '/assets/xml/mjschool-currencies.xml';
+														// Improved error handling with translatable message
+														$xml = simplexml_load_file( $url );
+														if ( false === $xml ) {
+															wp_die( esc_html__( 'Error: Cannot load currency list file.', 'mjschool' ) );
+														}
 														?>
 														<label class="ml-1 mjschool-custom-top-label top" for="mjschool_currency_code"><?php esc_html_e( 'Select Currency', 'mjschool' ); ?></label>
 														<select id="mjschool_currency_code" name="mjschool_currency_code" class="form-control text-input mjschool-max-width-100px">
 															<option value=""> <?php esc_html_e( 'Select Currency', 'mjschool' ); ?></option>
 															<?php
 															foreach ( $xml as $currency ) {
-																$selected = selected( get_option( 'mjschool_currency_code' ), $currency->code, false );
-																echo '<option value="' . esc_attr( $currency['code'] ) . '" ' . esc_html( $selected ) . '>';
-																echo esc_html( $currency->name . ' ( ' . $currency->code . ' ' . $currency->symbol . ' )' );
+																$currency_code = (string) $currency['code'];
+																$currency_name = (string) $currency->name;
+																$currency_symbol = (string) $currency->symbol;
+																$selected = selected( get_option( 'mjschool_currency_code' ), $currency_code, false );
+																echo '<option value="' . esc_attr( $currency_code ) . '" ' . $selected . '>';
+																echo esc_html( $currency_name . ' ( ' . $currency_code . ' ' . $currency_symbol . ' )' );
 																echo '</option>';
 															}
 															?>
@@ -1458,7 +1476,7 @@ if ( $school_obj->role === 'administrator' ) {
 														<div class="row mjschool-padding-radio">
 															<div>
 																<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for="mjschool_past_pay"><?php esc_html_e( 'Allow Past Date Payment', 'mjschool' ); ?></label>
-																<input id="mjschool_past_pay" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_past_pay" value="1" <?php echo checked( get_option( 'mjschool_past_pay' ), 'yes' ); ?> />
+																<input id="mjschool_past_pay" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_past_pay" value="1" <?php checked( get_option( 'mjschool_past_pay' ), 'yes' ); ?> />
 																<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 															</div>
 														</div>
@@ -1467,6 +1485,10 @@ if ( $school_obj->role === 'administrator' ) {
 											</div>
 											<?php
 											if ( $school_obj->role === 'administrator' ) {
+												// Check if plugin.php is loaded for is_plugin_active() function availability
+												if ( ! function_exists( 'is_plugin_active' ) ) {
+													require_once ABSPATH . 'wp-admin/includes/plugin.php';
+												}
 												if ( is_plugin_active( 'paymaster/paymaster.php' ) ) {
 													?>
 													<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool-rtl-margin-top-15px mb-3">
@@ -1475,7 +1497,7 @@ if ( $school_obj->role === 'administrator' ) {
 																<div class="row mjschool-padding-radio">
 																	<div>
 																		<label for="mjschool_paymaster_pack" class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Use Paymaster Payment Gateways', 'mjschool' ); ?></label>
-																		<input type="checkbox" class="mjschool-margin-right-checkbox-css" value="yes" <?php echo checked( get_option( 'mjschool_paymaster_pack' ), 'yes' ); ?> name="mjschool_paymaster_pack">
+																		<input type="checkbox" class="mjschool-margin-right-checkbox-css" value="yes" <?php checked( get_option( 'mjschool_paymaster_pack' ), 'yes' ); ?> name="mjschool_paymaster_pack">
 																		<label><?php esc_html_e( 'Enable', 'mjschool' ); ?></label>
 																	</div>
 																</div>
@@ -1488,7 +1510,7 @@ if ( $school_obj->role === 'administrator' ) {
 											?>
 										</div>
 										<span class="description">
-											<a href="<?php if ( $school_obj->role === 'supportstaff' ) { echo '?dashboard=mjschool_user&page=feepayment'; } else { echo '?page=mjschool_fees_payment&tab=feespaymentlist'; } ?>" target="_blank" class="mjschool_blue_decoration_none"> <?php esc_html_e( 'Click here to add or update Fees Amount.', 'mjschool' ); ?> </a>
+											<a href="<?php echo esc_url( ( $school_obj->role === 'supportstaff' ) ? '?dashboard=mjschool_user&page=feepayment' : '?page=mjschool_fees_payment&tab=feespaymentlist' ); ?>" target="_blank" class="mjschool_blue_decoration_none"> <?php esc_html_e( 'Click here to add or update Fees Amount.', 'mjschool' ); ?> </a>
 										</span>
 									</div>
 									<div class="form-body mjschool-user-form">
@@ -1502,7 +1524,7 @@ if ( $school_obj->role === 'administrator' ) {
 														<div class="row mjschool-padding-radio">
 															<div>
 																<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for="mjschool_enable_virtual_classroom"><?php esc_html_e( 'Virtual Classroom', 'mjschool' ); ?></label>
-																<input id="mjschool_enable_virtual_classroom" type="checkbox" id="virual_class_checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_enable_virtual_classroom" value="1" <?php echo checked( get_option( 'mjschool_enable_virtual_classroom' ), 'yes' ); ?> />
+																<input id="mjschool_enable_virtual_classroom" type="checkbox" class="mjschool-margin-right-checkbox-css" name="mjschool_enable_virtual_classroom" value="1" <?php checked( get_option( 'mjschool_enable_virtual_classroom' ), 'yes' ); ?> />
 																<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 															</div>
 														</div>
@@ -1564,7 +1586,7 @@ if ( $school_obj->role === 'administrator' ) {
 															<div class="row mjschool-padding-radio">
 																<div>
 																	<label class="mjschool-custom-top-label" for="mjschool_enable_virtual_classroom_reminder"><?php esc_html_e( 'Mail Notification Virtual ClassRoom Reminder', 'mjschool' ); ?></label>
-																	<input id="mjschool_enable_virtual_classroom_reminder" class="mjschool-margin-right-checkbox-css" type="checkbox" name="mjschool_enable_virtual_classroom_reminder" value="1" <?php echo checked( get_option( 'mjschool_enable_virtual_classroom_reminder' ), 'yes' ); ?> />
+																	<input id="mjschool_enable_virtual_classroom_reminder" class="mjschool-margin-right-checkbox-css" type="checkbox" name="mjschool_enable_virtual_classroom_reminder" value="1" <?php checked( get_option( 'mjschool_enable_virtual_classroom_reminder' ), 'yes' ); ?> />
 																	<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 																</div>
 															</div>
@@ -1577,7 +1599,7 @@ if ( $school_obj->role === 'administrator' ) {
 															<div class="row mjschool-padding-radio">
 																<div>
 																	<label class="mjschool-custom-top-label" for="mjschool_enable_mjschool_virtual_classroom_reminder"><?php esc_html_e( 'SMS Notification Virtual Class Room Reminder', 'mjschool' ); ?></label>
-																	<input id="mjschool_enable_mjschool_virtual_classroom_reminder" class="mjschool-margin-right-checkbox-css" type="checkbox" name="mjschool_enable_mjschool_virtual_classroom_reminder" value="1" <?php echo checked( get_option( 'mjschool_enable_mjschool_virtual_classroom_reminder' ), 'yes' ); ?> />
+																	<input id="mjschool_enable_mjschool_virtual_classroom_reminder" class="mjschool-margin-right-checkbox-css" type="checkbox" name="mjschool_enable_mjschool_virtual_classroom_reminder" value="1" <?php checked( get_option( 'mjschool_enable_mjschool_virtual_classroom_reminder' ), 'yes' ); ?> />
 																	<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 																</div>
 															</div>
@@ -1596,7 +1618,7 @@ if ( $school_obj->role === 'administrator' ) {
 												<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 													<div class="form-group input">
 														<div class="col-md-12 form-control">
-															<input id="mjschool_virtual_classroom_reminder_before_time" class="form-control" min="0" type="number" onKeyPress="if(this.value.length==2 ) return false;" placeholder="<?php esc_html_e( '01 Minute', 'mjschool' ); ?>" value="<?php echo esc_attr( get_option( 'mjschool_virtual_classroom_reminder_before_time' ) ); ?>" name="mjschool_virtual_classroom_reminder_before_time">
+															<input id="mjschool_virtual_classroom_reminder_before_time" class="form-control" min="0" type="number" onKeyPress="if(this.value.length==2 ) return false;" placeholder="<?php esc_attr_e( '01 Minute', 'mjschool' ); ?>" value="<?php echo esc_attr( get_option( 'mjschool_virtual_classroom_reminder_before_time' ) ); ?>" name="mjschool_virtual_classroom_reminder_before_time">
 															<label  for="mjschool_virtual_classroom_reminder_before_time"><?php esc_html_e( 'Reminder Before Time', 'mjschool' ); ?></label>
 														</div>
 													</div>
@@ -1615,7 +1637,7 @@ if ( $school_obj->role === 'administrator' ) {
 														<div class="row mjschool-padding-radio">
 															<div>
 																<label for="mjschool_parent_send_message" class="mjschool-custom-top-label"><?php esc_html_e( 'Parent can send message to class students', 'mjschool' ); ?></label>
-																<input id="mjschool_parent_send_message" type="checkbox" class="mjschool-margin-right-checkbox-css" value="1" <?php echo checked( get_option( 'mjschool_parent_send_message' ), 1 ); ?> name="mjschool_parent_send_message">
+																<input id="mjschool_parent_send_message" type="checkbox" class="mjschool-margin-right-checkbox-css" value="1" <?php checked( get_option( 'mjschool_parent_send_message' ), 1 ); ?> name="mjschool_parent_send_message">
 																<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 															</div>
 														</div>
@@ -1628,7 +1650,7 @@ if ( $school_obj->role === 'administrator' ) {
 														<div class="row mjschool-padding-radio">
 															<div>
 																<label for="mjschool_student_send_message" class="mjschool-custom-top-label"><?php esc_html_e( ' Student can send message to each other', 'mjschool' ); ?></label>
-																<input id="mjschool_student_send_message" type="checkbox" class="mjschool-margin-right-checkbox-css" value="1" <?php echo checked( get_option( 'mjschool_student_send_message' ), 1 ); ?> name="mjschool_student_send_message">
+																<input id="mjschool_student_send_message" type="checkbox" class="mjschool-margin-right-checkbox-css" value="1" <?php checked( get_option( 'mjschool_student_send_message' ), 1 ); ?> name="mjschool_student_send_message">
 																<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 															</div>
 														</div>
@@ -1646,7 +1668,7 @@ if ( $school_obj->role === 'administrator' ) {
 														<div class="row mjschool-padding-radio">
 															<div>
 																<label for="mjschool_student_approval" class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Student Approval', 'mjschool' ); ?></label>
-																<input id="mjschool_student_approval" type="checkbox" class="mjschool-margin-right-checkbox-css" value="1" <?php echo checked( get_option( 'mjschool_student_approval' ), 1 ); ?> name="mjschool_student_approval"> <?php esc_html_e( 'Enable', 'mjschool' ); ?>
+																<input id="mjschool_student_approval" type="checkbox" class="mjschool-margin-right-checkbox-css" value="1" <?php checked( get_option( 'mjschool_student_approval' ), 1 ); ?> name="mjschool_student_approval"> <?php esc_html_e( 'Enable', 'mjschool' ); ?>
 															</div>
 														</div>
 													</div>
@@ -1659,7 +1681,7 @@ if ( $school_obj->role === 'administrator' ) {
 														<div class="row mjschool-padding-radio">
 															<div>
 																<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for="mjschool_enable_video_popup_show"><?php esc_html_e( 'How to Videos Display?', 'mjschool' ); ?></label>
-																<input id="mjschool_enable_video_popup_show" type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="mjschool_enable_video_popup_show" value="yes" <?php echo checked( get_option( 'mjschool_enable_video_popup_show' ), 'yes' ); ?> />
+																<input id="mjschool_enable_video_popup_show" type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="mjschool_enable_video_popup_show" value="yes" <?php checked( get_option( 'mjschool_enable_video_popup_show' ), 'yes' ); ?> />
 																<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 															</div>
 														</div>
@@ -1685,9 +1707,7 @@ if ( $school_obj->role === 'administrator' ) {
 													<div class="clearfix"></div>
 													<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
 														<div id="upload_user_aprincipal_signature">
-
-															<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" />
-
+															<img class="mjschool-image-preview-css" src="<?php echo esc_url( get_option( 'mjschool_principal_signature' ) ); ?>" alt="<?php esc_attr_e( 'Principal Signature', 'mjschool' ); ?>" />
 														</div>
 													</div>
 												</div>
@@ -1698,7 +1718,7 @@ if ( $school_obj->role === 'administrator' ) {
 														<div class="row mjschool-padding-radio">
 															<div>
 																<label for="mjschool_mail_notification" class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Mail Notification', 'mjschool' ); ?></label>
-																<input id="mjschool_mail_notification" type="checkbox" class="mjschool-margin-right-checkbox-css" value="1" <?php echo checked( get_option( 'mjschool_mail_notification' ), 1 ); ?> name="mjschool_mail_notification">
+																<input id="mjschool_mail_notification" type="checkbox" class="mjschool-margin-right-checkbox-css" value="1" <?php checked( get_option( 'mjschool_mail_notification' ), 1 ); ?> name="mjschool_mail_notification">
 																<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 															</div>
 														</div>
@@ -1734,7 +1754,7 @@ if ( $school_obj->role === 'administrator' ) {
 																	<label class="mjschool-custom-top-label mjschool-margin-left-0" for="mjschool_heder_enable"><?php esc_html_e( 'Header', 'mjschool' ); ?></label>
 																	<div class="checkbox mjschool-checkbox-label-padding-8px">
 																		<label class="control-label form-label">
-																			<input id="mjschool_heder_enable" type="checkbox" name="mjschool_heder_enable" value="1" <?php echo checked( get_option( 'mjschool_heder_enable' ), 'yes' ); ?> />
+																			<input id="mjschool_heder_enable" type="checkbox" name="mjschool_heder_enable" value="1" <?php checked( get_option( 'mjschool_heder_enable' ), 'yes' ); ?> />
 																			<span><?php esc_html_e( 'Enable', 'mjschool' ); ?></span>
 																		</label>
 																	</div>
@@ -1760,7 +1780,7 @@ if ( $school_obj->role === 'administrator' ) {
 										</div>
 									</div>
 									<?php
-									if ( $user_access_edit === 1 ) {
+									if ( $user_access_edit === '1' ) {
 										?>
 										<div class="form-body mjschool-user-form">
 											<div class="row">
@@ -1799,7 +1819,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Users Chart', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Users Chart', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="users_chart_staff" value="yes" <?php echo isset( $dashboard_card_for_staff['mjschool_user_chart'] ) ? checked( $dashboard_card_for_staff['mjschool_user_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1812,7 +1832,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Student Status Chart', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Student Status Chart', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="student_status_staff" value="yes" <?php echo isset( $dashboard_card_for_staff['mjschool_student_status_chart'] ) ? checked( $dashboard_card_for_staff['mjschool_student_status_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1825,7 +1845,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Attendance Chart', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Attendance Chart', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="attendance_staff" value="yes" <?php echo isset( $dashboard_card_for_staff['mjschool_attendance_chart'] ) ? checked( $dashboard_card_for_staff['mjschool_attendance_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1838,7 +1858,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Payment Status Chart', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Payment Status Chart', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="payment_status_staff" value="yes" <?php echo isset( $dashboard_card_for_staff['mjschool_payment_status_chart'] ) ? checked( $dashboard_card_for_staff['mjschool_payment_status_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1851,7 +1871,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Payment Report', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Payment Report', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="payment_report_staff" value="yes" <?php echo isset( $dashboard_card_for_staff['mjschool_payment_report'] ) ? checked( $dashboard_card_for_staff['mjschool_payment_report'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1864,7 +1884,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Fees Payment Card', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Fees Payment Card', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="invoice_enable_staff" value="yes" <?php echo isset( $dashboard_card_for_staff['mjschool_invoice_chart'] ) ? checked( $dashboard_card_for_staff['mjschool_invoice_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1885,7 +1905,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'User Chart', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'User Chart', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="user_chart_enable_teacher" value="yes" <?php echo isset( $dashboard_card_for_teacher['mjschool_user_chart'] ) ? checked( $dashboard_card_for_teacher['mjschool_user_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1898,7 +1918,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Student Status Chart', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Student Status Chart', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="student_status_enable_teacher" value="yes" <?php echo isset( $dashboard_card_for_teacher['mjschool_student_status_chart'] ) ? checked( $dashboard_card_for_teacher['mjschool_student_status_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1911,7 +1931,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Attendance Chart', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Attendance Chart', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="attendance_chart_enable_teacher" value="yes" <?php echo isset( $dashboard_card_for_teacher['mjschool_attendance_chart'] ) ? checked( $dashboard_card_for_teacher['mjschool_attendance_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1932,7 +1952,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'User Chart', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'User Chart', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="user_chart_parent" value="yes" <?php echo isset( $dashboard_card_for_parent['mjschool_user_chart'] ) ? checked( $dashboard_card_for_parent['mjschool_user_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1945,7 +1965,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Payement Status Chart', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Payement Status Chart', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="payment_status_parent" value="yes" <?php echo isset( $dashboard_card_for_parent['mjschool_payment_status_chart'] ) ? checked( $dashboard_card_for_parent['mjschool_payment_status_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1958,7 +1978,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Fees Payment Card', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Fees Payment Card', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="invoice_enable_parent" value="yes" <?php echo isset( $dashboard_card_for_parent['mjschool_invoice_chart'] ) ? checked( $dashboard_card_for_parent['mjschool_invoice_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1979,7 +1999,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Users Chart', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Users Chart', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="user_chart_enable_student" value="yes" <?php echo isset( $dashboard_card['mjschool_user_chart'] ) ? checked( $dashboard_card['mjschool_user_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -1992,7 +2012,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Payment Status Chart', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Payment Status Chart', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="payment_status_chart_enable_student" value="yes" <?php echo isset( $dashboard_card['mjschool_payment_status_chart'] ) ? checked( $dashboard_card['mjschool_payment_status_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -2005,7 +2025,7 @@ if ( $school_obj->role === 'administrator' ) {
 											<div class="col-md-12 form-control">
 												<div class="row mjschool-padding-radio">
 													<div>
-														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label" for=""><?php esc_html_e( 'Fees Payment Card', 'mjschool' ); ?></label>
+														<label class="mjschool-label-margin-left-0px mjschool-custom-top-label"><?php esc_html_e( 'Fees Payment Card', 'mjschool' ); ?></label>
 														<input type="checkbox" class="mjschool-res-margin-top-5px mjschool-margin-right-checkbox-css" name="invoice_enable" value="yes" <?php echo isset( $dashboard_card['mjschool_invoice_chart'] ) ? checked( $dashboard_card['mjschool_invoice_chart'], 'yes', false ) : ''; ?> />
 														<span class="mjschool-res-margin-top-5px"><?php esc_html_e( 'Show', 'mjschool' ); ?></span>
 													</div>
@@ -2016,7 +2036,7 @@ if ( $school_obj->role === 'administrator' ) {
 								</div>
 							</div>
 							<?php
-							if ( $user_access_edit === 1 ) {
+							if ( $user_access_edit === '1' ) {
 								?>
 								<div class="form-body mjschool-user-form">
 									<div class="row">
@@ -2106,7 +2126,7 @@ if ( $school_obj->role === 'administrator' ) {
 								</div>
 							</div>
 							<?php
-							if ( $user_access_edit === 1 ) {
+							if ( $user_access_edit === '1' ) {
 								?>
 								<div class="form-body mjschool-user-form"> <!-- Mjschool-user-form start.-->
 									<div class="row"><!--Row div start.-->

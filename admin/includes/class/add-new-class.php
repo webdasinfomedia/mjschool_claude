@@ -12,7 +12,7 @@
  * - Implements client-side validation via jQuery ValidationEngine.
  * - Integrates secure nonce verification for form submissions.
  * - Utilizes WordPress escaping and sanitization functions for security.
- * - Supports custom fields via the Mjschool_Custome_Field class.
+ * - Supports custom fields via the Mjschool_Custom_Field class.
  *
  * @package    Mjschool
  * @subpackage Mjschool/admin/includes/class
@@ -22,13 +22,14 @@ defined( 'ABSPATH' ) || exit;
 $school_type = get_option( 'mjschool_custom_class' );
 $edit = 0;
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'edit' ) {
-	// Verify nonce for edit action
+	// Verify nonce for edit action.
 	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'edit_action' ) ) {
 		wp_die( esc_html__( 'Security check failed. Please try again.', 'mjschool' ) );
 	}
+	 $mjschool_class = new Mjschool_Class();
 	$edit      = 1;
 	$class_id  = intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_REQUEST['class_id'] ) ) ) );
-	$classdata = mjschool_get_class_by_id( $class_id );
+	$classdata = $mjschool_class->mjschool_get_class_by_id( $class_id );
 }
 ?>
 <div class="mjschool-panel-body"><!-------- Panel body. -------->
@@ -80,7 +81,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 				</div>
 				<?php
 				if ( $school_type === 'university' ) { 
-					$current_year = date( 'Y' );
+					$current_year = (int) wp_date( 'Y' );
 					$selected_academic_year = $edit ? $classdata->academic_year : '';
 					?>
 					<div class="col-md-6 input">
@@ -103,7 +104,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 		</div>
 		<?php
 		// --------- Get Module Wise Custom Field Data. --------------//
-		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+		$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 		$module                    = 'class';
 		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>

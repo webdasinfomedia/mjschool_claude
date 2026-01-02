@@ -349,7 +349,7 @@ class Indic
 		$last = 0;
 		$last_syllable = $info[0]['syllable'];
 		for ($i = 1; $i < $count; $i++) {
-			if ($last_syllable != $info[$i]['syllable']) {
+			if ($last_syllable !== $info[$i]['syllable']) {
 				self::initial_reordering_syllable($info, $GSUBdata, $indic_config, $scriptblock, $is_old_spec, $last, $i);
 				$last = $i;
 				$last_syllable = $info[$last]['syllable'];
@@ -383,7 +383,7 @@ class Indic
 		while ($idx < count($info)) {
 			$syllable = $info[$idx]['syllable'];
 			$syllable_type = ($syllable & 0x0F);
-			if ($last_syllable != $syllable && $syllable_type == self::BROKEN_CLUSTER) {
+			if ($last_syllable !== $syllable && $syllable_type == self::BROKEN_CLUSTER) {
 				$last_syllable = $syllable;
 
 				$dottedcircle[0]['syllable'] = $info[$idx]['syllable'];
@@ -406,7 +406,7 @@ class Indic
 		// In case of final bloken cluster...
 		//$syllable = $info[$idx]['syllable'];
 		//$syllable_type = ($syllable & 0x0F);
-		//if ($last_syllable != $syllable && $syllable_type == self::BROKEN_CLUSTER) {
+		//if ($last_syllable !== $syllable && $syllable_type == self::BROKEN_CLUSTER) {
 		//	$dottedcircle[0]['syllable'] = $info[$idx]['syllable'];
 		//	array_splice($info, $idx, 0, $dottedcircle);
 		//}
@@ -899,7 +899,7 @@ class Indic
 		$last = 0;
 		$last_syllable = $info[0]['syllable'];
 		for ($i = 1; $i < $count; $i++) {
-			if ($last_syllable != $info[$i]['syllable']) {
+			if ($last_syllable !== $info[$i]['syllable']) {
 				self::final_reordering_syllable($info, $GSUBdata, $indic_config, $scriptblock, $is_old_spec, $last, $i);
 				$last = $i;
 				$last_syllable = $info[$last]['syllable'];

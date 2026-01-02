@@ -29,7 +29,8 @@ defined( 'ABSPATH' ) || exit;
 	$edit = 0;
 	if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 		$edit           = 1;
-		$transport_data = mjschool_get_transport_by_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['transport_id'])) ) ) );
+		$mjschool_obj_transport      = new Mjschool_Transport();
+		$transport_data = $mjschool_obj_transport->mjschool_get_transport_by_id( intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['transport_id'])) ) ) );
 	}
 	?>
 	<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res"><!--------- Panel body. ------->
@@ -142,7 +143,7 @@ defined( 'ABSPATH' ) || exit;
 			</div>
 			<?php
 			// --------- Get module-wise custom field data. --------------//
-			$custom_field_obj = new Mjschool_Custome_Field();
+			$custom_field_obj = new Mjschool_Custom_Field();
 			$module           = 'transport';
 			$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 			?>

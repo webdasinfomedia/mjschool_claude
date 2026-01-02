@@ -54,6 +54,7 @@ if ( isset( $_GET['tab'] ) ) {
 						<tbody>
 							<?php
 							$i = 0;
+								$mjschool_obj_leave = new Mjschool_Leave();
 							foreach ( $leave_data as $retrieved_data ) {
 								$leave_id = mjschool_encrypt_id( $retrieved_data->id );
 								?>
@@ -61,7 +62,8 @@ if ( isset( $_GET['tab'] ) ) {
 									<td class="mjschool-user-image mjschool-width-50px-td">
 										<a href="?smgt_student&tab=view_student&action=view_student&student_id=<?php echo esc_attr( mjschool_encrypt_id( $retrieved_data->student_id ) ); ?>&_wpnonce=<?php echo esc_attr( mjschool_get_nonce( 'view_action' ) ); ?>">
 											<?php
-											$umetadata = mjschool_get_user_image( $retrieved_data->student_id );
+											$mjschool_user = new Mjschool_User();
+											$umetadata = $mjschool_user->mjschool_get_user_image( $retrieved_data->student_id );
 											if ( empty( $umetadata ) ) {
                                                 
                                                 echo '<img src=' . esc_url( get_option( 'mjschool_student_thumb_new' ) ) . ' class="img-circle" />';
@@ -98,7 +100,7 @@ if ( isset( $_GET['tab'] ) ) {
 									</td>
 									<td><?php echo esc_html( get_the_title( $retrieved_data->leave_type ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Leave Type', 'mjschool' ); ?>"></i></td>
 									<td>
-										<?php $duration = mjschool_leave_duration_label( $retrieved_data->leave_duration ); echo esc_html( $duration ); ?>
+										<?php $duration = $mjschool_obj_leave->mjschool_leave_duration_label( $retrieved_data->leave_duration ); echo esc_html( $duration ); ?>
 										<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Leave Duration', 'mjschool' ); ?>"></i>
 									</td>
 									<td><?php echo esc_html( mjschool_get_date_in_input_box( $retrieved_data->start_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Leave Start Date', 'mjschool' ); ?>"></i></td>

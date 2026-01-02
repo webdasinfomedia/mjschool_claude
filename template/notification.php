@@ -15,36 +15,37 @@ defined( 'ABSPATH' ) || exit;
 $school_type = get_option( "mjschool_custom_class");
 // -------- Check browser javascript. ----------//
 mjschool_browser_javascript_check();
+$mjschool_obj_notification  = new Mjschool_notification();
 $mjschool_role_name = mjschool_get_user_role( get_current_user_id() );
 // --------------- Access-wise role. -----------//
 $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
 			if ( $user_access['delete'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $mjschool_obj_notification  = new Mjschool_notification();
 $module            = 'notification';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
@@ -54,7 +55,7 @@ if ( isset( $_POST['save_notification'] ) ) {
 	if ( wp_verify_nonce( $nonce, 'save_notice_admin_nonce' ) ) {
 		global $wpdb;
 		$exlude_id             = mjschool_approve_student_list();
-		if ( isset( $_POST['selected_users'] ) && sanitize_text_field(wp_unslash($_POST['selected_users'])) != 'All' ) {
+		if ( isset( $_POST['selected_users'] ) && sanitize_text_field(wp_unslash($_POST['selected_users'])) !== 'All' ) {
 			/* Send Push Notification. */
 			$device_token      = array();
 			$device_token[]    = get_user_meta( sanitize_text_field(wp_unslash($_POST['selected_users'])), 'token_id', true );
@@ -68,21 +69,23 @@ if ( isset( $_POST['save_notification'] ) ) {
 					'type'  => 'notification',
 				),
 			);
-			$json              = json_encode( $notification_data );
+			$json              = wp_json_encode( $notification_data );
 			$message           = mjschool_send_push_notification( $json );
 			/* Send Push Notification. */
 			$data['student_id']   = sanitize_text_field(wp_unslash($_POST['selected_users']));
 			$data['title']        = sanitize_textarea_field( stripslashes( $_POST['title'] ) );
 			$data['message']      = sanitize_textarea_field( stripslashes( $_POST['message_body'] ) );
-			$data['created_date'] = date( 'Y-m-d' );
+			$data['created_date'] = gmdate( 'Y-m-d' );
+			// Replaced date() with gmdate() for UTC timestamps
 			$data['created_by']   = get_current_user_id();
 			$result             = $mjschool_obj_notification->mjschool_insert_notification($data);
 			$ids                = $wpdb->insert_id;
-			$custom_field_obj   = new Mjschool_Custome_Field();
+			$custom_field_obj   = new Mjschool_Custom_Field();
 			$module             = 'notification';
 			$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $ids );
 		} elseif ( isset( $_POST['class_id'] ) && sanitize_text_field(wp_unslash($_POST['class_id'])) === 'All' ) {
-			foreach ( mjschool_get_all_class() as $class ) {
+			$mjschool_class = new Mjschool_Class();
+			foreach ( $mjschool_class->mjschool_get_all_class() as $class ) {
                 
                 $query_data['exclude'] = $exlude_id;
                 $query_data['meta_query'] = array(array( 'key' => 'class_name', 'value' => intval($class['class_id']), 'compare' => '=' ) );
@@ -103,17 +106,17 @@ if ( isset( $_POST['save_notification'] ) ) {
 								'type'  => 'notification',
 							),
 						);
-						$json              = json_encode( $notification_data );
+						$json              = wp_json_encode( $notification_data );
 						mjschool_send_push_notification( $json );
 						/* Send Push Notification. */
 						$data['student_id']   = $retrive_data->ID;
 						$data['title']        = sanitize_textarea_field( stripslashes( $_POST['title'] ) );
 						$data['message']      = sanitize_textarea_field( stripslashes( $_POST['message_body'] ) );
-						$data['created_date'] = date( 'Y-m-d' );
+						$data['created_date'] = gmdate( 'Y-m-d' );
 						$data['created_by']   = get_current_user_id();
                         $result             = $mjschool_obj_notification->mjschool_insert_notification($data);
 						$ids                = $wpdb->insert_id;
-						$custom_field_obj   = new Mjschool_Custome_Field();
+						$custom_field_obj   = new Mjschool_Custom_Field();
 						$module             = 'notification';
 						$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $ids );
 					}
@@ -139,17 +142,17 @@ if ( isset( $_POST['save_notification'] ) ) {
 							'type'  => 'notification',
 						),
 					);
-					$json              = json_encode( $notification_data );
+					$json              = wp_json_encode( $notification_data );
 					mjschool_send_push_notification( $json );
 					/* Send Push Notification. */
 					$data['student_id']   = $retrive_data->ID;
 					$data['title']        = sanitize_textarea_field( stripslashes( $_POST['title'] ) );
 					$data['message']      = sanitize_textarea_field( stripslashes( $_POST['message_body'] ) );
-					$data['created_date'] = date( 'Y-m-d' );
+					$data['created_date'] = gmdate( 'Y-m-d' );
 					$data['created_by']   = get_current_user_id();
                   	$result             = $mjschool_obj_notification->mjschool_insert_notification($data);
 					$ids                = $wpdb->insert_id;
-					$custom_field_obj   = new Mjschool_Custome_Field();
+					$custom_field_obj   = new Mjschool_Custom_Field();
 					$module             = 'notification';
 					$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $ids );
 				}
@@ -177,17 +180,17 @@ if ( isset( $_POST['save_notification'] ) ) {
 							'type'  => 'notification',
 						),
 					);
-					$json              = json_encode( $notification_data );
+					$json              = wp_json_encode( $notification_data );
 					mjschool_send_push_notification( $json );
 					/* Send Push Notification. */
 					$data['student_id']   = $retrive_data->ID;
 					$data['title']        = sanitize_textarea_field( stripslashes( $_POST['title'] ) );
 					$data['message']      = sanitize_textarea_field( stripslashes( $_POST['message_body'] ) );
-					$data['created_date'] = date( 'Y-m-d' );
+					$data['created_date'] = gmdate( 'Y-m-d' );
 					$data['created_by']   = get_current_user_id();
                     $result             = $mjschool_obj_notification->mjschool_insert_notification($data);
 					$ids                = $wpdb->insert_id;
-					$custom_field_obj   = new Mjschool_Custome_Field();
+					$custom_field_obj   = new Mjschool_Custom_Field();
 					$module             = 'notification';
 					$insert_custom_data = $custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $ids );
 				}
@@ -195,7 +198,7 @@ if ( isset( $_POST['save_notification'] ) ) {
 		}
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=notification&tab=notificationlist&message=1' ) );
-			die();
+			exit;
 		} else {
 			?>
 			<div id="mjschool-message" class="mjschool-message_class mjschool-alert-msg alert alert-success alert-dismissible " role="alert">
@@ -209,10 +212,10 @@ if ( isset( $_POST['save_notification'] ) ) {
 // ----------- DELETE NOTIFICATION. ----------------//
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) == 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field(wp_unslash($_GET['_wpnonce_action'])), 'delete_action' ) ) {
-		$result = mjschool_delete_notification( intval( mjschool_decrypt_id( wp_unslash($_REQUEST['notification_id']) ) ) );
+		$result = $mjschool_obj_notification->mjschool_delete_notification( intval( mjschool_decrypt_id( wp_unslash($_REQUEST['notification_id']) ) ) );
 		if ( $result ) {
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=notification&tab=notificationlist&message=2' ));
-			die();
+			exit;
 		}
 	} else {
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
@@ -227,7 +230,7 @@ if ( isset( $_POST['delete_selected'] ) ) {
 	
 	if ( ! empty( $_POST['id'] ) ) {
 		foreach ( $_POST['id'] as $id ) {
-			$result = mjschool_delete_notification( intval( $id ) );
+			$result = $mjschool_obj_notification->mjschool_delete_notification( intval( $id ) );
 		}
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=notification&tab=notificationlist&message=2' ));
 		exit;
@@ -365,7 +368,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 											<td>
 												<?php
 												$sname = mjschool_student_display_name_with_roll( $retrieved_data->student_id );
-												if ( $sname != '' ) {
+												if ( $sname !== '' ) {
 													echo esc_html( $sname );
 												} else {
 													esc_html_e( 'N/A', 'mjschool' );
@@ -418,7 +421,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 																<?php
 																if ( ! empty( $custom_field_value ) ) {
 																	?>
-																	<a target="" href="<?php echo esc_url( content_url(. '/uploads/school_assets/' . $custom_field_value )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+                                                     
+																	<a target="" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . basename( $custom_field_value ) )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
 																	<?php
 																} else {
 																	esc_html_e( 'N/A', 'mjschool' );
@@ -536,7 +540,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 							<select name="class_id" id="mjschool-notification-class-list-id" class="mjschool-line-height-30px form-control mjschool-max-width-100px">
 								<option value="All"><?php esc_html_e( 'All', 'mjschool' ); ?></option>
 								<?php
-								foreach ( mjschool_get_all_class() as $classdata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 									?>
 									<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>"><?php echo esc_html( $classdata['class_name'] ); ?></option>
 									<?php
@@ -584,7 +589,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 				</div>
 				<?php
 				// --------- Get module-wise custom field data. --------------//
-				$custom_field_obj = new Mjschool_Custome_Field();
+				$custom_field_obj = new Mjschool_Custom_Field();
 				$module           = 'notification';
 				$custom_field     = $custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 				?>

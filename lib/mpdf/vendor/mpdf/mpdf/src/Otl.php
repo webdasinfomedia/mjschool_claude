@@ -186,7 +186,7 @@ class Otl
 				if ($scriptblock == 0) {
 					$scriptblock = $sbl;
 					$scriptblocks[$subchunk] = $scriptblock;
-				} elseif ($scriptblock > 0 && $scriptblock != $sbl) {
+				} elseif ($scriptblock > 0 && $scriptblock !== $sbl) {
 					// *************************************************
 					// NEW (non-common) Script encountered in this chunk. Start a new subchunk
 					$subchunk++;
@@ -280,7 +280,7 @@ class Otl
 				list($GSUBscriptTag, $is_old_spec) = $this->_getOTLscriptTag($ScriptLang, $scripttag, $scriptblock, $this->shaper, $useOTL, 'GSUB');
 				if ($this->mpdf->fontLanguageOverride && strpos($ScriptLang[$GSUBscriptTag], $this->mpdf->fontLanguageOverride) !== false) {
 					$GSUBlangsys = str_pad($this->mpdf->fontLanguageOverride, 4);
-				} elseif ($GSUBscriptTag && isset($ScriptLang[$GSUBscriptTag]) && $ScriptLang[$GSUBscriptTag] != '') {
+				} elseif ($GSUBscriptTag && isset($ScriptLang[$GSUBscriptTag]) && $ScriptLang[$GSUBscriptTag] !== '') {
 					$GSUBlangsys = $this->_getOTLLangTag($this->mpdf->currentLang, $ScriptLang[$GSUBscriptTag]);
 				}
 			}
@@ -296,7 +296,7 @@ class Otl
 				list($GPOSscriptTag, $dummy) = $this->_getOTLscriptTag($ScriptLang, $scripttag, $scriptblock, $this->shaper, $useOTL, 'GPOS');
 				if ($GPOSscriptTag && $this->mpdf->fontLanguageOverride && strpos($ScriptLang[$GPOSscriptTag], $this->mpdf->fontLanguageOverride) !== false) {
 					$GPOSlangsys = str_pad($this->mpdf->fontLanguageOverride, 4);
-				} elseif ($GPOSscriptTag && isset($ScriptLang[$GPOSscriptTag]) && $ScriptLang[$GPOSscriptTag] != '') {
+				} elseif ($GPOSscriptTag && isset($ScriptLang[$GPOSscriptTag]) && $ScriptLang[$GPOSscriptTag] !== '') {
 					$GPOSlangsys = $this->_getOTLLangTag($this->mpdf->currentLang, $ScriptLang[$GPOSscriptTag]);
 				}
 			}
@@ -321,7 +321,7 @@ class Otl
 			}
 
 			// Don't use MYANMAR shaper unless using v2 scripttag
-			if ($this->shaper == 'M' && $GSUBscriptTag != 'mym2') {
+			if ($this->shaper == 'M' && $GSUBscriptTag !== 'mym2') {
 				$this->shaper = '';
 			}
 
@@ -991,7 +991,7 @@ class Otl
 				for ($i = count($this->OTLdata) - 1; $i > 0; $i--) {
 					// Make sure after GSUB that wordend has not been moved - check next char is not in the same syllable
 					if (isset($this->OTLdata[$i]['wordend']) && $this->OTLdata[$i]['wordend'] &&
-						isset($this->OTLdata[$i + 1]['uni']) && (!isset($this->OTLdata[$i + 1]['syllable']) || !isset($this->OTLdata[$i + 1]['syllable']) || $this->OTLdata[$i + 1]['syllable'] != $this->OTLdata[$i]['syllable'])) {
+						isset($this->OTLdata[$i + 1]['uni']) && (!isset($this->OTLdata[$i + 1]['syllable']) || !isset($this->OTLdata[$i + 1]['syllable']) || $this->OTLdata[$i + 1]['syllable'] !== $this->OTLdata[$i]['syllable'])) {
 						array_splice($this->OTLdata, $i + 1, 0, $newinfo);
 						$this->_updateLigatureMarks($i, 1);
 					} elseif ($this->OTLdata[$i]['uni'] == 0x2e) { // Word end if Full-stop.
@@ -2498,7 +2498,7 @@ class Otl
 			for ($i = 0; $i < count($GlyphPos); $i++) {
 				// If subsequent components are not Marks as well - don't ligate
 				$unistr = $this->OTLdata[$GlyphPos[$i]]['hex'];
-				if ($this->restrictToSyllable && isset($this->OTLdata[$GlyphPos[$i]]['syllable']) && $this->OTLdata[$GlyphPos[$i]]['syllable'] != $current_syllable) {
+				if ($this->restrictToSyllable && isset($this->OTLdata[$GlyphPos[$i]]['syllable']) && $this->OTLdata[$GlyphPos[$i]]['syllable'] !== $current_syllable) {
 					return 0;
 				}
 				if (strpos($this->GlyphClassMarks, $unistr) !== false) {
@@ -2528,7 +2528,7 @@ class Otl
 					// component, otherwise we shouldn't ligate them.
 					// If first component was NOT attached to a previous ligature component,
 					// all subsequent components should also NOT be attached to any ligature component,
-					if ($firstMarkAssoc != $nextMarkAssoc) {
+					if ($firstMarkAssoc !== $nextMarkAssoc) {
 						// unless they are attached to the first component itself!
 						//          if (!is_array($nextMarkAssoc) || $nextMarkAssoc['ligPos']!= $pos) { return; }
 						// Update/Edit - In test with myanmartext font
@@ -2536,7 +2536,7 @@ class Otl
 						// => Lookup 17  E003 E066B E05A 102D
 						// E003 and 102D should form a mark ligature, but 102D is already associated with (non-mark) ligature E05A
 						// So instead of disallowing the mark ligature to form, just dissociate...
-						if (!is_array($nextMarkAssoc) || $nextMarkAssoc['ligPos'] != $pos) {
+						if (!is_array($nextMarkAssoc) || $nextMarkAssoc['ligPos'] !== $pos) {
 							unset($this->assocMarks[$GlyphPos[$i]]);
 						}
 					}
@@ -3733,12 +3733,12 @@ class Otl
 				// This happens in Indic when the Mark being attached to e.g. [Halant Ma lig] -> MatraU,  [U+0B4D + U+B2E as E0F5]-> U+0B41 become E135
 				if (!defined("OMIT_OTL_FIX_1") || OMIT_OTL_FIX_1 != 1) {
 					/* OTL_FIX_1 */
-					if (isset($this->assocMarks[$matchedpos]) && ($prevLig != $thisLig || $prevComp != $thisComp )) {
+					if (isset($this->assocMarks[$matchedpos]) && ($prevLig !== $thisLig || $prevComp !== $thisComp )) {
 						return 0;
 					}
 				} else {
 					/* Original code */
-					if ($prevLig != $thisLig || $prevComp != $thisComp) {
+					if ($prevLig !== $thisLig || $prevComp !== $thisComp) {
 						return 0;
 					}
 				}
@@ -4172,9 +4172,9 @@ class Otl
 				$checkpos--;
 			}
 			// If outside scope of current syllable - return no match
-			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] != $current_syllable) {
+			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] !== $current_syllable) {
 				return false;
-			} elseif (!isset($this->OTLdata[$checkpos]) || $this->OTLdata[$checkpos]['uni'] != $Backtrack[$i]) {
+			} elseif (!isset($this->OTLdata[$checkpos]) || $this->OTLdata[$checkpos]['uni'] !== $Backtrack[$i]) {
 				return false;
 			}
 		}
@@ -4188,7 +4188,7 @@ class Otl
 				$checkpos++;
 			}
 			// If outside scope of current syllable - return no match
-			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] != $current_syllable) {
+			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] !== $current_syllable) {
 				return false;
 			} elseif (isset($this->OTLdata[$checkpos]) && $this->OTLdata[$checkpos]['uni'] == $Input[$i]) {
 				$matched[] = $checkpos;
@@ -4204,9 +4204,9 @@ class Otl
 				$checkpos++;
 			}
 			// If outside scope of current syllable - return no match
-			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] != $current_syllable) {
+			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] !== $current_syllable) {
 				return false;
-			} elseif (!isset($this->OTLdata[$checkpos]) || $this->OTLdata[$checkpos]['uni'] != $Lookahead[$i]) {
+			} elseif (!isset($this->OTLdata[$checkpos]) || $this->OTLdata[$checkpos]['uni'] !== $Lookahead[$i]) {
 				return false;
 			}
 		}
@@ -4232,7 +4232,7 @@ class Otl
 				$checkpos--;
 			}
 			// If outside scope of current syllable - return no match
-			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] != $current_syllable) {
+			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] !== $current_syllable) {
 				return false;
 			} // If Class 0 specified, matches anything NOT in $bclass0excl
 			elseif (!$Backtrack[$i] && isset($this->OTLdata[$checkpos]) && strpos($bclass0excl, $this->OTLdata[$checkpos]['hex']) !== false) {
@@ -4251,7 +4251,7 @@ class Otl
 				$checkpos++;
 			}
 			// If outside scope of current syllable - return no match
-			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] != $current_syllable) {
+			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] !== $current_syllable) {
 				return false;
 			} // If Input Class 0 specified, matches anything NOT in $class0excl
 			elseif (!$Input[$i] && isset($this->OTLdata[$checkpos]) && strpos($class0excl, $this->OTLdata[$checkpos]['hex']) === false) {
@@ -4270,7 +4270,7 @@ class Otl
 				$checkpos++;
 			}
 			// If outside scope of current syllable - return no match
-			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] != $current_syllable) {
+			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] !== $current_syllable) {
 				return false;
 			} // If Class 0 specified, matches anything NOT in $lclass0excl
 			elseif (!$Lookahead[$i] && isset($this->OTLdata[$checkpos]) && strpos($lclass0excl, $this->OTLdata[$checkpos]['hex']) !== false) {
@@ -4300,7 +4300,7 @@ class Otl
 				$checkpos--;
 			}
 			// If outside scope of current syllable - return no match
-			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] != $current_syllable) {
+			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] !== $current_syllable) {
 				return false;
 			} // If Class 0 specified, matches anything NOT in $bclass0excl
 			elseif (!$Backtrack[$i] && isset($this->OTLdata[$checkpos]) && isset($bclass0excl[$this->OTLdata[$checkpos]['uni']])) {
@@ -4319,7 +4319,7 @@ class Otl
 				$checkpos++;
 			}
 			// If outside scope of current syllable - return no match
-			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] != $current_syllable) {
+			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] !== $current_syllable) {
 				return false;
 			} // If Input Class 0 specified, matches anything NOT in $class0excl
 			elseif (!$Input[$i] && isset($this->OTLdata[$checkpos]) && !isset($class0excl[$this->OTLdata[$checkpos]['uni']])) {
@@ -4338,7 +4338,7 @@ class Otl
 				$checkpos++;
 			}
 			// If outside scope of current syllable - return no match
-			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] != $current_syllable) {
+			if ($this->restrictToSyllable && isset($this->OTLdata[$checkpos]['syllable']) && $this->OTLdata[$checkpos]['syllable'] !== $current_syllable) {
 				return false;
 			} // If Class 0 specified, matches anything NOT in $lclass0excl
 			elseif (!$Lookahead[$i] && isset($this->OTLdata[$checkpos]) && isset($lclass0excl[$this->OTLdata[$checkpos]['uni']])) {
@@ -4716,7 +4716,7 @@ class Otl
 		// W1. Examine each nonspacing mark (NSM) in the level run, and change the type of the NSM to the type of the previous character. If the NSM is at the start of the level run, it will get the type of sor.
 		for ($i = 0; $i < $numchars; ++$i) {
 			if ($chardata[$i]['type'] == Ucdn::BIDI_CLASS_NSM) {
-				if ($i == 0 || $chardata[$i]['level'] != $chardata[$i - 1]['level']) {
+				if ($i == 0 || $chardata[$i]['level'] !== $chardata[$i - 1]['level']) {
 					$chardata[$i]['type'] = $chardata[$i]['sor'];
 				} else {
 					$chardata[$i]['type'] = $chardata[($i - 1)]['type'];
@@ -4741,7 +4741,7 @@ class Otl
 					}
 				}
 			}
-			if ($chardata[$i]['level'] != $prevlevel) {
+			if ($chardata[$i]['level'] !== $prevlevel) {
 				$levcount = 0;
 			} else {
 				++$levcount;
@@ -4805,7 +4805,7 @@ class Otl
 					}
 				} else {
 					for ($j = $i - 1; $j >= 0; $j--) {
-						if ($chardata[$j]['level'] != $chardata[$i]['level']) { // Level run boundary
+						if ($chardata[$j]['level'] !== $chardata[$i]['level']) { // Level run boundary
 							if ($chardata[$j + 1]['sor'] == Ucdn::BIDI_CLASS_L) {
 								$chardata[$i]['type'] = $chardata[$j + 1]['sor'];
 							}
@@ -4828,7 +4828,7 @@ class Otl
 				// LEFT
 				if ($i == 0) {  // first char
 					$left = $chardata[($i)]['sor'];
-				} elseif ($chardata[($i - 1)]['level'] != $chardata[($i)]['level']) {  // run boundary
+				} elseif ($chardata[($i - 1)]['level'] !== $chardata[($i)]['level']) {  // run boundary
 					$left = $chardata[($i)]['sor'];
 				} elseif ($chardata[($i - 1)]['type'] == Ucdn::BIDI_CLASS_L) {
 					$left = Ucdn::BIDI_CLASS_L;
@@ -4843,7 +4843,7 @@ class Otl
 					if ($j == ($numchars - 1)) {  // last char
 						$right = $chardata[($j)]['eor'];
 						break;
-					} elseif ($chardata[($j + 1)]['level'] != $chardata[($j)]['level']) {  // run boundary
+					} elseif ($chardata[($j + 1)]['level'] !== $chardata[($j)]['level']) {  // run boundary
 						$right = $chardata[($j)]['eor'];
 						break;
 					} elseif ($chardata[($j + 1)]['type'] == Ucdn::BIDI_CLASS_L) {
@@ -5199,7 +5199,7 @@ class Otl
 				array_splice($para, $nc, 1);
 			}
 		}
-		if ($dir != 'rtl' && !$strongrtl && !$controlchars) {
+		if ($dir !== 'rtl' && !$strongrtl && !$controlchars) {
 			return;
 		}
 
@@ -5218,7 +5218,7 @@ class Otl
 				$chardata = & $para[$nc][18]['char_data'];
 				$numchars = count($chardata);
 				for ($i = 0; $i < $numchars; ++$i) {
-					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] != $ir) {
+					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] !== $ir) {
 						continue;
 					} // Ignore characters in a different isolate run
 					$right = $postlevel;
@@ -5238,10 +5238,10 @@ class Otl
 					}
 
 					$level = $chardata[$i]['level'];
-					if ($firstchar || $level != $prelevel) {
+					if ($firstchar || $level !== $prelevel) {
 						$chardata[$i]['sor'] = max($prelevel, $level) % 2 ? Ucdn::BIDI_CLASS_R : Ucdn::BIDI_CLASS_L;
 					}
-					if (($nc == ($numchunks - 1) && $i == ($numchars - 1)) || $level != $right) {
+					if (($nc == ($numchunks - 1) && $i == ($numchars - 1)) || $level !== $right) {
 						$chardata[$i]['eor'] = max($right, $level) % 2 ? Ucdn::BIDI_CLASS_R : Ucdn::BIDI_CLASS_L;
 					}
 					$prelevel = $level;
@@ -5261,7 +5261,7 @@ class Otl
 				$chardata = & $para[$nc][18]['char_data'];
 				$numchars = count($chardata);
 				for ($i = 0; $i < $numchars; ++$i) {
-					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] != $ir) {
+					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] !== $ir) {
 						continue;
 					} // Ignore characters in a different isolate run
 					if ($chardata[$i]['type'] == Ucdn::BIDI_CLASS_NSM) {
@@ -5283,7 +5283,7 @@ class Otl
 				$chardata = & $para[$nc][18]['char_data'];
 				$numchars = count($chardata);
 				for ($i = 0; $i < $numchars; ++$i) {
-					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] != $ir) {
+					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] !== $ir) {
 						continue;
 					} // Ignore characters in a different isolate run
 					if (isset($chardata[$i]['sor'])) {
@@ -5320,7 +5320,7 @@ class Otl
 				$chardata = & $para[$nc][18]['char_data'];
 				$numchars = count($chardata);
 				for ($i = 0; $i < $numchars; ++$i) {
-					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] != $ir) {
+					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] !== $ir) {
 						continue;
 					} // Ignore characters in a different isolate run
 					// Get next type
@@ -5362,7 +5362,7 @@ class Otl
 				$chardata = & $para[$nc][18]['char_data'];
 				$numchars = count($chardata);
 				for ($i = 0; $i < $numchars; ++$i) {
-					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] != $ir) {
+					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] !== $ir) {
 						continue;
 					} // Ignore characters in a different isolate run
 					if (isset($chardata[$i]['sor'])) {
@@ -5382,7 +5382,7 @@ class Otl
 									$nc2++;
 									$i2 = 0;
 								}
-								if (!isset($para[$nc2][18]['char_data'][$i2]['diid']) || $para[$nc2][18]['char_data'][$i2]['diid'] != $ir) {
+								if (!isset($para[$nc2][18]['char_data'][$i2]['diid']) || $para[$nc2][18]['char_data'][$i2]['diid'] !== $ir) {
 									continue;
 								}
 								$nexttype = $para[$nc2][18]['char_data'][$i2]['type'];
@@ -5421,7 +5421,7 @@ class Otl
 				$chardata = & $para[$nc][18]['char_data'];
 				$numchars = count($chardata);
 				for ($i = 0; $i < $numchars; ++$i) {
-					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] != $ir) {
+					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] !== $ir) {
 						continue;
 					} // Ignore characters in a different isolate run
 					if (isset($chardata[$i]['sor'])) {
@@ -5444,7 +5444,7 @@ class Otl
 				$chardata = & $para[$nc][18]['char_data'];
 				$numchars = count($chardata);
 				for ($i = 0; $i < $numchars; ++$i) {
-					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] != $ir) {
+					if (!isset($chardata[$i]['diid']) || $chardata[$i]['diid'] !== $ir) {
 						continue;
 					} // Ignore characters in a different isolate run
 					if (isset($chardata[$i]['sor'])) {
@@ -5474,7 +5474,7 @@ class Otl
 									$nc2++;
 									$i2 = 0;
 								}
-								if (!isset($para[$nc2][18]['char_data'][$i2]['diid']) || $para[$nc2][18]['char_data'][$i2]['diid'] != $ir) {
+								if (!isset($para[$nc2][18]['char_data'][$i2]['diid']) || $para[$nc2][18]['char_data'][$i2]['diid'] !== $ir) {
 									continue;
 								}
 								$nexttype = $para[$nc2][18]['char_data'][$i2]['type'];
@@ -5658,7 +5658,7 @@ class Otl
 		$chunkid = -1;
 
 		foreach ($bidiData as $carac) {
-			if ($carac['chunkid'] != $chunkid) {
+			if ($carac['chunkid'] !== $chunkid) {
 				$nc++;
 				$chunkorder[$nc] = $carac['chunkid'];
 				$cctr = 0;
@@ -5754,7 +5754,7 @@ class Otl
 				foreach ($cOTLdata['GPOSinfo'] as $k => $val) {
 					if ($k > $pos) {
 						$newGPOSinfo[($k - 1)] = $val;
-					} elseif ($k != $pos) {
+					} elseif ($k !== $pos) {
 						$newGPOSinfo[$k] = $val;
 					}
 				}
@@ -6143,9 +6143,9 @@ class Otl
 			$country = strtolower($tags[2]);
 		}
 
-		if ($lang != '' && isset(Ucdn::$ot_languages[$lang])) {
+		if ($lang !== '' && isset(Ucdn::$ot_languages[$lang])) {
 			$langsys = Ucdn::$ot_languages[$lang];
-		} elseif ($lang != '' && $country != '' && isset(Ucdn::$ot_languages[$lang . '' . $country])) {
+		} elseif ($lang !== '' && $country !== '' && isset(Ucdn::$ot_languages[$lang . '' . $country])) {
 			$langsys = Ucdn::$ot_languages[$lang . '' . $country];
 		} else {
 			$langsys = "DFLT";

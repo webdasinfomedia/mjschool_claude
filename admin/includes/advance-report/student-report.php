@@ -42,7 +42,7 @@ if ( isset( $_GET['tab'] ) ) {
 		(function(jQuery) {
 			"use strict";
 			jQuery(document).ready(function() {
-				var currentYear = new Date().getFullYear().toString(); // e.g., "2025".
+				var currentYear = new wp_date().getFullYear().toString(); // e.g., "2025".
 				var table = jQuery( '#student_report' ).DataTable({
 					"order": [[1, "desc"]],
 					"dom": 'Qlfrtip',
@@ -105,7 +105,7 @@ if ( isset( $_GET['tab'] ) ) {
 					<span class="report-label"><?php esc_html_e( 'Students', 'mjschool' ); ?></span>
 					<span class="status-text"><?php esc_html_e( 'Left', 'mjschool' ); ?></span>
 					<span class="report-label"><?php esc_html_e( 'in', 'mjschool' ); ?></span>
-					<span class="year-chip" id="year-chip"><?php echo esc_attr( date( 'Y' ) ); ?></span>
+					<span class="year-chip" id="year-chip"><?php echo esc_attr( wp_date( 'Y' ) ); ?></span>
 				</div>
 			</div>
 			<div class="table-responsive">

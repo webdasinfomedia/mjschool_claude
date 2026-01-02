@@ -40,7 +40,7 @@ class Mjschool_Hostel {
 		$action                         = isset( $data['action'] ) ? sanitize_text_field( wp_unslash( $data['action'] ) ) : '';
 		if ( $action === 'edit' ) {
 			$hostel_data['updated_by']   = get_current_user_id();
-			$hostel_data['updated_date'] = date( 'Y-m-d' );
+			$hostel_data['updated_date'] = wp_date( 'Y-m-d' );
 			$hostel_id['id']             = isset( $data['hostel_id'] ) ? intval( $data['hostel_id'] ) : 0;
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result = $wpdb->update( $table_mjschool_hostel, $hostel_data, $hostel_id );
@@ -49,7 +49,7 @@ class Mjschool_Hostel {
 			return $result;
 		} else {
 			$hostel_data['created_by']   = get_current_user_id();
-			$hostel_data['created_date'] = date( 'Y-m-d' );
+			$hostel_data['created_date'] = wp_date( 'Y-m-d' );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result = $wpdb->insert( $table_mjschool_hostel, $hostel_data );
 			$ids    = $wpdb->insert_id;
@@ -144,7 +144,7 @@ class Mjschool_Hostel {
 		$action                        = isset( $data['action'] ) ? sanitize_text_field( wp_unslash( $data['action'] ) ) : '';
 		if ( $action === 'edit_room' ) {
 			$room_data['updated_by']   = get_current_user_id();
-			$room_data['updated_date'] = date( 'Y-m-d' );
+			$room_data['updated_date'] = wp_date( 'Y-m-d' );
 			$room_id['id']             = isset( $data['room_id'] ) ? intval( $data['room_id'] ) : 0;
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result = $wpdb->update( $table_mjschool_room, $room_data, $room_id );
@@ -153,7 +153,7 @@ class Mjschool_Hostel {
 			return $result;
 		} else {
 			$room_data['created_by']   = get_current_user_id();
-			$room_data['created_date'] = date( 'Y-m-d' );
+			$room_data['created_date'] = wp_date( 'Y-m-d' );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result = $wpdb->insert( $table_mjschool_room, $room_data );
 			$room   = $room_data['room_unique_id'];
@@ -238,7 +238,7 @@ class Mjschool_Hostel {
 		$action                      = isset( $data['action'] ) ? sanitize_text_field( wp_unslash( $data['action'] ) ) : '';
 		if ( $action === 'edit_bed' ) {
 			$bed_data['updated_by']   = get_current_user_id();
-			$bed_data['updated_date'] = date( 'Y-m-d' );
+			$bed_data['updated_date'] = wp_date( 'Y-m-d' );
 			$bed_id['id']             = isset( $data['bed_id'] ) ? intval( $data['bed_id'] ) : 0;
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result = $wpdb->update( $table_mjschool_beds, $bed_data, $bed_id );
@@ -248,7 +248,7 @@ class Mjschool_Hostel {
 		} else {
 			$bed_data['bed_status']   = '0';
 			$bed_data['created_by']   = get_current_user_id();
-			$bed_data['created_date'] = date( 'Y-m-d' );
+			$bed_data['created_date'] = wp_date( 'Y-m-d' );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result = $wpdb->insert( $table_mjschool_beds, $bed_data );
 			$bed    = $bed_data['bed_unique_id'];
@@ -402,7 +402,7 @@ class Mjschool_Hostel {
 					$bed_data        = $this->mjschool_get_bed_by_id( $bed_id );
 					$assign_bed_data = $this->mjschool_get_assign_bed_by_id( $bed_id );
 					$bed_unique_id   = isset( $data['bed_unique_id'][ $key ] ) ? sanitize_text_field( wp_unslash( $data['bed_unique_id'][ $key ] ) ) : '';
-					$assign_date_raw = isset( $data['assign_date'][ $key ] ) ? sanitize_text_field( wp_unslash( $data['assign_date'][ $key ] ) ) : date( 'Y-m-d' );
+					$assign_date_raw = isset( $data['assign_date'][ $key ] ) ? sanitize_text_field( wp_unslash( $data['assign_date'][ $key ] ) ) : wp_date( 'Y-m-d' );
 					if ( ! empty( $assign_bed_data ) ) {
 						$assign_bed_id['id']          = $assign_bed_data->id;
 						$assign_data['hostel_id']     = $hostel_id;
@@ -410,8 +410,8 @@ class Mjschool_Hostel {
 						$assign_data['bed_id']        = $bed_id;
 						$assign_data['bed_unique_id'] = $bed_unique_id;
 						$assign_data['student_id']    = $student_unique;
-						$assign_data['assign_date']   = date( 'Y-m-d', strtotime( $assign_date_raw ) );
-						$assign_data['created_date']  = date( 'Y-m-d' );
+						$assign_data['assign_date']   = wp_date( 'Y-m-d', strtotime( $assign_date_raw ) );
+						$assign_data['created_date']  = wp_date( 'Y-m-d' );
 						$assign_data['created_by']    = get_current_user_id();
 						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 						$result = $wpdb->update( $table_mjschool_assign_beds, $assign_data, $assign_bed_id );
@@ -428,8 +428,8 @@ class Mjschool_Hostel {
 						$assign_data['bed_id']        = $bed_id;
 						$assign_data['bed_unique_id'] = $bed_unique_id;
 						$assign_data['student_id']    = $student_unique;
-						$assign_data['assign_date']   = date( 'Y-m-d', strtotime( $assign_date_raw ) );
-						$assign_data['created_date']  = date( 'Y-m-d' );
+						$assign_data['assign_date']   = wp_date( 'Y-m-d', strtotime( $assign_date_raw ) );
+						$assign_data['created_date']  = wp_date( 'Y-m-d' );
 						$assign_data['created_by']    = get_current_user_id();
 						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 						$result = $wpdb->insert( $table_mjschool_assign_beds, $assign_data );
@@ -598,5 +598,67 @@ class Mjschool_Hostel {
 			}
 		}
 		return $bed_data;
+	}
+
+	/**
+	 * Generates a unique room code based on the last inserted room ID.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string Generated room code (e.g., RM001).
+	 */
+	public function mjschool_generate_room_code() {
+		global $wpdb;
+		$smgt_room = $wpdb->prefix . 'mjschool_room';
+		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$last = $wpdb->get_var( "SELECT MAX(id) FROM {$smgt_room}" );
+		$lastid = ( $last ) ? absint( $last ) + 1 : 1;
+		$code = 'RM' . str_pad( $lastid, 3, '0', STR_PAD_LEFT );
+		return $code;
+	}
+
+	/**
+	 * Generates a unique bed code based on the last inserted bed ID.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string Generated bed code (e.g., BD001).
+	 */
+	public function mjschool_generate_bed_code() {
+		global $wpdb;
+		$smgt_beds = $wpdb->prefix . 'mjschool_beds';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$last = $wpdb->get_var( "SELECT MAX(id) FROM {$smgt_beds}" );
+		$lastid = ( $last ) ? absint( $last ) + 1 : 1;
+		$code = 'BD' . str_pad( $lastid, 3, '0', STR_PAD_LEFT );
+		return $code;
+	}
+
+	/**
+	 * Retrieves the hostel name using its ID.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $eid Hostel ID.
+	 *
+	 * @return string Hostel name or 'N/A' if not found.
+	 */
+	public function mjschool_get_hostel_name_by_id( $eid ) {
+		$id = absint( $eid );
+		if ( empty( $id ) ) {
+			return 'N/A';
+		}
+		global $wpdb;
+		$smgt_hostel = $wpdb->prefix . 'mjschool_hostel';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$result = $wpdb->get_row(
+			$wpdb->prepare( "SELECT * FROM {$smgt_hostel} WHERE id = %d", $id )
+		);
+		if ( empty( $result ) || ! isset( $result->hostel_name ) ) {
+			return 'N/A';
+		}
+		
+		return $result->hostel_name;
 	}
 }

@@ -153,12 +153,12 @@ class BarCode extends Tag
 			if (isset($properties['VERTICAL-ALIGN'])) {
 				$objattr['vertical-align'] = $this->getAlign($properties['VERTICAL-ALIGN']);
 			}
-			if (isset($properties['COLOR']) && $properties['COLOR'] != '') {
+			if (isset($properties['COLOR']) && $properties['COLOR'] !== '') {
 				$objattr['color'] = $this->colorConverter->convert($properties['COLOR'], $this->mpdf->PDFAXwarnings);
 			} else {
 				$objattr['color'] = false;
 			}
-			if (isset($properties['BACKGROUND-COLOR']) && $properties['BACKGROUND-COLOR'] != '') {
+			if (isset($properties['BACKGROUND-COLOR']) && $properties['BACKGROUND-COLOR'] !== '') {
 				$objattr['bgcolor'] = $this->colorConverter->convert($properties['BACKGROUND-COLOR'], $this->mpdf->PDFAXwarnings);
 			} else {
 				$objattr['bgcolor'] = false;

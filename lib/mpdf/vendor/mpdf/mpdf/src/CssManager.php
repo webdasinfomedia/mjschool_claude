@@ -1662,22 +1662,22 @@ class CssManager
 		//===============================================
 		// INLINE HTML ATTRIBUTES e.g. .. ALIGN="CENTER">
 		// mPDF 6 (added)
-		if (isset($attr['DIR']) && $attr['DIR'] != '') {
+		if (isset($attr['DIR']) && $attr['DIR'] !== '') {
 			$p['DIRECTION'] = $attr['DIR'];
 		}
 		// mPDF 6 (moved)
-		if (isset($attr['LANG']) && $attr['LANG'] != '') {
+		if (isset($attr['LANG']) && $attr['LANG'] !== '') {
 			$p['LANG'] = $attr['LANG'];
 		}
-		if (isset($attr['COLOR']) && $attr['COLOR'] != '') {
+		if (isset($attr['COLOR']) && $attr['COLOR'] !== '') {
 			$p['COLOR'] = $attr['COLOR'];
 		}
 
 		if ($tag !== 'INPUT') {
-			if (isset($attr['WIDTH']) && $attr['WIDTH'] != '') {
+			if (isset($attr['WIDTH']) && $attr['WIDTH'] !== '') {
 				$p['WIDTH'] = $attr['WIDTH'];
 			}
-			if (isset($attr['HEIGHT']) && $attr['HEIGHT'] != '') {
+			if (isset($attr['HEIGHT']) && $attr['HEIGHT'] !== '') {
 				$p['HEIGHT'] = $attr['HEIGHT'];
 			}
 		}
@@ -1685,7 +1685,7 @@ class CssManager
 			if (isset($attr['FACE'])) {
 				$p['FONT-FAMILY'] = $attr['FACE'];
 			}
-			if (isset($attr['SIZE']) && $attr['SIZE'] != '') {
+			if (isset($attr['SIZE']) && $attr['SIZE'] !== '') {
 				$s = '';
 				if ($attr['SIZE'] === '+1') {
 					$s = '120%';
@@ -1711,14 +1711,14 @@ class CssManager
 				}
 			}
 		}
-		if (isset($attr['VALIGN']) && $attr['VALIGN'] != '') {
+		if (isset($attr['VALIGN']) && $attr['VALIGN'] !== '') {
 			$p['VERTICAL-ALIGN'] = $attr['VALIGN'];
 		}
-		if (isset($attr['VSPACE']) && $attr['VSPACE'] != '') {
+		if (isset($attr['VSPACE']) && $attr['VSPACE'] !== '') {
 			$p['MARGIN-TOP'] = $attr['VSPACE'];
 			$p['MARGIN-BOTTOM'] = $attr['VSPACE'];
 		}
-		if (isset($attr['HSPACE']) && $attr['HSPACE'] != '') {
+		if (isset($attr['HSPACE']) && $attr['HSPACE'] !== '') {
 			$p['MARGIN-LEFT'] = $attr['HSPACE'];
 			$p['MARGIN-RIGHT'] = $attr['HSPACE'];
 		}

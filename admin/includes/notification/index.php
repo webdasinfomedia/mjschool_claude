@@ -17,6 +17,7 @@
 defined( 'ABSPATH' ) || exit;
 // -------- Check Browser Javascript. ----------//
 mjschool_browser_javascript_check();
+$mjschool_obj_notification  = new Mjschool_notification();
 $mjschool_role = mjschool_get_user_role( get_current_user_id() );
 if ( $mjschool_role === 'administrator' ) {
 	$user_access_add    = '1';
@@ -29,27 +30,27 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_edit   = $user_access['edit'];
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
-	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+	if ( isset( $_GET['page'] ) ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
-		if ( ! empty( $_REQUEST['action'] ) ) {
-			$request_action = sanitize_text_field( wp_unslash( $_REQUEST['action'] ) );
+		if ( ! empty( $_GET['action'] ) ) {
+			$request_action = sanitize_text_field( wp_unslash( $_GET['action'] ) );
 			if ( 'notification' === $user_access['page_link'] && ( $request_action === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'notification' === $user_access['page_link'] && ( $request_action === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'notification' === $user_access['page_link'] && ( $request_action === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -57,7 +58,7 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'notification';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
@@ -68,7 +69,7 @@ if ( isset( $_POST['save_notification'] ) ) {
 		global $wpdb;
 		$mjschool_notification = $wpdb->prefix . 'mjschool_notification';
 		$exlude_id             = mjschool_approve_student_list();
-		if ( isset( $_POST['selected_users'] ) && sanitize_text_field( wp_unslash( $_POST['selected_users'] ) ) != 'All' ) {
+		if ( isset( $_POST['selected_users'] ) && sanitize_text_field( wp_unslash( $_POST['selected_users'] ) ) !== 'All' ) {
 			$title = esc_html__( 'You have a New Notification', 'mjschool' ) . ' ' . sanitize_text_field( wp_unslash( $_POST['title'] ) );
 			$text  = sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) );
 			// Send Push Notification.
@@ -88,16 +89,18 @@ if ( isset( $_POST['save_notification'] ) ) {
 			$data['student_id']   = intval( wp_unslash( $_POST['selected_users'] ) );
 			$data['title']        = sanitize_text_field( wp_unslash( $_POST['title'] ) );
 			$data['message']      = sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) );
-			$data['created_date'] = date( 'Y-m-d' );
+			$data['created_date'] = current_time( 'Y-m-d' );
 			$data['created_by']   = get_current_user_id();
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 			$result                    = $wpdb->insert( $mjschool_notification, $data );
 			$ids                       = $wpdb->insert_id;
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'notification';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $ids );
 		} elseif ( isset( $_POST['class_id'] ) && sanitize_text_field( wp_unslash( $_POST['class_id'] ) ) === 'All' ) {
-			foreach ( mjschool_get_all_class() as $class ) {
+			
+			$mjschool_class = new Mjschool_Class();
+			foreach ( $mjschool_class->mjschool_get_all_class() as $class ) {
 				
 				$query_data['exclude'] = $exlude_id;
 				$query_data['meta_query'] = array( array( 'key' => 'class_name', 'value' => intval( $class['class_id'] ), 'compare' => '=' ) );
@@ -124,12 +127,12 @@ if ( isset( $_POST['save_notification'] ) ) {
 						$data['student_id']   = intval( $retrive_data->ID );
 						$data['title']        = sanitize_text_field( wp_unslash( $_POST['title'] ) );
 						$data['message']      = sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) );
-						$data['created_date'] = date( 'Y-m-d' );
+						$data['created_date'] = current_time( 'Y-m-d' );
 						$data['created_by']   = get_current_user_id();
 						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 						$result                    = $wpdb->insert( $mjschool_notification, $data );
 						$ids                       = $wpdb->insert_id;
-						$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+						$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 						$module                    = 'notification';
 						$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $ids );
 					}
@@ -162,12 +165,12 @@ if ( isset( $_POST['save_notification'] ) ) {
 					$data['student_id']   = intval( $retrive_data->ID );
 					$data['title']        = sanitize_text_field( wp_unslash( $_POST['title'] ) );
 					$data['message']      = sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) );
-					$data['created_date'] = date( 'Y-m-d' );
+					$data['created_date'] = current_time( 'Y-m-d' );
 					$data['created_by']   = get_current_user_id();
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 					$result                    = $wpdb->insert( $mjschool_notification, $data );
 					$ids                       = $wpdb->insert_id;
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'notification';
 					$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $ids );
 				}
@@ -201,12 +204,12 @@ if ( isset( $_POST['save_notification'] ) ) {
 					$data['student_id']   = intval( $retrive_data->ID );
 					$data['title']        = sanitize_text_field( wp_unslash( $_POST['title'] ) );
 					$data['message']      = sanitize_textarea_field( wp_unslash( $_POST['message_body'] ) );
-					$data['created_date'] = date( 'Y-m-d' );
+					$data['created_date'] = current_time( 'Y-m-d' );
 					$data['created_by']   = get_current_user_id();
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
 					$result                    = $wpdb->insert( $mjschool_notification, $data );
 					$ids                       = $wpdb->insert_id;
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'notification';
 					$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $ids );
 				}
@@ -225,10 +228,10 @@ if ( isset( $_POST['save_notification'] ) ) {
 		}
 	}
 }
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'delete' ) {
+if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce_action'] ) ), 'delete_action' ) ) {
-		$notification_id = isset( $_REQUEST['notification_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notification_id'] ) ) : '';
-		$result = mjschool_delete_notification( intval( mjschool_decrypt_id( $notification_id ) ) );
+		$notification_id = isset( $_GET['notification_id'] ) ? sanitize_text_field( wp_unslash( $_GET['notification_id'] ) ) : '';
+		$result = $mjschool_obj_notification->mjschool_delete_notification( intval( mjschool_decrypt_id( $notification_id ) ) );
 		if ( $result ) {
 			wp_safe_redirect( esc_url( admin_url( 'admin.php?page=mjschool_notification&tab=notificationlist&message=2' ) ) );
 			exit;
@@ -238,11 +241,11 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST[
 	}
 }
 // ----------- Add Multiple Delete records. ----------//
-if ( isset( $_REQUEST['delete_selected'] ) ) {
-	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
-		$ids_array = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+if ( isset( $_POST['delete_selected'] ) ) {
+	if ( ! empty( $_POST['id'] ) && is_array( $_POST['id'] ) ) {
+		$ids_array = array_map( 'intval', wp_unslash( $_POST['id'] ) );
 		foreach ( $ids_array as $id ) {
-			$result = mjschool_delete_notification( $id );
+			$result = $mjschool_obj_notification->mjschool_delete_notification( $id );
 		}
 		if ( $result ) {
 			wp_safe_redirect( esc_url( admin_url( 'admin.php?page=mjschool_notification&tab=notificationlist&message=2' ) ) );
@@ -255,7 +258,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) )
 <div class="mjschool-page-inner"><!-- Mjschool-page-inner. -->
 	<div class="mjschool-main-list-margin-15px"><!-- Mjschool-main-list-margin-15px. -->
 		<?php
-		$message = isset( $_REQUEST['message'] ) ? sanitize_key( wp_unslash( $_REQUEST['message'] ) ) : '0';
+		$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : '0';
 		switch ( $message ) {
 			case '1':
 				$message_string = esc_html__( 'Notification Inserted Successfully.', 'mjschool' );
@@ -340,7 +343,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) )
 															<td>
 																<?php
 																$sname = mjschool_student_display_name_with_roll( $retrieved_data->student_id );
-																if ( $sname != '' ) {
+																if ( $sname !== '' ) {
 																	echo esc_html( $sname );
 																} else {
 																	esc_html_e( 'N/A', 'mjschool' );

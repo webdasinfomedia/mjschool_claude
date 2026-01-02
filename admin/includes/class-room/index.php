@@ -18,7 +18,9 @@
  * @subpackage Mjschool/admin/includes/class_room
  * @since      1.0.0
  */
-//-------- Check browser javascript.. ----------//
+defined( 'ABSPATH' ) || exit;
+
+//-------- Check browser javascript. ----------//
 mjschool_browser_javascript_check();
 $mjschool_role = mjschool_get_user_role(get_current_user_id( ) );
 if ($mjschool_role === 'administrator' ) 
@@ -36,25 +38,25 @@ else
 	$user_access_delete = $user_access['delete'];
 	$user_access_view = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ($user_access_view === '0' ) {
+		if ($user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die;
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( 'class_room' === $user_access['page_link'] && (sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
-				if ($user_access_edit === '0' ) {
+				if ($user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die;
 				}
 			}
 			if ( 'class_room' === $user_access['page_link'] && (sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
-				if ($user_access_delete === '0' ) {
+				if ($user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die;
 				}
 			}
 			if ( 'class_room' === $user_access['page_link'] && (sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
-				if ($user_access_add === '0' ) {
+				if ($user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die;
 				}
@@ -70,11 +72,12 @@ if ( isset( $_POST['save_classroom'] ) ) {
 	$nonce = sanitize_text_field( wp_unslash($_POST['_wpnonce']));
 	if (wp_verify_nonce($nonce, 'save_class_room_admin_nonce' ) ) 
 	{
-		$subject_ids = isset($_POST['mjschool-subject-list']) ? json_encode(array_map('sanitize_text_field', wp_unslash($_POST['mjschool-subject-list']))) : json_encode([]);
-		$created_date = date( "Y-m-d H:i:s");
+		$subject_ids = isset($_POST['mjschool-subject-list']) ? wp_json_encode(array_map('sanitize_text_field', wp_unslash($_POST['mjschool-subject-list']))) : wp_json_encode([]);
+		$created_date = current_time( 'mysql' );
+		$class_names = isset($_POST['class_name']) ? (array) wp_unslash($_POST['class_name']) : [];
 		$classroomdata = array(
 			'room_name' => sanitize_text_field(wp_unslash($_POST['room_name'] ) ),
-			'class_id' => json_encode(array_map('intval', $_POST['class_name'])),
+			'class_id' => wp_json_encode(array_map('intval', $class_names)),
 			'room_type' => sanitize_text_field(wp_unslash($_POST['room_type'] ) ),
 			'room_capacity' => sanitize_text_field( wp_unslash($_POST['room_capacity'])),
 			'created_by' => get_current_user_id(),
@@ -103,24 +106,32 @@ if ( isset( $_POST['save_classroom'] ) ) {
 	}
 }
 $tablename = "mjschool_class_room";
-/*Delete selected Subject.*/
+
+/* Delete selected Subject. */
 if ( isset( $_REQUEST['delete_selected'] ) ) {
-	// Verify nonce for bulk delete
-	if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'bulk-class_rooms' ) ) {
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ),'mjschool_bulk_delete_class_room_nonce' ) ) {
 		wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
 	}
-	if ( ! empty( $_REQUEST['id'] ) ) {
+	
+	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
+		$deleted_count = 0;
 		foreach ($_REQUEST['id'] as $id) {
-			$result = mjschool_delete_class_room($tablename, intval($id));
+			$sanitized_id = intval(wp_unslash($id));
+			$result = mjschool_delete_class_room($tablename, $sanitized_id);
+			if ( $result ) {
+				$deleted_count++;
+			}
+		}
+		
+		if ( $deleted_count > 0 ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_class_room&tab=class_room_list&message=3' ) );
+			exit;
 		}
 	}
-	if ($result) {
-		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_class_room&tab=class_room_list&message=3' ) );
-		exit;
-	}
 }
+
 if ( isset( $_REQUEST['action']) && sanitize_text_field( wp_unslash($_REQUEST['action'])) === 'delete' ) {
-	// Verify nonce for delete action
+	// Verify nonce for delete action.
 	if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'delete_action' ) ) {
 		wp_die( esc_html__( 'Security check failed.', 'mjschool' ) );
 	}
@@ -154,7 +165,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 			?>
 			<div id="mjschool-message" class="mjschool-message_class alert mjschool-below-h2 notice is-dismissible mjschool-message-disabled alert-dismissible">
 				<p><?php echo esc_html( $message_string); ?></p>
-				<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text">Dismiss this notice.</span></button>
+				<button type="button" class="btn-default notice-dismiss" data-bs-dismiss="alert" aria-label="Close"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'mjschool' ); ?></span></button>
 			</div>
 			<?php
 		}
@@ -172,6 +183,9 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 						<div class="mjschool-panel-body">
 							<div class="table-responsive">
 								<form id="frm-example" name="frm-example" method="post">
+									<?php
+									wp_nonce_field( 'mjschool_bulk_delete_class_room_nonce' ); 
+									?>
 									<table id="mjschool-classroom-list" class="display" cellspacing="0" width="100%">
 										<thead class="<?php echo esc_attr( mjschool_datatable_header( ) ) ?>">
 											<tr>
@@ -227,15 +241,16 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 														<?php
 														$class_id = json_decode($retrieved_data->class_id);
 														$classname = "";
-														foreach ($class_id as $class) 
-														{
-															$classname .= mjschool_get_class_name_category_wise($class) . ", ";
+														if ( is_array( $class_id ) ) {
+															foreach ($class_id as $class) 
+															{
+																$classname .= mjschool_get_class_name_category_wise($class) . ", ";
+															}
 														}
-														$classname_rtrim = rtrim($classname, ", ");
-														$classname_ltrim = ltrim($classname_rtrim, ", ");
-														if ( ! empty( $classname_ltrim ) ) 
+														$classname_trimmed = trim($classname, ", ");
+														if ( ! empty( $classname_trimmed ) ) 
 														{
-															echo esc_html( $classname_ltrim);
+															echo esc_html( $classname_trimmed);
 														} 
 														else 
 														{
@@ -248,15 +263,17 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 														<?php
 														$class_id = json_decode($retrieved_data->sub_id);
 														$classname = "";
-														foreach ($class_id as $class) 
-														{
-															$classname .= mjschool_get_subject_by_id($class) . ", ";
+														$mjschool_subject = new Mjschool_Subject();
+														if ( is_array( $class_id ) ) {
+															foreach ($class_id as $class) 
+															{
+																$classname .= $mjschool_subject->mjschool_get_subject_by_id($class) . ", ";
+															}
 														}
-														$classname_rtrim = rtrim($classname, ", ");
-														$classname_ltrim = ltrim($classname_rtrim, ", ");
-														if ( ! empty( $classname_ltrim ) ) 
+														$classname_trimmed = trim($classname, ", ");
+														if ( ! empty( $classname_trimmed ) ) 
 														{
-															echo esc_html( $classname_ltrim);
+															echo esc_html( $classname_trimmed);
 														} 
 														else 
 														{
@@ -296,7 +313,6 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 															<ul class="mjschool_ul_style">
 																<li>
 																	<a href="#" data-bs-toggle="dropdown" aria-expanded="false">
-																		<!-- <img src="<?php //echo SMS_PLUGIN_URL . "/assets/images/listpage_icon/More.png" ?>"> -->
                                                                         <img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-more.png"); ?>">
 																	</a>
 																	<ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
@@ -366,4 +382,4 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 			</div>
 		</div>
 	</div>
-</div
+</div>

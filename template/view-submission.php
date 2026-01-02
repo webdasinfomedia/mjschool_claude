@@ -32,6 +32,8 @@ defined( 'ABSPATH' ) || exit;
 				<tbody>
 					<?php
 					$i = 0;
+					$mjschool_class = new Mjschool_Class();
+					$mjschool_subject = new Mjschool_Subject();
 					foreach ( $retrieve_class_data as $retrieved_data ) {
 						$color_class_css = mjschool_table_list_background_color( $i );
 						?>
@@ -42,14 +44,14 @@ defined( 'ABSPATH' ) || exit;
 								</p>
 							</td>
 							<td><?php echo esc_html( $retrieved_data->title ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Title', 'mjschool' ); ?>"></i></td>
-							<td><?php echo esc_html( mjschool_get_class_name( $retrieved_data->class_name ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class', 'mjschool' ); ?>"></i></td>
+							<td><?php echo esc_html( $mjschool_class->mjschool_get_class_name( $retrieved_data->class_name ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Class', 'mjschool' ); ?>"></i></td>
 							<td>
 								<a  href="<?php echo esc_url( '?page=mjschool_student&tab=view_student&action=view_student&student_id=' . $retrieved_data->student_id ); ?>"><?php echo esc_html( mjschool_student_display_name_with_roll( $retrieved_data->student_id ) ); ?></a> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i>
 							</td>
-							<td><?php echo esc_html( mjschool_get_single_subject_name( $retrieved_data->subject ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Subject', 'mjschool' ); ?>"></i></td>
+							<td><?php echo esc_html( $mjschool_subject->mjschool_get_single_subject_name( $retrieved_data->subject ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Subject', 'mjschool' ); ?>"></i></td>
 							<?php
 							if ( $retrieved_data->status === 1 ) {
-								if ( date( 'Y-m-d', strtotime( $retrieved_data->uploaded_date ) ) <= $retrieved_data->submition_date ) {
+								if ( wp_date( 'Y-m-d', strtotime( $retrieved_data->uploaded_date ) ) <= $retrieved_data->submition_date ) {
 									?>
 									<td><label class="mjschool-green-color"><?php esc_html_e( 'Submitted', 'mjschool' ); ?></label> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" data-placement="top" title="<?php esc_attr_e( 'Status', 'mjschool' ); ?>"></i></td>
 									<?php

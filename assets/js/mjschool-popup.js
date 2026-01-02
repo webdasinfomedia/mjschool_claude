@@ -88,18 +88,6 @@ jQuery( document ).ready( function (jQuery) {
 			jQuery( '#mjschool-subject-list' ).append( response );
 		});
 	});
-	jQuery( "body" ).on( "click", "#pdf", function () {
-		var student_id = jQuery( "#student_id" ).val();
-		var curr_data  = {
-			action: 'mjschool_ajax_result_pdf',
-			student_id: student_id,
-			nonce: mjschool.nonce,
-			dataType: 'json'
-		};
-		jQuery.post( mjschool.ajax, curr_data, function (response) {
-			return true;
-		});
-	});
 	jQuery( "body" ).on( "click", ".view-notice", function (event) {
 		var notice_id = jQuery( this ).attr( 'id' );
 		event.preventDefault(); // disable normal link function so that it doesn't refresh the page
@@ -153,8 +141,8 @@ jQuery( document ).ready( function (jQuery) {
 		var student_id = jQuery( this ).attr( 'student_id' );
 		var class_id   = jQuery( this ).attr( 'class_id' );
 		var section_id = jQuery( this ).attr( 'section_id' );
-		var exam_id    = jQuery( this ).attr( 'exam_id' );
-		var type       = jQuery( this ).attr( 'typeformat' );
+		var exam_id = jQuery(this).attr('exam_id');
+		// var type       = jQuery( this ).attr( 'typeformat' );
 		event.preventDefault(); // disable normal link function so that it doesn't refresh the page
 		var docHeight = jQuery( document ).height(); // grab the height of the page
 		var scrollTop = jQuery( window ).scrollTop(); // grab the px value from the top of the page to where you're scrolling
@@ -165,7 +153,7 @@ jQuery( document ).ready( function (jQuery) {
 			section_id: section_id,
 			nonce: mjschool.nonce,
 			exam_id: exam_id,
-			type: type,
+			// type: type,
 			dataType: 'json'
 		};
 		jQuery.post( mjschool.ajax, curr_data, function (response) {
@@ -197,7 +185,7 @@ jQuery( document ).ready( function (jQuery) {
 			jQuery( '.mjschool-category-list' ).html( response );
 		});
 	});
-	jQuery( "body" ).on( "click", ".print-result", function () {
+	jQuery( "body" ).on( "click", ".pdf-result-data", function () {
 		var student_id      = jQuery( "#popup_student_id" ).val();
 		var class_id        = jQuery( "#popup_class_id" ).val();
 		var section_id      = jQuery( "#popup_section_id" ).val();
@@ -208,8 +196,8 @@ jQuery( document ).ready( function (jQuery) {
 			alert( "Please fill all fields before printing." );
 			return;
 		}
-		var url = "?page=mjschool_student&print=print" +
-		"&student=" + encodeURIComponent( student_id ) +
+		var url = "?page=mjschool_student&action=view_student_result&tab=view_student_result" +
+		"&student_id=" + encodeURIComponent( student_id ) +
 		"&class_id=" + encodeURIComponent( class_id ) +
 		"&section_id=" + encodeURIComponent( section_id ) +
 		"&exam_id=" + encodeURIComponent( exam_id ) +
@@ -237,7 +225,7 @@ jQuery( document ).ready( function (jQuery) {
 		"&comment=" + encodeURIComponent( teacher_comment );
 		window.open( url, '_blank' );
 	});
-	jQuery( "body" ).on( "click", ".print-result-marge", function () {
+	jQuery( "body" ).on( "click", ".pdf-result-marge-data", function () {
 		var student_id      = jQuery( "#popup_student_id" ).val();
 		var class_id        = jQuery( "#popup_class_id" ).val();
 		var section_id      = jQuery( "#popup_section_id" ).val();
@@ -250,8 +238,8 @@ jQuery( document ).ready( function (jQuery) {
 		}
 		// You can store teacher comment and teacher ID temporarily via AJAX if needed
 		// Then trigger the print by redirecting to the print URL
-		var url = "?page=mjschool_student&print=group_result_print" +
-		"&student=" + encodeURIComponent( student_id ) +
+		var url = "?page=mjschool_student&action=view_student_result&tab=view_student_result" +
+		"&student_id=" + encodeURIComponent( student_id ) +
 		"&class_id=" + encodeURIComponent( class_id ) +
 		"&section_id=" + encodeURIComponent( section_id ) +
 		"&merge_id=" + encodeURIComponent( merge_id ) +
@@ -445,7 +433,7 @@ jQuery( document ).ready( function (jQuery) {
 		};
 		jQuery.post( mjschool.ajax, curr_data, function (response) {
 			var json_obj = jQuery.parseJSON( response );// parse JSON
-			if (clicked_id != 'mjschool-notification-class-section-id' ) {
+			if (clicked_id !== 'mjschool-notification-class-section-id' ) {
 				jQuery( '#mjschool-notification-class-section-id' ).html( '' );
 				jQuery( '#mjschool-notification-class-section-id' ).append( json_obj['section'] );
 			}
@@ -468,7 +456,7 @@ jQuery( document ).ready( function (jQuery) {
 		};
 		jQuery.post( mjschool.ajax, curr_data, function (response) {
 			var json_obj = jQuery.parseJSON( response );// parse JSON
-			if (clicked_id != 'document_class_section_id' ) {
+			if (clicked_id !== 'document_class_section_id' ) {
 				jQuery( '#document_class_section_id' ).html( '' );
 				jQuery( '#document_class_section_id' ).append( json_obj['section'] );
 			}
@@ -1172,7 +1160,7 @@ jQuery( document ).ready( function (jQuery) {
 	/* Document Module*/
 	jQuery( ".document_for" ).on( 'change', function () {
 		var document_for = jQuery( ".document_for" ).val();
-		if (document_for != 'student' ) {
+		if (document_for !== 'student' ) {
 			jQuery( ".class_document_div" ).hide();
 			jQuery( ".mjschool-class-section-document-div" ).hide();
 			jQuery( '.student_list' ).html( '' );
@@ -1211,7 +1199,7 @@ jQuery( document ).ready( function (jQuery) {
 	/* ===================  Frant Message Module  =====================  */
 	jQuery( ".mjschool-class-in-student" ).on( 'change', function () {
 		var class_id = jQuery( ".mjschool-class-in-student" ).val();
-		if (class_id != '' ) {
+		if (class_id !== '' ) {
 			var curr_data = {
 				action: 'mjschool_count_student_in_class',
 				class_id: class_id,
@@ -1400,7 +1388,7 @@ jQuery( document ).ready( function (jQuery) {
 	// --------------- INSERT RECEIPT --------//
 	jQuery( "body" ).on( "click", ".mjschool-assign-exam-hall", function () {
 		var exam_hall = jQuery( "#exam_hall" ).val();
-		if (jQuery( '#exam_hall' ).val() != '' ) {
+		if (jQuery( '#exam_hall' ).val() !== '' ) {
 			if (jQuery( ".my_check" ).is( ":checked" ) ) {
 				var id_array           = jQuery( '.my_check:checked' ).map( function () { return this.attributes.dataid.textContent; } ).get();
 				var array_leangth      = id_array.length;
@@ -2048,7 +2036,7 @@ jQuery( document ).ready( function (jQuery) {
 		};
 		jQuery.post( mjschool.ajax, curr_data, function (response) {
 			var json_obj = jQuery.parseJSON( response );// parse JSON
-			if (clicked_id != 'attendance_selected_users' ) {
+			if (clicked_id !== 'attendance_selected_users' ) {
 				jQuery( '#attendance_selected_users' ).html( '' );
 				jQuery( '#attendance_selected_users' ).append( json_obj['users'] );
 			}
@@ -2113,7 +2101,7 @@ jQuery( document ).ready( function (jQuery) {
 		var min_val = jQuery( "#min_value" ).val( "min:" + min );
 		var max     = jQuery( '.max_value' ).val();
 		var min_val = jQuery( "#max_value" ).val( "max:" + max );
-		if (max < min && max != '' && min != '' ) {
+		if (max < min && max !== '' && min !== '' ) {
 			alert( 'Minimum value cannot be more than the maximum value.' );
 			return false;
 		}

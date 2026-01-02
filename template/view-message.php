@@ -14,6 +14,7 @@ defined( 'ABSPATH' ) || exit;
 // -------- Check browser javascript. ----------//
 mjschool_browser_javascript_check();
 // --------------- Access-wise role. -----------//
+$mjschool_obj_user   = new Mjschool_User();
 $user_access = mjschool_get_user_role_wise_access_right_array();
 // Subject.
 if ( isset( $_REQUEST['message'] ) ) {
@@ -60,7 +61,8 @@ if ( sanitize_text_field(wp_unslash($_REQUEST['from'])) === 'sendbox' ) {
 }
 if ( sanitize_text_field(wp_unslash($_REQUEST['from'])) === 'inbox' ) {
 	$mesage_id = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['id'])) ) );
-	$message   = mjschool_get_message_by_id( $mesage_id );
+	$obj_message = new Mjschool_Message();
+	$message   = $obj_message->mjschool_get_message_by_id( $mesage_id );
 	$message1  = get_post( $message->post_id );
 	$author    = $message1->post_author;
 	mjschool_change_read_status( $mesage_id );
@@ -69,14 +71,16 @@ if ( sanitize_text_field(wp_unslash($_REQUEST['from'])) === 'inbox' ) {
 }
 if ( isset( $_REQUEST['delete'] ) ) {
 	$mesage_id = intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['id'])) ) );
-	mjschool_delete_message( 'mjschool_message', $mesage_id );
+	$obj_message  = new Mjschool_Message();
+	$obj_message->mjschool_delete_message( 'mjschool_message', $mesage_id );
 	wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=message&tab=inbox' ) );
 	die();
 }
 if ( isset( $_POST['replay_message'] ) ) {
 	$message_id   = sanitize_text_field(wp_unslash($_REQUEST['id']));
 	$message_from = sanitize_text_field(wp_unslash($_REQUEST['from']));
-	$result       = mjschool_send_replay_message( wp_unslash($_POST) );
+	$obj_message  = new Mjschool_Message();
+	$result       = $obj_message->mjschool_send_replay_message( wp_unslash($_POST) );
 	if ( $result ) {
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=message&tab=view_message&from=' . $message_from . "&id=$message_id&message=1" ) );
 	}
@@ -121,22 +125,22 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 			<?php
 			if ( $box === 'sendbox' ) {
 				$message_for = get_post_meta( sanitize_text_field(wp_unslash($_REQUEST['id'])), 'message_for', true );
-				echo '' . esc_html__( 'From', 'mjschool' ) . ' : ' . esc_html( mjschool_get_display_name( $message->post_author ) ) . '<span>&lt;' . esc_html( mjschool_get_email_id_by_user_id( $message->post_author ) ) . '&gt;</span><br>';
+				echo '' . esc_html__( 'From', 'mjschool' ) . ' : ' . esc_html( mjschool_get_display_name( $message->post_author ) ) . '<span>&lt;' . esc_html( $mjschool_obj_user->mjschool_get_email_id_by_user_id( $message->post_author ) ) . '&gt;</span><br>';
 				$check_message_single_or_multiple = mjschool_send_message_check_single_user_or_multiple( sanitize_text_field(wp_unslash($_REQUEST['id'])) );
 				if ( $check_message_single_or_multiple === 1 ) {
 					$post_id  = mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['id'])) );
 					$get_single_user = mjschool_get_message_by_post_id($post_id );
-					echo '' . esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( mjschool_get_display_name( $get_single_user->receiver ) ) . '<span>&lt;' . esc_html( mjschool_get_email_id_by_user_id( $get_single_user->receiver ) ) . '&gt;</span><br>';
+					echo '' . esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( mjschool_get_display_name( $get_single_user->receiver ) ) . '<span>&lt;' . esc_html( $mjschool_obj_user->mjschool_get_email_id_by_user_id( $get_single_user->receiver ) ) . '&gt;</span><br>';
 				} else {
 					echo '' . esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( get_post_meta( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['id'])) ), 'message_for', true ) );
 				}
 			} else {
-				echo '' . esc_html__( 'From', 'mjschool' ) . ' : ' . esc_html( mjschool_get_display_name( $message->sender ) ) . '<span>&lt;' . esc_html( mjschool_get_email_id_by_user_id( $message->sender ) ) . '&gt;</span><br>';
+				echo '' . esc_html__( 'From', 'mjschool' ) . ' : ' . esc_html( mjschool_get_display_name( $message->sender ) ) . '<span>&lt;' . esc_html( $mjschool_obj_user->mjschool_get_email_id_by_user_id( $message->sender ) ) . '&gt;</span><br>';
 				$check_message_single_or_multiple = mjschool_send_message_check_single_user_or_multiple( $message->post_id );
 				if ( $check_message_single_or_multiple === 1 ) {
 					$post_id  = $message->post_id;
 					$get_single_user = mjschool_get_message_by_post_id($post_id );
-					echo '' . esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( mjschool_get_display_name( $get_single_user->receiver ) ) . '<span>&lt;' . esc_html( mjschool_get_email_id_by_user_id( $get_single_user->receiver ) ) . '&gt;</span><br>';
+					echo '' . esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( mjschool_get_display_name( $get_single_user->receiver ) ) . '<span>&lt;' . esc_html( $mjschool_obj_user->mjschool_get_email_id_by_user_id( $get_single_user->receiver ) ) . '&gt;</span><br>';
 				} else {
 					echo '' . esc_html__( 'To', 'mjschool' ) . ' : ' . esc_html( get_post_meta( $message->post_id, 'message_for', true ) );
 				}
@@ -157,7 +161,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 					$attchment_array = explode( ',', $attchment );
 					foreach ( $attchment_array as $attchment_data ) {
 						?>
-						<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $attchment_data )); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+						<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . basename( $attchment_data ) )); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+                        <?php // Added basename() for security to prevent directory traversal ?>
 						<?php
 					}
 				}
@@ -171,7 +176,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 					$attchment_array = explode( ',', $attchment );
 					foreach ( $attchment_array as $attchment_data ) {
 						?>
-						<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $attchment_data )); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+						<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . basename( $attchment_data ) )); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
 						<?php
 					}
 				}
@@ -210,7 +215,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['a
 							$reply_attchment_array = explode( ',', $reply_attchment );
 							foreach ( $reply_attchment_array as $attchment_data1 ) {
 								?>
-								<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $attchment_data1 )); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
+								<a target="blank" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . basename( $attchment_data1 ) )); ?>" class="btn btn-default"><i class="fas fa-download"></i><?php esc_html_e( 'View Attachment', 'mjschool' ); ?></a>
 								<?php
 							}
 						}

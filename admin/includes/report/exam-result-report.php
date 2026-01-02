@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Examination Report Page Template.
  *
@@ -49,7 +48,8 @@ if ( isset( $_GET['tab'] ) ) {
 						?>
 						<option value=""><?php esc_html_e( 'Select Class Name', 'mjschool' ); ?></option>
 						<?php
-						foreach ( mjschool_get_all_class() as $classdata ) {
+						$mjschool_class = new Mjschool_Class();
+						foreach ($mjschool_class->mjschool_get_all_class() as $classdata ) {
 							?>
 							<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 							<?php
@@ -71,7 +71,8 @@ if ( isset( $_GET['tab'] ) ) {
 							<?php
 							if ( isset( $_REQUEST['class_section'] ) ) {
 								echo esc_html( $class_section = $_REQUEST['class_section'] );
-								foreach ( mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_class_sections( $_REQUEST['class_id'] ) as $sectiondata ) {
 									?>
 									<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $class_section, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 									<?php
@@ -148,7 +149,7 @@ if ( isset( $_GET['tab'] ) ) {
 		$exam_id        = $_REQUEST['exam_id'];
 		$class_id       = $_REQUEST['class_id'];
 		$student_status = $_REQUEST['student_status'];
-		if ( isset( $_REQUEST['class_section'] ) && $_REQUEST['class_section'] != '' ) {
+		if ( isset( $_REQUEST['class_section'] ) && $_REQUEST['class_section'] !== '' ) {
 			$subject_list = $obj_marks->mjschool_student_subject( intval( $_REQUEST['class_id'] ), $_REQUEST['class_section'] );
 			
 			if ($student_status === "active") {
@@ -279,7 +280,7 @@ if ( isset( $_GET['tab'] ) ) {
 								?>
 								<tr>
 									<td><?php echo esc_html( $mjschool_user->roll_id ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Roll No.', 'mjschool' ); ?>"></i></td>
-									<td><?php echo esc_html( mjschool_get_user_name_by_id( $mjschool_user->ID ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i></td>
+									<td><?php echo esc_html( mjschool_get_display_name( $mjschool_user->ID ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Student Name', 'mjschool' ); ?>"></i></td>
 									<?php
 									if ( ! empty( $subject_list ) ) {
 										$result  = array();

@@ -44,13 +44,13 @@ if ( $action === 'paypal_payment' && $payment_status_sanitize === 'Completed' ){
 	parse_str( $custom_field_string, $custom_field_data );
 	// 3. Prepare Fee Payment Data.
 	$payment_note     = isset( $custom_field_data['payment_note'] ) ? sanitize_textarea_field( $custom_field_data['payment_note'] ) : '';
-	$payment_date_raw = ! empty( $manual_pay_date ) ? $manual_pay_date : date( 'Y-m-d' );
+	$payment_date_raw = ! empty( $manual_pay_date ) ? $manual_pay_date : wp_date( 'Y-m-d' );
 	$feedata          = array(
 		'fees_pay_id'    => isset( $custom_array[1] ) ? intval( $custom_array[1] ) : 0,
-		'amount'         => isset( $_POST['mc_gross_1'] ) ? floatval( wp_unslash( $_POST['mc_gross_1'] ) ) : 0,
+		'amount'         => isset( $_POST['mc_gross_1'] ) ? floatval( wp_unslash( $_POST['mc_gross_1'] ) ) : 0,                                                       
 		'payment_method' => 'PayPal',
 		'trasaction_id'  => $transaction_id,
-		'paid_by_date'   => date( 'Y-m-d', strtotime( sanitize_text_field( $payment_date_raw ) ) ),
+		'paid_by_date'   => wp_date( 'Y-m-d', strtotime( sanitize_text_field( $payment_date_raw ) ) ),
 		'payment_note'   => $payment_note,
 	);
 	// 4. Save Payment.
@@ -58,7 +58,7 @@ if ( $action === 'paypal_payment' && $payment_status_sanitize === 'Completed' ){
 	// 5. Save Custom Fields.
 	if ( $PaymentSucces ) {
 		$module           = 'fee_transaction';
-		$custom_field_obj = new Mjschool_Custome_Field();
+		$custom_field_obj = new Mjschool_Custom_Field();
 		// Merge into $_POST so existing function can pick them up.
 		$_POST['custom'] = $custom_field_data;
 		// Final call to insert custom field values.
@@ -77,8 +77,9 @@ if ( $action === 'paypal_payment_form' && $payment_status_sanitize === 'Complete
 	$custom_post                 = isset( $_POST['custom'] ) ? sanitize_text_field( wp_unslash( $_POST['custom'] ) ) : '';
 	$custom_array                = explode( '|', $custom_post );
 	$fees_pay_id                 = isset( $custom_array[1] ) ? intval( $custom_array[1] ) : 0;
-	$invoice = mjschool_get_single_fees_payment_record($fees_pay_id);
-	if ( $invoice && $invoice->invoice_status != 'paid' ) {
+	$mjschool_obj_feespayment   = new Mjschool_Feespayment();
+	$invoice = $mjschool_obj_feespayment->mjschool_get_single_fee_payment($fees_pay_id);
+	if ( $invoice && $invoice->invoice_status !== 'paid' ) {
 		// Generate new invoice_id if missing.
 		if ( empty( $invoice->invoice_id ) ) {
 			$max_invoice_id  = $wpdb->get_var( "SELECT MAX(invoice_id) FROM $table_mjschool_fees_payment" );
@@ -109,13 +110,12 @@ if ( $action === 'paypal_payment_form' && $payment_status_sanitize === 'Complete
 	}
 }
 $user_role = $school_obj->role;
-if ( $user_role != 'teacher' && $user_role != 'student' && $user_role != 'parent' && $user_role != 'supportstaff' ) {
+if ( $user_role !== 'teacher' && $user_role !== 'student' && $user_role !== 'parent' && $user_role !== 'supportstaff' ) {
 	wp_safe_redirect(admin_url( 'admin.php?page=mjschool' ) );
 	die();
 }
 if ( isset( $_REQUEST['print'] ) && sanitize_text_field(wp_unslash($_REQUEST['print'])) === 'pdf' ) {
 	$sudent_id = isset( $_REQUEST['student'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['student'] ) ) : '';
-	mjschool_download_result_pdf( $sudent_id );
 }
 $obj_attend            = new Mjschool_Attendence_Manage();
 $obj_route             = new Mjschool_Class_Routine();
@@ -129,8 +129,9 @@ if ( $school_obj->role === 'student' ) {
 	$sectionname = '';
 	$section     = 0;
 	$section     = get_user_meta( get_current_user_id(), 'class_section', true );
-	if ( $section != '' ) {
-		$sectionname = mjschool_get_section_name( $section );
+	if ( $section !== '' ) {
+		$mjschool_class = new Mjschool_Class();
+		$sectionname = $mjschool_class->mjschool_get_section_name( $section );
 	} else {
 		$section = 0;
 	}
@@ -158,6 +159,7 @@ if ( $school_obj->role === 'student' ) {
 					$meeting_join_link = '';
 					$agenda            = '';
 				}
+				$mjschool_subject = new Mjschool_Subject();
 				$teacher_obj = new Mjschool_Teacher();
 				$classes     = $teacher_obj->mjschool_get_single_class_teacher( $period_data->class_id );
 				$stime       = explode( ':', $period_data->start_time );
@@ -173,11 +175,12 @@ if ( $school_obj->role === 'student' ) {
 				$end_time_data  = new DateTime( $end_time );
 				$edittime       = date_format( $end_time_data, 'H:i:s' );
 				$user           = get_userdata( $classes->teacher_id );
+				$mjschool_class = new Mjschool_Class();
 				$notive_array[] = array(
 					'type'               => 'class',
-					'title'              => mjschool_get_single_subject_name( $period_data->subject_id ),
-					'class_name'         => mjschool_get_class_name( $period_data->class_id ),
-					'subject'            => mjschool_get_single_subject_name( $period_data->subject_id ),
+					'title'              => $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ),
+					'class_name'         => $mjschool_class->mjschool_get_class_name( $period_data->class_id ),
+					'subject'            => $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ),
 					'start'              => $starttime,
 					'end'                => $edittime,
 					'agenda'             => $agenda,
@@ -204,10 +207,11 @@ if ( $school_obj->role === 'student' ) {
 			} else {
 				$notice_comment = 'N/A';
 			}
-			if ( get_post_meta( $notice->ID, 'smgt_class_id', true ) != '' && get_post_meta( $notice->ID, 'smgt_class_id', true ) === 'all' ) {
+			if ( get_post_meta( $notice->ID, 'smgt_class_id', true ) !== '' && get_post_meta( $notice->ID, 'smgt_class_id', true ) === 'all' ) {
 				$class_name = esc_html__( 'All', 'mjschool' );
-			} elseif ( get_post_meta( $notice->ID, 'smgt_class_id', true ) != '' ) {
-				$class_name = mjschool_get_class_name( get_post_meta( $notice->ID, 'smgt_class_id', true ) );
+			} elseif ( get_post_meta( $notice->ID, 'smgt_class_id', true ) !== '' ) {
+				$mjschool_class = new Mjschool_Class();
+				$class_name = $mjschool_class->mjschool_get_class_name( get_post_meta( $notice->ID, 'smgt_class_id', true ) );
 			} else {
 				$class_name = '';
 			}
@@ -223,9 +227,9 @@ if ( $school_obj->role === 'student' ) {
 				'description'       => 'notice',
 				'notice_comment'    => $notice_comment,
 				'notice_for'        => $notice_for,
-				'start'             => mysql2date( 'Y-m-d', $notice_start_date ),
+				'start'             => wp_date( 'Y-m-d', $notice_start_date ),
 				'class_name'        => $class_name,
-				'end'               => date( 'Y-m-d', strtotime( $notice_end_date . ' +' . $i . ' days' ) ),
+				'end'               => wp_date( 'Y-m-d', strtotime( $notice_end_date . ' +' . $i . ' days' ) ),
 				'color'             => '#ffd000',
 				'start_to_end_date' => $start_to_end_date,
 			);
@@ -235,7 +239,7 @@ if ( $school_obj->role === 'student' ) {
 	if ( isset( $class_id ) && $section === '' ) {
 		$exam_list = $obj_exam->mjschool_get_all_exam_by_class_id( $class_id );
 	} else {
-		$exam_list = mjschool_get_all_exam_by_class_id_and_section_id_array( $class_id, $section );
+		$exam_list = $obj_exam->mjschool_get_all_exam_by_class_id_and_section_id_array( $class_id, $section );
 	}
 	// Exam List For Student.
 	if ( ! empty( $exam_list ) ) {
@@ -246,7 +250,8 @@ if ( $school_obj->role === 'student' ) {
 			$exam_title      = $exam->exam_name;
 			$exam_term       = get_the_title( $exam->exam_term );
 			if ( ! empty( $exam->section_id ) ) {
-				$section_name = mjschool_get_section_name( $exam->section_id );
+				$mjschool_class = new Mjschool_Class();
+				$section_name = $mjschool_class->mjschool_get_section_name( $exam->section_id );
 			} else {
 				$section_name = 'N/A';
 			}
@@ -271,8 +276,8 @@ if ( $school_obj->role === 'student' ) {
 				'event_title'  => esc_html__( 'Exam Details', 'mjschool' ),
 				'title'        => $exam->exam_name,
 				'description'  => 'exam',
-				'start'        => mysql2date( 'Y-m-d', $exam_start_date ),
-				'end'          => date( 'Y-m-d', strtotime( $exam_end_date . ' +' . $i . ' days' ) ),
+				'start'        => wp_date( 'Y-m-d', $exam_start_date ),
+				'end'          => wp_date( 'Y-m-d', strtotime( $exam_end_date . ' +' . $i . ' days' ) ),
 				'color'        => '#5840bb',
 			);
 		}
@@ -287,8 +292,9 @@ if ( $school_obj->role === 'parent' ) {
 			$section     = 0;
 			$class       = $school_obj->mjschool_get_user_class_id( $child_id );
 			$section     = get_user_meta( $child_id, 'class_section', true );
-			if ( $section != '' ) {
-				$sectionname = mjschool_get_section_name( $section );
+			if ( $section !== '' ) {
+				$mjschool_class = new Mjschool_Class();
+				$sectionname = $mjschool_class->mjschool_get_section_name( $section );
 			} else {
 				$section = 0;
 			}
@@ -335,11 +341,13 @@ if ( $school_obj->role === 'parent' ) {
 							$edittime = '';
 						}
 						$user           = get_userdata( $classes->teacher_id );
+						$mjschool_class = new Mjschool_Class();
+						$mjschool_subject = new Mjschool_Subject();
 						$notive_array[] = array(
 							'type'               => 'class',
-							'title'              => mjschool_get_single_subject_name( $period_data->subject_id ),
-							'class_name'         => mjschool_get_class_name( $period_data->class_id ),
-							'subject'            => mjschool_get_single_subject_name( $period_data->subject_id ),
+							'title'              => $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ),
+							'class_name'         => $mjschool_class->mjschool_get_class_name( $period_data->class_id ),
+							'subject'            => $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ),
 							'start'              => $starttime,
 							'end'                => $edittime,
 							'agenda'             => $agenda,
@@ -368,10 +376,11 @@ if ( $school_obj->role === 'parent' ) {
 			} else {
 				$notice_comment = 'N/A';
 			}
-			if ( get_post_meta( $notice->ID, 'smgt_class_id', true ) != '' && get_post_meta( $notice->ID, 'smgt_class_id', true ) === 'all' ) {
+			if ( get_post_meta( $notice->ID, 'smgt_class_id', true ) !== '' && get_post_meta( $notice->ID, 'smgt_class_id', true ) === 'all' ) {
 				$class_name = esc_html__( 'All', 'mjschool' );
-			} elseif ( get_post_meta( $notice->ID, 'smgt_class_id', true ) != '' ) {
-				$class_name = mjschool_get_class_name( get_post_meta( $notice->ID, 'smgt_class_id', true ) );
+			} elseif ( get_post_meta( $notice->ID, 'smgt_class_id', true ) !== '' ) {
+				$mjschool_class = new Mjschool_Class();
+				$class_name = $mjschool_class->mjschool_get_class_name( get_post_meta( $notice->ID, 'smgt_class_id', true ) );
 			} else {
 				$class_name = '';
 			}
@@ -385,9 +394,9 @@ if ( $school_obj->role === 'parent' ) {
 				'description'       => 'notice',
 				'notice_comment'    => $notice_comment,
 				'notice_for'        => $notice_for,
-				'start'             => mysql2date( 'Y-m-d', $notice_start_date ),
+				'start'             => wp_date( 'Y-m-d', $notice_start_date ),
 				'class_name'        => $class_name,
-				'end'               => date( 'Y-m-d', strtotime( $notice_end_date . ' +' . $i . ' days' ) ),
+				'end'               => wp_date( 'Y-m-d', strtotime( $notice_end_date . ' +' . $i . ' days' ) ),
 				'color'             => '#ffd000',
 				'start_to_end_date' => $start_to_end_date,
 			);
@@ -400,9 +409,10 @@ if ( $school_obj->role === 'parent' ) {
 		$section_id[]   = get_user_meta( $c_id, 'class_section', true );
 		$section_new_id = implode( ',', $section_id );
 		if ( ! empty( $classdata ) && $section_new_id === '' ) {
-			$result[] = mjschool_get_all_exam_by_class_id_array( $classdata );
+			$obj_exam = new Mjschool_Exam();
+			$result[] = $obj_exam->mjschool_get_all_exam_by_class_id_array( $classdata );
 		} else {
-			$result[] = mjschool_get_all_exam_by_class_id_and_section_id_array_parent( $classdata, $section_id );
+			$result[] = $obj_exam->mjschool_get_all_exam_by_class_id_and_section_id_array_parent( $classdata, $section_id );
 		}
 	}
 	if ( ! empty( $result ) ) {
@@ -420,7 +430,8 @@ if ( $school_obj->role === 'parent' ) {
 			$exam_title      = $exam->exam_name;
 			$exam_term       = get_the_title( $exam->exam_term );
 			if ( ! empty( $exam->section_id ) ) {
-				$section_name = mjschool_get_section_name( $exam->section_id );
+				$mjschool_class = new Mjschool_Class();
+				$section_name = $mjschool_class->mjschool_get_section_name( $exam->section_id );
 			} else {
 				$section_name = 'N/A';
 			}
@@ -445,8 +456,8 @@ if ( $school_obj->role === 'parent' ) {
 				'event_title'  => esc_html__( 'Exam Details', 'mjschool' ),
 				'title'        => $exam->exam_name,
 				'description'  => 'exam',
-				'start'        => mysql2date( 'Y-m-d', $exam_start_date ),
-				'end'          => date( 'Y-m-d', strtotime( $exam_end_date . ' +' . $i . ' days' ) ),
+				'start'        => wp_date( 'Y-m-d', $exam_start_date ),
+				'end'          => wp_date( 'Y-m-d', strtotime( $exam_end_date . ' +' . $i . ' days' ) ),
 				'color'        => '#5840bb',
 			);
 		}
@@ -465,10 +476,11 @@ if ( $school_obj->role === 'supportstaff' ) {
 			} else {
 				$notice_comment = 'N/A';
 			}
-			if ( get_post_meta( $notice->ID, 'smgt_class_id', true ) != '' && get_post_meta( $notice->ID, 'smgt_class_id', true ) === 'all' ) {
+			if ( get_post_meta( $notice->ID, 'smgt_class_id', true ) !== '' && get_post_meta( $notice->ID, 'smgt_class_id', true ) === 'all' ) {
 				$class_name = esc_html__( 'All', 'mjschool' );
-			} elseif ( get_post_meta( $notice->ID, 'smgt_class_id', true ) != '' ) {
-				$class_name = mjschool_get_class_name( get_post_meta( $notice->ID, 'smgt_class_id', true ) );
+			} elseif ( get_post_meta( $notice->ID, 'smgt_class_id', true ) !== '' ) {
+				$mjschool_class = new Mjschool_Class();
+				$class_name = $mjschool_class->mjschool_get_class_name( get_post_meta( $notice->ID, 'smgt_class_id', true ) );
 			} else {
 				$class_name = '';
 			}
@@ -483,9 +495,9 @@ if ( $school_obj->role === 'supportstaff' ) {
 				'description'       => 'notice',
 				'notice_comment'    => $notice_comment,
 				'notice_for'        => $notice_for,
-				'start'             => mysql2date( 'Y-m-d', $notice_start_date ),
+				'start'             => wp_date( 'Y-m-d', $notice_start_date ),
 				'class_name'        => $class_name,
-				'end'               => date( 'Y-m-d', strtotime( $notice_end_date . ' +' . $i . ' days' ) ),
+				'end'               => wp_date( 'Y-m-d', strtotime( $notice_end_date . ' +' . $i . ' days' ) ),
 				'color'             => '#ffd000',
 				'start_to_end_date' => $start_to_end_date,
 			);
@@ -500,7 +512,8 @@ if ( $school_obj->role === 'supportstaff' ) {
 			$exam_title      = $exam->exam_name;
 			$exam_term       = get_the_title( $exam->exam_term );
 			if ( ! empty( $exam->section_id ) ) {
-				$section_name = mjschool_get_section_name( $exam->section_id );
+				$mjschool_class = new Mjschool_Class();
+				$section_name = $mjschool_class->mjschool_get_section_name( $exam->section_id );
 			} else {
 				$section_name = 'N/A';
 			}
@@ -525,8 +538,8 @@ if ( $school_obj->role === 'supportstaff' ) {
 				'event_title'  => esc_html__( 'Exam Details', 'mjschool' ),
 				'title'        => $exam->exam_name,
 				'description'  => 'exam',
-				'start'        => mysql2date( 'Y-m-d', $exam_start_date ),
-				'end'          => date( 'Y-m-d', strtotime( $exam_end_date . ' +' . $i . ' days' ) ),
+				'start'        => wp_date( 'Y-m-d', $exam_start_date ),
+				'end'          => wp_date( 'Y-m-d', strtotime( $exam_end_date . ' +' . $i . ' days' ) ),
 				'color'        => '#5840bb',
 			);
 		}
@@ -596,11 +609,13 @@ if ( $school_obj->role === 'teacher' ) {
 					$edittime  = '';
 				}
 				$user           = get_userdata( get_current_user_id() );
+				$mjschool_class = new Mjschool_Class();
+				$mjschool_subject = new Mjschool_Subject();
 				$notive_array[] = array(
 					'type'               => 'class',
-					'title'              => mjschool_get_single_subject_name( $period_data->subject_id ),
-					'class_name'         => mjschool_get_class_name( $period_data->class_id ),
-					'subject'            => mjschool_get_single_subject_name( $period_data->subject_id ),
+					'title'              => $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ),
+					'class_name'         => $mjschool_class->mjschool_get_class_name( $period_data->class_id ),
+					'subject'            => $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ),
 					'start'              => $starttime,
 					'end'                => $edittime,
 					'agenda'             => $agenda,
@@ -624,10 +639,11 @@ if ( $school_obj->role === 'teacher' ) {
 			} else {
 				$notice_comment = 'N/A';
 			}
-			if ( get_post_meta( $notice->ID, 'smgt_class_id', true ) != '' && get_post_meta( $notice->ID, 'smgt_class_id', true ) === 'all' ) {
+			if ( get_post_meta( $notice->ID, 'smgt_class_id', true ) !== '' && get_post_meta( $notice->ID, 'smgt_class_id', true ) === 'all' ) {
 				$class_name = esc_html__( 'All', 'mjschool' );
-			} elseif ( get_post_meta( $notice->ID, 'smgt_class_id', true ) != '' ) {
-				$class_name = mjschool_get_class_name( get_post_meta( $notice->ID, 'smgt_class_id', true ) );
+			} elseif ( get_post_meta( $notice->ID, 'smgt_class_id', true ) !== '' ) {
+				$mjschool_class = new Mjschool_Class();
+				$class_name = $mjschool_class->mjschool_get_class_name( get_post_meta( $notice->ID, 'smgt_class_id', true ) );
 			} else {
 				$class_name = '';
 			}
@@ -643,9 +659,9 @@ if ( $school_obj->role === 'teacher' ) {
 				'description'       => 'notice',
 				'notice_comment'    => $notice_comment,
 				'notice_for'        => $notice_for,
-				'start'             => mysql2date( 'Y-m-d', $notice_start_date ),
+				'start'             => wp_date( 'Y-m-d', $notice_start_date ),
 				'class_name'        => $class_name,
-				'end'               => date( 'Y-m-d', strtotime( $notice_end_date . ' +' . $i . ' days' ) ),
+				'end'               => wp_date( 'Y-m-d', strtotime( $notice_end_date . ' +' . $i . ' days' ) ),
 				'color'             => '#ffd000',
 				'start_to_end_date' => $start_to_end_date,
 			);
@@ -666,7 +682,8 @@ if ( $school_obj->role === 'teacher' ) {
 			$exam_title      = $exam->exam_name;
 			$exam_term       = get_the_title( $exam->exam_term );
 			if ( ! empty( $exam->section_id ) ) {
-				$section_name = mjschool_get_section_name( $exam->section_id );
+				$mjschool_class = new Mjschool_Class();
+				$section_name = $mjschool_class->mjschool_get_section_name( $exam->section_id );
 			} else {
 				$section_name = 'N/A';
 			}
@@ -693,8 +710,8 @@ if ( $school_obj->role === 'teacher' ) {
 				'event_title'  => esc_html__( 'Exam Details', 'mjschool' ),
 				'title'        => $exam->exam_name,
 				'description'  => 'exam',
-				'start'        => mysql2date( 'Y-m-d', $exam_start_date ),
-				'end'          => date( 'Y-m-d', strtotime( $exam_end_date . ' +' . $i . ' days' ) ),
+				'start'        => wp_date( 'Y-m-d', $exam_start_date ),
+				'end'          => wp_date( 'Y-m-d', strtotime( $exam_end_date . ' +' . $i . ' days' ) ),
 				'color'        => '#5840bb',
 			);
 		}
@@ -721,8 +738,8 @@ if ( ! empty( $holiday_list ) ) {
 				'event_title'       => esc_html__( 'Holiday Details', 'mjschool' ),
 				'title'             => $notice->holiday_title,
 				'description'       => 'holiday',
-				'start'             => mysql2date( 'Y-m-d', $notice_start_date ),
-				'end'               => date( 'Y-m-d', strtotime( $notice_end_date . ' +' . $i . ' days' ) ),
+				'start'             => wp_date( 'Y-m-d', $notice_start_date ),
+				'end'               => wp_date( 'Y-m-d', strtotime( $notice_end_date . ' +' . $i . ' days' ) ),
 				'color'             => '#3c8dbc',
 				'holiday_title'     => $holiday_title,
 				'holiday_comment'   => $holiday_comment,
@@ -743,8 +760,8 @@ if ( ! empty( $event_list ) ) {
 			'event_title'      => esc_html__( 'Event Details', 'mjschool' ),
 			'title'            => $event->event_title,
 			'description'      => 'event',
-			'start'            => mysql2date( 'Y-m-d', $event_start_date ),
-			'end'              => date( 'Y-m-d', strtotime( $event_end_date . ' +' . $i . ' days' ) ),
+			'start'            => wp_date( 'Y-m-d', $event_start_date ),
+			'end'              => wp_date( 'Y-m-d', strtotime( $event_end_date . ' +' . $i . ' days' ) ),
 			'color'            => '#36A8EB',
 			'event_heading'    => $event->event_title,
 			'event_comment'    => $event->description,
@@ -1407,7 +1424,7 @@ if ( is_super_admin() ) {
 										esc_html_e( 'Leave', 'mjschool' );
 									}
 								} elseif ($mjschool_page_name === 'custom-field' ) {
-									if ($active_tab === 'add_custome_field' ) {
+									if ($active_tab === 'add_custom_field' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=custom-field&tab=custome_field_list' )); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-back-arrow.png"); ?>" alt="<?php esc_attr_e( 'Back Arrow', 'mjschool' ); ?>">
@@ -1550,7 +1567,7 @@ if ( is_super_admin() ) {
 							<div class="mjschool-add-btn1"><!-------- Plus button div. -------->
 								<?php
 								$user_access = mjschool_get_user_role_wise_access_right_array();
-								if ($mjschool_page_name === "admission" && $active_tab != 'addadmission' && $mjschool_action != 'view_admission' ) {
+								if ($mjschool_page_name === "admission" && $active_tab !== 'addadmission' && $mjschool_action !== 'view_admission' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=admission&tab=addadmission' )); ?>'>
@@ -1558,7 +1575,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "class" && $active_tab != 'addclass' && $active_tab != 'class_details' ) {
+								} elseif ($mjschool_page_name === "class" && $active_tab !== 'addclass' && $active_tab !== 'class_details' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=class&tab=addclass' )); ?>'>
@@ -1566,7 +1583,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								}  elseif ($mjschool_page_name === "class_room" && $active_tab != 'add_class_room' ) {
+								}  elseif ($mjschool_page_name === "class_room" && $active_tab !== 'add_class_room' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=class_room&tab=add_class_room' )); ?>'>
@@ -1574,7 +1591,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-							 	} elseif ($mjschool_page_name === "tax" && $active_tab != 'add_tax' ) {
+							 	} elseif ($mjschool_page_name === "tax" && $active_tab !== 'add_tax' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=tax&tab=add_tax' )); ?>'>
@@ -1582,7 +1599,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "schedule" && $active_tab != 'addroute' ) {
+								} elseif ($mjschool_page_name === "schedule" && $active_tab !== 'addroute' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=schedule&tab=addroute' )); ?>'>
@@ -1590,7 +1607,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "virtual_classroom" && $active_tab != 'edit_meeting' && $active_tab != 'view_past_participle_list' ) {
+								} elseif ($mjschool_page_name === "virtual_classroom" && $active_tab !== 'edit_meeting' && $active_tab !== 'view_past_participle_list' ) {
 									if ($user_role === "teacher" || $user_role === "supportstaff") {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=schedule&tab=addroute' )); ?>'>
@@ -1598,7 +1615,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "subject" && $active_tab != 'addsubject' ) {
+								} elseif ($mjschool_page_name === "subject" && $active_tab !== 'addsubject' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=subject&tab=addsubject' )); ?>'>
@@ -1606,7 +1623,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "student" && $active_tab != 'addstudent' && $active_tab != 'view_student' ) {
+								} elseif ($mjschool_page_name === "student" && $active_tab !== 'addstudent' && $active_tab !== 'view_student' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=student&tab=addstudent' )); ?>'>
@@ -1614,7 +1631,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "teacher" && $active_tab != 'addteacher' && $active_tab != 'view_teacher' ) {
+								} elseif ($mjschool_page_name === "teacher" && $active_tab !== 'addteacher' && $active_tab !== 'view_teacher' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=teacher&tab=addteacher' )); ?>'>
@@ -1622,7 +1639,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "parent" && $active_tab != 'addparent' && $active_tab != 'view_parent' ) {
+								} elseif ($mjschool_page_name === "parent" && $active_tab !== 'addparent' && $active_tab !== 'view_parent' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=parent&tab=addparent' )); ?>'>
@@ -1630,7 +1647,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "exam" && $active_tab != 'addexam' && $active_tab != 'exam_time_table' ) {
+								} elseif ($mjschool_page_name === "exam" && $active_tab !== 'addexam' && $active_tab !== 'exam_time_table' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=exam&tab=addexam' )); ?>'>
@@ -1638,7 +1655,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "exam_hall" && $active_tab != 'addhall' && $active_tab != 'exam_hall_receipt' ) {
+								} elseif ($mjschool_page_name === "exam_hall" && $active_tab !== 'addhall' && $active_tab !== 'exam_hall_receipt' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=exam_hall&tab=addhall' )); ?>'>
@@ -1646,7 +1663,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "grade" && $active_tab != 'addgrade' ) {
+								} elseif ($mjschool_page_name === "grade" && $active_tab !== 'addgrade' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=grade&tab=addgrade' )); ?>'>
@@ -1654,7 +1671,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "homework" && $active_tab != 'addhomework' && $active_tab != 'view_stud_detail' && $active_tab != 'view_homework' ) {
+								} elseif ($mjschool_page_name === "homework" && $active_tab !== 'addhomework' && $active_tab !== 'view_stud_detail' && $active_tab !== 'view_homework' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=homework&tab=addhomework' )); ?>'>
@@ -1663,8 +1680,8 @@ if ( is_super_admin() ) {
 										<?php
 									}
 								} elseif ($mjschool_page_name === "feepayment") {
-									if ($active_tab != 'view_fesspayment' ) {
-										if ($mjschool_page_name === 'feepayment' && $active_tab != 'addfeetype' && $active_tab != 'feepaymentlist' && $active_tab != 'recurring_feespaymentlist' && $active_tab != 'addrecurringpayment'  && $active_tab != 'addpaymentfee' &&  $active_tab != 'view_fessreceipt' ) {
+									if ($active_tab !== 'view_fesspayment' ) {
+										if ($mjschool_page_name === 'feepayment' && $active_tab !== 'addfeetype' && $active_tab !== 'feepaymentlist' && $active_tab !== 'recurring_feespaymentlist' && $active_tab !== 'addrecurringpayment'  && $active_tab !== 'addpaymentfee' &&  $active_tab !== 'view_fessreceipt' ) {
 											if ($user_access['add'] === '1' ) {
 												?>
 												<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=feepayment&tab=addfeetype' )); ?>'>
@@ -1711,7 +1728,7 @@ if ( is_super_admin() ) {
 								}
 								elseif ($mjschool_page_name === "hostel") {
 									// --- Hostel module Add Btn start.  -----//
-									if ($active_tab === 'hostel_list' && $active_tab != 'add_hostel' && $active_tab != 'hostel_details' ) {
+									if ($active_tab === 'hostel_list' && $active_tab !== 'add_hostel' && $active_tab !== 'hostel_details' ) {
 										if ($user_access['add'] === '1' ) {
 											?>
 											<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=hostel&tab=add_hostel&action=insert' )); ?>'>
@@ -1726,7 +1743,7 @@ if ( is_super_admin() ) {
 									}
 									// --- Hostel module Add Btn End.  -----//
 								}
-								elseif ($mjschool_page_name === "transport" && $active_tab != 'addtransport' ) {
+								elseif ($mjschool_page_name === "transport" && $active_tab !== 'addtransport' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=transport&tab=addtransport' )); ?>'>
@@ -1744,7 +1761,7 @@ if ( is_super_admin() ) {
 										<?php
 									}
 								} 
-								elseif ($mjschool_page_name === "leave" && $active_tab != 'add_leave' ) {
+								elseif ($mjschool_page_name === "leave" && $active_tab !== 'add_leave' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=leave&tab=add_leave' )); ?>'>
@@ -1752,15 +1769,15 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "custom-field" && $active_tab != 'add_custome_field' ) {
+								} elseif ($mjschool_page_name === "custom-field" && $active_tab !== 'add_custom_field' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
-										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=custom-field&tab=add_custome_field' )); ?>'>
+										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=custom-field&tab=add_custom_field' )); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>" alt="<?php esc_attr_e( 'Add Button', 'mjschool' ); ?>">
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "holiday" && $active_tab != 'addholiday' ) {
+								} elseif ($mjschool_page_name === "holiday" && $active_tab !== 'addholiday' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=holiday&tab=addholiday' )); ?>'>
@@ -1768,7 +1785,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "notice" && $active_tab != 'addnotice' ) {
+								} elseif ($mjschool_page_name === "notice" && $active_tab !== 'addnotice' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=notice&tab=addnotice' )); ?>'>
@@ -1776,7 +1793,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "event" && $active_tab != 'add_event' ) {
+								} elseif ($mjschool_page_name === "event" && $active_tab !== 'add_event' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=event&tab=add_event' )); ?>'>
@@ -1784,14 +1801,14 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "message" && $active_tab != 'compose' ) {
+								} elseif ($mjschool_page_name === "message" && $active_tab !== 'compose' ) {
 									if ($user_access['add'] === '1' ) {  ?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=message&tab=compose' )); ?>'>
 											<img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-add-new-button.png"); ?>" alt="<?php esc_attr_e( 'Add Button', 'mjschool' ); ?>">
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "notification" && $active_tab != 'addnotification' ) {
+								} elseif ($mjschool_page_name === "notification" && $active_tab !== 'addnotification' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=notification&tab=addnotification' )); ?>'>
@@ -1807,7 +1824,7 @@ if ( is_super_admin() ) {
 										</a>
 										<?php
 									}
-								} elseif ($mjschool_page_name === "document" && $active_tab != 'add_document' ) {
+								} elseif ($mjschool_page_name === "document" && $active_tab !== 'add_document' ) {
 									if ($user_access['add'] === '1' ) {
 										?>
 										<a href='<?php echo esc_url(home_url( '?dashboard=mjschool_user&page=document&tab=add_document' )); ?>'>
@@ -1855,7 +1872,7 @@ if ( is_super_admin() ) {
 										
 										<ul class="dropdown-menu extended mjschool-action-dropdawn mjschool-logout-dropdown-menu logout mjschool-header-dropdown-menu" aria-labelledby="dropdownMenuLink">
 											<li class="mjschool-float-left-width-100px">
-												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="?dashboard=mjschool_user&page=account"><i class="fas fa-user"></i> <?php esc_html_e( 'My Profile', 'mjschool' ); ?></a>
+												<a class="dropdown-item mjschool-back-wp mjschool-float-left-width-100px" href="<?php echo esc_url( '?dashboard=mjschool_user&page=account' ); ?>"><i class="fas fa-user"></i> <?php esc_html_e( 'My Profile', 'mjschool' ); ?></a>
 											</li>
 											<li class="mjschool-float-left-width-100px">
 												<a class="dropdown-item mjschool-float-left-width-100px" href="<?php echo esc_url( wp_logout_url( home_url() ) ); ?>"><i class="fas fa-sign-out"></i><?php esc_html_e( 'Log Out', 'mjschool' ); ?></a>
@@ -2031,7 +2048,7 @@ if ( is_super_admin() ) {
 												</li>
 												<?php
 											} elseif ( $role_name === 'student' ) {
-												$student_name = mjschool_get_user_name_by_id( get_current_user_id() );
+												$student_name = mjschool_get_display_name( get_current_user_id() );
 												?>
 												<li class=''>
 													<a href='<?php echo esc_url( home_url( '?dashboard=mjschool_user&page=student&tab=view_student&action=view_student&student_id=' . mjschool_encrypt_id( get_current_user_id() ) )); ?>' class="<?php if ( isset( $mjschool_page_name ) && $mjschool_page_name === 'student' ) { echo esc_attr( 'active' ); } ?>">
@@ -2822,7 +2839,7 @@ if ( is_super_admin() ) {
 								?>
 								<!-- PAYMENT STATUS REPORT CARD START. -->
 								<?php
-								if ( $user_role != 'teacher' ) {
+								if ( $user_role !== 'teacher' ) {
 									if ( $dashboard_result['mjschool_payment_status_chart'] === 'yes' ) {
 										?>
 										<div class="col-lg-4 col-md-4 col-xs-12 col-sm-12 mjschool-responsive-div-dashboard">
@@ -3070,7 +3087,7 @@ if ( is_super_admin() ) {
 								<!-- STUDENT STATUS REPORT CARD END. -->
 								<?php
 								if ( $dashboard_result['mjschool_invoice_chart'] === 'yes' ) {
-									if ( $user_role != 'teacher' ) {
+									if ( $user_role !== 'teacher' ) {
 										?>
 										<div class="col-lg-4 col-md-4 col-xs-4 col-sm-4 mjschool-responsive-div-dashboard mjschool-precription-padding-left">
 											<div class="panel mjschool-panel-white mjschool-admmision-div mjchool_height_400px">
@@ -3218,8 +3235,9 @@ if ( is_super_admin() ) {
 										$sectionname = '';
 										$section     = 0;
 										$section     = get_user_meta( get_current_user_id(), 'class_section', true );
-										if ( $section != '' ) {
-											$sectionname = mjschool_get_section_name( $section );
+										if ( $section !== '' ) {
+											$mjschool_class = new Mjschool_Class();
+											$sectionname = $mjschool_class->mjschool_get_section_name( $section );
 										} else {
 											$section = 0;
 										}
@@ -3243,6 +3261,7 @@ if ( is_super_admin() ) {
 																	<?php
 																	$period = $obj_route->mjschool_get_period( $class->class_id, $section, $daykey );
 																	if ( ! empty( $period ) ) {
+																		$mjschool_subject = new Mjschool_Subject();
 																		foreach ( $period as $period_data ) {
 																			$meeting_data = $obj_virtual_classroom->mjschool_get_single_meeting_by_route_data_in_zoom( $period_data->route_id );
 																			if ( ! empty( $meeting_data ) ) {
@@ -3251,7 +3270,7 @@ if ( is_super_admin() ) {
 																				$data_toggle = '';
 																			}
 																			echo '<div class="btn-group m-b-sm">';
-																			echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" aria-expanded="false" ' . esc_attr( $data_toggle ) . '><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( mjschool_get_single_subject_name( $period_data->subject_id ) );
+																			echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" aria-expanded="false" ' . esc_attr( $data_toggle ) . '><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) );
 																			$start_time_data = explode( ':', $period_data->start_time );
 																			$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
 																			$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
@@ -3323,7 +3342,8 @@ if ( is_super_admin() ) {
 														if ( $school_obj->role === 'teacher' ) {
 															if ( $own_data === '1' ) {
 																$class_id = get_user_meta( get_current_user_id(), 'class_name', true );
-																$result   = mjschool_get_all_class_data_by_class_array( $class_id );
+																 $mjschool_class = new Mjschool_Class();
+																$result   = $mjschool_class->mjschool_get_all_class_data_by_class_array( $class_id );
 															} else {
 																$result = mjschool_get_all_data( $tablename );
 															}
@@ -3491,7 +3511,7 @@ if ( is_super_admin() ) {
 																</p>
 																<p class="mjschool-cursor-pointer mjschool-exam-remainder-title-pr mjschool-remainder-title-pr Bold mjschool-view-priscription mjschool-show-task-event" id="<?php echo esc_attr($retrieved_data->exam_id); ?>" model="Exam Details">
 																	<?php echo esc_html( $retrieved_data->exam_name); ?>&nbsp;&nbsp;<span class="smgt_exam_start_date">
-																	<?php echo esc_html( get_the_title($retrieved_data->exam_term ) ); ?>&nbsp;|&nbsp;<?php echo esc_html( mjschool_get_class_name($cid ) ); ?></span>
+																	<?php echo esc_html( get_the_title($retrieved_data->exam_term ) ); ?>&nbsp;|&nbsp;<?php $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_class_name($cid ) ); ?></span>
 																</p>
 																<p class="mjschool-exam-remainder-title-pr mjschool-description-line">
 																	<span class="smgt_activity_date" id="smgt_start_date_end_date"><?php echo esc_html( mjschool_get_date_in_input_box($retrieved_data->exam_start_date ) ); ?>&nbsp;|&nbsp;<?php echo esc_html( mjschool_get_date_in_input_box($retrieved_data->exam_end_date ) ); ?></span>
@@ -3824,7 +3844,8 @@ if ( is_super_admin() ) {
 														$p = 1;
 													}
 													$limit = ($p - 1) * $max;
-													$message_data = mjschool_get_inbox_message(get_current_user_id(), $limit, $max);
+													$obj_message = new Mjschool_Message();
+													$message_data = $obj_message->mjschool_get_inbox_message(get_current_user_id(), $limit, $max);
 													$i = 0;
 													if ( ! empty( $message_data ) ) {
 														foreach ($message_data as $retrieved_data) {

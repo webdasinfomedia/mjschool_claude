@@ -24,11 +24,12 @@ $active_tab            = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash(
 if ( isset( $_POST['create_meeting'] ) ) {
 	$nonce = sanitize_text_field(wp_unslash($_POST['_wpnonce']));
 	if ( wp_verify_nonce( $nonce, 'create_meeting_admin_nonce' ) ) {
-		$result = $obj_virtual_classroom->mjschool_create_meeting_in_zoom( wp_unslash($_POST) );
+		$sanitized_meeting_post = array_map( 'sanitize_text_field', wp_unslash($_POST) );
+		$result = $obj_virtual_classroom->mjschool_create_meeting_in_zoom( $sanitized_meeting_post );
 		if ( $result ) {
 			$nonce = wp_create_nonce( 'mjschool_class_routine_tab' );
 			wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=virtual-classroom&tab=meeting_list&_wpnonce='.esc_attr( $nonce ).'&message=1') );
-			die();
+			exit;
 		}
 	}
 }
@@ -38,46 +39,48 @@ $user_access = mjschool_get_user_role_wise_access_right_array();
 if ( isset( $_REQUEST['page'] ) ) {
 	if ( $user_access['view'] === 0 ) {
 		mjschool_access_right_page_not_access_message();
-		die();
+		exit;
 	}
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
 			if ( $user_access['edit'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
 			if ( $user_access['delete'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 		if ( isset( $_REQUEST['page'] ) && sanitize_text_field(wp_unslash($_REQUEST['page'])) === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
 			if ( $user_access['add'] === 0 ) {
 				mjschool_access_right_page_not_access_message();
-				die();
+				exit;
 			}
 		}
 	}
 }
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) == 'delete' ) {
-	$tablename = 'mjschool_time_table';
-	$result  = mjschool_delete_route( $tablename, mjschool_decrypt_id( wp_unslash($_REQUEST['route_id']) ) );
+	$mjschool_time_table = 'mjschool_time_table';
+	$mjschool_class = new Mjschool_Class();
+	$result  = $mjschool_class->mjschool_delete_route( $mjschool_time_table, mjschool_decrypt_id( wp_unslash($_REQUEST['route_id']) ) );
 	if ( $result ) {
 		$nonce = wp_create_nonce( 'mjschool_class_routine_tab' );
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=schedule&tab=schedulelist&_wpnonce='.esc_attr( $nonce ).'&message=5') );
-		die();
+		exit;
 	}
 }
 // -------------- DELETE TEACHER CLASS. ----------------------//
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete_teacher' ) {
-	$tablename = 'mjschool_time_table';
-	$result  = mjschool_delete_route( $tablename, mjschool_decrypt_id( wp_unslash($_REQUEST['route_id']) ) );
+	$mjschool_time_table = 'mjschool_time_table';
+	$mjschool_class = new Mjschool_Class();
+	$result  = $mjschool_class->mjschool_delete_route( $mjschool_time_table, mjschool_decrypt_id( wp_unslash($_REQUEST['route_id']) ) );
 	if ( $result ) {
 		$nonce = wp_create_nonce( 'mjschool_class_routine_tab' );
 		wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=schedule&tab=teacher_timetable&_wpnonce='.esc_attr( $nonce ).'&message=5') );
-		die();
+		exit;
 	}
 }
 if ( isset( $_GET['message'] ) && sanitize_text_field(wp_unslash($_GET['message'])) === 1 ) {
@@ -183,8 +186,8 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 								wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 							}
 						}
-
-						$retrieve_class_data = mjschool_get_all_class();
+						$mjschool_class = new Mjschool_Class();
+						$retrieve_class_data = $mjschool_class->mjschool_get_all_class();
 						$i              = 0;
 						if ( ! empty( $retrieve_class_data ) ) {
 							foreach ( $retrieve_class_data as $class ) {
@@ -225,12 +228,13 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																			return $startA <=> $startB;
 																		}
 																	);
+																	$mjschool_subject = new Mjschool_Subject();
 																	foreach ( $period as $period_data ) {
 																		echo '<div class="btn-group m-b-sm">';
 																		if ( $period_data->multiple_teacher === 'yes' ) {
-																			echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_attr( mjschool_get_single_subject_name( $period_data->subject_id ) ) . '( ' . esc_attr( mjschool_get_display_name( $period_data->teacher_id ) ) . ' )';
+																			echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_attr( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) ) . '( ' . esc_attr( mjschool_get_display_name( $period_data->teacher_id ) ) . ' )';
 																		} else {
-																			echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_attr( mjschool_get_single_subject_name( $period_data->subject_id ) );
+																			echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_attr( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) );
 																		}
 																		$start_time_data = explode( ':', $period_data->start_time );
 																		$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
@@ -304,7 +308,8 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 								}
 								$sectionname        = '';
 								$sectionid          = '';
-								$class_sectionsdata = mjschool_get_class_sections( $class['class_id'] );
+								$mjschool_class = new Mjschool_Class();
+								$class_sectionsdata = $mjschool_class->mjschool_get_class_sections( $class['class_id'] );
 								if ( ! empty( $class_sectionsdata ) ) {
 									foreach ( $class_sectionsdata as $section ) {
 										++$i;
@@ -341,12 +346,13 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																				return $startA <=> $startB;
 																			}
 																		);
+																		$mjschool_subject = new Mjschool_Subject();
 																		foreach ( $period as $period_data ) {
 																			echo '<div class="btn-group m-b-sm">';
 																			if ( $period_data->multiple_teacher === 'yes' ) {
-																				echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_attr( mjschool_get_single_subject_name( $period_data->subject_id ) ) . '( ' . esc_attr( mjschool_get_display_name( $period_data->teacher_id ) ) . ' )';
+																				echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_attr( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) ) . '( ' . esc_attr( mjschool_get_display_name( $period_data->teacher_id ) ) . ' )';
 																			} else {
-																				echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_attr( mjschool_get_single_subject_name( $period_data->subject_id ) );
+																				echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown"><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_attr( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) );
 																			}
 																			$start_time_data = explode( ':', $period_data->start_time );
 																			$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
@@ -467,18 +473,19 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 								$end_time                     = mjschool_time_convert( sanitize_text_field(wp_unslash($_POST['end_time'])) );
 								$start_time_1                 = sanitize_text_field(wp_unslash($_POST['start_time']));
 								$end_time_1                   = sanitize_text_field(wp_unslash($_POST['end_time']));
-								$start_time_convert           = date( 'h:i', strtotime( sanitize_text_field(wp_unslash($_POST['start_time'])) ) );
-								$end_time_convert             = date( 'h:i', strtotime( sanitize_text_field(wp_unslash($_POST['end_time'])) ) );
+								$start_time_convert           = gmdate( 'h:i', strtotime( sanitize_text_field(wp_unslash($_POST['start_time'])) ) );
+
+								$end_time_convert             = gmdate( 'h:i', strtotime( sanitize_text_field(wp_unslash($_POST['end_time'])) ) );
 								$start_time_data              = explode( ':', $start_time_1 );
 								$start_hour                   = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
 								$start_min                    = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
 								$start_time_new               = $start_hour . ':' . $start_min;
-								$start_time_in_24_hour_format = date( 'H:i', strtotime( $start_time_new ) );
+								$start_time_in_24_hour_format = gmdate( 'H:i', strtotime( $start_time_new ) );
 								$end_time_data                = explode( ':', $end_time_1 );
 								$end_hour                     = str_pad( $end_time_data[0], 2, '0', STR_PAD_LEFT );
 								$end_min                      = str_pad( $end_time_data[1], 2, '0', STR_PAD_LEFT );
 								$end_time_new                 = $end_hour . ':' . $end_min;
-								$end_time_in_24_hour_format   = date( 'H:i', strtotime( $end_time_new ) );
+								$end_time_in_24_hour_format   = gmdate( 'H:i', strtotime( $end_time_new ) );
 								if ( ( $end_time_in_24_hour_format === '00:00' && $start_time_in_24_hour_format > '00:00' ) || ( $end_time_in_24_hour_format === '12:00' && $start_time_in_24_hour_format > '12:00' ) || ( $end_time_in_24_hour_format > $start_time_in_24_hour_format ) ) 
 								{
 									if (isset($_REQUEST['action']) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
@@ -514,7 +521,7 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 										$route_id = array( 'route_id' => mjschool_decrypt_id( wp_unslash($_REQUEST['route_id']) ) );
 										$mjschool_obj_route->mjschool_update_route( $route_data, $route_id );
 										wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=schedule&tab=schedulelist&_wpnonce='.esc_attr( $nonce ).'&message=4') );
-										die();
+										exit;
 									} else {
 										foreach ( $route_data as $route ) {
 											$retuen_val = $mjschool_obj_route->mjschool_is_route_exist( $route );
@@ -528,7 +535,8 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 														$end_date   = sanitize_text_field(wp_unslash($_POST['end_date']));
 														$agenda     = sanitize_text_field(wp_unslash($_POST['agenda']));
 														$obj_mark   = new Mjschool_Class_Routine();
-														$route_data = mjschool_get_route_by_id( $route_id );
+														$mjschool_class = new Mjschool_Class();
+														$route_data = $mjschool_class->mjschool_get_route_by_id( $route_id );
 														$start_time = mjschool_time_convert( $route_data->start_time );
 														$end_time   = mjschool_time_convert( $route_data->end_time );
 														if ( empty( $_POST['password'] ) ) {
@@ -555,19 +563,19 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 													}
 												}
 												wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=schedule&tab=schedulelist&_wpnonce='.esc_attr( $nonce ).'&message=1') );
-												die();
+												exit;
 											}
 										} elseif ( $retuen_val === 'duplicate' ) {
 											wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=schedule&tab=schedulelist&_wpnonce='.esc_attr( $nonce ).'&message=2') );
-											die();
+											exit;
 										} elseif ( $retuen_val === 'teacher_duplicate' ) {
 											wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=schedule&tab=schedulelist&_wpnonce='.esc_attr( $nonce ).'&message=3') );
-											die();
+											exit;
 										}
 									}
 								} else {
 									wp_safe_redirect( home_url( '?dashboard=mjschool_user&page=schedule&tab=schedulelist&_wpnonce='.esc_attr( $nonce ).'&message=6') );
-									die();
+									exit;
 								}
 							}
 						}
@@ -577,11 +585,11 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 							$edit = 0;
 							if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) {
 								$edit       = 1;
-								$route_data = mjschool_get_route_by_id( mjschool_decrypt_id( wp_unslash($_REQUEST['route_id']) ) );
+								$mjschool_class = new Mjschool_Class();
+								$route_data = $mjschool_class->mjschool_get_route_by_id( mjschool_decrypt_id( wp_unslash($_REQUEST['route_id']) ) );
 							}
 							?>
-							<div class="mjschool-panel-body"><!--------------- Panel body. -------------------->
-								<!-------------- Route form start. --------------------->
+							<div class="mjschool-panel-body">
 								<form name="route_form" action="" method="post" class="mjschool-form-horizontal" id="rout_form">
 									<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : 'insert'; ?>
 									<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
@@ -601,7 +609,8 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 												<select name="class_id" id="mjschool-class-list" class="form-control validate[required] mjschool-line-height-30px mjschool-max-width-100px">
 													<option value=""><?php esc_html_e( 'Select class Name', 'mjschool' ); ?></option>
 													<?php
-													foreach ( mjschool_get_all_class() as $classdata ) {
+													$mjschool_class = new Mjschool_Class();
+													foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 														?>
 														<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classval, $classdata['class_id'] ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 													<?php } ?>
@@ -615,7 +624,8 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 														<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 														<?php
 														if ( $edit ) {
-															foreach ( mjschool_get_class_sections( $route_data->class_id ) as $sectiondata ) {
+															$mjschool_class = new Mjschool_Class();
+															foreach ( $mjschool_class->mjschool_get_class_sections( $route_data->class_id ) as $sectiondata ) {
 																?>
 																<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>><?php echo esc_html( $sectiondata->section_name ); ?></option>
 																<?php
@@ -639,7 +649,8 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 												<select name="subject_id" id="mjschool-subject-list" class="form-control mjschool-change-subject validate[required] mjschool-line-height-30px mjschool-max-width-100px">
 													<?php
 													if ( $edit ) {
-														$subject = mjschool_get_subject_by_class_id( $route_data->class_id );
+														$obj_subject = new Mjschool_Subject();
+														$subject = $obj_subject->mjschool_get_subject_by_class_id( $route_data->class_id );
 														if ( ! empty( $subject ) ) {
 															foreach ( $subject as $ubject_data ) {
 																?>
@@ -797,7 +808,8 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 														<div class="col-md-6">
 															<div class="form-group input">
 																<div class="col-md-12 form-control">
-																	<input id="start_date" class="form-control validate[required] text-input start_date" type="text" placeholder="<?php esc_html_e( 'Enter Start Date', 'mjschool' ); ?>" name="start_date" value="<?php echo esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+                                                             
+																	<input id="start_date" class="form-control validate[required] text-input start_date" type="text" placeholder="<?php esc_html_e( 'Enter Start Date', 'mjschool' ); ?>" name="start_date" value="<?php echo esc_attr( gmdate( 'Y-m-d' ) ); ?>" readonly>
 																	<label for="userinput1"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 																</div>
 															</div>
@@ -805,7 +817,7 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 														<div class="col-md-6">
 															<div class="form-group input">
 																<div class="col-md-12 form-control">
-																	<input id="end_date" class="form-control validate[required] text-input end_date" type="text" placeholder="<?php esc_html_e( 'Enter End Date', 'mjschool' ); ?>" name="end_date" value="<?php echo esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+																	<input id="end_date" class="form-control validate[required] text-input end_date" type="text" placeholder="<?php esc_html_e( 'Enter End Date', 'mjschool' ); ?>" name="end_date" value="<?php echo esc_attr( gmdate( 'Y-m-d' ) ); ?>" readonly>
 																	<label for="userinput1"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 																</div>
 															</div>
@@ -866,7 +878,8 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 										$user_id       = get_current_user_id();
 										$teacherdata[] = get_userdata( $user_id );
 									} else {
-										$teacherdata = mjschool_get_users_data( 'teacher' );
+										$mjschool_user = new Mjschool_User();
+										$teacherdata = $mjschool_user->mjschool_get_users_data( 'teacher' );
 									}
 									if ( ! empty( $teacherdata ) ) {
 										$i = 0;
@@ -875,8 +888,9 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 											$classes     = '';
 											$classes     = $teacher_obj->mjschool_get_class_by_teacher( $retrieved_data->ID );
 											$classname   = '';
+											$mjschool_class = new Mjschool_Class();
 											foreach ( $classes as $class ) {
-												$classname .= mjschool_get_class_name( $class['class_id'] ) . ',';
+												$classname .= $mjschool_class->mjschool_get_class_name( $class['class_id'] ) . ',';
 											}
 											$classname_rtrim = rtrim( $classname, ', ' );
 											$classname_ltrim = ltrim( $classname_rtrim, ', ' );
@@ -929,6 +943,7 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																					return $startA <=> $startB;
 																				}
 																			);
+																			$mjschool_subject = new Mjschool_Subject();
 																			foreach ( $period as $period_data ) {
 																				// Optional: Skip mismatched days.
 																				if ( (int) $period_data->weekday !== (int) $daykey ) {
@@ -937,7 +952,7 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																				echo '<div class="btn-group m-b-sm">';
 																				echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" data-bs-toggle="dropdown">';
 																				echo '<span class="mjschool-period-box" id="' . esc_attr( $period_data->route_id ) . '">';
-																				echo esc_html( mjschool_get_single_subject_name( $period_data->subject_id ) );
+																				echo esc_html( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) );
 																				$start_time_data = explode( ':', $period_data->start_time );
 																				$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
 																				$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );
@@ -975,7 +990,8 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																						$meeting_statrt_link = '';
 																					}
 																				}
-																				echo '<span>' . esc_html( mjschool_get_class_name( $period_data->class_id ) ) . '</span>';
+																				$mjschool_class = new Mjschool_Class();
+																				echo '<span>' . esc_html( $mjschool_class->mjschool_get_class_name( $period_data->class_id ) ) . '</span>';
 																				echo '</span></span><span class="caret"></span></button>';
 																				if ( $user_access['edit'] === '1' || $user_access['delete'] === '1' ) {
 																					?>
@@ -1025,8 +1041,9 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 					$sectionname = '';
 					$section     = 0;
 					$section     = get_user_meta( get_current_user_id(), 'class_section', true );
-					if ( $section != '' ) {
-						$sectionname = mjschool_get_section_name( $section );
+					if ( $section !== '' ) {
+						$mjschool_class = new Mjschool_Class();
+						$sectionname = $mjschool_class->mjschool_get_section_name( $section );
 					} else {
 						$section = 0;
 					}
@@ -1057,8 +1074,9 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 															} else {
 																$data_toggle = '';
 															}
+															$mjschool_subject = new Mjschool_Subject();
 															echo '<div class="btn-group m-b-sm">';
-															$subject_name = mjschool_get_single_subject_name( $period_data->subject_id );
+															$subject_name = $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id );
 															$teacher_name = '';
 															if ( $period_data->multiple_teacher === 'yes' ) {
 																$teacher_name = mjschool_get_display_name( $period_data->teacher_id );
@@ -1112,8 +1130,9 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 							$section     = 0;
 							$class       = $school_obj->mjschool_get_user_class_id( $child_id );
 							$section     = get_user_meta( $child_id, 'class_section', true );
-							if ( $section != '' ) {
-								$sectionname = mjschool_get_section_name( $section );
+							if ( $section !== '' ) {
+								$mjschool_class = new Mjschool_Class();
+								$sectionname = 	$mjschool_class->mjschool_get_section_name( $section );
 							} else {
 								$section = 0;
 							}
@@ -1143,8 +1162,9 @@ if ( isset( $_GET['message']) && sanitize_text_field(wp_unslash($_GET['message']
 																} else {
 																	$data_toggle = '';
 																}
+																$mjschool_subject = new Mjschool_Subject();
 																echo '<div class="btn-group m-b-sm">';
-																echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" aria-expanded="false" ' . esc_attr( $data_toggle ) . '><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( mjschool_get_single_subject_name( $period_data->subject_id ) );
+																echo '<button class="btn btn-primary mjschool-class-list-button dropdown-toggle" aria-expanded="false" ' . esc_attr( $data_toggle ) . '><span class="mjschool-period-box" id=' . esc_attr( $period_data->route_id ) . '>' . esc_html( $mjschool_subject->mjschool_get_single_subject_name( $period_data->subject_id ) );
 																$start_time_data = explode( ':', $period_data->start_time );
 																$start_hour      = str_pad( $start_time_data[0], 2, '0', STR_PAD_LEFT );
 																$start_min       = str_pad( $start_time_data[1], 2, '0', STR_PAD_LEFT );

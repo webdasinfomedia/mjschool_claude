@@ -11,7 +11,7 @@
  * - **View Switching:** Uses the 'tab' GET parameter to switch between 'leave_list' and 'add_leave' views.
  * - **Form Processing:** Handles the submission (insert/update) of leave applications.
  * - **SMS Integration:** Includes fields and logic for enabling SMS notifications to parents or users regarding leave status.
- * - **Custom Fields:** Integrates custom fields managed by `Mjschool_Custome_Field` for the 'leave' module.
+ * - **Custom Fields:** Integrates custom fields managed by `Mjschool_Custom_Field` for the 'leave' module.
  *
  * @package    Mjschool
  * @subpackage Mjschool/templates
@@ -51,7 +51,7 @@ if ( isset( $_REQUEST['page'] ) ) {
 		}
 	}
 }
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'leave';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 if ( isset( $_POST['save_leave'] ) ) {
@@ -67,7 +67,7 @@ if ( isset( $_POST['save_leave'] ) ) {
 				$leave_id = sanitize_text_field( wp_unslash( $_REQUEST['leave_id'] ) );
 
 				$result                    = $mjschool_obj_leave->mjschool_add_leave( wp_unslash($_POST) );
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'leave';
 				$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $leave_id );
 				if ( $result ) {
@@ -79,7 +79,7 @@ if ( isset( $_POST['save_leave'] ) ) {
 			}
 		} else {
 			$result                    = $mjschool_obj_leave->mjschool_add_leave( wp_unslash($_POST) );
-			$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+			$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 			$module                    = 'leave';
 			$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $result );
 			if ( $result ) {
@@ -90,6 +90,10 @@ if ( isset( $_POST['save_leave'] ) ) {
 	}
 }
 if ( isset( $_POST['approve_comment'] ) && sanitize_text_field( wp_unslash( $_POST['approve_comment'] ) ) === 'Submit' ) {
+	// Verify nonce for approve operation
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'approve_leave_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 
 	$result = $mjschool_obj_leave->mjschool_approve_leave( wp_unslash($_POST) );
 	if ( $result ) {
@@ -99,6 +103,10 @@ if ( isset( $_POST['approve_comment'] ) && sanitize_text_field( wp_unslash( $_PO
 }
 
 if ( isset( $_POST['reject_leave'] ) && sanitize_text_field( wp_unslash( $_POST['reject_leave'] ) ) === 'Submit' ) {
+	// Verify nonce for reject operation
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'reject_leave_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
 
 	$result = $mjschool_obj_leave->mjschool_reject_leave( wp_unslash($_POST) );
 	if ( $result ) {
@@ -225,6 +233,7 @@ if ( isset( $_POST['date_type'] ) ) {
 						// ------- Leave data for supportstaff. ---------//
 						$own_data = $user_access['own_data'];
 						if ( $own_data === '1' ) {
+								 wp_nonce_field( 'mjschool_leave_filter_action', '_wpnonce' );
 							$leave_data = mjschool_get_all_leave_created_by( $user_id );
 						} else {
 							$leave_data = mjschool_get_all_data( 'mjschool_leave' );
@@ -258,7 +267,7 @@ if ( isset( $_POST['date_type'] ) ) {
 														$emp_id = get_user_meta( $uid, 'student', true );
 													}
 													?>
-													<option value="<?php print esc_attr( $student->ID ); ?>" <?php selected( $student->ID, $emp_id ); ?>><?php echo esc_html( mjschool_student_display_name_with_roll( $student->ID ) ); ?></option>
+													<option value="<?php echo esc_attr( $student->ID ); ?>" <?php selected( $student->ID, $emp_id ); ?>><?php echo esc_html( mjschool_student_display_name_with_roll( $student->ID ) ); ?></option>
 													<?php
 												}
 												?>
@@ -291,7 +300,7 @@ if ( isset( $_POST['date_type'] ) ) {
 													<div class="col-md-6 mb-2">
 														<div class="form-group input">
 															<div class="col-md-12 form-control">
-																<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['start_date'])) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+																<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['start_date'])) ) : esc_attr( gmdate( 'Y-m-d' ) ); ?>" readonly>
 																<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 															</div>
 														</div>
@@ -299,7 +308,7 @@ if ( isset( $_POST['date_type'] ) ) {
 													<div class="col-md-6 mb-2">
 														<div class="form-group input">
 															<div class="col-md-12 form-control">
-																<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['end_date'])) ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+																<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( sanitize_text_field(wp_unslash($_POST['end_date'])) ) : esc_attr( gmdate( 'Y-m-d' ) ); ?>" readonly>
 																<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 															</div>
 														</div>
@@ -378,7 +387,7 @@ if ( isset( $_POST['date_type'] ) ) {
 													<td class="mjschool-user-image mjschool-width-50px-td mjschool-profile-image-prescription">
                                                         
                                                         <p class="mjschool-prescription-tag mjschool-padding-15px mjschool-margin-bottom-0px <?php echo esc_attr($color_class_css); ?>">
-                                                            <img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-leave.png"); ?>" class="mjschool-massage-image mjschool-image-icon-height-25px mjschool-margin-top-3px">
+                                                            <img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/dashboard-icon/icons/white-icons/mjschool-leave.png"); ?>" alt="<?php esc_attr_e( 'Leave', 'mjschool' ); ?>" class="mjschool-massage-image mjschool-image-icon-height-25px mjschool-margin-top-3px">
                                                         </p>
                                                         
 													</td>
@@ -409,7 +418,8 @@ if ( isset( $_POST['date_type'] ) ) {
 													<td><?php echo esc_html( get_the_title( $retrieved_data->leave_type ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Leave Type', 'mjschool' ); ?>"></i></td>
 													<td>
 													<?php
-													$duration = mjschool_leave_duration_label( $retrieved_data->leave_duration );
+														$mjschool_obj_leave = new Mjschool_Leave();
+													$duration = $mjschool_obj_leave->mjschool_leave_duration_label( $retrieved_data->leave_duration );
 														echo esc_html( $duration );
 													?>
 														<i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Leave Duration', 'mjschool' ); ?>"></i></td>
@@ -470,7 +480,7 @@ if ( isset( $_POST['date_type'] ) ) {
 																		if ( ! empty( $custom_field_value ) ) {
 																			 
                                                                             ?>
-                                                                            <a target="" href="<?php echo esc_url(content_url( '/uploads/school_assets/' . $custom_field_value)); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
+                                                                            <a target="" href="<?php echo esc_url(content_url( '/uploads/school_assets/' . basename( $custom_field_value ) )); ?>" download="CustomFieldfile"><button class="btn btn-default view_document" type="button"> <i class="fas fa-download"></i> <?php esc_html_e( 'Download', 'mjschool' ); ?></button></a>
                                                                             <?php  
 																		} else {
 																			esc_html_e( 'N/A', 'mjschool' );
@@ -504,18 +514,18 @@ if ( isset( $_POST['date_type'] ) ) {
 																	<li >
                                                                         
                                                                         <a  href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                            <img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-more.png"); ?>">
+                                                                            <img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/listpage-icon/mjschool-more.png"); ?>" alt="<?php esc_attr_e( 'More', 'mjschool' ); ?>">
                                                                         </a>
                                                                         <ul class="dropdown-menu mjschool-header-dropdown-menu mjschool-action-dropdawn" aria-labelledby="dropdownMenuLink">
                                                                             <?php
-                                                                            if (($retrieved_data->status != 'Approved' ) ) {
+                                                                            if (($retrieved_data->status !== 'Approved' ) ) {
                                                                             	?>
                                                                                 <li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
-                                                                                    <a href="#" leave_id="<?php echo esc_attr($retrieved_data->id) ?>" class="mjschool-float-left-width-100px leave-approve mjschool_height_17px"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-leave-approved.png"); ?>" >&nbsp;&nbsp;<?php esc_html_e( 'Approve', 'mjschool' ); ?></a>
+                                                                                    <a href="#" leave_id="<?php echo esc_attr($retrieved_data->id) ?>" class="mjschool-float-left-width-100px leave-approve mjschool_height_17px"><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-leave-approved.png"); ?>" alt="<?php esc_attr_e( 'Approve', 'mjschool' ); ?>" >&nbsp;&nbsp;<?php esc_html_e( 'Approve', 'mjschool' ); ?></a>
                                                                                 </li>
                                                                             	<?php
                                                                             }
-                                                                            if (($retrieved_data->status != 'Rejected' ) ) {
+                                                                            if (($retrieved_data->status !== 'Rejected' ) ) {
                                                                            		?>
                                                                                 <li class="mjschool-float-left-width-100px mjschool-border-bottom-menu">
                                                                                     <a href="#" leave_id="<?php echo esc_attr($retrieved_data->id) ?>" class="leave-reject mjschool-float-left-width-100px "><img src="<?php echo esc_url( MJSCHOOL_PLUGIN_URL . "/assets/images/thumb-icon/mjschool-leave-rejected.png"); ?>" class="mjschool_height_17px">&nbsp;&nbsp;<?php esc_html_e( 'Reject', 'mjschool' ); ?></a>
@@ -602,7 +612,8 @@ if ( isset( $_POST['date_type'] ) ) {
 						$edit   = 1;
 						$result = $mjschool_obj_leave->mjschool_get_single_leave( $leave_id );
 					}
-					$students = mjschool_get_student_group_by_class();
+					$mjschool_obj_class = new Mjschool_Class();
+					$students = $mjschool_obj_class->mjschool_get_student_group_by_class();
 					?>
 					<!-- Start panel body. -->
 					<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res"><!--------- Panel body. ------->
@@ -746,7 +757,7 @@ if ( isset( $_POST['date_type'] ) ) {
 													<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 														<div class="form-group input">
 															<div class="col-md-12 form-control">
-																<input id="leave_start_date" class="form-control validate[required] leave_start_date start_date datepicker1" autocomplete="off" type="text" name="start_date" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $result->start_date ) ) ) ); } elseif ( isset( $_POST['start_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['start_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>">
+																<input id="leave_start_date" class="form-control validate[required] leave_start_date start_date datepicker1" autocomplete="off" type="text" name="start_date" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $result->start_date ) ) ) ); } elseif ( isset( $_POST['start_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['start_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); } ?>">
 																<label class="active" for="leave_start_date"><?php esc_html_e( 'Leave Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 															</div>
 														</div>
@@ -754,7 +765,7 @@ if ( isset( $_POST['date_type'] ) ) {
 													<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
 														<div class="form-group input">
 															<div class="col-md-12 form-control">
-																<input id="leave_end_date" class="form-control validate[required] leave_end_date start_date datepicker2" type="text" name="end_date" autocomplete="off" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $result->end_date ) ) ) ); } elseif ( isset( $_POST['end_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['end_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>">
+																<input id="leave_end_date" class="form-control validate[required] leave_end_date start_date datepicker2" type="text" name="end_date" autocomplete="off" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $result->end_date ) ) ) ); } elseif ( isset( $_POST['end_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['end_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); } ?>">
 																<label class="active" for="end"><?php esc_html_e( 'Leave End Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 															</div>
 														</div>
@@ -765,7 +776,7 @@ if ( isset( $_POST['date_type'] ) ) {
 												?>
 												<div class="form-group input">
 													<div class="col-md-12 form-control">
-														<input id="leave_start_date" class="form-control validate[required] leave_start_date start_date datepicker1" autocomplete="off" type="text" name="start_date" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $result->start_date ) ) ) ); } elseif ( isset( $_POST['start_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['start_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); } ?>">
+														<input id="leave_start_date" class="form-control validate[required] leave_start_date start_date datepicker1" autocomplete="off" type="text" name="start_date" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $result->start_date ) ) ) ); } elseif ( isset( $_POST['start_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['start_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); } ?>">
 														<label class="active" for="leave_start_date"><?php esc_html_e( 'Leave Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 													</div>
 												</div>
@@ -775,7 +786,7 @@ if ( isset( $_POST['date_type'] ) ) {
 											?>
 											<div class="form-group input">
 												<div class="col-md-12 form-control">
-													<input id="leave_start_date" class="form-control validate[required] leave_start_date start_date datepicker1" autocomplete="off" type="text" name="start_date" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d', strtotime( $result->start_date ) ) ) ); } elseif ( isset( $_POST['start_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['start_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( date( 'Y-m-d' ) ) ); }?>">
+													<input id="leave_start_date" class="form-control validate[required] leave_start_date start_date datepicker1" autocomplete="off" type="text" name="start_date" value="<?php if ( $edit ) { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d', strtotime( $result->start_date ) ) ) ); } elseif ( isset( $_POST['start_date'] ) ) { echo esc_attr( mjschool_get_date_in_input_box( sanitize_text_field(wp_unslash($_POST['start_date'])) ) ); } else { echo esc_attr( mjschool_get_date_in_input_box( gmdate( 'Y-m-d' ) ) ); }?>">
 													<label class="active" for="leave_start_date"><?php esc_html_e( 'Leave Start Date', 'mjschool' ); ?><span class="mjschool-require-field">*</span></label>
 												</div>
 											</div>
@@ -800,7 +811,7 @@ if ( isset( $_POST['date_type'] ) ) {
 							<div class="form-body mjschool-user-form">
 								<?php
 								if ( ! $edit ) {
-									if ( $school_obj->role != 'student' && $school_obj->role != 'parent' ) {
+									if ( $school_obj->role !== 'student' && $school_obj->role !== 'parent' ) {
 										?>
 										<div class="row">
 											<div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 mjschool-rtl-margin-top-15px mb-3">
@@ -847,14 +858,14 @@ if ( isset( $_POST['date_type'] ) ) {
 							</div>
 							<?php
 							// --------- Get module-wise custom field data. --------------//
-							$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+							$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 							$module                    = 'leave';
 							$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 							?>
 							<div class="form-body mjschool-user-form">
 								<div class="row">
 									<div class="col-sm-6">
-										<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Leave', 'mjschool' ); } else { esc_html_e( 'Add Leave', 'mjschool' );} ?>" name="save_leave" class="btn btn-success mjschool-save-btn <?php if ( $mjschool_role != 'student' ) { echo 'save_leave_validate';} ?>" />
+										<input type="submit" value="<?php if ( $edit ) { esc_html_e( 'Save Leave', 'mjschool' ); } else { esc_html_e( 'Add Leave', 'mjschool' );} ?>" name="save_leave" class="btn btn-success mjschool-save-btn <?php if ( $mjschool_role !== 'student' ) { echo 'save_leave_validate';} ?>" />
 									</div>
 								</div>
 							</div>

@@ -120,7 +120,7 @@ class Mjschool_Fees
         $feedata['section_id']    = sanitize_text_field(wp_unslash($_POST['class_section']));
         $feedata['fees_amount']   = sanitize_text_field(wp_unslash($_POST['fees_amount']));
         $feedata['description']   = sanitize_textarea_field(wp_unslash($_POST['description']));
-        $feedata['created_date']  = date('Y-m-d H:i:s');
+        $feedata['created_date']  = current_time( 'mysql' );
         $feedata['created_by']    = get_current_user_id();
         if ($data['action'] == 'edit' ) {
             $fees_id['fees_id'] = intval($data['fees_id']);
@@ -262,5 +262,27 @@ class Mjschool_Fees
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
         $classname = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_mjschool_fees WHERE fees_id=%d", $fees_id ) );
         return $classname;
+    }
+
+    /**
+     * Get fee term name by fee ID.
+     *
+     * @since 1.0.0
+     * @param int $id Fee ID.
+     * @return string Fee title.
+     */
+    function mjschool_get_fees_term_name( $id ) {
+        global $wpdb;
+        $table_mjschool_fees = $wpdb->prefix . 'mjschool_fees';
+        $fees_id             = absint( $id );
+        
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+        $classname = $wpdb->get_row( $wpdb->prepare( "SELECT fees_title_id FROM $table_mjschool_fees WHERE fees_id=%d", $fees_id ) );
+        
+        if ( ! empty( $classname ) && isset( $classname->fees_title_id ) ) {
+            return get_the_title( $classname->fees_title_id );
+        } else {
+            return ' ';
+        }
     }
 }

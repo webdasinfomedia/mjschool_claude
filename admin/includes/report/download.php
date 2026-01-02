@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Generates and downloads the attendance report CSV file.
  *
@@ -29,8 +28,8 @@ defined( 'ABSPATH' ) || exit;
 		$start_date = $_POST['sdate'];
 		$end_date   = $_POST['edate'];
 	} else {
-		$start_date = date( 'Y-m-d' );
-		$end_date   = date( 'Y-m-d' );
+		$start_date = wp_date( 'Y-m-d' );
+		$end_date   = wp_date( 'Y-m-d' );
 	}
 	$header   = array();
 	$header[] = 'Class Name';
@@ -38,15 +37,17 @@ defined( 'ABSPATH' ) || exit;
 	$header[] = 'Absent Student';
 	$header[] = 'Total Student';
 	$filename = 'export/mjschool-export-attendance.csv';
-	$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) or wp_die( "can't open file" );
+	$fh       = fopen( MJSCHOOL_PLUGIN_DIR . '/sample-csv/' . $filename, 'w' ) || wp_die( "can't open file" );
 	fputcsv( $fh, $header );
-	foreach ( mjschool_get_all_class() as $classdata ) {
+	$mjschool_class = new Mjschool_Class();
+	foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 		$class_id      = $classdata['class_id'];
 		$row           = array();
 		$total_present = mjschool_view_attendance_report_for_start_date_enddate_total_present( $start_date, $end_date, $class_id );
 		$total_absent  = mjschool_view_attendance_report_for_start_date_enddate_absent( $start_date, $end_date, $class_id );
 		$total         = mjschool_view_attendance_report_for_start_date_enddate_total( $class_id );
-		$classname     = mjschool_get_class_name( $class_id );
+		$mjschool_class = new Mjschool_Class();
+		$classname     = $mjschool_class->mjschool_get_class_name( $class_id );
 		$row[]         = $classname;
 		$row[]         = $total_present;
 		$row[]         = $total_absent;
@@ -62,7 +63,7 @@ defined( 'ABSPATH' ) || exit;
 	header( 'Pragma: public' );       // Required.
 	header( 'Expires: 0' );           // No cache.
 	header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-	header( 'Last-Modified: ' . date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
+	header( 'Last-Modified: ' . wp_date( 'D, d M Y H:i:s', filemtime( $file ) ) . ' GMT' );
 	header( 'Cache-Control: private', false );
 	header( 'Content-Type: ' . $mime );
 	header( 'Content-Disposition: attachment; filename="' . basename( $file ) . '"' );

@@ -6,7 +6,7 @@
  * It allows admins to create or update leave records, specify leave type, duration,
  * reason, and choose whether to notify parents/students via email or SMS.
  *
- * @package Mjschool
+ * @package    Mjschool
  * @subpackage MJSchool/admin/includes/leave
  * @since      1.0.0
  */
@@ -22,10 +22,11 @@ if ( isset( $_REQUEST['action'] ) && 'edit' === sanitize_text_field( wp_unslash(
 	$edit   = 1;
 	$result = $mjschool_obj_leave->mjschool_get_single_leave( $leave_id );
 }
-$students = mjschool_get_student_group_by_class();
+$mjschool_obj_class = new Mjschool_Class();
+$students = $mjschool_obj_class->mjschool_get_student_group_by_class();
 ?>
 <!-- Start Panel body. -->
-<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res"><!--------- Panel body. ------->
+<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-15px-res"><!-- Panel body. -->
 	<!-- Start Leave form. -->
 	<form name="leave_form" action="" method="post" class="mjschool-form-horizontal" id="leave_form" enctype="multipart/form-data">
 		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; ?>
@@ -54,7 +55,7 @@ $students = mjschool_get_student_group_by_class();
 							?>
 							<optgroup label="<?php echo esc_html__( 'Class :', 'mjschool' ) . ' ' . esc_attr( $label ); ?>">
 								<?php foreach ( $opt as $id => $name ) : ?>
-									<option value="<?php echo esc_attr( $id ); ?>" <?php selected( $id, $student ); ?>><?php echo esc_html( $name ); ?></option>
+									<option value="<?php echo esc_attr( $id ); ?>" <?php echo intval( $id ) === intval( $student ) ? 'selected' : ''; ?>><?php echo esc_html( $name ); ?></option>
 								<?php endforeach; ?>
 							</optgroup>
 						<?php } ?>
@@ -78,7 +79,7 @@ $students = mjschool_get_student_group_by_class();
 						$activity_category = mjschool_get_all_category( 'leave_type' );
 						if ( ! empty( $activity_category ) ) {
 							foreach ( $activity_category as $retrive_data ) {
-								echo '<option value="' . esc_attr( $retrive_data->ID ) . '" ' . selected( $category, $retrive_data->ID ) . '>' . esc_html( $retrive_data->post_title ) . '</option>';
+								echo '<option value="' . esc_attr( $retrive_data->ID ) . '" ' . ( intval( $category ) === intval( $retrive_data->ID ) ? 'selected' : '' ) . '>' . esc_html( $retrive_data->post_title ) . '</option>';
 							}
 						}
 						?>
@@ -103,23 +104,23 @@ $students = mjschool_get_student_group_by_class();
 										}
 										?>
 										<label class="radio-inline">
-											<input id="half_day" type="radio" value="half_day" class="tog duration" name="leave_duration" idset="<?php if ( $edit ) { echo esc_attr( $result->id );} ?>" <?php checked( 'half_day', $durationval ); ?> /><?php esc_html_e( 'Half Day', 'mjschool' ); ?>
+											<input id="half_day" type="radio" value="half_day" class="tog duration" name="leave_duration" idset="<?php if ( $edit ) { echo esc_attr( $result->id );} ?>" <?php echo 'half_day' === $durationval ? 'checked' : ''; ?> /><?php esc_html_e( 'Half Day', 'mjschool' ); ?>
 										</label>
 										<label class="radio-inline">
 											<?php
 											if ( $edit ) {
 												?>
-												<input id="full_day" type="radio" value="full_day" class="tog duration" idset="<?php if ( $edit ) { echo esc_attr( $result->id );} ?>" name="leave_duration" <?php checked( 'full_day', $durationval ); ?> /><?php esc_html_e( 'Full Day', 'mjschool' ); ?>
+												<input id="full_day" type="radio" value="full_day" class="tog duration" idset="<?php if ( $edit ) { echo esc_attr( $result->id );} ?>" name="leave_duration" <?php echo 'full_day' === $durationval ? 'checked' : ''; ?> /><?php esc_html_e( 'Full Day', 'mjschool' ); ?>
 												<?php
 											} else {
 												?>
-												<input id="full_day" type="radio" value="full_day" class="tog duration" idset="<?php if ( $edit ) { echo esc_attr( $result->id ); } ?>" name="leave_duration" <?php checked( 'full_day', $durationval ); ?> checked /><?php esc_html_e( 'Full Day', 'mjschool' ); ?>
+												<input id="full_day" type="radio" value="full_day" class="tog duration" idset="<?php if ( $edit ) { echo esc_attr( $result->id ); } ?>" name="leave_duration" <?php echo 'full_day' === $durationval ? 'checked' : ''; ?> checked /><?php esc_html_e( 'Full Day', 'mjschool' ); ?>
 												<?php
 											}
 											?>
 										</label>
 										<label class="radio-inline margin_left_top">
-											<input id="more_then_day" type="radio" idset="<?php if ( $edit ) { echo esc_attr( $result->id );} ?>" value="more_then_day" class="tog duration" name="leave_duration" <?php checked( 'more_then_day', $durationval ); ?> /><?php esc_html_e( 'More Than One Day', 'mjschool' ); ?>
+												<input id="more_then_day" type="radio" idset="<?php if ( $edit ) { echo esc_attr( $result->id );} ?>" value="more_then_day" class="tog duration" name="leave_duration" <?php echo 'more_then_day' === $durationval ? 'checked' : ''; ?> /><?php esc_html_e( 'More Than One Day', 'mjschool' ); ?>
 										</label>
 									</div>
 								</div>
@@ -189,8 +190,8 @@ $students = mjschool_get_student_group_by_class();
 			?>
 		</div>
 		<?php
-		// --------- Get Module-Wise Custom Field Data. --------------//
-		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+		// Get Module-Wise Custom Field Data.
+		$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 		$module                    = 'leave';
 		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
@@ -198,7 +199,7 @@ $students = mjschool_get_student_group_by_class();
 		<div class="form-body mjschool-user-form">
 			<div class="row">
 				<div class="col-sm-6">
-					<input type="submit"  value="<?php if ( $edit ) { esc_attr_e( 'Save', 'mjschool' ); } else { esc_attr_e( 'Add Leave', 'mjschool' ); } ?>" name="save_leave" class="btn btn-success mjschool-save-btn mjschool-rtl-margin-0px save_leave_validate" />
+						<input type="submit"  value="<?php echo $edit ? esc_attr( esc_html__( 'Save', 'mjschool' ) ) : esc_attr( esc_html__( 'Add Leave', 'mjschool' ) ); ?>" name="save_leave" class="btn btn-success mjschool-save-btn mjschool-rtl-margin-0px save_leave_validate" />
 				</div>
 			</div>
 		</div>

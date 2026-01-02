@@ -14,13 +14,13 @@ $dest = $_REQUEST['dest'];
 if ($tempfilename && file_exists($path . $tempfilename)) {
 	// mPDF 5.3.17
 	if ($dest === 'I') {
-		if (PHP_SAPI != 'cli') {
+		if (PHP_SAPI !== 'cli') {
 			header('Content-Type: application/pdf');
 			header('Content-disposition: inline; filename="' . $name . '"');
 			header('Cache-Control: public, must-revalidate, max-age=0');
 			header('Pragma: public');
 			header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-			header('Last-Modified: ' . date('D, d M Y H:i:s') . ' GMT');
+			header('Last-Modified: ' . wp_date('D, d M Y H:i:s') . ' GMT');
 		}
 	} elseif ($dest === 'D') {
 
@@ -33,7 +33,7 @@ if ($tempfilename && file_exists($path . $tempfilename)) {
 		header('Cache-Control: public, must-revalidate, max-age=0');
 		header('Pragma: public');
 		header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-		header('Last-Modified: '.date('D, d M Y H:i:s').' GMT');
+		header('Last-Modified: '.wp_date('D, d M Y H:i:s').' GMT');
 		header('Content-Type: application/force-download');
 		header('Content-Type: application/octet-stream', false);
 		header('Content-Type: application/download', false);

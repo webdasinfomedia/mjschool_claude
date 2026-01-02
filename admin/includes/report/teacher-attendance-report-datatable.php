@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Teacher Attendance Report – Datatable View
  *
@@ -84,7 +83,7 @@ if ( isset( $_POST['date_type'] ) ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -92,7 +91,7 @@ if ( isset( $_POST['date_type'] ) ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -157,8 +156,8 @@ if ( isset( $_POST['date_type'] ) ) {
 			$attendance = mjschool_teacher_view_attendance_for_report( $start_date, $end_date, $teacher_id, $status );
 		}
 	} else {
-		$start_date = date( 'Y-m-d', strtotime( 'first day of this month' ) );
-		$end_date   = date( 'Y-m-d', strtotime( 'last day of this month' ) );
+		$start_date = wp_date( 'Y-m-d', strtotime( 'first day of this month' ) );
+		$end_date   = wp_date( 'Y-m-d', strtotime( 'last day of this month' ) );
 		$attendance = mjschool_view_teacher_for_report_attendance_report_for_start_date_enddate( $start_date, $end_date );
 	}
 	?>
@@ -197,9 +196,9 @@ if ( isset( $_POST['date_type'] ) ) {
 										</p>
 									</td>
 									<td><?php echo esc_html( mjschool_get_display_name($attendance_data->user_id ) );?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Teacher Name','mjschool' );?>"></i></td>
-									<td><?php echo esc_html( mjschool_get_class_name($class->class_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name','mjschool' );?>"></i></td>
+									<td><?php $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_class_name($class->class_id ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Class Name','mjschool' );?>"></i></td>
 									<td><?php echo esc_html( mjschool_get_date_in_input_box($attendance_data->attendence_date ) ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Date','mjschool' );?>"></i></td>
-									<td><?php esc_html_e(date( "D", strtotime($attendance_data->attendence_date ) ),'mjschool' ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Day','mjschool' );?>"></i></td>
+									<td><?php esc_html_e(wp_date( "D", strtotime($attendance_data->attendence_date ) ),'mjschool' ); ?> <i class="fa-solid fa-circle-info mjschool-fa-information-bg" data-toggle="tooltip" title="<?php esc_attr_e( 'Day','mjschool' );?>"></i></td>
 									<td class="name">
 										<?php $status_color =  mjschool_attendance_status_color($attendance_data->status); ?>
 										<span style="color:<?php echo esc_attr($status_color); ?>;"> <?php echo esc_html( $attendance_data->status); ?> </span>

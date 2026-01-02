@@ -11,7 +11,8 @@
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
-$school_type=get_option( 'mjschool_custom_class' );
+
+$school_type = get_option( 'mjschool_custom_class' );
 mjschool_browser_javascript_check();
 $mjschool_role = mjschool_get_user_role( get_current_user_id() );
 if ( $mjschool_role === 'administrator' ) {
@@ -25,26 +26,30 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_edit   = $user_access['edit'];
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
-	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+	
+	if ( isset( $_GET['page'] ) ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
-		if ( ! empty( $_REQUEST['action'] ) ) {
-			if ( 'exam' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+		
+		if ( ! empty( $_GET['action'] ) ) {
+			if ( 'exam' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'edit' ) ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
-			if ( 'exam' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+			
+			if ( 'exam' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'delete' ) ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
-			if ( 'exam' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+			
+			if ( 'exam' === $user_access['page_link'] && ( sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'insert' ) ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -52,15 +57,17 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 $module                    = 'exam';
 $user_custom_field         = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
 <?php
 $tablename = 'mjschool_exam';
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'delete' ) {
-	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash($_GET['_wpnonce']) ), 'delete_action' ) ) {
-		$result = mjschool_delete_exam( $tablename, mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) );
+
+if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'delete' ) {
+	if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'delete_action' ) ) {
+		$obj_exam = new Mjschool_Exam();
+		$result = $obj_exam->mjschool_delete_exam( $tablename, mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['exam_id'] ) ) ) );
 		if ( $result ) {
 			$nonce = wp_create_nonce( 'mjschool_exam_module_tab' );
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=3' ) );
@@ -70,55 +77,63 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 	}
 }
-if ( isset( $_REQUEST['delete_selected'] ) ) {
-	if ( ! empty( $_REQUEST['id'] ) && is_array( $_REQUEST['id'] ) ) {
-		$ids = array_map( 'intval', wp_unslash( $_REQUEST['id'] ) );
+// Add nonce verification for bulk delete
+if ( isset( $_POST['delete_selected'] ) ) {
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'mjschool_bulk_delete_nonce' ) ) {
+		wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
+	}
+	if ( ! empty( $_POST['id'] ) && is_array( $_POST['id'] ) ) {
+		$ids = array_map( 'intval', wp_unslash( $_POST['id'] ) );
+		$obj_exam = new Mjschool_Exam();
 		foreach ( $ids as $id ) {
-			$result = mjschool_delete_exam( $tablename, $id );
+			$result = $obj_exam->mjschool_delete_exam( $tablename, $id );
 		}
 	}
 	$nonce = wp_create_nonce( 'mjschool_exam_module_tab' );
-	if ( $result ) {
+	if ( isset( $result ) && $result ) {
 		wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=3' ) );
 		die();
 	}
 }
-// -----------SAVE EXAM. -------------------------//
+// Save Exam.
 if ( isset( $_POST['save_exam'] ) ) {
 	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 	$custribution_data = '';
-	$custributions     = isset( $_POST['contributions_section_option'] ) ? sanitize_text_field( wp_unslash($_POST['contributions_section_option']) ) : '';
-	if ( isset( $_POST['contributions_section_option'] ) && ( sanitize_text_field( wp_unslash($_POST['contributions_section_option']) ) === 'yes' ) ) {
-		$custribution_data = mjschool_get_costribution_data_jason( wp_unslash($_POST) );
+	$custributions     = isset( $_POST['contributions_section_option'] ) ? sanitize_text_field( wp_unslash( $_POST['contributions_section_option'] ) ) : '';
+	if ( isset( $_POST['contributions_section_option'] ) && ( sanitize_text_field( wp_unslash( $_POST['contributions_section_option'] ) ) === 'yes' ) ) {
+		// Sanitize POST data before processing.
+		$custribution_data = mjschool_get_costribution_data_jason( array_map( 'sanitize_text_field', wp_unslash( $_POST ) ) );
 	}
-	$subject_data_array = [];
-    if ( isset( $_POST['university_subjects']) && is_array($_POST['university_subjects'] ) ) {
-        foreach ($_POST['university_subjects'] as $subid => $info) {
-            $enabled = !empty($info['enabled']);
-			if ( $enabled === 'yes' )
-			{
-				$subject_data_array[] = [
-					'subject_id'     => intval($subid),
-					'max_marks'      => isset($info['total_mark']) ? sanitize_text_field($info['total_mark']) : '',
-					'passing_marks'  => isset($info['passing_mark']) ? sanitize_text_field($info['passing_mark']) : '',
-					'enable'         => $enabled ? 'yes' : 'no',
-				];
+	$subject_data_array = array();
+    if ( isset( $_POST['university_subjects'] ) && is_array( $_POST['university_subjects'] ) ) {
+        foreach ( $_POST['university_subjects'] as $subid => $info ) {
+			// Add isset check for array keys before accessing.
+            $enabled = isset( $info['enabled'] ) && ! empty( $info['enabled'] ) ? sanitize_text_field( $info['enabled'] ) : 'no';
+			if ( $enabled === 'yes' ) {
+				$subject_data_array[] = array(
+					'subject_id'     => intval( $subid ),
+					'max_marks'      => isset( $info['total_mark'] ) ? sanitize_text_field( $info['total_mark'] ) : '',
+					'passing_marks'  => isset( $info['passing_mark'] ) ? sanitize_text_field( $info['passing_mark'] ) : '',
+					'enable'         => $enabled,
+				);
 			}
         }
     }
-	$subject_data_json = wp_json_encode($subject_data_array);
+	$subject_data_json = wp_json_encode( $subject_data_array );
 	if ( wp_verify_nonce( $nonce, 'save_exam_admin_nonce' ) ) {
 		$nonce = wp_create_nonce( 'mjschool_exam_module_tab' );
-		$created_date = date( 'Y-m-d H:i:s' );
+		// Use current_time() instead of date() for WordPress compatibility.
+		$created_date = current_time( 'mysql' );
 		$examdata     = array(
 			'exam_name'          => sanitize_text_field( wp_unslash( $_POST['exam_name'] ) ),
-			'class_id'           => sanitize_text_field( wp_unslash($_POST['class_id']) ),
-			'section_id'         => isset( $_POST['class_section'] ) ? sanitize_text_field( wp_unslash($_POST['class_section']) ) : '',
-			'exam_term'          => sanitize_text_field( wp_unslash($_POST['exam_term']) ),
-			'passing_mark'       => isset( $_POST['passing_mark'] ) ? sanitize_text_field( wp_unslash($_POST['passing_mark']) ) : '',
-			'total_mark'         => isset( $_POST['total_mark'] ) ? sanitize_text_field( wp_unslash($_POST['total_mark']) ) : '',
-			'exam_start_date'    => date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash($_POST['exam_start_date']) ) ) ),
-			'exam_end_date'      => date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash($_POST['exam_end_date'] ) ) ) ),
+			'class_id'           => sanitize_text_field( wp_unslash( $_POST['class_id'] ) ),
+			'section_id'         => isset( $_POST['class_section'] ) ? sanitize_text_field( wp_unslash( $_POST['class_section'] ) ) : '',
+			'exam_term'          => sanitize_text_field( wp_unslash( $_POST['exam_term'] ) ),
+			'passing_mark'       => isset( $_POST['passing_mark'] ) ? sanitize_text_field( wp_unslash( $_POST['passing_mark'] ) ) : '',
+			'total_mark'         => isset( $_POST['total_mark'] ) ? sanitize_text_field( wp_unslash( $_POST['total_mark'] ) ) : '',
+			// Use wp_date() with strtotime() for timezone-safe date conversion.
+			'exam_start_date'    => wp_date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['exam_start_date'] ) ) ) ),
+			'exam_end_date'      => wp_date( 'Y-m-d', strtotime( sanitize_text_field( wp_unslash( $_POST['exam_end_date'] ) ) ) ),
 			'exam_comment'       => sanitize_textarea_field( wp_unslash( $_POST['exam_comment'] ) ),
 			'exam_creater_id'    => get_current_user_id(),
 			'contributions'      => $custributions,
@@ -133,36 +148,42 @@ if ( isset( $_POST['save_exam'] ) ) {
 			die();
 		} else {
 			$tablename = 'mjschool_exam';
-			if ( isset( $_REQUEST['action'] ) && 'edit' === sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) ) {
+			
+			if ( isset( $_GET['action'] ) && 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) ) ) {
 				if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'edit_action' ) ) {
-					$exam = sanitize_text_field( wp_unslash( $_REQUEST['exam_name'] ) );
-					if ( isset( $_FILES['exam_syllabus'] ) && ! empty( $_FILES['exam_syllabus'] ) && $_FILES['exam_syllabus']['size'] != 0 ) {
+					
+					$exam = sanitize_text_field( wp_unslash( $_POST['exam_name'] ) );
+					// Validate $_FILES array before accessing.
+					if ( isset( $_FILES['exam_syllabus'] ) && isset( $_FILES['exam_syllabus']['size'] ) && ! empty( $_FILES['exam_syllabus'] ) && $_FILES['exam_syllabus']['size'] != 0 ) {
 						if ( $_FILES['exam_syllabus']['size'] > 0 ) {
-							$upload_docs1 = mjschool_load_documets_new( $_FILES['exam_syllabus'], $_FILES['exam_syllabus'], sanitize_text_field( wp_unslash($_POST['document_name']) ) );
+							$upload_docs1 = mjschool_load_documets_new( $_FILES['exam_syllabus'], $_FILES['exam_syllabus'], sanitize_text_field( wp_unslash( $_POST['document_name'] ) ) );
 						}
-					} elseif ( isset( $_REQUEST['old_hidden_exam_syllabus'] ) ) {
-						$upload_docs1 = sanitize_text_field( wp_unslash($_REQUEST['old_hidden_exam_syllabus']) );
+					} elseif ( isset( $_POST['old_hidden_exam_syllabus'] ) ) {
+						$upload_docs1 = sanitize_text_field( wp_unslash( $_POST['old_hidden_exam_syllabus'] ) );
 					}
 					$document_data = array();
 					if ( ! empty( $upload_docs1 ) ) {
 						$document_data[] = array(
-							'title' => isset( $_POST['document_name'] ) ? sanitize_text_field( wp_unslash($_POST['document_name']) ) : '',
+							'title' => isset( $_POST['document_name'] ) ? sanitize_text_field( wp_unslash( $_POST['document_name'] ) ) : '',
 							'value' => $upload_docs1,
 						);
 					} else {
 						$document_data[] = '';
 					}
-					$exam_id                   = intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) );
-					$grade_id                  = array( 'exam_id' => intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) ) );
-					$modified_date_date        = date( 'Y-m-d H:i:s' );
+					
+					$exam_id                   = intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['exam_id'] ) ) ) );
+					$grade_id                  = array( 'exam_id' => intval( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['exam_id'] ) ) ) ) );
+					
+					$modified_date_date        = current_time( 'mysql' );
 					$examdata['modified_date'] = $modified_date_date;
 					$examdata['exam_syllabus'] = wp_json_encode( $document_data );
 					$result                    = mjschool_update_record( $tablename, $examdata, $grade_id );
-					$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+					$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 					$module                    = 'exam';
 					$custom_field_update       = $mjschool_custom_field_obj->mjschool_update_custom_field_data_module_wise( $module, $exam_id );
 					$exam                      = $examdata['exam_name'];
-					mjschool_append_audit_log( '' . esc_html__( 'Exam Updated', 'mjschool' ) . '( ' . $exam . ' )' . '', mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ), get_current_user_id(), 'edit', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
+					
+					mjschool_append_audit_log( '' . esc_html__( 'Exam Updated', 'mjschool' ) . '( ' . $exam . ' )' . '', mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['exam_id'] ) ) ), get_current_user_id(), 'edit', sanitize_text_field( wp_unslash( $_GET['page'] ) ) );
 					if ( $result ) {
 						wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=examlist&_wpnonce=' . rawurlencode( $nonce ) . '&message=2' ) );
 						die();
@@ -171,9 +192,10 @@ if ( isset( $_POST['save_exam'] ) ) {
 					wp_die( esc_html__( 'Security check failed!', 'mjschool' ) );
 				}
 			} else {
-				if ( isset( $_FILES['exam_syllabus'] ) && ! empty( $_FILES['exam_syllabus'] ) && $_FILES['exam_syllabus']['size'] != 0 ) {
+				// Validate $_FILES array before accessing.
+				if ( isset( $_FILES['exam_syllabus'] ) && isset( $_FILES['exam_syllabus']['size'] ) && ! empty( $_FILES['exam_syllabus'] ) && $_FILES['exam_syllabus']['size'] != 0 ) {
 					if ( $_FILES['exam_syllabus']['size'] > 0 ) {
-						$upload_docs1 = mjschool_load_documets_new( $_FILES['exam_syllabus'], $_FILES['exam_syllabus'], isset( $_POST['document_name'] ) ? sanitize_text_field( wp_unslash($_POST['document_name']) ) : '' );
+						$upload_docs1 = mjschool_load_documets_new( $_FILES['exam_syllabus'], $_FILES['exam_syllabus'], isset( $_POST['document_name'] ) ? sanitize_text_field( wp_unslash( $_POST['document_name'] ) ) : '' );
 					}
 				} else {
 					$upload_docs1 = '';
@@ -181,7 +203,7 @@ if ( isset( $_POST['save_exam'] ) ) {
 				$document_data = array();
 				if ( ! empty( $upload_docs1 ) ) {
 					$document_data[] = array(
-						'title' => isset( $_POST['document_name'] ) ? sanitize_text_field( wp_unslash($_POST['document_name']) ) : '',
+						'title' => isset( $_POST['document_name'] ) ? sanitize_text_field( wp_unslash( $_POST['document_name'] ) ) : '',
 						'value' => $upload_docs1,
 					);
 				} else {
@@ -191,31 +213,32 @@ if ( isset( $_POST['save_exam'] ) ) {
 				global $wpdb;
 				$result         = mjschool_insert_record( $tablename, $examdata );
 				$last_insert_id = $wpdb->insert_id;
-				$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+				$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 				$module                    = 'exam';
 				$insert_custom_data        = $mjschool_custom_field_obj->mjschool_insert_custom_field_data_module_wise( $module, $last_insert_id );
 				$exam_name                 = $examdata['exam_name'];
-				mjschool_append_audit_log( '' . esc_html__( 'Exam Added', 'mjschool' ) . '( ' . $exam_name . ' )' . '', $result, get_current_user_id(), 'insert', sanitize_text_field( wp_unslash($_REQUEST['page']) ) );
+				
+				mjschool_append_audit_log( '' . esc_html__( 'Exam Added', 'mjschool' ) . '( ' . $exam_name . ' )' . '', $result, get_current_user_id(), 'insert', sanitize_text_field( wp_unslash( $_GET['page'] ) ) );
 				if ( $result ) {
-					$class_section = isset( $_POST['class_section'] ) ? sanitize_text_field( wp_unslash($_POST['class_section']) ) : '';
+					$class_section = isset( $_POST['class_section'] ) ? sanitize_text_field( wp_unslash( $_POST['class_section'] ) ) : '';
 					if ( empty( $class_section ) ) {
-						$class_id = sanitize_text_field( wp_unslash($_POST['class_id']) );
-						$studentdata = mjschool_get_student_name_with_class($class_id);
+						$class_id = sanitize_text_field( wp_unslash( $_POST['class_id'] ) );
+						$studentdata = mjschool_get_student_name_with_class( $class_id );
 					} else {
-						$studentdata = mjschool_get_student_name_with_class_and_section(sanitize_text_field( wp_unslash($_POST['class_id']) ), $class_section );
+						$studentdata = mjschool_get_student_name_with_class_and_section( sanitize_text_field( wp_unslash( $_POST['class_id'] ) ), $class_section );
 					}
 					
 					if ( ! empty( $studentdata ) ) {
 						foreach ( $studentdata as $userdata ) {
 							$student_id   = $userdata->ID;
 							$student_name = $userdata->display_name;
-							if ( isset( $_POST['mjschool_enable_exam_mail'] ) && ( sanitize_text_field( wp_unslash($_POST['mjschool_enable_exam_mail']) ) === '1' ) ) {
+							if ( isset( $_POST['mjschool_enable_exam_mail'] ) && ( sanitize_text_field( wp_unslash( $_POST['mjschool_enable_exam_mail'] ) ) === '1' ) ) {
 								$student_email                 = $userdata->user_email;
 								$mjschool_add_exam_mailcontent = get_option( 'mjschool_add_exam_mailcontent' );
 								$mjschool_add_exam_mail_title  = get_option( 'mjschool_add_exam_mail_title' );
 								$parent                        = get_user_meta( $student_id, 'parent_id', true );
-								$exam_start_date_san = sanitize_text_field( wp_unslash($_POST['exam_start_date']) );
-								$exam_end_date_san = sanitize_text_field( wp_unslash($_POST['exam_end_date']) );
+								$exam_start_date_san = sanitize_text_field( wp_unslash( $_POST['exam_start_date'] ) );
+								$exam_end_date_san = sanitize_text_field( wp_unslash( $_POST['exam_end_date'] ) );
 								if ( $exam_start_date_san === $exam_end_date_san ) {
 									$start_end_date = mjschool_get_date_in_input_box( $exam_start_date_san );
 								} else {
@@ -231,7 +254,7 @@ if ( isset( $_POST['save_exam'] ) ) {
 										$searchArr['{{exam_name}}']           = sanitize_textarea_field( wp_unslash( $_POST['exam_name'] ) );
 										$searchArr['{{exam_start_end_date}}'] = $start_end_date;
 										if ( ! empty( $_POST['exam_comment'] ) ) {
-											$comment = sanitize_textarea_field( wp_unslash( $_POST['exam_comment']) );
+											$comment = sanitize_textarea_field( wp_unslash( $_POST['exam_comment'] ) );
 										} else {
 											$comment = 'N/A';
 										}
@@ -275,7 +298,7 @@ if ( isset( $_POST['save_exam'] ) ) {
 								$type                      = 'Add Exam';
 								mjschool_send_mjschool_notification( $student_id, $type, $message_content );
 							}
-							if ( isset( $_POST['mjschool_enable_exam_mjschool_parent'] ) && ( sanitize_text_field( wp_unslash($_POST['mjschool_enable_exam_mjschool_parent']) ) === '1' ) ) {
+							if ( isset( $_POST['mjschool_enable_exam_mjschool_parent'] ) && ( sanitize_text_field( wp_unslash( $_POST['mjschool_enable_exam_mjschool_parent'] ) ) === '1' ) ) {
 								$parent = get_user_meta( $student_id, 'parent_id', true );
 								if ( ! empty( $parent ) ) {
 									foreach ( $parent as $p ) {
@@ -300,25 +323,26 @@ if ( isset( $_POST['save_exam'] ) ) {
 		}
 	}
 }
-// save Exam Time Table.
+// Save Exam Time Table.
 if ( isset( $_POST['save_exam_table'] ) ) {
 	$mjschool_obj_exam = new Mjschool_exam();
-	$class_id          = sanitize_text_field( wp_unslash($_POST['class_id']) );
-	$section_id        = sanitize_text_field( wp_unslash($_POST['section_id']) );
-	$exam_id           = sanitize_text_field( wp_unslash($_POST['exam_id']) );
+	$obj_subject = new Mjschool_Subject();
+	$class_id          = sanitize_text_field( wp_unslash( $_POST['class_id'] ) );
+	$section_id        = sanitize_text_field( wp_unslash( $_POST['section_id'] ) );
+	$exam_id           = sanitize_text_field( wp_unslash( $_POST['exam_id'] ) );
 	if ( isset( $_POST['section_id'] ) && intval( $_POST['section_id'] ) != 0 ) {
 		$subject_data = $mjschool_obj_exam->mjschool_get_subject_by_section_id( $class_id, $section_id );
 	} else {
-		$subject_data = $mjschool_obj_exam->mjschool_get_subject_by_class_id( $class_id );
+		$subject_data = $obj_subject->mjschool_get_subject_by_class_id( $class_id );
 	}
 	$nonce = wp_create_nonce( 'mjschool_exam_module_tab' );
 	if ( ! empty( $subject_data ) ) {
 		foreach ( $subject_data as $subject ) {
 			if ( isset( $_POST[ 'subject_name_' . $subject->subid ] ) ) {
-				$save_data = $mjschool_obj_exam->mjschool_insert_sub_wise_time_table( $class_id, $exam_id, $subject->subid, sanitize_text_field( wp_unslash($_POST[ 'exam_date_' . $subject->subid ]) ), sanitize_text_field( wp_unslash($_POST[ 'start_time_' . $subject->subid ]) ), sanitize_text_field( wp_unslash($_POST[ 'end_time_' . $subject->subid ]) ) );
+				$save_data = $mjschool_obj_exam->mjschool_insert_sub_wise_time_table( $class_id, $exam_id, $subject->subid, sanitize_text_field( wp_unslash( $_POST[ 'exam_date_' . $subject->subid ] ) ), sanitize_text_field( wp_unslash( $_POST[ 'start_time_' . $subject->subid ] ) ), sanitize_text_field( wp_unslash( $_POST[ 'end_time_' . $subject->subid ] ) ) );
 			}
 		}
-		if ( $save_data ) {
+		if ( isset( $save_data ) && $save_data ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_exam&tab=exam_time_table&_wpnonce=' . rawurlencode( $nonce ) . '&message=5' ) );
 			die();
 		}
@@ -329,7 +353,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 <div class="mjschool-page-inner">
 	<div class="mjschool_grade_page mjschool-main-list-margin-5px">
 		<?php
-		$message = isset( $_REQUEST['message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['message'] ) ) : '0';
+		
+		$message = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '0';
 		switch ( $message ) {
 			case '1':
 				$message_string = esc_html__( 'Exam Added Successfully.', 'mjschool' );
@@ -368,11 +393,13 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					</li>
 					<?php
 					$mjschool_action = '';
-					if ( ! empty( $_REQUEST['action'] ) ) {
-						$mjschool_action = sanitize_text_field( wp_unslash($_REQUEST['action']) );
+					
+					if ( ! empty( $_GET['action'] ) ) {
+						$mjschool_action = sanitize_text_field( wp_unslash( $_GET['action'] ) );
 					}
 					if ( $active_tab === 'addexam' ) {
-						if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'edit' ) {
+						
+						if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'edit' ) {
 							?>
 							<li class="<?php if ( $active_tab === 'addexam' || $mjschool_action === 'edit' ) { ?> active<?php } ?>">
 								<a href="#" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'addexam' ? 'nav-tab-active' : ''; ?>">
@@ -400,7 +427,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					if ( $mjschool_action === 'view' ) {
 						?>
 						<li class="<?php if ( $active_tab === 'viewexam' ) { ?> active<?php } ?>">
-							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=viewexam&action=view&exam_id=' . rawurlencode( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) . '&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'viewexam' ? 'active' : ''; ?>">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mjschool_exam&tab=viewexam&action=view&exam_id=' . rawurlencode( sanitize_text_field( wp_unslash( $_GET['exam_id'] ) ) ) . '&_wpnonce=' . rawurlencode( $nonce ) ) ); ?>" class="mjschool-padding-left-0 tab <?php echo esc_attr( $active_tab ) === 'viewexam' ? 'active' : ''; ?>">
 								<?php esc_html_e( 'View Exam Time Table', 'mjschool' ); ?>
 							</a>
 						</li>
@@ -438,6 +465,10 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 						<div>
 							<div class="table-responsive">
 								<form id="mjschool-common-form" name="mjschool-common-form" method="post">
+									<?php
+									// Add nonce field for bulk delete form.
+									wp_nonce_field( 'mjschool_bulk_delete_nonce', '_wpnonce' );
+									?>
 									<table id="exam_list" class="display" cellspacing="0" width="100%">
 										<thead class="<?php echo esc_attr( mjschool_datatable_header() ); ?>">
 											<tr>
@@ -631,12 +662,15 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 							wp_die( esc_html__( 'Security check failed. Please reload the page.', 'mjschool' ) );
 						}
 					}
-					if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) === 'view' ) {
-						$exam_data         = mjschool_get_exam_by_id( mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) );
+					
+					if ( isset( $_GET['action'] ) && sanitize_text_field( wp_unslash( $_GET['action'] ) ) === 'view' ) {
+						
+						$obj_exam = new Mjschool_Exam();
+						$exam_data         = $obj_exam->mjschool_get_exam_by_id( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['exam_id'] ) ) ) );
 						$start_date        = $exam_data->exam_start_date;
 						$end_date          = $exam_data->exam_end_date;
 						$mjschool_obj_exam = new Mjschool_exam();
-						$exam_time_table   = $mjschool_obj_exam->mjschool_get_exam_time_table_by_exam( mjschool_decrypt_id( sanitize_text_field( wp_unslash($_REQUEST['exam_id']) ) ) );
+						$exam_time_table   = $mjschool_obj_exam->mjschool_get_exam_time_table_by_exam( mjschool_decrypt_id( sanitize_text_field( wp_unslash( $_GET['exam_id'] ) ) ) );
 					}
 					?>
 					<div class="mjschool-panel-body mjschool-margin-top-20px mjschool-padding-top-25px-res">
@@ -657,8 +691,8 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 										<tbody>
 											<tr>
 												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( $exam_data->exam_name ); ?></td>
-												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_class_name( $exam_data->class_id ) ); ?></td>
-												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php if ( $exam_data->section_id != 0 ) { echo esc_html( mjschool_get_section_name( $exam_data->section_id ) ); } else { esc_html_e( 'No Section', 'mjschool' ); } ?></td>
+												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_class_name( $exam_data->class_id ) ); ?></td>
+												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php if ( $exam_data->section_id != 0 ) { $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_section_name( $exam_data->section_id ) ); } else { esc_html_e( 'No Section', 'mjschool' ); } ?></td>
 												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php if ( ! empty( get_the_title( $exam_data->exam_term ) ) ) { echo esc_html( get_the_title( $exam_data->exam_term ) ); } else { esc_html_e( 'N/A', 'mjschool' ); } ?></td>
 												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_date_in_input_box( $start_date ) ); ?></td>
 												<td class="mjschool-exam-hall-receipt-table-value mjschool_border_right_1px" ><?php echo esc_html( mjschool_get_date_in_input_box( $end_date ) ); ?></td>

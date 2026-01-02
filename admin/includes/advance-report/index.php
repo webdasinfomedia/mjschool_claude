@@ -25,7 +25,7 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access      = mjschool_get_user_role_wise_filter_access_right_array( 'report' );
 	$user_access_view = $user_access['view'];
 	if ( isset( $_REQUEST ['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}

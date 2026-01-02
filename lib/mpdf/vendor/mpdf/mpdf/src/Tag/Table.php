@@ -136,7 +136,7 @@ class Table extends Tag
 
 
 		$lastbottommargin = 0;
-		if ($this->mpdf->blockjustfinished && !count($this->mpdf->textbuffer) && $this->mpdf->y != $this->mpdf->tMargin && $this->mpdf->collapseBlockMargins && $this->mpdf->tableLevel == 1) {
+		if ($this->mpdf->blockjustfinished && !count($this->mpdf->textbuffer) && $this->mpdf->y !== $this->mpdf->tMargin && $this->mpdf->collapseBlockMargins && $this->mpdf->tableLevel == 1) {
 			$lastbottommargin = $this->mpdf->lastblockbottommargin;
 		}
 		$this->mpdf->lastblockbottommargin = 0;
@@ -257,7 +257,7 @@ class Table extends Tag
 		// mPDF 6
 		if (!empty($properties['LANG'])) {
 			if ($this->mpdf->autoLangToFont && !$this->mpdf->usingCoreFont) {
-				if ($properties['LANG'] != $this->mpdf->default_lang && $properties['LANG'] !== 'UTF-8') {
+				if ($properties['LANG'] !== $this->mpdf->default_lang && $properties['LANG'] !== 'UTF-8') {
 					list ($coreSuitable, $mpdf_pdf_unifont) = $this->languageToFont->getLanguageOptions($properties['LANG'], $this->mpdf->useAdobeCJK);
 					if ($mpdf_pdf_unifont) {
 						$properties['FONT-FAMILY'] = $mpdf_pdf_unifont;
@@ -756,7 +756,7 @@ class Table extends Tag
 
 			if ($check > 1) {
 				if ($check > $this->mpdf->shrink_this_table_to_fit && $this->mpdf->table_rotate) {
-					if ($this->mpdf->y != $this->mpdf->tMargin) {
+					if ($this->mpdf->y !== $this->mpdf->tMargin) {
 						$this->mpdf->AddPage($this->mpdf->CurOrientation);
 						$this->mpdf->kwt_moved = true;
 					}
@@ -892,7 +892,7 @@ class Table extends Tag
 					if (($this->mpdf->shrin_k * $this->tbsqrt($tableheight / $remainingpage, 1)) <= $this->mpdf->shrink_this_table_to_fit) {
 						$recalculate = $this->tbsqrt($tableheight / $remainingpage, 1);
 					} elseif (!$added_page) {
-						if ($this->mpdf->y != $this->mpdf->tMargin) {
+						if ($this->mpdf->y !== $this->mpdf->tMargin) {
 							$this->mpdf->AddPage($this->mpdf->CurOrientation);
 							$this->mpdf->kwt_moved = true;
 						}
@@ -912,7 +912,7 @@ class Table extends Tag
 						$this->mpdf->table_keep_together = false;
 						$recalculate = 1.001;
 					} else {
-						if ($this->mpdf->y != $this->mpdf->tMargin) {
+						if ($this->mpdf->y !== $this->mpdf->tMargin) {
 							$this->mpdf->AddPage($this->mpdf->CurOrientation);
 							$this->mpdf->kwt_moved = true;
 						}
@@ -925,7 +925,7 @@ class Table extends Tag
 					if (($this->mpdf->shrin_k * $this->tbsqrt($tableheight / $remainingpage, 1)) <= $this->mpdf->shrink_this_table_to_fit) {
 						$recalculate = $this->tbsqrt($tableheight / $remainingpage, 1);
 					} else {
-						if ($this->mpdf->y != $this->mpdf->tMargin) {
+						if ($this->mpdf->y !== $this->mpdf->tMargin) {
 							// mPDF 6
 							if ($this->mpdf->AcceptPageBreak()) {
 								$this->mpdf->AddPage($this->mpdf->CurOrientation);
@@ -1067,7 +1067,7 @@ class Table extends Tag
 							$this->mpdf->table_keep_together = false;
 							$recalculate = (1 / $this->mpdf->shrin_k) + 0.001;
 						} else {
-							if (!$added_page && $this->mpdf->y != $this->mpdf->tMargin) {
+							if (!$added_page && $this->mpdf->y !== $this->mpdf->tMargin) {
 								$this->mpdf->AddPage($this->mpdf->CurOrientation);
 								$added_page = true;
 								$this->mpdf->kwt_moved = true;

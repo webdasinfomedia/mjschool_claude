@@ -337,7 +337,7 @@ class Form
 			$this->mpdf->x += $this->form_element_spacing['textarea']['inner']['h'] / $k;
 			$this->mpdf->y += $this->form_element_spacing['textarea']['inner']['v'] / $k;
 
-			if ($texto != '') {
+			if ($texto !== '') {
 				$this->mpdf->MultiCell($w, $this->mpdf->FontSize * $this->textarea_lineheight, $texto, 0, '', 0, '', $blockdir, true, $objattr['OTLdata'], $objattr['rows']);
 			}
 			$this->writer->write('Q');
@@ -736,7 +736,7 @@ class Form
 			$this->writer->write('/Type /Annot ');
 			$this->writer->write('/Subtype /Widget');
 			$this->writer->write('/NM ' . $this->writer->string(sprintf('%04u-%04u', $n, 3000 + $key++)));
-			$this->writer->write('/M ' . $this->writer->string('D:' . date('YmdHis')));
+			$this->writer->write('/M ' . $this->writer->string('D:' . wp_date('YmdHis')));
 			$this->writer->write('/Rect [0 0 0 0] ');
 			$this->writer->write('/FT /Btn ');
 			if (!empty($frg['disabled'])) {
@@ -1384,7 +1384,7 @@ class Form
 		$this->writer->write('/Type /Annot ');
 		$this->writer->write('/Subtype /Widget');
 		$this->writer->write('/NM ' . $this->writer->string(sprintf('%04u-%04u', $n, 7000 + $form['n'])));
-		$this->writer->write('/M ' . $this->writer->string('D:' . date('YmdHis')));
+		$this->writer->write('/M ' . $this->writer->string('D:' . wp_date('YmdHis')));
 		$this->writer->write('/Rect [ ' . $this->_form_rect($form['x'], $form['y'], $form['w'], $form['h'], $hPt) . ' ]');
 
 		$form['noprint'] ? $this->writer->write('/F 0 ') : $this->writer->write('/F 4 ');
@@ -1672,7 +1672,7 @@ f Q ';
 		$this->writer->write('/MK << ' . $temp . ' >>');
 
 		$this->writer->write('/NM ' . $this->writer->string(sprintf('%04u-%04u', $n, 6000 + $form['n'])));
-		$this->writer->write('/M ' . $this->writer->string('D:' . date('YmdHis')));
+		$this->writer->write('/M ' . $this->writer->string('D:' . wp_date('YmdHis')));
 
 		$this->writer->write('/T ' . $this->writer->string($form['T']));
 		$this->writer->write('/DA (/F' . $this->mpdf->fonts[$form['style']['font']]['i'] . ' ' . $form['style']['fontsize'] . ' Tf ' . $form['style']['fontcolor'] . ')');
@@ -1774,7 +1774,7 @@ f Q ';
 		}
 
 		$this->writer->write('/NM ' . $this->writer->string(sprintf('%04u-%04u', $n, 5000 + $form['n'])));
-		$this->writer->write('/M ' . $this->writer->string('D:' . date('YmdHis')));
+		$this->writer->write('/M ' . $this->writer->string('D:' . wp_date('YmdHis')));
 
 
 		if (isset($this->array_form_text_js[$form['T']])) {

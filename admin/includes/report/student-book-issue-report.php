@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Student Book Issue Report.
  *
@@ -52,7 +51,8 @@ if ( isset( $_POST['date_type'] ) ) {
 							?>
 							<option value=""><?php esc_html_e( 'Select class Name', 'mjschool' ); ?></option>
 							<?php
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $class_id ); ?>><?php echo esc_html( $classdata['class_name'] ); ?></option>
 								<?php
@@ -73,7 +73,7 @@ if ( isset( $_POST['date_type'] ) ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_sdate" class="form-control" name="start_date" value="<?php echo isset( $_POST['start_date'] ) ? esc_attr( $_POST['start_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_sdate" class="active"><?php esc_html_e( 'Start Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -81,7 +81,7 @@ if ( isset( $_POST['date_type'] ) ) {
 								<div class="col-md-6 mb-2">
 									<div class="form-group input">
 										<div class="col-md-12 form-control">
-											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( date( 'Y-m-d' ) ); ?>" readonly>
+											<input type="text" id="report_edate" class="form-control" name="end_date" value="<?php echo isset( $_POST['end_date'] ) ? esc_attr( $_POST['end_date'] ) : esc_attr( wp_date( 'Y-m-d' ) ); ?>" readonly>
 											<label for="report_edate" class="active"><?php esc_html_e( 'End Date', 'mjschool' ); ?></label>
 										</div>
 									</div>
@@ -147,8 +147,8 @@ if ( isset( $_REQUEST['library_report'] ) ) {
 	}
 	$book_issue_data = mjschool_check_book_issued_by_class_id_and_date( $class_id, $start_date, $end_date );
 } else {
-	$start_date      = date( 'Y-m-d' );
-	$end_date        = date( 'Y-m-d' );
+	$start_date      = wp_date( 'Y-m-d' );
+	$end_date        = wp_date( 'Y-m-d' );
 	$book_issue_data = mjschool_check_book_issued_by_start_date_and_end_date( $start_date, $end_date );
 }
 $mjschool_obj_lib = new Mjschool_Library();

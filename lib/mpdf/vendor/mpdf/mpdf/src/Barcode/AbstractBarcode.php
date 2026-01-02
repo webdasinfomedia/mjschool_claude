@@ -51,7 +51,7 @@ abstract class AbstractBarcode
 		$k = 0;
 		for ($i = 0; $i < $len; ++$i) {
 			$w += 1;
-			if (($i == ($len - 1)) or (($i < ($len - 1)) and ($seq[$i] != $seq[($i + 1)]))) {
+			if (($i == ($len - 1)) or (($i < ($len - 1)) and ($seq[$i] !== $seq[($i + 1)]))) {
 				if ($seq[$i] == '1') {
 					$t = true; // bar
 				} else {

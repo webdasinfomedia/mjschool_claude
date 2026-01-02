@@ -37,25 +37,25 @@ if ( $mjschool_role === 'administrator' ) {
 	$user_access_delete = $user_access['delete'];
 	$user_access_view   = $user_access['view'];
 	if ( isset( $_REQUEST['page'] ) ) {
-		if ( $user_access_view === '0' ) {
+		if ( $user_access_view === 0 ) {
 			mjschool_access_right_page_not_access_message_admin_side();
 			die();
 		}
 		if ( ! empty( $_REQUEST['action'] ) ) {
 			if ( 'transport' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'edit' ) ) {
-				if ( $user_access_edit === '0' ) {
+				if ( $user_access_edit === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'transport' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) ) {
-				if ( $user_access_delete === '0' ) {
+				if ( $user_access_delete === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
 			}
 			if ( 'transport' === $user_access['page_link'] && ( sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'insert' ) ) {
-				if ( $user_access_add === '0' ) {
+				if ( $user_access_add === 0 ) {
 					mjschool_access_right_page_not_access_message_admin_side();
 					die();
 				}
@@ -63,7 +63,8 @@ if ( $mjschool_role === 'administrator' ) {
 		}
 	}
 }
-$custom_field_obj  = new Mjschool_Custome_Field();
+$mjschool_obj_transport      = new Mjschool_Transport();
+$custom_field_obj  = new Mjschool_Custom_Field();
 $module            = 'transport';
 $user_custom_field = $custom_field_obj->mjschool_get_custom_field_by_module( $module );
 ?>
@@ -85,7 +86,7 @@ $tablename = 'mjschool_transport';
 if ( isset( $_POST['save_transport'] ) ) {
 	$nonce = $_POST['_wpnonce'];
 	if ( wp_verify_nonce( $nonce, 'save_transpoat_admin_nonce' ) ) {
-		if ( isset( $_POST['mjschool_user_avatar'] ) && $_POST['mjschool_user_avatar'] != '' ) {
+		if ( isset( $_POST['mjschool_user_avatar'] ) && $_POST['mjschool_user_avatar'] !== '' ) {
 			$photo = sanitize_text_field(wp_unslash($_POST['mjschool_user_avatar']));
 		} else {
 			$photo = '';
@@ -125,7 +126,7 @@ if ( isset( $_POST['save_transport'] ) ) {
 if ( isset( $_REQUEST['delete_selected'] ) ) {
 	if ( ! empty( $_REQUEST['id'] ) ) {
 		foreach ( $_REQUEST['id'] as $id ) {
-			$result = mjschool_delete_transport( $tablename, $id );
+			$result = $mjschool_obj_transport->mjschool_delete_transport( $tablename, $id );
 		}
 	}
 	if ( $result ) {
@@ -139,12 +140,12 @@ if ( isset( $_REQUEST['save_assign_route'] ) ) {
 	if ( wp_verify_nonce( $nonce, 'save_assign_transpoat_admin_nonce' ) ) {
 		$assign_route_table_name = 'mjschool_assign_transport';
 		$assign_transport_data   = mjschool_get_assign_transport_by_id( sanitize_text_field(wp_unslash($_POST['transport_id'])) );
-		$transport_data          = mjschool_get_transport_by_id( sanitize_text_field(wp_unslash($_POST['transport_id'])) );
+		$transport_data          = $mjschool_obj_transport->mjschool_get_transport_by_id( sanitize_text_field(wp_unslash($_POST['transport_id'])) );
 		$assign_route_data       = array(
 			'transport_id' => sanitize_text_field(wp_unslash($_POST['transport_id'])),
 			'route_name'   => sanitize_textarea_field( $transport_data->route_name ),
 			'route_fare'   => sanitize_textarea_field( $transport_data->route_fare ),
-			'route_user'   => json_encode( $_POST['selected_users'] ),
+			'route_user'   => wp_json_encode( $_POST['selected_users'] ),
 			'created_by'   => get_current_user_id(),
 		);
 		if ( ! empty( $assign_transport_data ) ) {
@@ -167,7 +168,7 @@ if ( isset( $_REQUEST['save_assign_route'] ) ) {
 $tablename = 'mjschool_transport';
 if ( isset( $_REQUEST['action'] ) && sanitize_text_field(wp_unslash($_REQUEST['action'])) === 'delete' ) {
 	if ( isset( $_GET['_wpnonce_action'] ) && wp_verify_nonce( $_GET['_wpnonce_action'], 'delete_action' ) ) {
-		$result = mjschool_delete_transport( $tablename, intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['transport_id'])) ) ) );
+		$result = $mjschool_obj_transport->mjschool_delete_transport( $tablename, intval( mjschool_decrypt_id( sanitize_text_field(wp_unslash($_REQUEST['transport_id'])) ) ) );
 		if ( $result ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mjschool_transport&tab=transport&message=3' ) );
 			die();
@@ -255,7 +256,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field(wp_unslash($_GET['tab'
 														<a href="#" class="mjschool-view-details-popup" id="<?php echo esc_attr($retrieved_data->transport_id); ?>" type="transport_view">
 															<?php
 															$tid = $retrieved_data->transport_id;
-															$umetadata = mjschool_get_user_driver_image($tid);
+															$umetadata = $mjschool_transport->mjschool_get_user_driver_image($tid);
 															if (empty($umetadata) || $umetadata['smgt_user_avatar'] === "") {
 																echo '<img src="' . esc_url( get_option( 'mjschool_driver_thumb_new' ) ) . '" height="50px" width="50px" class="img-circle" />';
 															} else

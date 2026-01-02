@@ -1,6 +1,6 @@
 <?php
 /**
- * Export Student Attendance
+ * Export Student Attendance.
  *
  * This file provides functionality to export student attendance records in CSV format.
  * It defines the export form and handles user input submission.

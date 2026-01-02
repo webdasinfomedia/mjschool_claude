@@ -728,4 +728,246 @@ class Mjschool_Marks_Manage {
 			return 0;
 		}
 	}
+	
+	/**
+	 * Retrieves a list of students who failed based on exam marks and passing criteria.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $current_class Current class ID.
+	 * @param string $next_class    Next class ID.
+	 * @param int    $exam_id       Exam ID.
+	 * @param int    $passing_marks Minimum required marks.
+	 *
+	 * @return array List of failed student IDs.
+	 */
+	public function mjschool_fail_student_list( $current_class, $next_class, $exam_id, $passing_marks ) {
+		global $wpdb;
+		
+		$table_users      = $wpdb->prefix . 'users';
+		$table_usermeta   = $wpdb->prefix . 'usermeta';
+		$table_marks      = $wpdb->prefix . 'mjschool_marks';
+		$capabilities_key = $wpdb->prefix . 'capabilities';
+		
+		// Sanitize inputs
+		$current_class = sanitize_text_field( $current_class );
+		$next_class    = sanitize_text_field( $next_class );
+		$passing_marks = absint( $passing_marks );
+		$exam_id       = absint( $exam_id );
+		
+		$exam_obj      = new mjschool_exam();
+		$exam_data     = $exam_obj->mjschool_exam_data( $exam_id );
+		$contributions = isset( $exam_data->contributions ) ? $exam_data->contributions : '';
+		
+		$failed_students = array();
+		
+		if ( $contributions === 'yes' ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+			$student_data = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT u.ID, u.user_login, um.meta_value AS class_name, m.class_marks 
+					FROM {$table_users} AS u 
+					INNER JOIN {$table_usermeta} AS um ON u.ID = um.user_id 
+					INNER JOIN {$table_usermeta} AS cap ON u.ID = cap.user_id 
+					INNER JOIN {$table_marks} AS m ON u.ID = m.student_id 
+					WHERE um.meta_key = 'class_name' 
+					AND um.meta_value = %s 
+					AND cap.meta_key = %s 
+					AND cap.meta_value LIKE %s 
+					AND m.exam_id = %d",
+					$current_class,
+					$capabilities_key,
+					'%' . $wpdb->esc_like( 'student' ) . '%',
+					$exam_id
+				)
+			);
+			foreach ( $student_data as $student ) {
+				if ( ! isset( $student->class_marks ) || ! isset( $student->ID ) ) {
+					continue;
+				}
+				
+				$marks = json_decode( $student->class_marks, true );
+				
+				if ( is_array( $marks ) && json_last_error() === JSON_ERROR_NONE ) {
+					$total_marks = array_sum( $marks );
+					
+					if ( $total_marks < $passing_marks ) {
+						$failed_students[] = absint( $student->ID );
+					}
+				}
+			}
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+			$failed_students = $wpdb->get_col(
+				$wpdb->prepare( "SELECT u.ID FROM {$table_users} AS u INNER JOIN {$table_usermeta} AS um ON u.ID = um.user_id INNER JOIN {$table_usermeta} AS cap ON u.ID = cap.user_id INNER JOIN {$table_marks} AS m ON u.ID = m.student_id WHERE um.meta_key = 'class_name' AND um.meta_value = %s AND cap.meta_key = %s AND cap.meta_value LIKE %s AND m.marks < %d AND m.exam_id = %d", $current_class, $capabilities_key, '%' . $wpdb->esc_like( 'student' ) . '%', $passing_marks, $exam_id )
+			);
+			// Sanitize IDs
+			$failed_students = array_map( 'absint', $failed_students );
+		}
+		return $failed_students;
+	}
+	/**
+	 * Migrate students from current class to next class based on exam result.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $current_class Current class name.
+	 * @param string $next_class    Next class to migrate students into.
+	 * @param int    $exam_id       Exam ID used for determining pass/fail.
+	 * @param array  $fail_list     Array of failed student IDs.
+	 * @param int    $passing_marks Passing marks of the exam.
+	 */
+	public function mjschool_migration( $current_class, $next_class, $exam_id, $fail_list, $passing_marks ) {
+		global $wpdb;
+		
+		// Sanitize inputs
+		$current_class = sanitize_text_field( $current_class );
+		$next_class    = sanitize_text_field( $next_class );
+		$exam_id       = absint( $exam_id );
+		$passing_marks = absint( $passing_marks );
+		$fail_list     = is_array( $fail_list ) ? array_map( 'absint', $fail_list ) : array();
+		
+		$exlude_id = mjschool_approve_student_list();
+		
+		$studentdata = get_users(
+			array(
+				'role'       => 'student',
+				'meta_key'   => 'class_name',
+				'meta_value' => $current_class,
+				'exclude'    => $exlude_id,
+			)
+		);
+		
+		$table_usermeta         = $wpdb->prefix . 'usermeta';
+		$mjschool_migration_log = $wpdb->prefix . 'mjschool_migration_log';
+		$ip_address             = sanitize_text_field( gethostbyname( gethostname() ) );
+		
+		if ( ! empty( $studentdata ) ) {
+			$pass_students = array();
+			$fail_students = array();
+			
+			foreach ( $studentdata as $retrieved_data ) {
+				if ( ! isset( $retrieved_data->ID ) ) {
+					continue;
+				}
+				
+				$student_id = absint( $retrieved_data->ID );
+				
+				if ( ! in_array( $student_id, $fail_list, true ) ) {
+					$result = $wpdb->update(
+						$table_usermeta,
+						array( 'meta_value' => $next_class ),
+						array(
+							'user_id'    => $student_id,
+							'meta_value' => $current_class,
+							'meta_key'   => 'class_name',
+						),
+						array( '%s' ),
+						array( '%d', '%s', '%s' )
+					);
+					
+					$pass_students[] = array(
+						'student_id' => $student_id,
+						'reason'     => 'Pass',
+					);
+				} else {
+					$fail_students[] = array(
+						'student_id' => $student_id,
+						'reason'     => 'Failed',
+					);
+				}
+			}
+			
+			$migration_log = array(
+				'ip_address'     => $ip_address,
+				'created_by'     => get_current_user_id(),
+				'current_class'  => $current_class,
+				'next_class'     => $next_class,
+				'exam_name'      => $exam_id,
+				'pass_mark'      => $passing_marks,
+				'created_at'     => current_time( 'Y-m-d' ),
+				'date_time'      => current_time( 'Y-m-d H:i:s' ),
+				'deleted_status' => 0,
+				'pass_students'  => wp_json_encode( $pass_students ),
+				'fail_students'  => wp_json_encode( $fail_students ),
+			);
+			
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+			$wpdb->insert( $mjschool_migration_log, $migration_log );
+		}
+	}
+
+	/**
+	 * Migrate students from current class to next class without exam evaluation.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $current_class Current class name.
+	 * @param string $next_class    Target class name.
+	 */
+	public function mjschool_migration_without_exam( $current_class, $next_class ) {
+		global $wpdb;
+		// Sanitize inputs.
+		$current_class = sanitize_text_field( $current_class );
+		$next_class    = sanitize_text_field( $next_class );
+		$ip_address = sanitize_text_field( gethostbyname( gethostname() ) );
+		$exlude_id  = mjschool_approve_student_list();
+		$studentdata = get_users(
+			array(
+				'role'       => 'student',
+				'meta_key'   => 'class_name',
+				'meta_value' => $current_class,
+				'exclude'    => $exlude_id,
+			)
+		);
+		$table_usermeta         = $wpdb->prefix . 'usermeta';
+		$mjschool_migration_log = $wpdb->prefix . 'mjschool_migration_log';
+		if ( ! empty( $studentdata ) ) {
+			$pass_students = array();
+			$fail_students = array();
+			foreach ( $studentdata as $retrieved_data ) {
+				if ( ! isset( $retrieved_data->ID ) ) {
+					continue;
+				}
+				$student_id = absint( $retrieved_data->ID );
+				$student = $wpdb->update(
+					$table_usermeta,
+					array( 'meta_value' => $next_class ),
+					array(
+						'user_id'    => $student_id,
+						'meta_value' => $current_class,
+						'meta_key'   => 'class_name',
+					),
+					array( '%s' ),
+					array( '%d', '%s', '%s' )
+				);
+				if ( $student !== false ) {
+					$pass_students[] = array(
+						'student_id' => $student_id,
+						'reason'     => 'Migrated without exam',
+					);
+				} else {
+					$fail_students[] = array(
+						'student_id' => $student_id,
+						'reason'     => 'Migration failed',
+					);
+				}
+			}
+			$migration_log = array(
+				'ip_address'     => $ip_address,
+				'created_by'     => get_current_user_id(),
+				'current_class'  => $current_class,
+				'next_class'     => $next_class,
+				'exam_name'      => '',
+				'pass_mark'      => '',
+				'created_at'     => current_time( 'Y-m-d' ),
+				'date_time'      => current_time( 'Y-m-d H:i:s' ),
+				'deleted_status' => 0,
+				'pass_students'  => wp_json_encode( $pass_students ),
+				'fail_students'  => wp_json_encode( $fail_students ),
+			);
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Safe direct query, caching not required in this context
+			$wpdb->insert( $mjschool_migration_log, $migration_log );
+		}
+	}
 }

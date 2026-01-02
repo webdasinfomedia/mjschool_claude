@@ -24,14 +24,25 @@
  * @since      1.0.0
  */
 defined( 'ABSPATH' ) || exit;
+
+// Verify nonce for form processing.
+$nonce_action = 'save_exam_admin_nonce';
+$nonce_value  = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
+
 $school_type = get_option( 'mjschool_custom_class' );
 $edit = 0;
-if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['action']) ) === 'edit' ) {
+
+// Check for edit action with proper input sanitization.
+$action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+if ( 'edit' === $action ) {
+	
 	$edit      = 1;
-	$exam_data = mjschool_get_exam_by_id( intval( mjschool_decrypt_id( wp_unslash($_REQUEST['exam_id']) ) ) );
+	$obj_exam = new Mjschool_Exam();
+	$exam_id   = isset( $_REQUEST['exam_id'] ) ? intval( mjschool_decrypt_id( wp_unslash( $_REQUEST['exam_id'] ) ) ) : 0;
+	$exam_data = $obj_exam->mjschool_get_exam_by_id( $exam_id );
 }
 ?>
-<!--Group POP-up code. -->
+<!-- Group popup code. -->
 <div class="mjschool-popup-bg">
 	<div class="mjschool-overlay-content">
 		<div class="modal-content">
@@ -40,9 +51,12 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 		</div>
 	</div>
 </div>
-<div class="mjschool-panel-body mjschool-margin-top-20px"><!-------- Panel Body. --------->
-	<form name="exam_form" action="" method="post" class="mjschool-form-horizontal" enctype="multipart/form-data" id="exam_form"><!-------- Exam Form --------->
-		<?php $mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash($_REQUEST['action']) ) : 'insert'; ?>
+<div class="mjschool-panel-body mjschool-margin-top-20px"><!-- Panel Body. -->
+	<form name="exam_form" action="" method="post" class="mjschool-form-horizontal" enctype="multipart/form-data" id="exam_form"><!-- Exam Form. -->
+		<?php 
+		// Sanitize action value with deprecated-function-friendly approach.
+		$mjschool_action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : 'insert'; 
+		?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $mjschool_action ); ?>">
 		<div class="header">
 			<h3 class="mjschool-first-header">
@@ -71,13 +85,15 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 						$classval = '';
 						if ( $edit ) {
 							$classval = $exam_data->class_id;
-							foreach ( mjschool_get_all_class() as $class ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $class ) {
 								?>
-								<option value="<?php echo esc_attr( $class['class_id'] ); ?>" <?php selected( $class['class_id'], $classval ); ?>><?php echo esc_html( mjschool_get_class_name( $class['class_id'] ) ); ?></option>
+								<option value="<?php echo esc_attr( $class['class_id'] ); ?>" <?php selected( $class['class_id'], $classval ); ?>><?php $mjschool_class = new Mjschool_Class(); echo esc_html( $mjschool_class->mjschool_get_class_name( $class['class_id'] ) ); ?></option>
 								<?php
 							}
 						} else {
-							foreach ( mjschool_get_all_class() as $classdata ) {
+							$mjschool_class = new Mjschool_Class();
+							foreach ( $mjschool_class->mjschool_get_all_class() as $classdata ) {
 								?>
 								<option value="<?php echo esc_attr( $classdata['class_id'] ); ?>" <?php selected( $classdata['class_id'], $classval ); ?>>
 									<?php echo esc_html( $classdata['class_name'] ); ?>
@@ -88,7 +104,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 						?>
 					</select>
 				</div>
-				<?php if ( $school_type != 'university' ) { ?>
+				<?php if ( $school_type !== 'university' ) { ?>
 					<div class="col-md-6 input">
 						<label class="ml-1 mjschool-custom-top-label top" for="class_section"><?php esc_html_e( 'Section Name', 'mjschool' ); ?></label>
 						<?php
@@ -104,7 +120,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 							<option value=""><?php esc_html_e( 'All Section', 'mjschool' ); ?></option>
 							<?php
 							if ( $edit ) {
-								foreach ( mjschool_get_class_sections( $exam_data->class_id ) as $sectiondata ) {
+								$mjschool_class = new Mjschool_Class();
+								foreach ( $mjschool_class->mjschool_get_class_sections( $exam_data->class_id ) as $sectiondata ) {
 									?>
 									<option value="<?php echo esc_attr( $sectiondata->id ); ?>" <?php selected( $sectionval, $sectiondata->id ); ?>>
 										<?php echo esc_html( $sectiondata->section_name ); ?>
@@ -130,7 +147,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 					if ( $edit ) {
 						$sectionval1 = $exam_data->exam_term;
 					} elseif ( isset( $_POST['exam_term'] ) ) {
-						$sectionval1 = sanitize_text_field( wp_unslash($_POST['exam_term']) );
+				
+						$sectionval1 = sanitize_text_field( wp_unslash( $_POST['exam_term'] ) );
 					} else {
 						$sectionval1 = '';
 					}
@@ -203,7 +221,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 				</div>
 				<?php
 				if ( $edit ) {
-					$doc_data = json_decode( $exam_data->exam_syllabus );
+					
+					$doc_data = ! empty( $exam_data->exam_syllabus ) ? json_decode( $exam_data->exam_syllabus ) : array();
 					?>
 					<div class="col-md-6">
 						<div class="form-group input">
@@ -213,10 +232,11 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 								</span>
 								<div class="col-sm-12">
 									<input type="file" name="exam_syllabus" class="form-control file mjschool-file-validation" />
-									<input type="hidden" name="old_hidden_exam_syllabus" value="<?php if ( ! empty( $doc_data[0]->value ) ) { echo esc_attr( $doc_data[0]->value ); } elseif ( isset( $_POST['exam_syllabus'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash($_POST['exam_syllabus']) ) ); } ?>">
+									<input type="hidden" name="old_hidden_exam_syllabus" value="<?php if ( ! empty( $doc_data ) && ! empty( $doc_data[0]->value ) ) { echo esc_attr( $doc_data[0]->value ); } elseif ( isset( $_POST['exam_syllabus'] ) ) { echo esc_attr( sanitize_text_field( wp_unslash( $_POST['exam_syllabus'] ) ) ); } ?>">
 								</div>
 								<?php
-								if ( ! empty( $doc_data[0]->value ) ) {
+								
+								if ( ! empty( $doc_data ) && ! empty( $doc_data[0]->value ) ) {
 									?>
 									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
 										<a target="blank" class="mjschool-status-read btn btn-default" href="<?php echo esc_url( content_url( '/uploads/school_assets/' . $doc_data[0]->value ) ); ?>" record_id="<?php echo esc_attr( $exam_data->exam_id ); ?>">
@@ -273,7 +293,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 				?>
 				<div id="cuntribution_div" class="<?php if ( $exam_data->contributions === 'yes' ) { ?>mjschool-cuntribution-div-block <?php } else { ?>mjschool-cuntribution-div-none<?php } ?>">
 					<?php
-					$contributions_data = json_decode( $exam_data->contributions_data );
+					$contributions_data = ! empty( $exam_data->contributions_data ) ? json_decode( $exam_data->contributions_data ) : array();
 					foreach ( $contributions_data as $key => $value ) {
 						?>
 						<div class="form-body mjschool-user-form">
@@ -394,7 +414,7 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 										<label class="mjschool-custom-top-label mjschool-label-right-position" for="mjschool_enable_exam_mail">
 											<?php esc_html_e( 'Send Mail To Parents & Students', 'mjschool' ); ?>
 										</label>
-										<input type="checkbox" id="mjschool_enable_exam_mail" class="mjschool-check-box-input-margin" name="mjschool_enable_exam_mail" value="1" <?php echo checked( get_option( 'mjschool_enable_exam_mail' ), 'yes' ); ?>/>&nbsp;<?php esc_html_e( 'Enable', 'mjschool' ); ?>
+										<input type="checkbox" id="mjschool_enable_exam_mail" class="mjschool-check-box-input-margin" name="mjschool_enable_exam_mail" value="1" <?php echo ( 'yes' === get_option( 'mjschool_enable_exam_mail' ) ) ? 'checked' : ''; ?>/>&nbsp;<?php esc_html_e( 'Enable', 'mjschool' ); ?>
 									</div>
 								</div>
 							</div>
@@ -432,8 +452,8 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 			</div>
 			<?php
 		}
-		// --------- Get Module Wise Custom Field Data. --------------//
-		$mjschool_custom_field_obj = new Mjschool_Custome_Field();
+		// Get Module Wise Custom Field Data.
+		$mjschool_custom_field_obj = new Mjschool_Custom_Field();
 		$module                    = 'exam';
 		$custom_field              = $mjschool_custom_field_obj->mjschool_get_custom_field_by_module_callback( $module );
 		?>
@@ -444,5 +464,5 @@ if ( isset( $_REQUEST['action'] ) && sanitize_text_field( wp_unslash($_REQUEST['
 				</div>
 			</div>
 		</div>
-	</form><!-------- End Form. --------->
-</div> <!-------- Panel Body. --------->
+	</form><!-- End Form. -->
+</div> <!-- Panel Body. -->

@@ -260,7 +260,7 @@ class DirectWrite
 			$this->mpdf->ResetSpacing();
 		}
 		//Last chunk
-		if ($i != $j) {
+		if ($i !== $j) {
 			if ($currentx != 0) {
 				$this->mpdf->x = $currentx;
 			} else {
@@ -409,7 +409,7 @@ class DirectWrite
 		$this->mpdf->StopTransform();
 
 		// mPDF 5.5.23
-		if ($align === 'top' && $divider != '') {
+		if ($align === 'top' && $divider !== '') {
 			$wc = $this->mpdf->GetStringWidth($divider);
 			$wc *= $kerning * $fontwidth;
 
